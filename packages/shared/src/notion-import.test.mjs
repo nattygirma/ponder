@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { strToU8, zipSync } from "fflate";
-import { buildNotionPlan, NotionImportError, parseCsv, parseNotionDate, renderNotionBody, notionAssetRefs } from "./notion-import";
+import { buildNotionPlan, NotionImportError, parseCsv, parseNotionDate, renderNotionBody, notionAssetRefs, notionFileExtension } from "./notion-import";
 
 const A = "a".repeat(32), B = "b".repeat(32), C = "c".repeat(32), D = "d".repeat(32), E = "e".repeat(32), F = "f".repeat(32);
 const inner = zipSync({
@@ -86,6 +86,58 @@ describe("notion export plan", () => {
     expect(tasks.rows[2].cells).toEqual(["New Task", "October 17, 2021 7:15 AM", ""]);
     expect(find("Child").parentKey).toBe(find("Home").key);
     expect(find("Grandchild").parentKey).toBe(find("Child").key);
+  });
+
+  test("a database's own Markdown file is the table, and its saved view isn't text", () => {
+    // From a real 2026 workspace export: every table also has "<name> <id>.md" linking to it, and pages
+    // that show a table carry its saved view ("filters:", "sort:") under the link.
+    const real = buildNotionPlan(zipSync({
+      [`Export-x/LifeOS ${A}.md`]: strToU8(`# LifeOS\n\n## Database\n\n[Task Database](LifeOS/Task%20Database%20${B}_all.csv)\n\nfilters: \nDone\nsort: \nDue Date: ascending\n\nAfter the table\n`),
+      [`Export-x/LifeOS/Task Database ${B}.md`]: strToU8(`# Task Database\n\n[Task Database](Task%20Database%20${B}_all.csv)\n\nsort: \nDue Date: ascending\n`),
+      [`Export-x/LifeOS/Task Database ${B}_all.csv`]: strToU8("Task,Done\nAlgo HW3,No\n"),
+      [`Export-x/LifeOS/Task Database/Algo HW3 ${C}.md`]: strToU8("# Algo HW3\n\nDone: No\n"),
+      [`Export-x/LifeOS/Tasks View ${D}.md`]: strToU8(`# Tasks View\n\n[Untitled](Task%20Database%20${B}.md)\n\nsort: \nDue Date: ascending\n`),
+      [`Export-x/attachments/u/${E}`]: new Uint8Array([0x89, 0x50, 0x4e, 0x47, 1, 2]),
+    }));
+    const named = (title) => real.entries.filter((item) => item.title === title);
+    expect(named("Task Database").map((item) => item.kind)).toEqual(["database"]);
+    const keys = real.entries.map((item) => item.key);
+    expect(new Set(keys).size).toBe(keys.length);
+    const lifeos = named("LifeOS")[0];
+    const database = named("Task Database")[0];
+    expect(database.parentKey).toBe(lifeos.key);
+    expect(named("Algo HW3")[0].rowOf).toBe(database.key);
+    const targets = {
+      byKey: new Map([[lifeos.key, { memoId: "m_life", title: "LifeOS", parentKey: null }], [database.key, { memoId: "m_db", databaseId: "db_1", title: "Task Database", parentKey: lifeos.key }]]),
+      byNotionId: new Map(), assetUrls: new Map(),
+    };
+    const body = renderNotionBody(lifeos, targets, (id) => `/m/${id}`);
+    expect(body).toContain('<ponder-database id="db_1"></ponder-database>');
+    expect(body).not.toContain("filters:");
+    expect(body).not.toContain("Due Date: ascending");
+    expect(body).toContain("After the table");
+    const view = renderNotionBody(named("Tasks View")[0], targets, (id) => `/m/${id}`);
+    expect(view).toBe("[Task Database](/m/m_db)");
+  });
+
+  test("a row named by a notion.so link takes its page's title", () => {
+    // In a real export, Notion wrote one row's name as a link to the page, with an id matching no file.
+    const linked = buildNotionPlan(zipSync({
+      [`Media ${A}_all.csv`]: strToU8(`Name,Publisher,Status\nJane Eyre,The Atlantic,Reading\nhttps://www.notion.so/${F},Bon Appetit,Ready to Start\n`),
+      [`Media/Bon Appétit Foodcast ${B}.md`]: strToU8("# Bon Appétit Foodcast\n\nStatus: Ready to Start\nPublisher: Bon Appetit\n\nNotes\n"),
+      [`Media/Jane Eyre ${C}.md`]: strToU8("# Jane Eyre\n\nPublisher: The Atlantic\n"),
+    }));
+    const media = linked.entries.find((item) => item.kind === "database");
+    expect(media.rows.map((row) => [row.title, Boolean(row.pageKey)])).toEqual([["Jane Eyre", true], ["Bon Appétit Foodcast", true]]);
+    expect(media.rows[1].cells).toEqual(["Bon Appétit Foodcast", "Bon Appetit", "Ready to Start"]);
+  });
+
+  test("files without an extension are typed by their contents", () => {
+    expect(notionFileExtension(new Uint8Array([0xff, 0xd8, 0xff, 0xe0]))).toBe("jpg");
+    expect(notionFileExtension(new Uint8Array([0x89, 0x50, 0x4e, 0x47]))).toBe("png");
+    expect(notionFileExtension(strToU8("GIF89a"))).toBe("gif");
+    expect(notionFileExtension(strToU8("%PDF-1.7"))).toBe("pdf");
+    expect(notionFileExtension(strToU8("plain text"))).toBe(null);
   });
 
   test("a folder name two pages share is left unlinked rather than guessed", () => {

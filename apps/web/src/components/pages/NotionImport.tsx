@@ -8,6 +8,7 @@ import {
   notionAssetRefs,
   NotionImportError,
   notionCellValue,
+  notionFileExtension,
   notionNormalizeTitle,
   notionRelationTitles,
   notionStatusGroup,
@@ -34,8 +35,16 @@ type Progress = { done: number; total: number };
 
 const MIME: Record<string, string> = { png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", gif: "image/gif", webp: "image/webp", svg: "image/svg+xml", pdf: "application/pdf" };
 const fileFor = (path: string, data: Uint8Array) => {
-  const name = path.slice(path.lastIndexOf("/") + 1);
-  return new File([data.slice().buffer as ArrayBuffer], name, { type: MIME[name.split(".").pop()?.toLowerCase() ?? ""] ?? "application/octet-stream" });
+  let name = path.slice(path.lastIndexOf("/") + 1);
+  let extension = name.includes(".") ? name.split(".").pop()!.toLowerCase() : "";
+  if (!MIME[extension]) {
+    const sniffed = notionFileExtension(data);
+    if (sniffed) {
+      extension = sniffed;
+      name = `${name}.${sniffed}`;
+    }
+  }
+  return new File([data.slice().buffer as ArrayBuffer], name, { type: MIME[extension] ?? "application/octet-stream" });
 };
 
 const createDatabase = async (entry: NotionDatabase, parent: { notebookId?: string; parentId?: string }) => {

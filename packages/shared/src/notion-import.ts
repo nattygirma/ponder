@@ -158,6 +158,8 @@ const stripHeader = (markdown: string, columns: Set<string>) => {
   return lines.slice(index).join("\n");
 };
 
+const NOTION_LINK_TITLE = /^https?:\/\/(?:www\.)?notion\.so\/\S*[0-9a-f]{32}\S*$/i;
+
 /** The "Name: value" lines under a row page's title, for a row the table itself doesn't list. */
 const rowProperties = (markdown: string, columns: Set<string>) => {
   const values = new Map<string, string>();
@@ -257,7 +259,9 @@ export const buildNotionPlan = (archive: Uint8Array): NotionPlan => {
   }
 
   const byDatabase = new Map(databases.map((database) => [database.key, database]));
-  const pages: NotionPage[] = markdownFiles.map((path) => {
+  // A database comes as its table and a Markdown file of the same name holding only a link to it
+  // and its saved view; the table is the database, so that file isn't a page of its own.
+  const pages: NotionPage[] = markdownFiles.filter((path) => !csvFiles.has(stemOf(path))).map((path) => {
     const stem = stemOf(path);
     const text = strFromU8(files.get(path)!);
     const parsed = parseName(stem);
@@ -274,7 +278,17 @@ export const buildNotionPlan = (archive: Uint8Array): NotionPlan => {
       if (row) row.pageKey = stem;
       else {
         const values = rowProperties(text, databaseColumns.get(database.key)!);
-        database.rows.push({ title, cells: database.columns.map((column, index) => (index === 0 ? title : values.get(column.name) ?? "")), pageKey: stem });
+        // Notion sometimes writes a row's name as a notion.so link instead of its title. That row is the
+        // page whose other properties match it.
+        const linked = database.rows.find((item) => !item.pageKey && NOTION_LINK_TITLE.test(item.title.trim())
+          && database.columns.every((column, index) => index === 0 || !values.has(column.name) || values.get(column.name) === (item.cells[index] ?? "").trim()));
+        if (linked) {
+          linked.title = title;
+          linked.cells[0] = title;
+          linked.pageKey = stem;
+        } else {
+          database.rows.push({ title, cells: database.columns.map((column, index) => (index === 0 ? title : values.get(column.name) ?? "")), pageKey: stem });
+        }
       }
     }
     return page;
@@ -330,6 +344,29 @@ const blockForTarget = (page: NotionPage, target: NonNullable<ReturnType<NotionT
     : `<ponder-page id="${escapeAttr(target.memoId)}">${escapeAttr(target.title)}</ponder-page>`;
 };
 
+const DATABASE_LINK_LINE = /^\s*\[[^\]\n]*\]\([^)\n]+\.(?:csv|md)\)\s*$/i;
+const VIEW_SETTING_LINE = /^\s*(?:filters|sort|group(?:s|ed by)?|properties):\s*$/i;
+
+/**
+ * Notion writes a table's saved view under its link ("filters:", "sort:" and their values, up to a blank line).
+ * Ponder keeps its own views, so those lines are dropped rather than shown as text.
+ */
+const dropViewSettings = (segment: string) => {
+  const lines = segment.split("\n");
+  const kept: string[] = [];
+  let afterTable = false;
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index]!;
+    if (afterTable && VIEW_SETTING_LINE.test(line)) {
+      while (index + 1 < lines.length && lines[index + 1]!.trim()) index += 1;
+      continue;
+    }
+    if (line.trim()) afterTable = DATABASE_LINK_LINE.test(line);
+    kept.push(line);
+  }
+  return kept.join("\n");
+};
+
 /** Rewrites Notion's relative links, callouts and child-page lines into this app's Markdown. */
 export const renderNotionBody = (page: NotionPage, targets: NotionTargets, memoLink: (memoId: string) => string) => {
   const lookup = (raw: string) => {
@@ -339,7 +376,7 @@ export const renderNotionBody = (page: NotionPage, targets: NotionTargets, memoL
     return targets.byKey.get(stemOf(resolvePath(page.dir, raw))) ?? null;
   };
 
-  const rewrite = (segment: string) => segment
+  const rewrite = (segment: string) => dropViewSettings(segment)
     .replace(/<aside>\s*([\s\S]*?)\s*<\/aside>/g, (_all, inner: string) => {
       const emoji = /^(\p{Extended_Pictographic}\S*)\s*/u.exec(inner);
       const body = emoji ? inner.slice(emoji[0].length) : inner;
@@ -359,7 +396,9 @@ export const renderNotionBody = (page: NotionPage, targets: NotionTargets, memoL
         if (asset) return `${bang}[${text}](${asset})`;
         if (bang) return all;
         const target = lookup(raw);
-        return target ? `[${text}](${memoLink(target.memoId)})` : all;
+        // A linked view of a table elsewhere arrives as "[Untitled](table)": name it after the table.
+        const label = target && (!text.trim() || text.trim() === "Untitled") ? target.title : text;
+        return target ? `[${label}](${memoLink(target.memoId)})` : all;
       });
     })
     .join("\n");
@@ -385,6 +424,17 @@ export const notionCellValue = (column: NotionColumn, raw: string, optionIds: Ma
     case "relation": return null;
     default: return value;
   }
+};
+
+/** Newer exports keep images in "attachments/" without an extension, so the type comes from the file's first bytes. */
+export const notionFileExtension = (data: Uint8Array) => {
+  const starts = (...bytes: number[]) => bytes.every((byte, index) => data[index] === byte);
+  if (starts(0xff, 0xd8, 0xff)) return "jpg";
+  if (starts(0x89, 0x50, 0x4e, 0x47)) return "png";
+  if (starts(0x47, 0x49, 0x46, 0x38)) return "gif";
+  if (starts(0x25, 0x50, 0x44, 0x46)) return "pdf";
+  if (starts(0x52, 0x49, 0x46, 0x46) && data[8] === 0x57 && data[9] === 0x45 && data[10] === 0x42 && data[11] === 0x50) return "webp";
+  return null;
 };
 
 export const notionRelationTitles = (raw: string) => splitList(raw).map(normalizeTitle);
