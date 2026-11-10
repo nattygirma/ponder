@@ -93,14 +93,14 @@ export const buildNoteHtmlContentMarkup = ({
 }: Pick<BuildStandaloneHtmlDocumentOptions, "title" | "notebook" | "tags" | "updatedAt" | "bodyHtml">) => {
   const metadataParts = [notebook, updatedAt, ...tags.map((tag) => `#${tag}`)].filter(Boolean);
   const metaHtml = metadataParts.length > 0
-    ? `<div class="edgeever-html-meta">${escapeHtml(metadataParts.join(" · "))}</div>`
+    ? `<div class="ponder-html-meta">${escapeHtml(metadataParts.join(" · "))}</div>`
     : "";
 
-  return `<div class="edgeever-html-shell">
-<article class="edgeever-html-document">
-<h1 class="edgeever-html-title">${escapeHtml(title)}</h1>
+  return `<div class="ponder-html-shell">
+<article class="ponder-html-document">
+<h1 class="ponder-html-title">${escapeHtml(title)}</h1>
 ${metaHtml}
-<div class="edgeever-html-content">
+<div class="ponder-html-content">
 ${bodyHtml}
 </div>
 </article>
@@ -123,7 +123,7 @@ export const buildStandaloneHtmlDocument = ({
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<meta name="generator" content="EdgeEver" />
+<meta name="generator" content="Ponder" />
 <title>${escapeHtml(title)}</title>
 <style>
 ${styles}
@@ -194,7 +194,7 @@ export const renderMermaidBlocksForHtmlExport = async (root: HTMLElement) => {
         padding: 24,
       });
       const figure = document.createElement("figure");
-      figure.className = "edgeever-html-mermaid";
+      figure.className = "ponder-html-mermaid";
       figure.innerHTML = svg;
       container.replaceWith(figure);
     } catch {

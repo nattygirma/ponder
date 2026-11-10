@@ -3,9 +3,9 @@ import { Database } from "bun:sqlite";
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { parseEdgeEverZip, restoreEdgeEverZip } from "@edgeever/shared/backup-archive";
-import { createEdgeEverClient } from "../../../packages/client/src/index.ts";
-import { fetchEdgeEverApp } from "./index.ts";
+import { parsePonderZip, restorePonderZip } from "@ponder/shared/backup-archive";
+import { createPonderClient } from "../../../packages/client/src/index.ts";
+import { fetchPonderApp } from "./index.ts";
 import { createSelfHostedStorageAdapter } from "./self-hosted-storage-adapter.ts";
 
 const fixtures = [];
@@ -22,7 +22,7 @@ afterEach(async () => {
 });
 
 const fixture = async () => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-701-test-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-701-test-"));
   const database = new Database(":memory:");
   const cleanup = { database, directory };
   fixtures.push(cleanup);
@@ -34,10 +34,10 @@ const fixture = async () => {
   database.run("INSERT OR IGNORE INTO workspaces (id, name, is_personal) VALUES ('ws_default', 'Personal', 1)");
   const environment = {
     storage: createSelfHostedStorageAdapter(database, directory),
-    EDGE_EVER_ALLOW_UNAUTHENTICATED: "true",
-    EDGE_EVER_RUNTIME: "self-hosted-bun",
+    PONDER_ALLOW_UNAUTHENTICATED: "true",
+    PONDER_RUNTIME: "self-hosted-bun",
   };
-  const request = (path, init = {}) => fetchEdgeEverApp(new Request(`http://edgeever.test${path}`, init), environment, executionContext);
+  const request = (path, init = {}) => fetchPonderApp(new Request(`http://ponder.test${path}`, init), environment, executionContext);
   const json = async (path, body, method = "POST") => {
     const response = await request(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const result = await response.json();
@@ -60,7 +60,7 @@ const fixture = async () => {
   };
   const resourceRow = () => database.query("SELECT * FROM resources WHERE id = 'res_security'").get();
   const serve = () => {
-    cleanup.server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch: (request) => fetchEdgeEverApp(request, environment, executionContext) });
+    cleanup.server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch: (request) => fetchPonderApp(request, environment, executionContext) });
     return cleanup.server.url.origin;
   };
   return { directory, database, environment, request, json, notebook, memo, metadata, restore, resourceRow, serve };
@@ -104,7 +104,7 @@ describe("restored resource security", () => {
         if (mode === "legacy") {
           expect((await f.restore(metadata, png, "application/octet-stream")).status).toBe(200);
         } else {
-          const client = createEdgeEverClient({ baseUrl: f.serve() });
+          const client = createPonderClient({ baseUrl: f.serve() });
           await client.restoreJsonResource(metadata.id, metadata, new Blob([png]));
         }
         expect(f.resourceRow().mime_type).toBe(mimeType ?? "application/octet-stream");
@@ -241,7 +241,7 @@ describe("restored resource security", () => {
       const f = await fixture();
       const metadata = f.metadata({ mimeType, filename: "encoded.svg", byteSize: bytes.length });
       if (mode === "legacy") expect((await f.restore(metadata, bytes)).status).toBe(200);
-      else await createEdgeEverClient({ baseUrl: f.serve() }).restoreJsonResource(metadata.id, metadata, new Blob([bytes]));
+      else await createPonderClient({ baseUrl: f.serve() }).restoreJsonResource(metadata.id, metadata, new Blob([bytes]));
       expect(f.resourceRow().mime_type).toBe(mimeType);
       const response = await f.request("/api/v1/resources/res_security/blob");
       expect(response.headers.get("Content-Type")).toBe(mimeType);
@@ -256,11 +256,11 @@ describe("restored resource security", () => {
       const f = await fixture();
       const fixtureDirectory = new URL("../../../tests/fixtures/restore-resource-security/", import.meta.url);
       const source = JSON.parse(await readFile(new URL("source.json", fixtureDirectory), "utf8"));
-      const backup = await parseEdgeEverZip(new Blob([await readFile(new URL("v2.12.0.zip", fixtureDirectory))]));
-      expect(backup.manifest.edgeeverVersion).toBe("2.12.0");
+      const backup = await parsePonderZip(new Blob([await readFile(new URL("v2.12.0.zip", fixtureDirectory))]));
+      expect(backup.manifest.ponderVersion).toBe("2.12.0");
       expect(backup.manifest.buildId).toBe(source.commit);
-      const client = createEdgeEverClient({ baseUrl: f.serve() });
-      await restoreEdgeEverZip(backup, {
+      const client = createPonderClient({ baseUrl: f.serve() });
+      await restorePonderZip(backup, {
         restoreNotebooks: client.restoreJsonNotebooks,
         restoreMemos: client.restoreJsonMemos,
         restorePrompts: client.restoreJsonAiPrompts,
@@ -412,7 +412,7 @@ describe("single-valued resource content types", () => {
       const f = await fixture();
       const metadata = f.metadata({ mimeType, filename: "encoded.svg", byteSize: bytes.length });
       if (mode === "legacy") expect((await f.restore(metadata, bytes)).status).toBe(200);
-      else await createEdgeEverClient({ baseUrl: f.serve() }).restoreJsonResource(metadata.id, metadata, new Blob([bytes]));
+      else await createPonderClient({ baseUrl: f.serve() }).restoreJsonResource(metadata.id, metadata, new Blob([bytes]));
       expect(f.resourceRow().mime_type).toBe(mimeType);
       const response = await f.request("/api/v1/resources/res_security/blob");
       expect(response.headers.get("Content-Type")).toBe(header);

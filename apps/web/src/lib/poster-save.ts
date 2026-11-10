@@ -1,9 +1,9 @@
-import { markdownToDoc, posterFallbackMarkdown, parsePosterDocument, serializePosterDocument, type MemoDetail, type PosterDocument } from "@edgeever/shared";
-import type { EdgeEverRepository } from "./repository";
+import { markdownToDoc, posterFallbackMarkdown, parsePosterDocument, serializePosterDocument, type MemoDetail, type PosterDocument } from "@ponder/shared";
+import type { PonderRepository } from "./repository";
 
 // Immutable previews keep revision restores and concurrent drafts independent.
 // Only artwork changes upload a new, bounded-size preview; metadata edits reuse it.
-export const savePosterMemo = async (repository: EdgeEverRepository, memo: MemoDetail, document: PosterDocument, title: string, editSessionId: string, preview?: Blob, tags: string[] = memo.tags) => {
+export const savePosterMemo = async (repository: PonderRepository, memo: MemoDetail, document: PosterDocument, title: string, editSessionId: string, preview?: Blob, tags: string[] = memo.tags) => {
   let previewId: string | undefined;
   let committed = false;
   try {

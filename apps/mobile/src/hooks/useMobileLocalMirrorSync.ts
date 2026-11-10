@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import { AppState, type AppStateStatus } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
-import type { createEdgeEverClient } from "@edgeever/client";
+import type { createPonderClient } from "@ponder/client";
 import {
   isMobileLocalMirrorInitialized,
   syncMobileLocalMirror,
   type MobileBootstrapProgress,
 } from "../lib/local-mirror";
 
-type MobileClient = ReturnType<typeof createEdgeEverClient>;
+type MobileClient = ReturnType<typeof createPonderClient>;
 
 export const useMobileLocalMirrorSync = ({
   client,

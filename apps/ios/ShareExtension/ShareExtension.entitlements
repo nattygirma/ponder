@@ -4,7 +4,7 @@
 <dict>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.org.edgeever.mobile</string>
+		<string>group.io.appkeep.ponder.mobile</string>
 	</array>
 </dict>
 </plist>

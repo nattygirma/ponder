@@ -28,6 +28,6 @@ describe("responsive table layout contracts", () => {
   test("wide tables with 5+ columns expand and scroll smoothly inside wrapper", () => {
     expect(globals).toContain(".tableWrapper {\n  --mobile-table-column-width: clamp(4.5rem, 24cqi, 12rem);");
     expect(globals).toMatch(/\.ProseMirror \.tableWrapper[\s\S]*?overflow-x: auto;/);
-    expect(mobileEditor).toMatch(/\.edgeever-mobile-tiptap-content \.tableWrapper[\s\S]*?overflow-x: auto;/);
+    expect(mobileEditor).toMatch(/\.ponder-mobile-tiptap-content \.tableWrapper[\s\S]*?overflow-x: auto;/);
   });
 });

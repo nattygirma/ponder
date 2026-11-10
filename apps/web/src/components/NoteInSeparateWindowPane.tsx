@@ -1,6 +1,6 @@
 import { AppWindow } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { getMemoDisplayTitle } from "@edgeever/shared";
+import { getMemoDisplayTitle } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 
 /** Shown in the main window while the selected note is open in its own window. */

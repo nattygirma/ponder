@@ -26,7 +26,7 @@ export const normalizeExternalLinkHref = (raw: string): NormalizeExternalLinkRes
   // Internal note / resource schemes stay as-is (user may paste them intentionally).
   if (
     trimmed.startsWith("#memo=") ||
-    trimmed.startsWith("edgeever-resource://") ||
+    trimmed.startsWith("ponder-resource://") ||
     trimmed.startsWith("/api/v1/resources/")
   ) {
     return { ok: true, href: trimmed };
@@ -70,8 +70,8 @@ export const isAttachmentLinkHref = (href: string | null | undefined): boolean =
   if (!href) return false;
   return (
     href.includes("/api/v1/resources/") ||
-    href.startsWith("edgeever-resource://") ||
-    href.includes("edgeever-attachment")
+    href.startsWith("ponder-resource://") ||
+    href.includes("ponder-attachment")
   );
 };
 

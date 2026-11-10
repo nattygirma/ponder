@@ -1,39 +1,39 @@
 import { describe, expect, test } from "bun:test";
 import {
-  EDGE_EVER_ANDROID_SIGNER_SHA256,
+  PONDER_ANDROID_SIGNER_SHA256,
   parseAllowedAndroidSignerDigests,
   verifyAndroidSignerOutput,
 } from "./verify-android-apk-signature.mjs";
 
 describe("Android APK signer verification", () => {
-  test("accepts the single pinned EdgeEver signer", () => {
+  test("accepts the single pinned Ponder signer", () => {
     expect(
       verifyAndroidSignerOutput(
-        `Signer #1 certificate SHA-256 digest: ${EDGE_EVER_ANDROID_SIGNER_SHA256}`,
+        `Signer #1 certificate SHA-256 digest: ${PONDER_ANDROID_SIGNER_SHA256}`,
       ),
-    ).toBe(EDGE_EVER_ANDROID_SIGNER_SHA256);
+    ).toBe(PONDER_ANDROID_SIGNER_SHA256);
   });
 
   test("normalizes colon-separated uppercase fingerprints", () => {
-    const fingerprint = EDGE_EVER_ANDROID_SIGNER_SHA256.toUpperCase()
+    const fingerprint = PONDER_ANDROID_SIGNER_SHA256.toUpperCase()
       .match(/.{2}/g)
       .join(":");
     expect(
       verifyAndroidSignerOutput(
         `Signer #1 certificate SHA-256 digest: ${fingerprint}`,
       ),
-    ).toBe(EDGE_EVER_ANDROID_SIGNER_SHA256);
+    ).toBe(PONDER_ANDROID_SIGNER_SHA256);
   });
 
   test("accepts fingerprints wrapped and spaced by newer build tools", () => {
-    const fingerprint = EDGE_EVER_ANDROID_SIGNER_SHA256.toUpperCase()
+    const fingerprint = PONDER_ANDROID_SIGNER_SHA256.toUpperCase()
       .match(/.{2}/g)
       .join(" ");
     expect(
       verifyAndroidSignerOutput(
         `Signer #1 certificate SHA-256 digest: [${fingerprint}]`,
       ),
-    ).toBe(EDGE_EVER_ANDROID_SIGNER_SHA256);
+    ).toBe(PONDER_ANDROID_SIGNER_SHA256);
   });
 
   test("accepts scheme-prefixed signer output from Linux build tools", () => {
@@ -41,10 +41,10 @@ describe("Android APK signer verification", () => {
       verifyAndroidSignerOutput(
         [
           "Number of signers: 1",
-          `V2 Signer: certificate SHA-256 digest: ${EDGE_EVER_ANDROID_SIGNER_SHA256}`,
+          `V2 Signer: certificate SHA-256 digest: ${PONDER_ANDROID_SIGNER_SHA256}`,
         ].join("\n"),
       ),
-    ).toBe(EDGE_EVER_ANDROID_SIGNER_SHA256);
+    ).toBe(PONDER_ANDROID_SIGNER_SHA256);
   });
 
   test("rejects an APK signed by a different certificate", () => {
@@ -60,7 +60,7 @@ describe("Android APK signer verification", () => {
     expect(
       verifyAndroidSignerOutput(
         `Signer #1 certificate SHA-256 digest: ${playSigner}`,
-        parseAllowedAndroidSignerDigests(`${EDGE_EVER_ANDROID_SIGNER_SHA256},${playSigner}`),
+        parseAllowedAndroidSignerDigests(`${PONDER_ANDROID_SIGNER_SHA256},${playSigner}`),
       ),
     ).toBe(playSigner);
   });
@@ -78,8 +78,8 @@ describe("Android APK signer verification", () => {
     expect(() =>
       verifyAndroidSignerOutput(
         [
-          `Signer #1 certificate SHA-256 digest: ${EDGE_EVER_ANDROID_SIGNER_SHA256}`,
-          `Signer #2 certificate SHA-256 digest: ${EDGE_EVER_ANDROID_SIGNER_SHA256}`,
+          `Signer #1 certificate SHA-256 digest: ${PONDER_ANDROID_SIGNER_SHA256}`,
+          `Signer #2 certificate SHA-256 digest: ${PONDER_ANDROID_SIGNER_SHA256}`,
         ].join("\n"),
       ),
     ).toThrow("Expected exactly one Android signer");

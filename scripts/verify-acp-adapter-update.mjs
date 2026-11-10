@@ -20,7 +20,7 @@ import { createAcpAdapterManager, MAX_ARCHIVE_BYTES, MAX_EXTRACTED_BYTES } from 
 
 export async function runAcpAdapterCrossVersionVerification({ silent = false } = {}) {
   const log = (...args) => { if (!silent) console.log(...args); };
-  const root = mkdtempSync(path.join(tmpdir(), "edgeever-acp-update-verify-"));
+  const root = mkdtempSync(path.join(tmpdir(), "ponder-acp-update-verify-"));
 
   try {
     log("=================================================================");

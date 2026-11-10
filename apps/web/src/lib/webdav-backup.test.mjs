@@ -78,10 +78,10 @@ const startWebDav = ({ password = "secret", rejectPut = false } = {}) => {
 
 describe("normalizeWebDavBackupConfig", () => {
   test("trims fields, drops trailing URL slashes and normalizes the remote path", () => {
-    expect(normalizeWebDavBackupConfig({ url: " https://dav.example.com/remote.php/dav/// ", username: " alice ", remotePath: " \\Backups\\EdgeEver\\ " })).toEqual({
+    expect(normalizeWebDavBackupConfig({ url: " https://dav.example.com/remote.php/dav/// ", username: " alice ", remotePath: " \\Backups\\Ponder\\ " })).toEqual({
       url: "https://dav.example.com/remote.php/dav",
       username: "alice",
-      remotePath: "/Backups/EdgeEver",
+      remotePath: "/Backups/Ponder",
     });
   });
 
@@ -96,7 +96,7 @@ describe("config persistence", () => {
   test("returns defaults when nothing is stored, the JSON is corrupt or storage throws", () => {
     installStorage();
     expect(loadWebDavBackupConfig()).toEqual(DEFAULT_WEBDAV_BACKUP_CONFIG);
-    installStorage({ "edgeever.webdav-backup-config": "{not json" });
+    installStorage({ "ponder.webdav-backup-config": "{not json" });
     expect(loadWebDavBackupConfig()).toEqual(DEFAULT_WEBDAV_BACKUP_CONFIG);
     installStorage({}, { throwOnRead: true });
     expect(loadWebDavBackupConfig()).toEqual(DEFAULT_WEBDAV_BACKUP_CONFIG);
@@ -106,10 +106,10 @@ describe("config persistence", () => {
     const values = installStorage();
     const saved = saveWebDavBackupConfig({ url: "https://dav.example.com/", username: " alice ", remotePath: "notes/" });
     expect(saved).toEqual({ url: "https://dav.example.com", username: "alice", remotePath: "/notes" });
-    expect(JSON.parse(values.get("edgeever.webdav-backup-config"))).toEqual(saved);
+    expect(JSON.parse(values.get("ponder.webdav-backup-config"))).toEqual(saved);
     expect(loadWebDavBackupConfig()).toEqual(saved);
 
-    installStorage({ "edgeever.webdav-backup-config": JSON.stringify({ url: "https://dav.example.com" }) });
+    installStorage({ "ponder.webdav-backup-config": JSON.stringify({ url: "https://dav.example.com" }) });
     expect(loadWebDavBackupConfig()).toEqual({ ...DEFAULT_WEBDAV_BACKUP_CONFIG, url: "https://dav.example.com" });
   });
 });
@@ -118,9 +118,9 @@ describe("password persistence", () => {
   test("never returns a stored password and purges it while automatic backups are disabled", () => {
     const values = installStorage();
     saveWebDavBackupPassword("hunter2");
-    expect(values.get("edgeever.webdav-backup-password")).toBe("hunter2");
+    expect(values.get("ponder.webdav-backup-password")).toBe("hunter2");
     expect(loadWebDavBackupPassword()).toBe("");
-    expect(values.has("edgeever.webdav-backup-password")).toBe(false);
+    expect(values.has("ponder.webdav-backup-password")).toBe(false);
   });
 
   test("returns an empty password when storage is unavailable", () => {
@@ -138,16 +138,16 @@ describe("schedule persistence", () => {
   });
 
   test("sanitizes unknown intervals, non-boolean flags and non-string timestamps", () => {
-    installStorage({ "edgeever.webdav-backup-schedule": JSON.stringify({ enabled: "true", intervalDays: 3, lastSuccessAt: 123, lastAttemptAt: null }) });
+    installStorage({ "ponder.webdav-backup-schedule": JSON.stringify({ enabled: "true", intervalDays: 3, lastSuccessAt: 123, lastAttemptAt: null }) });
     expect(loadWebDavBackupSchedule()).toEqual(DEFAULT_WEBDAV_BACKUP_SCHEDULE);
-    installStorage({ "edgeever.webdav-backup-schedule": JSON.stringify({ enabled: true, intervalDays: "30" }) });
+    installStorage({ "ponder.webdav-backup-schedule": JSON.stringify({ enabled: true, intervalDays: "30" }) });
     expect(loadWebDavBackupSchedule()).toEqual({ ...DEFAULT_WEBDAV_BACKUP_SCHEDULE, enabled: true, intervalDays: 30 });
   });
 
   test("returns defaults when nothing is stored or the JSON is corrupt", () => {
     installStorage();
     expect(loadWebDavBackupSchedule()).toEqual(DEFAULT_WEBDAV_BACKUP_SCHEDULE);
-    installStorage({ "edgeever.webdav-backup-schedule": "[" });
+    installStorage({ "ponder.webdav-backup-schedule": "[" });
     expect(loadWebDavBackupSchedule()).toEqual(DEFAULT_WEBDAV_BACKUP_SCHEDULE);
   });
 });
@@ -183,9 +183,9 @@ describe("WebDAV client", () => {
 
   test("tests the connection by listing the normalized remote directory with basic auth", async () => {
     const dav = startWebDav();
-    dav.collections.add("/EdgeEver/backups");
-    await testWebDavConnection({ url: `${dav.url}/`, username: " alice ", remotePath: "EdgeEver/backups/" }, "secret");
-    expect(dav.requests.map(({ method, path }) => [method, path])).toEqual([["PROPFIND", "/EdgeEver/backups"]]);
+    dav.collections.add("/Ponder/backups");
+    await testWebDavConnection({ url: `${dav.url}/`, username: " alice ", remotePath: "Ponder/backups/" }, "secret");
+    expect(dav.requests.map(({ method, path }) => [method, path])).toEqual([["PROPFIND", "/Ponder/backups"]]);
   });
 
   test("surfaces authentication and missing-directory failures", async () => {
@@ -197,9 +197,9 @@ describe("WebDAV client", () => {
   test("creates the remote directory and uploads a timestamped archive without overwriting", async () => {
     const dav = startWebDav();
     const archive = new Blob([new Uint8Array([80, 75, 3, 4, 1, 2, 3])], { type: "application/zip" });
-    const result = await uploadWebDavBackup({ url: dav.url, username: "alice", remotePath: "/EdgeEver/backups" }, "secret", archive, new Date("2026-10-29T08:15:30.123Z"));
-    expect(result).toEqual({ filename: "edgeever-2026-10-29T08-15-30-123Z.zip", remotePath: "/EdgeEver/backups/edgeever-2026-10-29T08-15-30-123Z.zip", size: 7 });
-    expect(dav.collections.has("/EdgeEver/backups")).toBe(true);
+    const result = await uploadWebDavBackup({ url: dav.url, username: "alice", remotePath: "/Ponder/backups" }, "secret", archive, new Date("2026-10-29T08:15:30.123Z"));
+    expect(result).toEqual({ filename: "ponder-2026-10-29T08-15-30-123Z.zip", remotePath: "/Ponder/backups/ponder-2026-10-29T08-15-30-123Z.zip", size: 7 });
+    expect(dav.collections.has("/Ponder/backups")).toBe(true);
     expect(dav.files.get(result.remotePath)).toEqual(new Uint8Array([80, 75, 3, 4, 1, 2, 3]));
     const put = dav.requests.find(({ method }) => method === "PUT");
     expect(put.headers["if-none-match"]).toBe("*");
@@ -207,21 +207,21 @@ describe("WebDAV client", () => {
 
   test("reports a rejected upload instead of claiming success", async () => {
     const dav = startWebDav({ rejectPut: true });
-    await expect(uploadWebDavBackup({ url: dav.url, username: "alice", remotePath: "/EdgeEver/backups" }, "secret", new Blob(["zip"]))).rejects.toThrow();
+    await expect(uploadWebDavBackup({ url: dav.url, username: "alice", remotePath: "/Ponder/backups" }, "secret", new Blob(["zip"]))).rejects.toThrow();
   });
 
   test("does not overwrite an existing archive with the same timestamp", async () => {
     const dav = startWebDav();
-    const config = { url: dav.url, username: "alice", remotePath: "/EdgeEver/backups" };
+    const config = { url: dav.url, username: "alice", remotePath: "/Ponder/backups" };
     const timestamp = new Date("2026-10-29T08:15:30.123Z");
     await uploadWebDavBackup(config, "secret", new Blob(["first"]), timestamp);
     await expect(uploadWebDavBackup(config, "secret", new Blob(["second"]), timestamp)).rejects.toThrow();
-    expect(new TextDecoder().decode(dav.files.get("/EdgeEver/backups/edgeever-2026-10-29T08-15-30-123Z.zip"))).toBe("first");
+    expect(new TextDecoder().decode(dav.files.get("/Ponder/backups/ponder-2026-10-29T08-15-30-123Z.zip"))).toBe("first");
   });
 
   test("uploads into the server root without a double slash", async () => {
     const dav = startWebDav();
     const result = await uploadWebDavBackup({ url: dav.url, username: "alice", remotePath: "/" }, "secret", new Blob(["zip"]), new Date("2026-10-29T08:15:30.123Z"));
-    expect(result.remotePath).toBe("/edgeever-2026-10-29T08-15-30-123Z.zip");
+    expect(result.remotePath).toBe("/ponder-2026-10-29T08-15-30-123Z.zip");
   });
 });

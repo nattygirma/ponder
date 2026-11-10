@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { IDBFactory, IDBKeyRange } from "fake-indexeddb";
 import { WebPluginPackageStore } from "./plugin-package-store.ts";
 
-const DATABASE_NAME = "edgeever-plugin-packages-v1";
+const DATABASE_NAME = "ponder-plugin-packages-v1";
 
 const requestDone = (request) => new Promise((resolve, reject) => {
   request.onsuccess = () => resolve(request.result);

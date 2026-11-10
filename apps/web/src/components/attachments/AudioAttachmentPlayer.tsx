@@ -29,7 +29,7 @@ export const AudioAttachmentPlayer = ({
       className="h-10 w-full"
       controls
       controlsList="nodownload"
-      data-edgeever-audio-player
+      data-ponder-audio-player
       preload="metadata"
       src={src}
       aria-label={label}

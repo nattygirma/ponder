@@ -16,7 +16,7 @@ import {
 import { getPluginDetailPath, hasPluginSettings, isPluginCardCommand } from "@/lib/plugins/plugin-navigation";
 import type { PluginUpdateInfo } from "@/lib/plugins/plugin-updates";
 import type { RegisteredPluginCommand } from "@/lib/plugins/plugin-host";
-import type { MarketplaceRevocation } from "@edgeever/plugin-api";
+import type { MarketplaceRevocation } from "@ponder/plugin-api";
 
 const sourceBadgeClassName = "bg-slate-100 text-slate-700";
 

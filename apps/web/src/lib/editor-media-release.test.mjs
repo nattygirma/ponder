@@ -4,7 +4,7 @@ import { isRevocableObjectUrl, releaseHtmlMediaSources } from "./editor-media-re
 describe("editor media release", () => {
   test("recognizes blob object URLs", () => {
     expect(isRevocableObjectUrl("blob:http://127.0.0.1/abc")).toBe(true);
-    expect(isRevocableObjectUrl("edgeever-resource://resource/img_1")).toBe(false);
+    expect(isRevocableObjectUrl("ponder-resource://resource/img_1")).toBe(false);
   });
 
   test("blanks image sources and revokes blob URLs", () => {
@@ -14,7 +14,7 @@ describe("editor media release", () => {
       revoked.push(url);
     };
 
-    const blobSrc = "blob:http://edgeever.local/1";
+    const blobSrc = "blob:http://ponder.local/1";
     const img = {
       src: blobSrc,
       removeAttribute(name) {

@@ -4,7 +4,7 @@ import {
   hasSyncIdentityChanged,
   isSyncMetadataInitialized,
   splitSyncBootstrapWriteBatches,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 test("rebuilds the mobile mirror when the server change cursor rewinds", () => {
   expect(hasSyncCursorRewound(42, 7)).toBe(true);

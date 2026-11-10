@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 export const LEGACY_RENDERER_URL_PREFIX = "file://";
-export const CURRENT_RENDERER_URL_PREFIX = "edgeever-app://app/";
+export const CURRENT_RENDERER_URL_PREFIX = "ponder-app://app/";
 
 export const isPreviousReleaseRendererUrl = (url) => {
   const value = String(url || "");
@@ -49,7 +49,7 @@ const launchAndWait = async ({
   const output = [];
   let processError = null;
   const child = spawn(executable, [`--user-data-dir=${userDataDirectory}`], {
-    env: { ...process.env, EDGE_EVER_DISABLE_AUTO_UPDATE: "1" },
+    env: { ...process.env, PONDER_DISABLE_AUTO_UPDATE: "1" },
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
   });
@@ -57,7 +57,7 @@ const launchAndWait = async ({
   child.stdout.on("data", (chunk) => output.push(chunk.toString()));
   child.stderr.on("data", (chunk) => output.push(chunk.toString()));
 
-  const timeoutMs = Number(process.env.EDGE_EVER_DESKTOP_STARTUP_TIMEOUT_MS) || 45_000;
+  const timeoutMs = Number(process.env.PONDER_DESKTOP_STARTUP_TIMEOUT_MS) || 45_000;
   const deadline = Date.now() + timeoutMs;
   try {
     while (Date.now() < deadline) {
@@ -93,7 +93,7 @@ export const verifyDesktopCrossVersionStartup = async ({
     }
   }
 
-  const testDirectory = mkdtempSync(join(tmpdir(), "edgeever-cross-version-"));
+  const testDirectory = mkdtempSync(join(tmpdir(), "ponder-cross-version-"));
   const userDataDirectory = join(testDirectory, "profile");
   const logPath = join(userDataDirectory, "logs", "desktop.log");
   try {

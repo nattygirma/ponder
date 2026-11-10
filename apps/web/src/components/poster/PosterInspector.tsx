@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import type { PosterElement } from "@edgeever/shared";
+import type { PosterElement } from "@ponder/shared";
 import { PosterFontPicker } from "./PosterFontPicker";
 import {
   PosterColor,

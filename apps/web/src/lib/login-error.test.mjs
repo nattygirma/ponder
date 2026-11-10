@@ -36,7 +36,7 @@ describe("login error classification", () => {
   test("identifies Cloudflare challenges and preserves the Ray ID", () => {
     const challenge = new ApiRequestError("Forbidden", 403, undefined, undefined, {
       cloudflareMitigated: true,
-      isEdgeEverApiError: false,
+      isPonderApiError: false,
       rayId: "abc123-SJC",
     });
 
@@ -47,15 +47,15 @@ describe("login error classification", () => {
     });
   });
 
-  test("distinguishes an edge security block from an EdgeEver forbidden response", () => {
+  test("distinguishes an edge security block from a Ponder forbidden response", () => {
     const blocked = new ApiRequestError("Forbidden", 403, undefined, undefined, {
       cloudflareMitigated: false,
-      isEdgeEverApiError: false,
+      isPonderApiError: false,
       rayId: "def456-NRT",
     });
     const forbidden = new ApiRequestError("Forbidden", 403, "forbidden", undefined, {
       cloudflareMitigated: false,
-      isEdgeEverApiError: true,
+      isPonderApiError: true,
       rayId: "ghi789-LAX",
     });
 
@@ -71,7 +71,7 @@ describe("login error classification", () => {
     });
   });
 
-  test("identifies responses that are not EdgeEver JSON", () => {
+  test("identifies responses that are not Ponder JSON", () => {
     expect(classifyLoginError(new SyntaxError("Unexpected token"), "login")).toEqual({
       kind: "invalidResponse",
       diagnosticCode: "invalid_instance_response",

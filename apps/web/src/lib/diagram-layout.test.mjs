@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createDefaultDiagramDocument } from "@edgeever/shared";
+import { createDefaultDiagramDocument } from "@ponder/shared";
 import {
   compileDiagramIr,
   compactArchitectureNodeSize,

@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState, type ComponentPropsWithoutRef } from "react";
+import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, useState, type ComponentPropsWithoutRef, type KeyboardEventHandler } from "react";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -9,6 +9,8 @@ type MemoTitleInputProps = {
   placeholder: string;
   readOnly?: boolean;
   value: string;
+  /** Long titles wrap instead of truncating, and Enter is left to the caller. */
+  multiline?: boolean;
 } & Omit<ComponentPropsWithoutRef<"input">, "onChange" | "value">;
 
 export const MemoTitleInput = forwardRef<HTMLInputElement, MemoTitleInputProps>(({
@@ -18,10 +20,19 @@ export const MemoTitleInput = forwardRef<HTMLInputElement, MemoTitleInputProps>(
   placeholder,
   readOnly = false,
   value,
+  multiline = false,
   ...props
 }, ref) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  // Callers only focus and select, which both elements support.
+  useImperativeHandle(ref, () => (multiline ? textareaRef.current : inputRef.current) as HTMLInputElement);
+  useLayoutEffect(() => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    textarea.style.height = "auto";
+    textarea.style.height = `${textarea.scrollHeight}px`;
+  }, [multiline, value]);
   const [truncated, setTruncated] = useState(false);
   useLayoutEffect(() => {
     const input = inputRef.current;
@@ -39,6 +50,23 @@ export const MemoTitleInput = forwardRef<HTMLInputElement, MemoTitleInputProps>(
       observer.disconnect();
     };
   }, [value, className]);
+
+  if (multiline) {
+    return (
+      <textarea
+        ref={textareaRef}
+        aria-label={ariaLabel ?? placeholder}
+        className={cn("block w-full min-w-0 resize-none overflow-hidden whitespace-pre-wrap break-words rounded-md border-0 bg-transparent outline-none", className)}
+        maxLength={160}
+        onChange={(event) => onValueChange(event.target.value.replace(/[\r\n]+/g, " "))}
+        onKeyDown={props.onKeyDown as unknown as KeyboardEventHandler<HTMLTextAreaElement>}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        rows={1}
+        value={value}
+      />
+    );
+  }
 
   return (
     <TooltipProvider delayDuration={0} skipDelayDuration={0}>

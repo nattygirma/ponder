@@ -92,7 +92,7 @@ test("popup retains background failures and localized success fallback", async (
   await withChrome({ permissions: { request: async () => true }, runtime: { sendMessage: async () => ({ ok: false, message: "Unreadable page" }) } }, async () => {
     await expect(captureCurrentPage(settings)).rejects.toThrow("Unreadable page");
     chrome.runtime.sendMessage = async () => ({ ok: true });
-    expect(await captureCurrentPage(settings)).toBe("savedToEdgeEver");
+    expect(await captureCurrentPage(settings)).toBe("savedToPonder");
   });
 });
 

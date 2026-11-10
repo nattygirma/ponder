@@ -100,12 +100,12 @@ const noteWindowHeadingShortcutGuards = new WeakMap();
 
 const linuxUpdateTestMode = process.platform === "linux"
   && process.env.GITHUB_ACTIONS === "true"
-  && process.env.EDGE_EVER_DESKTOP_UPDATE_TEST === "1";
+  && process.env.PONDER_DESKTOP_UPDATE_TEST === "1";
 const linuxUpdateTestFeedUrl = linuxUpdateTestMode
-  ? process.env.EDGE_EVER_DESKTOP_UPDATE_TEST_FEED_URL || ""
+  ? process.env.PONDER_DESKTOP_UPDATE_TEST_FEED_URL || ""
   : "";
 const requestedUserDataDirectory = linuxUpdateTestMode
-  ? process.env.EDGE_EVER_DESKTOP_UPDATE_TEST_USER_DATA || userDataDirectoryFromArguments(process.argv)
+  ? process.env.PONDER_DESKTOP_UPDATE_TEST_USER_DATA || userDataDirectoryFromArguments(process.argv)
   : userDataDirectoryFromArguments(process.argv);
 if (requestedUserDataDirectory) app.setPath("userData", requestedUserDataDirectory);
 
@@ -134,16 +134,16 @@ const applyMacDockIcon = () => {
     }
   }
 };
-const webUrl = process.env.EDGE_EVER_DESKTOP_WEB_URL || "http://127.0.0.1:5173";
+const webUrl = process.env.PONDER_DESKTOP_WEB_URL || "http://127.0.0.1:5173";
 // A packaged desktop app is self-hosted-client software: its instance URL must
 // come from the user-facing first-run setup, never from the build environment.
 // Environment URLs are intentionally limited to local development.
-const apiBaseUrl = (!app.isPackaged && (process.env.EDGE_EVER_API_URL || process.env.EDGE_EVER_DESKTOP_WEB_URL)
-  ? process.env.EDGE_EVER_API_URL || webUrl
+const apiBaseUrl = (!app.isPackaged && (process.env.PONDER_API_URL || process.env.PONDER_DESKTOP_WEB_URL)
+  ? process.env.PONDER_API_URL || webUrl
   : "").replace(/\/$/, "");
 let configuredApiBaseUrl = apiBaseUrl;
-const packagedSidecarName = process.platform === "win32" ? "edgeever-sidecar.exe" : "edgeever-sidecar";
-const sidecarPath = process.env.EDGE_EVER_SIDECAR_PATH || (app.isPackaged
+const packagedSidecarName = process.platform === "win32" ? "ponder-sidecar.exe" : "ponder-sidecar";
+const sidecarPath = process.env.PONDER_SIDECAR_PATH || (app.isPackaged
   ? join(process.resourcesPath, "sidecar", packagedSidecarName)
   : join(projectRoot, "crates/desktop-sidecar/target/debug", packagedSidecarName));
 
@@ -339,10 +339,10 @@ const migrateLegacyAccountData = async (accountId) => {
   if (!accountId) return;
   const source = legacyDataDirectory();
   const destination = sidecarDataDirectory(accountId);
-  if (existsSync(join(destination, "edgeever.sqlite")) || !existsSync(join(source, "edgeever.sqlite"))) return;
+  if (existsSync(join(destination, "ponder.sqlite")) || !existsSync(join(source, "ponder.sqlite"))) return;
   await mkdir(destination, { recursive: true });
   await restrictDirectory(destination);
-  for (const name of ["edgeever.sqlite", "edgeever.sqlite-wal", "edgeever.sqlite-shm", "backups", "resource-outbox", "resource-cache"]) {
+  for (const name of ["ponder.sqlite", "ponder.sqlite-wal", "ponder.sqlite-shm", "backups", "resource-outbox", "resource-cache"]) {
     const sourcePath = join(source, name);
     if (existsSync(sourcePath)) await rename(sourcePath, join(destination, name));
   }
@@ -353,10 +353,10 @@ protocol.registerSchemesAsPrivileged([{
   scheme: DESKTOP_APP_SCHEME,
   privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true, codeCache: true },
 }, {
-  scheme: "edgeever-resource",
+  scheme: "ponder-resource",
   privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true },
 }, {
-  scheme: "edgeever-staged",
+  scheme: "ponder-staged",
   privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true },
 }]);
 
@@ -395,42 +395,10 @@ const desktopRuntimeSystemInfo = () => ({
   dataDir: sidecarDataDirectory(activeAccountId),
 });
 
-const desktopDiagnosticSystemInfo = async () => {
-  let gpu = "unknown";
-  let gpuFeatures = "unknown";
-  try {
-    const gpuInfo = await app.getGPUInfo("basic");
-    gpu = (gpuInfo.gpuDevice || []).map((device) => [
-      device.active === true ? "active" : "inactive",
-      device.deviceString,
-      device.vendorId,
-      device.deviceId,
-      device.driverVendor,
-      device.driverVersion,
-    ].filter((value) => value !== undefined && value !== "").join(":"))
-      .join(", ") || "unknown";
-  } catch {
-    // GPU diagnostics are useful but must never block issue reporting.
-  }
-  try {
-    gpuFeatures = Object.entries(app.getGPUFeatureStatus()).map(([name, status]) => `${name}=${status}`).join(", ");
-  } catch {
-    // Some renderer failures can also make GPU feature inspection unavailable.
-  }
-  return {
-    ...desktopRuntimeSystemInfo(),
-    gpu,
-    gpuFeatures,
-  };
-};
-
 const openDesktopDiagnosticIssue = async (details) => {
   const diagnostic = normalizeDesktopDiagnostic(details);
   await writeDiagnostic("renderer.issue-opened", diagnostic);
-  await shell.openExternal(buildDesktopDiagnosticIssueUrl({
-    diagnostic,
-    systemInfo: await desktopDiagnosticSystemInfo(),
-  }));
+  await shell.openExternal(buildDesktopDiagnosticIssueUrl());
 };
 
 const revealMainWindow = () => {
@@ -587,7 +555,7 @@ const ejectMountedMacInstallers = async () => {
         "-",
         infoPlist,
       ]);
-      if (stdout.trim() !== "org.edgeever.desktop") continue;
+      if (stdout.trim() !== "io.appkeep.ponder.desktop") continue;
       let ejectError;
       for (let attempt = 1; attempt <= 3; attempt += 1) {
         try {
@@ -908,7 +876,7 @@ const flushPendingWeChatImports = () => {
 };
 
 const handleProtocolUrl = (target) => {
-  if (typeof target !== "string" || !target.startsWith("edgeever://")) return;
+  if (typeof target !== "string" || !target.startsWith("ponder://")) return;
   try {
     const url = new URL(target);
     if (url.hostname === "wechat-import" || url.hostname === "share-import") {
@@ -935,7 +903,7 @@ const importSharedCommandLineFiles = (commandLine) => {
 };
 
 const handleOpenTarget = (commandLine) => {
-  const target = commandLine.find((value) => value.startsWith("edgeever://"));
+  const target = commandLine.find((value) => value.startsWith("ponder://"));
   if (target) handleProtocolUrl(target);
   if (importSharedCommandLineFiles(commandLine)) return;
   const associatedFile = commandLine.find((value) => !value.startsWith("-") && isSupportedAssociatedFile(value));
@@ -1015,7 +983,7 @@ const createTray = () => {
   const icon = existsSync(iconPath) ? nativeImage.createFromPath(iconPath) : nativeImage.createEmpty();
   if (process.platform === "darwin") icon.setTemplateImage(true);
   tray = new Tray(icon);
-  tray.setToolTip("EdgeEver");
+  tray.setToolTip("Ponder");
   tray.setContextMenu(buildTrayContextMenu());
   tray.on("double-click", () => showWindow(mainWindow));
 };
@@ -1145,7 +1113,7 @@ const handleStagedResourceProtocolRequest = async (request, assertCurrent = () =
     const path = join(directory, `${stagedId}.bin`);
     const size = await stat(path).then((details) => details.size).catch(() => null);
     if (size === null && isSafeResourceId(metadata.resourceId)) {
-      const target = new URL(`edgeever-resource://resource/${encodeURIComponent(metadata.resourceId)}`);
+      const target = new URL(`ponder-resource://resource/${encodeURIComponent(metadata.resourceId)}`);
       target.search = new URL(request.url).search;
       assertCurrent();
       return handleResourceProtocolRequest(new Request(target, { headers: request.headers, signal: request.signal }), assertCurrent);
@@ -1164,8 +1132,8 @@ const handleStagedResourceProtocolRequest = async (request, assertCurrent = () =
 };
 
 const registerResourceProtocol = () => {
-  protocol.handle("edgeever-resource", (request) => handleResourceProtocolRequest(request));
-  protocol.handle("edgeever-staged", (request) => handleStagedResourceProtocolRequest(request));
+  protocol.handle("ponder-resource", (request) => handleResourceProtocolRequest(request));
+  protocol.handle("ponder-staged", (request) => handleStagedResourceProtocolRequest(request));
 };
 
 const registerDesktopAppProtocol = () => {
@@ -1175,8 +1143,8 @@ const registerDesktopAppProtocol = () => {
 };
 
 const preparePackagedRendererOrigin = async () => {
-  if (!app.isPackaged || process.env.EDGE_EVER_DESKTOP_WEB_URL) return;
-  if (process.env.EDGE_EVER_FORCE_FILE_RENDERER === "1") {
+  if (!app.isPackaged || process.env.PONDER_DESKTOP_WEB_URL) return;
+  if (process.env.PONDER_FORCE_FILE_RENDERER === "1") {
     void writeDiagnostic("renderer.app-protocol-disabled");
     return;
   }
@@ -1284,7 +1252,7 @@ const checkForDesktopUpdate = (reason, { force = false, throwOnError = false } =
 };
 
 const configureAutoUpdater = () => {
-  if (!app.isPackaged || process.env.EDGE_EVER_DISABLE_AUTO_UPDATE === "1") return;
+  if (!app.isPackaged || process.env.PONDER_DISABLE_AUTO_UPDATE === "1") return;
   // Observe the exact session used by electron-updater, plus net.fetch metadata.
   // No setProxy, request headers, bodies, credentials or response bodies are collected.
   for (const [name, getSession] of [
@@ -1405,7 +1373,7 @@ const startSidecar = async (accountId = null) => {
   await waitForChildProcessSpawn(spawnedProcess);
   spawnedSuccessfully = true;
   if (spawnedProcess.exitCode !== null || sidecarProcess !== spawnedProcess) {
-    throw new Error(`EdgeEver sidecar exited during startup (${spawnedProcess.exitCode ?? "unknown"})`);
+    throw new Error(`Ponder sidecar exited during startup (${spawnedProcess.exitCode ?? "unknown"})`);
   }
   sidecar = new SidecarRpcClient(spawnedProcess);
   return sidecar;
@@ -1432,7 +1400,7 @@ const scheduleSidecarRestart = () => {
     sidecarRestartInFlight = true;
     try {
       const restarted = await startSidecar(activeAccountId);
-      if (!restarted) throw new Error("EdgeEver sidecar is unavailable");
+      if (!restarted) throw new Error("Ponder sidecar is unavailable");
       await restarted.waitUntilReady();
       void writeDiagnostic("sidecar.restarted", { attempt: sidecarRestartAttempts, delayMs });
     } catch (error) {
@@ -1462,7 +1430,7 @@ const attachEditContextMenu = (contents) => {
   });
 };
 
-const desktopRendererEntryUrl = () => app.isPackaged && !process.env.EDGE_EVER_DESKTOP_WEB_URL
+const desktopRendererEntryUrl = () => app.isPackaged && !process.env.PONDER_DESKTOP_WEB_URL
   ? (usePrivateAppProtocol ? DESKTOP_APP_ENTRY_URL : pathToFileURL(join(process.resourcesPath, "web/index.html")).href)
   : webUrl;
 
@@ -1593,7 +1561,7 @@ const createWindow = async ({ show = true } = {}) => {
   });
 
   try {
-    if (app.isPackaged && !process.env.EDGE_EVER_DESKTOP_WEB_URL) {
+    if (app.isPackaged && !process.env.PONDER_DESKTOP_WEB_URL) {
       if (usePrivateAppProtocol) await mainWindow.loadURL(DESKTOP_APP_ENTRY_URL);
       else await mainWindow.loadFile(join(process.resourcesPath, "web/index.html"));
     } else {
@@ -1733,7 +1701,7 @@ const startApplication = async () => {
   }
   await loadConfiguredApiBaseUrl();
   await loadDesktopSessionToken();
-  app.setAsDefaultProtocolClient("edgeever");
+  app.setAsDefaultProtocolClient("ponder");
   recoveredAfterAbnormalExit = existsSync(crashMarkerPath());
   void writeDiagnostic(recoveredAfterAbnormalExit ? "session.recovered-after-abnormal-exit" : "session.started");
   void inspectWindowsTaskbarShortcuts({
@@ -1749,7 +1717,7 @@ const startApplication = async () => {
   registerResourceProtocol();
   await preparePackagedRendererOrigin();
   const initialSidecar = await startSidecar();
-  if (!initialSidecar) throw new Error("EdgeEver sidecar is unavailable");
+  if (!initialSidecar) throw new Error("Ponder sidecar is unavailable");
   await initialSidecar.waitUntilReady();
   void writeDiagnostic("sidecar.ready", { scope: sidecarScopeKey });
   createTray();
@@ -1800,7 +1768,7 @@ const startApplication = async () => {
     return event.sender.printToPDF(PRINT_PDF_OPTIONS);
   });
   ipcMain.handle("desktop:sidecar-request", async (_event, method, params) => {
-    if (!sidecar) throw new Error("EdgeEver sidecar is unavailable");
+    if (!sidecar) throw new Error("Ponder sidecar is unavailable");
     const result = await sidecar.request(method, params);
     if (method === "resource.delete" && isSafeResourceId(params?.resourceId)) {
       const directory = resourceCacheDirectory();
@@ -1812,14 +1780,14 @@ const startApplication = async () => {
     return result;
   });
   backupManager = new BackupManager({
-    userData: app.getPath("userData"), defaultDirectory: join(app.getPath("documents"), "EdgeEver Backups"), secureStorage: safeStorage,
+    userData: app.getPath("userData"), defaultDirectory: join(app.getPath("documents"), "Ponder Backups"), secureStorage: safeStorage,
     offsite: new OffsiteBackup({ userData: app.getPath("userData"), secureStorage: safeStorage }),
     workerFactory: createBackupWorkerFactory({ utilityProcess, session: session.defaultSession }),
-    version: { edgeeverVersion: app.getVersion(), buildId: app.getVersion() },
+    version: { ponderVersion: app.getVersion(), buildId: app.getVersion() },
     onChange: (status) => { if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send("desktop:backup-status", status); },
     onDiagnostic: (event, details) => writeDiagnostic(event, details),
     onSuccess: () => {
-      if (Notification.isSupported()) new Notification({ title: "EdgeEver", body: desktopDialogCopy(app.getLocale()).backupComplete }).show();
+      if (Notification.isSupported()) new Notification({ title: "Ponder", body: desktopDialogCopy(app.getLocale()).backupComplete }).show();
     },
   });
   registerBackupIpc({ ipcMain, manager: backupManager, getWindow: () => mainWindow, dialog, shell });
@@ -1868,7 +1836,7 @@ const startApplication = async () => {
     if (backupManager.context?.baseUrl !== configuredApiBaseUrl || backupManager.context?.accountId !== normalizedAccountId) await backupManager.setContext(null);
     await stopSidecar();
     const nextSidecar = await startSidecar(normalizedAccountId);
-    if (!nextSidecar) throw new Error("EdgeEver sidecar is unavailable");
+    if (!nextSidecar) throw new Error("Ponder sidecar is unavailable");
     await nextSidecar.waitUntilReady();
     await refreshBackupContext(); void backupManager.tick();
     return { ready: true, scope: nextScopeKey };
@@ -1907,7 +1875,7 @@ const startApplication = async () => {
   ipcMain.handle("desktop:copy-file", (_event, bytes, filename) => writeFileClipboard(clipboard, ClipboardItem, {
     bytes,
     filename,
-  }, { directory: join(app.getPath("temp"), "edgeever-clipboard") }));
+  }, { directory: join(app.getPath("temp"), "ponder-clipboard") }));
   registerClipboardReadIpc(ipcMain, {
     clipboard,
     getMainWindow: () => mainWindow,
@@ -2003,8 +1971,8 @@ const startApplication = async () => {
     // Used only to reopen a validated CodeBuddy login page on explicit request.
     openExternal: (url) => shell.openExternal(url),
     mcpScriptPath: app.isPackaged
-      ? join(process.resourcesPath, "mcp-bridge", "edgeever-mcp-stdio.mjs")
-      : join(projectRoot, "scripts", "edgeever-mcp-stdio.mjs"),
+      ? join(process.resourcesPath, "mcp-bridge", "ponder-mcp-stdio.mjs")
+      : join(projectRoot, "scripts", "ponder-mcp-stdio.mjs"),
     mcpAccess: () => {
       const baseUrl = configuredApiBaseUrl;
       const sessionToken = credentialForUrl(desktopSessionToken, desktopSessionTokenOrigin, baseUrl);
@@ -2200,7 +2168,7 @@ const startApplication = async () => {
       if (sidecar) {
         await stopSidecar();
         const nextSidecar = await startSidecar(activeAccountId);
-        if (!nextSidecar) throw new Error("EdgeEver sidecar is unavailable after changing instance");
+        if (!nextSidecar) throw new Error("Ponder sidecar is unavailable after changing instance");
         await nextSidecar.waitUntilReady();
       }
       await refreshBackupContext(); void backupManager.tick();
@@ -2228,7 +2196,7 @@ const startApplication = async () => {
     },
     getScope: () => JSON.stringify([configuredApiBaseUrl, activeAccountId, desktopSessionToken]),
     getDirectory: () => join(sidecarDataDirectory(activeAccountId), "opened-attachments"),
-    readResource: (url, signal, assertCurrent) => url.startsWith("edgeever-staged:")
+    readResource: (url, signal, assertCurrent) => url.startsWith("ponder-staged:")
       ? handleStagedResourceProtocolRequest(new Request(url, { signal }), assertCurrent)
       : handleResourceProtocolRequest(new Request(url, { signal }), assertCurrent),
     openPath: (path) => shell.openPath(path),
@@ -2334,7 +2302,7 @@ const startApplication = async () => {
     const metadata = await readStagedResourceMetadata(directory, id);
     const bytes = await readFile(join(directory, `${id}.bin`)).catch(async (error) => {
       if (!isSafeResourceId(metadata.resourceId)) throw error;
-      const response = await handleResourceProtocolRequest(new Request(`edgeever-resource://resource/${encodeURIComponent(metadata.resourceId)}`));
+      const response = await handleResourceProtocolRequest(new Request(`ponder-resource://resource/${encodeURIComponent(metadata.resourceId)}`));
       if (!response.ok) throw new Error(`Resource request failed (${response.status})`);
       return Buffer.from(await response.arrayBuffer());
     });
@@ -2362,7 +2330,7 @@ const startApplication = async () => {
   ipcMain.handle("desktop:read-resource", async (_event, id) => {
     if (!isSafeResourceId(id)) throw new Error("Invalid resource id");
     const response = await handleResourceProtocolRequest(new Request(
-      `edgeever-resource://resource/${encodeURIComponent(id)}`,
+      `ponder-resource://resource/${encodeURIComponent(id)}`,
     ));
     if (!response.ok) throw new Error(`Resource request failed (${response.status})`);
     return {

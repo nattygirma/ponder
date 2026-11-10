@@ -27,6 +27,8 @@ export type Notebook = {
 
 export type MemoSummary = {
   id: string;
+  /** Who made it, as `user:<id>`, or `system` for pages the app created. */
+  createdBy?: string;
   notebookId: string;
   title: string | null;
   excerpt: string;
@@ -55,6 +57,37 @@ export type MemoDetail = MemoSummary & {
   sourceMemoIds: string[];
   mergeSourceCount: number;
   mergedIntoMemoId: string | null;
+};
+
+/** One entry of the page tree: the lightweight shape the sidebar and breadcrumbs read. */
+export type PageNode = {
+  id: string;
+  notebookId: string;
+  parentId: string | null;
+  title: string | null;
+  icon: string | null;
+  cover: string | null;
+  position: number;
+  /** Set when this page is a database rather than a document. */
+  databaseId: string | null;
+  isPinned: boolean;
+  style: PageStyle | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type PageFont = "default" | "serif" | "mono";
+
+/** Display options chosen per page from its top-right menu. */
+export type PageStyle = { font?: PageFont; small?: boolean; wide?: boolean };
+
+export type PageBacklink = {
+  id: string;
+  notebookId: string;
+  title: string | null;
+  icon: string | null;
+  excerpt: string;
+  updatedAt: string;
 };
 
 export type MemoTemplate = {
@@ -306,6 +339,10 @@ export type AuthUser = {
   username: string;
   displayName: string | null;
   role: "owner" | "member";
+  /** The workspace this session is in; absent on older servers. */
+  workspaceId?: string;
+  /** Set while a shared workspace is open. */
+  teamRole?: "owner" | "member" | "viewer" | null;
 };
 
 export type InstanceUser = AuthUser & {
@@ -320,6 +357,7 @@ export type AuthSession = {
   demoMode: boolean;
   user: AuthUser | null;
   sessionToken?: string;
+  platformSignIn?: { loginUrl: string; logoutUrl: string };
 };
 
 export type LoginDeviceSession = {

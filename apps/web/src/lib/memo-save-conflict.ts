@@ -117,4 +117,4 @@ export const formatMemoSaveConflictReason = (t: Translate, info: MemoSaveConflic
   return t("editor.saveState.conflictReason.revision");
 };
 
-export { formatLocalDraftClipboardText } from "@edgeever/shared";
+export { formatLocalDraftClipboardText } from "@ponder/shared";

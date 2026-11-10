@@ -6,10 +6,10 @@ import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 
 // Supply the binary and migrations from the PR's base revision, never a real profile.
-const oldBinary = process.env.EDGE_EVER_LEGACY_SIDECAR_PATH;
-const oldMigrations = process.env.EDGE_EVER_LEGACY_MIGRATIONS_PATH;
-assert.ok(oldBinary && oldMigrations, "Set EDGE_EVER_LEGACY_SIDECAR_PATH and EDGE_EVER_LEGACY_MIGRATIONS_PATH");
-const directory = await mkdtemp(join(tmpdir(), "edgeever-appearance-upgrade-"));
+const oldBinary = process.env.PONDER_LEGACY_SIDECAR_PATH;
+const oldMigrations = process.env.PONDER_LEGACY_MIGRATIONS_PATH;
+assert.ok(oldBinary && oldMigrations, "Set PONDER_LEGACY_SIDECAR_PATH and PONDER_LEGACY_MIGRATIONS_PATH");
+const directory = await mkdtemp(join(tmpdir(), "ponder-appearance-upgrade-"));
 let active;
 const bounded = async (promise, label) => {
   let timer;
@@ -61,7 +61,7 @@ try {
   const memo = (await host.request("memo.create", { notebookId: book.id, title: "Keep note", contentMarkdown: "Keep **content**", tags: ["keep"] })).memo;
   const oldQueue = (await host.request("sync.outbox.list", { limit: 1000 })).items;
   await host.close();
-  const currentBinary = resolve("crates/desktop-sidecar/target/debug/edgeever-sidecar");
+  const currentBinary = resolve("crates/desktop-sidecar/target/debug/ponder-sidecar");
   host = await start(currentBinary, resolve("migrations"));
   const readBook = async () => (await host.request("notebook.list")).notebooks.find(item => item.id === book.id);
   const upgraded = await readBook();

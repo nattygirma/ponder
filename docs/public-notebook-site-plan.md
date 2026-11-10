@@ -1,7 +1,5 @@
 # Public notebook site improvement plan
 
-[简体中文](public-notebook-site-plan.zh-CN.md)
-
 Related: [Issue #591](https://github.com/tianma-if/edgeever/issues/591). Updated: 2026-10-21.
 
 Status: R01–R13 are implemented. Site settings expand in the notebook share dialog; original-note controls manage per-site visibility, and a separate search picker selects the homepage. Local and independent Cloudflare acceptance are recorded in the [implementation checklist](changes/2026-10-21-public-notebook-site.md). Baseline: official `5d1a0661`. Historical ablations used `4ad082b5` and remain separate from product validation. Real crawlers, native devices and Docker containers remain unverified.
@@ -27,7 +25,7 @@ The benefits remain better reading, body search, and site presentation. Principa
 | ID | Requirement | Minimum implementation and ablation decision |
 | --- | --- | --- |
 | R01 | Article outline | Keep body H1–H4, scrollspy, and smooth positioning. Distinguish duplicate anchors, support direct fragment reloads, and do not edit note content. Removing it loses an explicit requirement. |
-| R02 | Dark mode | Reuse ThemeProvider and `edgeever.theme` with light/dark/system choices. Do not introduce another preference controller or storage key. Articles, code, and diagrams use the same resolved theme. |
+| R02 | Dark mode | Reuse ThemeProvider and `ponder.theme` with light/dark/system choices. Do not introduce another preference controller or storage key. Articles, code, and diagrams use the same resolved theme. |
 | R03 | Code blocks | Reuse copying/highlighting; add language labels and collapse controls. Collapsed blocks still copy complete source; collapse state is not persisted. |
 | R04 | Internal previews | Keep bounded on-demand title/excerpt reads for hover and keyboard focus. Removing previews loses a requirement; fetching complete articles is not an equivalent lightweight replacement. |
 | R05 | Images and diagrams | Reuse the lightbox, gesture zoom, X6 fitting, and reader. Add single-click enlargement, fit, and fullscreen without a second viewer or duplicate reset tools. |

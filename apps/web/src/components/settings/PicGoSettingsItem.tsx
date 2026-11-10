@@ -29,7 +29,7 @@ export const PicGoSettingsItem = () => {
   const folderError = imgBedFolderError(draft.imgbed.uploadFolder);
   const imgBedReady = Boolean(draft.imgbed.endpoint.trim() && draft.imgbed.token.trim()) && !folderError;
   const canTest = desktopAvailable && (draft.provider !== "imgbed" || imgBedReady);
-  const canSave = dirty && (draft.provider === "edgeever" || (desktopAvailable && testedTarget === picGoTargetId(draft)));
+  const canSave = dirty && (draft.provider === "ponder" || (desktopAvailable && testedTarget === picGoTargetId(draft)));
   const updateImgBed = (patch: Partial<ImgBedPreference>) => {
     setDraft({ ...draft, imgbed: { ...draft.imgbed, ...patch } });
     setTestedTarget(null);
@@ -43,13 +43,13 @@ export const PicGoSettingsItem = () => {
     const prefix = draft.provider === "imgbed" ? "settings.picgo.imgbed" : "settings.picgo";
     try {
       if (draft.provider === "imgbed") {
-        await window.edgeeverDesktop!.testImgBedConnection!({
+        await window.ponderDesktop!.testImgBedConnection!({
           endpoint: draft.imgbed.endpoint, token: draft.imgbed.token, nameType: draft.imgbed.nameType,
           uploadChannel: draft.imgbed.uploadChannel, serverCompress: draft.imgbed.serverCompress,
           uploadFolder: expandImgBedFolder(draft.imgbed.uploadFolder),
         });
       } else {
-        await window.edgeeverDesktop!.testPicGoConnection({ endpoint: draft.endpoint, serverKey: draft.serverKey });
+        await window.ponderDesktop!.testPicGoConnection({ endpoint: draft.endpoint, serverKey: draft.serverKey });
       }
       setTestedTarget(picGoTargetId(draft));
       setStatus(t(`${prefix}.connected`));
@@ -78,7 +78,7 @@ export const PicGoSettingsItem = () => {
         }}>
           <SelectTrigger className="h-9 w-full sm:w-80" aria-label={t("settings.picgo.title")}><SelectValue /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="edgeever">{t("settings.picgo.builtin")}</SelectItem>
+            <SelectItem value="ponder">{t("settings.picgo.builtin")}</SelectItem>
             <SelectItem value="picgo">{t("settings.picgo.external")}</SelectItem>
             <SelectItem value="imgbed">{t("settings.picgo.imgbed.option")}</SelectItem>
           </SelectContent>
@@ -163,7 +163,7 @@ export const PicGoSettingsItem = () => {
         </div>
       ) : null}
       <div className="flex flex-wrap items-center gap-2 sm:ml-7">
-        {draft.provider !== "edgeever" ? <Button variant="outline" size="sm" disabled={busy || !canTest} onClick={() => void testConnection()}>
+        {draft.provider !== "ponder" ? <Button variant="outline" size="sm" disabled={busy || !canTest} onClick={() => void testConnection()}>
           {t(busy ? "settings.picgo.testing" : "settings.picgo.test")}
         </Button> : null}
         {dirty ? <Button size="sm" disabled={busy || !canSave} onClick={save}>{t("settings.picgo.save")}</Button> : null}

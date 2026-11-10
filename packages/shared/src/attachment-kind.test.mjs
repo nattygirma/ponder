@@ -50,15 +50,15 @@ describe("attachment kind", () => {
     expect(getAttachmentTypeLabel(null, "app.apk")).toBe("APK");
     expect(getAttachmentTypeLabel(null, "app.aab")).toBe("AAB");
 
-    expect(resolveAttachmentKind("application/octet-stream", "EdgeEver-Setup.exe")).toBe("exe");
+    expect(resolveAttachmentKind("application/octet-stream", "Ponder-Setup.exe")).toBe("exe");
     expect(resolveAttachmentKind(null, "installer.msi")).toBe("exe");
-    expect(getAttachmentTypeLabel(null, "EdgeEver-Setup.exe")).toBe("EXE");
+    expect(getAttachmentTypeLabel(null, "Ponder-Setup.exe")).toBe("EXE");
     expect(getAttachmentTypeLabel(null, "installer.msi")).toBe("MSI");
 
-    expect(resolveAttachmentKind(null, "EdgeEver-arm64.dmg")).toBe("dmg");
+    expect(resolveAttachmentKind(null, "Ponder-arm64.dmg")).toBe("dmg");
     expect(resolveAttachmentKind(null, "bundle.pkg")).toBe("dmg");
     expect(resolveAttachmentKind(null, "release.ipa")).toBe("dmg");
-    expect(getAttachmentTypeLabel(null, "EdgeEver-arm64.dmg")).toBe("DMG");
+    expect(getAttachmentTypeLabel(null, "Ponder-arm64.dmg")).toBe("DMG");
     expect(getAttachmentTypeLabel(null, "bundle.pkg")).toBe("PKG");
     expect(getAttachmentTypeLabel(null, "release.ipa")).toBe("IPA");
 

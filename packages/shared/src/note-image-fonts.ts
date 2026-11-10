@@ -73,11 +73,11 @@ export const prepareNoteImageAssets = async ({ theme, fontStyle = "auto", text, 
   let textureCss = "";
   try {
     textureCss = embed && active === "handwritten"
-    ? `.edgeever-image-wrapper{--ee-paper:url("${await getAsset("paper.png")}");--ee-paper-grain:url("${await getAsset("paper-text.png")}")}`
+    ? `.ponder-image-wrapper{--ee-paper:url("${await getAsset("paper.png")}");--ee-paper-grain:url("${await getAsset("paper-text.png")}")}`
     : embed && active === "book"
-    ? `.edgeever-image-wrapper{--ee-paper:url("${await getAsset("paper.png")}")}`
+    ? `.ponder-image-wrapper{--ee-paper:url("${await getAsset("paper.png")}")}`
     : "";
   } catch { /* The template's solid background remains readable if a texture is unavailable. */ }
-  const fallbackStyle = fontFallback ? `.edgeever-image-wrapper,.edgeever-image-wrapper *{font-family:"EdgeEver Offline Sans",system-ui,sans-serif!important}.edgeever-image-wrapper pre,.edgeever-image-wrapper code{font-family:"Geist Mono Variable",monospace!important}` : "";
+  const fallbackStyle = fontFallback ? `.ponder-image-wrapper,.ponder-image-wrapper *{font-family:"Ponder Offline Sans",system-ui,sans-serif!important}.ponder-image-wrapper pre,.ponder-image-wrapper code{font-family:"Geist Mono Variable",monospace!important}` : "";
   return { fontCss, css: `${fontCss}\n${textureCss}\n${fallbackStyle}`, fontFallback, fontsReady: fontFallback ? fontsReady : undefined };
 };

@@ -2,14 +2,14 @@ import { useEffect, useState } from "react";
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown, Code2, Plus, Trash2 } from "lucide-react";
-import { parseNoteProperties, updateNoteProperty } from "@edgeever/shared";
+import { parseNoteProperties, updateNoteProperty } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-const systemProperties = new Set(["created", "updated", "edgeever_id", "notebook", "pinned"]);
+const systemProperties = new Set(["created", "updated", "ponder_id", "notebook", "pinned"]);
 type PropertyType = "text" | "list" | "number" | "checkbox" | "date" | "datetime" | "nested";
 const propertyType = (name: string, value: unknown): PropertyType => {
   if (Array.isArray(value)) return value.every((item) => typeof item === "string") ? "list" : "nested";

@@ -132,7 +132,7 @@ export const ObjectStorageCard = ({ demoMode }: { demoMode: boolean }) => {
                   <Field label={t("objectStorage.bucket")}><Input value={bucket} onChange={(event) => setBucket(event.target.value)} required /></Field>
                   <Field label={t("objectStorage.accessKeyId")}><Input value={accessKeyId} onChange={(event) => setAccessKeyId(event.target.value)} required autoComplete="off" /></Field>
                   <Field label={t("objectStorage.secretAccessKey")} hint={hasSavedSecret ? t("objectStorage.secretSavedHint") : undefined}><Input type="password" value={secretAccessKey} onChange={(event) => setSecretAccessKey(event.target.value)} required={!hasSavedSecret} autoComplete="new-password" placeholder={hasSavedSecret ? "••••••••••••" : ""} /></Field>
-                  <Field label={t("objectStorage.objectPrefix")} hint={t("objectStorage.objectPrefixHint")}><Input value={objectPrefix} onChange={(event) => setObjectPrefix(event.target.value)} placeholder="edgeever" /></Field>
+                  <Field label={t("objectStorage.objectPrefix")} hint={t("objectStorage.objectPrefixHint")}><Input value={objectPrefix} onChange={(event) => setObjectPrefix(event.target.value)} placeholder="ponder" /></Field>
                   <label className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-card px-3 py-2.5 text-xs font-normal leading-5 text-slate-700">
                     <span><span className="block">{t("objectStorage.pathStyle")}</span><span className="mt-0.5 block text-xs font-normal text-slate-500">{t("objectStorage.pathStyleHint")}</span></span>
                     <Switch checked={forcePathStyle} onCheckedChange={setForcePathStyle} />

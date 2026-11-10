@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 import { enableMacShareExtension, macShareExtensionPath } from "./share-extension-registration.mjs";
 
-const executable = "/Applications/EdgeEver.app/Contents/MacOS/EdgeEver";
+const executable = "/Applications/Ponder.app/Contents/MacOS/Ponder";
 
 describe("macOS share extension registration", () => {
   test("points at the PlugIns copy next to the packaged executable", () => {
     expect(macShareExtensionPath(executable)).toBe(
-      "/Applications/EdgeEver.app/Contents/PlugIns/EdgeEverShare.appex",
+      "/Applications/Ponder.app/Contents/PlugIns/PonderShare.appex",
     );
   });
 
@@ -24,8 +24,8 @@ describe("macOS share extension registration", () => {
     });
     expect(result).toEqual({ enabled: true });
     expect(calls).toEqual([
-      ["-a", "/Applications/EdgeEver.app/Contents/PlugIns/EdgeEverShare.appex"],
-      ["-e", "use", "-i", "org.edgeever.desktop.share"],
+      ["-a", "/Applications/Ponder.app/Contents/PlugIns/PonderShare.appex"],
+      ["-e", "use", "-i", "io.appkeep.ponder.desktop.share"],
     ]);
   });
 

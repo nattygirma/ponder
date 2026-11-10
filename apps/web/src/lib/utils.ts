@@ -1,4 +1,4 @@
-import type { Notebook } from "@edgeever/shared";
+import type { Notebook } from "@ponder/shared";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -52,7 +52,7 @@ export const buildNotebookTree = (notebooks: Notebook[], compareNodes: NotebookN
 };
 
 export const formatDateTime = (value: string) =>
-  new Intl.DateTimeFormat("zh-CN", {
+  new Intl.DateTimeFormat("en-US", {
     month: "2-digit",
     day: "2-digit",
     hour: "2-digit",

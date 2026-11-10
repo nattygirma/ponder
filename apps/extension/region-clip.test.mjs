@@ -3,7 +3,7 @@ import { createWindow } from "@mixmark-io/domino";
 
 test("region conversion preserves only chosen visible content and does not alter the source DOM", async () => {
   const { regionMarkdown } = await import("./src/region-selection");
-  const window = createWindow('<title>Page</title><nav>Outside navigation</nav><section id="chosen"><h2>Chosen heading</h2><p>Text <a href="/link">link</a></p><table><tr><th>A</th></tr><tr><td>Cell</td></tr></table><pre><code>line 1\n\nline 2</code></pre><img src="/photo.png"><p hidden>Hidden text</p><script>bad()</script><input value="private"><div id="edgeever-region-picker">Picker controls</div></section><aside>Outside recommendations</aside>', "https://example.test/story");
+  const window = createWindow('<title>Page</title><nav>Outside navigation</nav><section id="chosen"><h2>Chosen heading</h2><p>Text <a href="/link">link</a></p><table><tr><th>A</th></tr><tr><td>Cell</td></tr></table><pre><code>line 1\n\nline 2</code></pre><img src="/photo.png"><p hidden>Hidden text</p><script>bad()</script><input value="private"><div id="ponder-region-picker">Picker controls</div></section><aside>Outside recommendations</aside>', "https://example.test/story");
   const original = window.document.documentElement.outerHTML;
   const markdown = regionMarkdown(window.document.getElementById("chosen"), window.location.href);
   for (const expected of ["## Chosen heading", "[link](https://example.test/link)", "Cell", "line 1\n\nline 2", "https://example.test/photo.png"]) expect(markdown).toContain(expected);

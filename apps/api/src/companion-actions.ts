@@ -1,6 +1,6 @@
 import { refreshCompanionPreferences } from "./companion-learning";
 import { CompanionActionPlanSchema, normalizeTags, type CompanionAction, type CompanionActionNote,
-  type CompanionActionPlan } from "@edgeever/shared";
+  type CompanionActionPlan } from "@ponder/shared";
 import { AppError } from "./app-error";
 import { getMemoDetail, mergeMemosRecord, updateMemoRecord, type MemoMutationCommit } from "./memo-service";
 import type { CompanionScope } from "./companion-service";

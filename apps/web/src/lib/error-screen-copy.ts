@@ -1,5 +1,5 @@
 import i18n, { type i18n as I18n } from "i18next";
-import { errorScreensEnUS } from "@edgeever/shared/i18n/error-screens-en-US";
+import { errorScreensEnUS } from "@ponder/shared/i18n/error-screens-en-US";
 
 export type ErrorScreenKey = keyof typeof errorScreensEnUS;
 

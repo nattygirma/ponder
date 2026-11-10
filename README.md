@@ -1,6 +1,6 @@
 <div align="center">
   <h1>
-    <img src="assets/brand/edgeever-icon.svg" alt="EdgeEver logo" width="48" align="absmiddle" /> EdgeEver
+    <img src="assets/brand/ponder-icon.svg" alt="Ponder logo" width="48" align="absmiddle" /> Ponder
   </h1>
   <p>
     <b>AI-native knowledge base & Evernote/Obsidian alternative with instant sync & native MCP. Free on Cloudflare or self-hosted via Docker.</b>
@@ -9,33 +9,33 @@
     <a href="https://github.com/tianma-if/edgeever/stargazers"><img src="https://img.shields.io/github/stars/tianma-if/edgeever?style=social" alt="GitHub Stars" /></a>
     <a href="https://github.com/tianma-if/edgeever/network/members"><img src="https://img.shields.io/github/forks/tianma-if/edgeever?style=social" alt="GitHub Forks" /></a>
     <a href="https://github.com/tianma-if/edgeever"><img src="https://img.shields.io/badge/Git_Clones-40K%2B%20%2F%2014d-brightgreen?style=social&logo=git" alt="Git Clones" /></a>
-    <a href="https://github.com/tianma-if/edgeever/pkgs/container/edgeever"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Ftianma-if%2Fedgeever%2Fedgeever&query=downloadCount&style=social&logo=docker&label=Docker%20Pulls" alt="Docker Pulls" /></a>
+    <a href="https://github.com/tianma-if/edgeever/pkgs/container/edgeever"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Ftianma-if%2Fedgeever%2Fponder&query=downloadCount&style=social&logo=docker&label=Docker%20Pulls" alt="Docker Pulls" /></a>
     <a href="https://www.producthunt.com/products/edgeever?utm_source=other&utm_medium=social"><img src="https://img.shields.io/badge/Product%20Hunt-ea532a?style=social&logo=product-hunt" alt="Product Hunt" /></a>
-    <a href="https://hellogithub.com/repository/tianma-if/edgeever" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=150fee4403f6433880bda91e9576ac06&claim_uid=TWNAjisURpnhL1l&theme=small" alt="Featured｜HelloGitHub" /></a>
-    <a href="#sponsor--support"><img src="https://img.shields.io/badge/Sponsor-EdgeEver-ea4aaa?logo=github-sponsors" alt="Sponsor & Support" /></a>
+    <a href="https://hellogithub.com/repository/6" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=150fee4403f6433880bda91e9576ac06&claim_uid=TWNAjisURpnhL1l&theme=small" alt="Featured｜HelloGitHub" /></a>
+    <a href="#sponsor--support"><img src="https://img.shields.io/badge/Sponsor-Ponder-ea4aaa?logo=github-sponsors" alt="Sponsor & Support" /></a>
   </p>
   <p>
-    <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <b>English</b> | <a href="README.ja.md">日本語</a> | <a href="README.pl-PL.md">Polski</a>
+    <b>English</b> | <a href="README.ja.md">日本語</a> | <a href="README.pl-PL.md">Polski</a>
   </p>
   <p>
     <a href="https://t.me/+GvKYnL37feUwOTNl"><img src="assets/readme/community/telegram.svg" alt="Telegram" width="16" height="16" align="absmiddle" /> Telegram Group</a> &nbsp;|&nbsp;
-    <a href="https://demo.edgeever.org">🌐 Live Demo</a> &nbsp;|&nbsp;
+    <a href="https://appkeep.io">🌐 Live Demo</a> &nbsp;|&nbsp;
     <a href="#all-platform-clients--browser-extension">📱 Clients & Extension</a> &nbsp;|&nbsp;
     <a href="#features">Feature Matrix & Capabilities</a>
   </p>
   <p align="center">
-    <img src="assets/readme/edgeever-hero-v6.png" alt="EdgeEver Workspace Preview" width="800" />
+    <img src="assets/readme/ponder-hero-v6.png" alt="Ponder Workspace Preview" width="800" />
   </p>
 </div>
 
-EdgeEver is a modern, open-source notes and knowledge base workspace. It preserves the classic, high-efficiency three-pane productivity workflow (Tree View · Note List · Editor) while offering an open data architecture and seamless AI Agent integration for complete ownership and smart productivity.
+Ponder is a modern, open-source notes and knowledge base workspace. It preserves the classic, high-efficiency three-pane productivity workflow (Tree View · Note List · Editor) while offering an open data architecture and seamless AI Agent integration for complete ownership and smart productivity.
 
 > 💡 **Serverless & 100% Free Forever**
-> EdgeEver can run within Cloudflare's free quotas with no server purchase or VPS maintenance. Users who prefer a VPS, NAS, or home server can deploy the same application with Docker.
+> Ponder can run within Cloudflare's free quotas with no server purchase or VPS maintenance. Users who prefer a VPS, NAS, or home server can deploy the same application with Docker.
 
-> ⭐ If EdgeEver is useful to you, consider giving it a Star. Your support helps more people discover the project.
+> ⭐ If Ponder is useful to you, consider giving it a Star. Your support helps more people discover the project.
 
-## Why EdgeEver
+## Why Ponder
 
 Many users of **note-taking apps and personal knowledge bases** simply want a **reliable, open, and fast** personal knowledge base. However, existing mainstream solutions all present tradeoffs:
 
@@ -45,11 +45,11 @@ Many users of **note-taking apps and personal knowledge bases** simply want a **
 * **Memos & Stream Notes**: Clean and simple, but their social-timeline layouts differ fundamentally from the structured productivity of a classic three-pane workflow.
 * **SiYuan & Block-based PKMs**: Powerful with self-hosting support, but their granular "block-level" architecture imposes noticeable cognitive overhead for quick daily capture and continuous prose writing. Furthermore, they lack a true zero-cost serverless deployment tier, and multi-device sync relies on paid official subscriptions or paying extra to unlock S3/WebDAV sync features with your own storage.
 
-**EdgeEver fills this gap**: The entire stack is open source, delivering truly **seamless, low-latency, instant multi-device cloud sync** with full self-hosting freedom. It keeps the three-pane layout you know, stays silky-smooth and lightweight even with 10,000+ notes, and ships native AI agents with zero-cost deployment.
+**Ponder fills this gap**: The entire stack is open source, delivering truly **seamless, low-latency, instant multi-device cloud sync** with full self-hosting freedom. It keeps the three-pane layout you know, stays silky-smooth and lightweight even with 10,000+ notes, and ships native AI agents with zero-cost deployment.
 
 ## Online Demo
 
-- Demo: [https://demo.edgeever.org](https://demo.edgeever.org)
+- Demo: [https://appkeep.io](https://appkeep.io)
 
 The public demo resets every day at 3:00 AM (China Standard Time) and restores sample notes. Do not store private content there.
 
@@ -58,11 +58,11 @@ The public demo resets every day at 3:00 AM (China Standard Time) and restores s
 ### Client Downloads
 
 <p>
-  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/macos.svg" alt="Download EdgeEver for macOS" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/windows.svg" alt="Download EdgeEver for Windows" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/tux.svg" alt="Download the EdgeEver Linux x86_64 AppImage Preview" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://play.google.com/store/apps/details?id=org.edgeever.mobile"><img src="assets/readme/platforms/google-play.svg" alt="Download EdgeEver for Android from Google Play" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://apps.apple.com/us/app/edgeever/id6792625631"><img src="assets/readme/platforms/app-store.svg" alt="Download EdgeEver for iOS from the App Store" width="40" height="40" /></a>
+  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/macos.svg" alt="Download Ponder for macOS" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/windows.svg" alt="Download Ponder for Windows" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/tux.svg" alt="Download the Ponder Linux x86_64 AppImage Preview" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://play.google.com/store/apps/details?id=org.edgeever.mobile"><img src="assets/readme/platforms/google-play.svg" alt="Download Ponder for Android from Google Play" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://apps.apple.com/us/app/edgeever/id6792625631"><img src="assets/readme/platforms/app-store.svg" alt="Download Ponder for iOS from the App Store" width="40" height="40" /></a>
 </p>
 
 > The iOS app requires an Apple ID from outside mainland China.
@@ -70,9 +70,9 @@ The public demo resets every day at 3:00 AM (China Standard Time) and restores s
 ### Browser Web Clipper Extension
 
 <p>
-  <a href="https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/chrome/chrome.svg" alt="Install EdgeEver Web Clipper for Google Chrome" width="36" height="36" /></a>&nbsp;&nbsp;
-  <a href="https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/edge/edge.svg" alt="Install EdgeEver Web Clipper for Microsoft Edge" width="36" height="36" /></a>&nbsp;&nbsp;
-  <a href="https://addons.mozilla.org/firefox/addon/edgeever-web-clipper/"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/firefox/firefox.svg" alt="Install EdgeEver Web Clipper for Firefox" width="36" height="36" /></a>
+  <a href="https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/chrome/chrome.svg" alt="Install Ponder Web Clipper for Google Chrome" width="36" height="36" /></a>&nbsp;&nbsp;
+  <a href="https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/edge/edge.svg" alt="Install Ponder Web Clipper for Microsoft Edge" width="36" height="36" /></a>&nbsp;&nbsp;
+  <a href="https://addons.mozilla.org/firefox/addon/edgeever-web-clipper/"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/firefox/firefox.svg" alt="Install Ponder Web Clipper for Firefox" width="36" height="36" /></a>
 </p>
 
 - Extract clean Markdown from web articles or clip selected text and images directly to your self-hosted instance.
@@ -103,17 +103,17 @@ For Cloudflare, choose either of the following online deployment options:
 Copy the prompt below directly into an AI Agent (such as Codex, Claude, Cursor, WorkBuddy, Antigravity, OpenClaw, Hermes Agent, etc.). During execution, if access to GitHub or Cloudflare is required, review the requested permissions and follow the prompts to authorize access.
 
 ```text
-Deploy EdgeEver entirely through GitHub and Cloudflare:
+Deploy Ponder entirely through GitHub and Cloudflare:
 1. Fork https://github.com/tianma-if/edgeever.
-2. Create D1 `edgeever` and R2 `edgeever-resources` in Cloudflare.
-3. In Workers & Pages, select "Start with Hello World!" and create a Worker named `edgeever`.
-4. Add the user's chosen password as the runtime Secret `EDGE_EVER_AUTH_PASSWORD`
+2. Create D1 `ponder` and R2 `ponder-resources` in Cloudflare.
+3. In Workers & Pages, select "Start with Hello World!" and create a Worker named `ponder`.
+4. Add the user's chosen password as the runtime Secret `PONDER_AUTH_PASSWORD`
    under Settings → Variables and Secrets, and deploy the Secret (preferably at least
    32 characters). The username defaults to `admin`.
 5. Only after the Secret is deployed, open this Worker's Settings → Builds → Connect
    and connect the Fork's `main` branch.
 6. In Settings → Builds → API token, select or create the Cloudflare API token used for deployment, with D1 read/edit permission for the target account.
-7. In the Fork's GitHub repository, open Actions → Update deployed EdgeEver, enable the workflow if prompted, and select Run workflow on `main`. After confirming in Cloudflare that the corresponding build succeeded and deployment completed, verify `/api/health` and `/api/openapi.json`, then log in with the administrator
+7. In the Fork's GitHub repository, open Actions → Update deployed Ponder, enable the workflow if prompted, and select Run workflow on `main`. After confirming in Cloudflare that the corresponding build succeeded and deployment completed, verify `/api/health` and `/api/openapi.json`, then log in with the administrator
    username and password.
    This workflow will automatically sync future stable releases and fixes.
 ```
@@ -127,13 +127,13 @@ Deploy EdgeEver entirely through GitHub and Cloudflare:
 
 Complete the following 7 web steps strictly in order:
 
-1. **Fork the Repository**: Click **Fork** at the top right of GitHub to fork EdgeEver into your personal account.
-2. **Create Cloudflare Resources**: Create D1 `edgeever` and R2 `edgeever-resources`.
-3. **Create the Worker**: In Cloudflare Workers & Pages, select Create application → Start with Hello World!, name the Worker `edgeever`, and deploy it. This creates a placeholder; EdgeEver is deployed in Step 7.
-4. **Set the Administrator Password**: Under the Worker’s Settings → Variables and Secrets, add `EDGE_EVER_AUTH_PASSWORD` as type Secret and click Deploy. Its value is your chosen login password, preferably at least 32 characters. Complete this before connecting the Fork.
+1. **Fork the Repository**: Click **Fork** at the top right of GitHub to fork Ponder into your personal account.
+2. **Create Cloudflare Resources**: Create D1 `ponder` and R2 `ponder-resources`.
+3. **Create the Worker**: In Cloudflare Workers & Pages, select Create application → Start with Hello World!, name the Worker `ponder`, and deploy it. This creates a placeholder; Ponder is deployed in Step 7.
+4. **Set the Administrator Password**: Under the Worker’s Settings → Variables and Secrets, add `PONDER_AUTH_PASSWORD` as type Secret and click Deploy. Its value is your chosen login password, preferably at least 32 characters. Complete this before connecting the Fork.
 5. **Connect the Fork**: In the existing Worker’s Settings → Builds → Connect, select the Fork and production branch `main`.
 6. **Configure Deployment Permissions**: In Settings → Builds → API token, select or create the Cloudflare API token used for deployment, with D1 read/edit permission for the target account.
-7. **Build & Verify**: In the Fork's GitHub repository, open Actions → Update deployed EdgeEver, enable the workflow if prompted, and select Run workflow on `main`. After confirming in Cloudflare that the corresponding build succeeded and deployment completed, confirm `/api/health` returns `200` and verify login. This workflow will automatically sync future stable releases and fixes.
+7. **Build & Verify**: In the Fork's GitHub repository, open Actions → Update deployed Ponder, enable the workflow if prompted, and select Run workflow on `main`. After confirming in Cloudflare that the corresponding build succeeded and deployment completed, confirm `/api/health` returns `200` and verify login. This workflow will automatically sync future stable releases and fixes.
 
 > 📖 For full step-by-step instructions and configuration details, see the [Online Deployment Guide](docs/deploy-cloudflare-button.md).
 
@@ -150,7 +150,7 @@ Complete the following 7 web steps strictly in order:
 
 ### Option C: Docker on a VPS or NAS
 
-Docker runs the same frontend, API routes, services, authentication, MCP implementation, and migrations as Cloudflare. The container uses SQLite with local files or S3-compatible attachment storage and supports `amd64` and `arm64`. See [Deploy EdgeEver with Docker](docs/deploy-docker.md) and [Self-hosting and Docker architecture](docs/self-hosting-architecture.md).
+Docker runs the same frontend, API routes, services, authentication, MCP implementation, and migrations as Cloudflare. The container uses SQLite with local files or S3-compatible attachment storage and supports `amd64` and `arm64`. See [Deploy Ponder with Docker](docs/deploy-docker.md) and [Self-hosting and Docker architecture](docs/self-hosting-architecture.md).
 
 Use the GitHub-hosted installer and the official GHCR image:
 
@@ -158,11 +158,11 @@ Use the GitHub-hosted installer and the official GHCR image:
 curl -fsSL https://edgeever.org/install.sh | bash
 ```
 
-The command pulls the latest image, generates an administrator password, and starts EdgeEver with Docker Compose.
+The command pulls the latest image, generates an administrator password, and starts Ponder with Docker Compose.
 
 See the [Docker deployment guide](docs/deploy-docker.md) for manual deployment and configuration.
 
-After installation, updates run automatically each day by default. To update manually, run `~/edgeever/update.sh` on the deployment server.
+After installation, updates run automatically each day by default. To update manually, run `~/ponder/update.sh` on the deployment server.
 
 ---
 
@@ -170,9 +170,9 @@ After installation, updates run automatically each day by default. To update man
 
 ### Data Backup, Export & Migration
 
-Whether for routine data backups, seamless cross-instance migration, or switching from existing note platforms, EdgeEver provides reliable, complete data mobility:
+Whether for routine data backups, seamless cross-instance migration, or switching from existing note platforms, Ponder provides reliable, complete data mobility:
 
-- **EdgeEver Native Backup & Restore**: In the app, go to **Profile** -> **Import and export** to export or import an EdgeEver ZIP archive at any time. The extracted `notes/` directory keeps clean plaintext Markdown files and attachments for local archival or direct reading, while internal structured metadata enables lossless full restoration across different EdgeEver instances. Importing preserves existing unrelated data on the target instance and automatically overwrites records with matching IDs.
+- **Ponder Native Backup & Restore**: In the app, go to **Profile** -> **Import and export** to export or import a Ponder ZIP archive at any time. The extracted `notes/` directory keeps clean plaintext Markdown files and attachments for local archival or direct reading, while internal structured metadata enables lossless full restoration across different Ponder instances. Importing preserves existing unrelated data on the target instance and automatically overwrites records with matching IDs.
 - **Smooth Migration from Third-Party Apps**:
   - **Evernote Migration**: Please refer to [docs/evernote-migration-guide.md](docs/evernote-migration-guide.md)
   - **flomo Migration**: Please refer to [docs/flomo-migration-guide.md](docs/flomo-migration-guide.md)
@@ -181,10 +181,10 @@ Whether for routine data backups, seamless cross-instance migration, or switchin
 
 ### AI & MCP Protocol Integration
 
-Create an API token in **Profile** -> **API / MCP** and copy the Remote MCP configuration in one click to let AI Agents such as Claude Code, Cursor, Antigravity, and OpenClaw securely manage your knowledge base within account permissions. EdgeEver supports full CRUD for text notes, visual diagram notes (mind maps, flowcharts, and architecture diagrams), structured table notes, and native poster notes. Agents can also manage notebook hierarchies, tags, attachments, revision history, note templates, and AI instructions.
+Create an API token in **Profile** -> **API / MCP** and copy the Remote MCP configuration in one click to let AI Agents such as Claude Code, Cursor, Antigravity, and OpenClaw securely manage your knowledge base within account permissions. Ponder supports full CRUD for text notes, visual diagram notes (mind maps, flowcharts, and architecture diagrams), structured table notes, and native poster notes. Agents can also manage notebook hierarchies, tags, attachments, revision history, note templates, and AI instructions.
 
 > 💡 **Inspiration:**
-> Make AI your true knowledge orchestrator and creative co-pilot—instantly turn concepts into interactive mind maps, flowcharts, architecture diagrams, and structured tables, while supplying private context to your AI Agents. Paired with EdgeEver’s powerful rich-text editing and elegant typography, AI-assisted content becomes beautifully structured, polished, and publication-ready knowledge assets.
+> Make AI your true knowledge orchestrator and creative co-pilot—instantly turn concepts into interactive mind maps, flowcharts, architecture diagrams, and structured tables, while supplying private context to your AI Agents. Paired with Ponder’s powerful rich-text editing and elegant typography, AI-assisted content becomes beautifully structured, polished, and publication-ready knowledge assets.
 
 ### Multi-Account Login & Storage Management
 
@@ -200,7 +200,7 @@ The instance administrator can create, disable, or reset member accounts in **Pr
 
 ### Plugins and Themes
 
-Web and desktop apps support functional plugins and custom themes, installable from the official marketplace, GitHub, or a Manifest URL, with seamless sync across your workspace. Developers can extend capabilities using `@edgeever/plugin-api`; see the [plugin development guide](docs/plugin-development.md) and [marketplace submission policy](docs/plugin-marketplace-policy.md).
+Web and desktop apps support functional plugins and custom themes, installable from the official marketplace, GitHub, or a Manifest URL, with seamless sync across your workspace. Developers can extend capabilities using `@ponder/plugin-api`; see the [plugin development guide](docs/plugin-development.md) and [marketplace submission policy](docs/plugin-marketplace-policy.md).
 
 ---
 
@@ -213,7 +213,7 @@ bun install
 bun run dev
 ```
 
-Local development signs in automatically; fresh databases use `owner` / `edgeever-local-dev`. Log out to test the login screen.
+Local development signs in automatically; fresh databases use `owner` / `ponder-local-dev`. Log out to test the login screen.
 
 ### Architecture & Tech Stack
 
@@ -257,7 +257,7 @@ wrangler.toml     Cloudflare Workers, Assets, D1, R2 configuration
 
 #### Data Storage Model
 
-EdgeEver persists note content simultaneously across three formats to balance editing performance, open portability, and full-text search speed:
+Ponder persists note content simultaneously across three formats to balance editing performance, open portability, and full-text search speed:
 
 ```text
 content_json      TipTap/ProseMirror document, the editor source of truth
@@ -275,7 +275,7 @@ content_text      Full-text search, summary generation, and indexing
 Community contributions are warmly welcome! Please keep the following guidelines in mind:
 
 - Please review the [Contribution Guide](CONTRIBUTING.md) before submitting code.
-- **Deployment Isolation**: If your GitHub Fork is also used to deploy EdgeEver, keep its `main` branch clean and deployment-only. Create a dedicated branch from official `upstream/main` for features/fixes and pull requests; do not develop on or run Sync fork directly on the deployment `main`.
+- **Deployment Isolation**: If your GitHub Fork is also used to deploy Ponder, keep its `main` branch clean and deployment-only. Create a dedicated branch from official `upstream/main` for features/fixes and pull requests; do not develop on or run Sync fork directly on the deployment `main`.
 
 ---
 
@@ -285,9 +285,9 @@ Community contributions are warmly welcome! Please keep the following guidelines
 
 ### Telegram Community
 
-Welcome to the EdgeEver community, bringing together developers and creators exploring vibe coding and AI. Join us to discuss cutting-edge AI productivity and best practices for personal knowledge bases.
+Welcome to the Ponder community, bringing together developers and creators exploring vibe coding and AI. Join us to discuss cutting-edge AI productivity and best practices for personal knowledge bases.
 
-👉 [Join the EdgeEver Telegram group](https://t.me/+GvKYnL37feUwOTNl)
+👉 [Join the Ponder Telegram group](https://t.me/+GvKYnL37feUwOTNl)
 
 ## Friendly Links
 
@@ -295,28 +295,28 @@ Welcome to the EdgeEver community, bringing together developers and creators exp
 
 ## Sponsor & Support
 
-EdgeEver is a free and open-source project. Sustaining cross-platform client development, continuous device testing, code signing, and multi-runtime ecosystem maintenance requires ongoing dedication and resources.
+Ponder is a free and open-source project. Sustaining cross-platform client development, continuous device testing, code signing, and multi-runtime ecosystem maintenance requires ongoing dedication and resources.
 
-- [Support EdgeEver](docs/sponsor.md) — Voluntary donation via WeChat Pay or Alipay
+- [Support Ponder](docs/sponsor.md) — Voluntary donation via WeChat Pay or Alipay
 - [Sponsors & Partners](docs/partners.md) — Support infrastructure, developer tools, services, or community collaboration
 
 ## Acknowledgements
 
-- EdgeEver's note-taking product design was also informed by the publicly available product experiences of mature note-taking tools such as [Evernote](https://evernote.com/) and [Notion](https://www.notion.com/). The related features were independently designed and implemented by EdgeEver.
-- The product design of mind-map and visual-diagram notes was informed by the publicly available product experiences of [XMind](https://xmind.com/) and [ProcessOn](https://www.processon.com/). These features were independently designed and implemented by EdgeEver.
-- EdgeEver's poster design workspace draws inspiration from [Qiaomu Design](https://github.com/joeseesun/qiaomu-cover-design) by 向阳乔木 (joeseesun), and adapts its templates and typography engine under the MIT license.
-- The visual themes and typography of EdgeEver's image-sharing cards were inspired by [Firefly Card (流光卡片)](https://fireflycard.shushiai.com/). Thank you for the design inspiration.
-- EdgeEver's one-click WeChat publishing and featured article typography draw inspiration from [gzh-design-skill](https://github.com/isjiamu/gzh-design-skill) by isjiamu. Thank you for the layout and design inspiration.
+- Ponder's note-taking product design was also informed by the publicly available product experiences of mature note-taking tools such as [Evernote](https://evernote.com/) and [Notion](https://www.notion.com/). The related features were independently designed and implemented by Ponder.
+- The product design of mind-map and visual-diagram notes was informed by the publicly available product experiences of [XMind](https://xmind.com/) and [ProcessOn](https://www.processon.com/). These features were independently designed and implemented by Ponder.
+- Ponder's poster design workspace draws inspiration from [Qiaomu Design](https://github.com/joeseesun/qiaomu-cover-design) by joeseesun, and adapts its templates and typography engine under the MIT license.
+- The visual themes and typography of Ponder's image-sharing cards were inspired by [Firefly Card](https://fireflycard.shushiai.com/). Thank you for the design inspiration.
+- Ponder's one-click WeChat publishing and featured article typography draw inspiration from [gzh-design-skill](https://github.com/isjiamu/gzh-design-skill) by isjiamu. Thank you for the layout and design inspiration.
 
 ## Trademark and Brand Use
 
-The EdgeEver name, logo, and other brand identifiers distinguish the official project. Forks and modified versions may state that they are based on EdgeEver, but must not imply official status or mislead users. The open-source license does not grant trademark rights; other uses require prior written permission from the project maintainers.
+The Ponder name, logo, and other brand identifiers distinguish the official project. Forks and modified versions may state that they are based on Ponder, but must not imply official status or mislead users. The open-source license does not grant trademark rights; other uses require prior written permission from the project maintainers.
 
 ## Disclaimer
 
-EdgeEver is an independent open-source note-taking application developed and maintained by individuals and the community. It is not affiliated with, authorized, sponsored, or endorsed by Evernote Corporation or its affiliates.
+Ponder is an independent open-source note-taking application developed and maintained by individuals and the community. It is not affiliated with, authorized, sponsored, or endorsed by Evernote Corporation or its affiliates.
 
-EdgeEver is self-hosted software. Except for official demo instances, project maintainers do not host, control, or review user content. Content stored or displayed by an instance is the responsibility of its users or operators and does not represent the maintainers' views.
+Ponder is self-hosted software. Except for official demo instances, project maintainers do not host, control, or review user content. Content stored or displayed by an instance is the responsibility of its users or operators and does not represent the maintainers' views.
 
 ## Contributors
 

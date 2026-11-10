@@ -14,7 +14,7 @@ import {
   isNotebookColor,
   type Notebook,
   type NotebookAppearance,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -362,7 +362,7 @@ export const NotebookAppearanceDialog = ({
               <div
                 data-notebook-appearance-preview
                 style={notebookRowStyle(appearance)}
-                className={`${rowInverted ? "notebook-inverted-row notebook-inverted-row-selected" : "edgeever-workspace-selection"} flex h-12 min-w-0 items-center gap-2 rounded-lg px-4 text-sm`}
+                className={`${rowInverted ? "notebook-inverted-row notebook-inverted-row-selected" : "ponder-workspace-selection"} flex h-12 min-w-0 items-center gap-2 rounded-lg px-4 text-sm`}
               >
                 <NotebookAppearanceContent
                   notebook={{ ...appearance, name: notebook.name }}

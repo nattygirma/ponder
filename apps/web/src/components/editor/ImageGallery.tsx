@@ -15,7 +15,7 @@ import {
   resolveImageGalleryLayout,
   type ImageGalleryFit,
   type ImageGalleryLayout,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { cn } from "@/lib/utils";
 
 const ImageGalleryNodeView = ({ editor, node, selected, updateAttributes }: NodeViewProps) => {
@@ -33,8 +33,8 @@ const ImageGalleryNodeView = ({ editor, node, selected, updateAttributes }: Node
 
   return (
     <NodeViewWrapper
-      className={cn("edgeever-image-gallery", selected && "is-selected")}
-      data-edgeever-image-gallery="true"
+      className={cn("ponder-image-gallery", selected && "is-selected")}
+      data-ponder-image-gallery="true"
       data-image-count={node.childCount}
       data-image-gallery-layout={layout}
       data-image-gallery-fit={fit}
@@ -42,18 +42,18 @@ const ImageGalleryNodeView = ({ editor, node, selected, updateAttributes }: Node
     >
       {isEditable ? (
         <div
-          className="edgeever-image-gallery__toolbar"
+          className="ponder-image-gallery__toolbar"
           contentEditable={false}
           aria-label={t("editor.imageGallery.toolbar")}
           role="toolbar"
         >
-          <div className="edgeever-image-gallery__group" role="group" aria-label={t("editor.imageGallery.toolbar")}>
+          <div className="ponder-image-gallery__group" role="group" aria-label={t("editor.imageGallery.toolbar")}>
             {IMAGE_GALLERY_LAYOUTS.map((item) => (
               <button
                 key={item}
                 type="button"
                 className={cn(
-                  "edgeever-image-gallery__button",
+                  "ponder-image-gallery__button",
                   layout === item && "is-active",
                 )}
                 aria-pressed={layout === item}
@@ -64,12 +64,12 @@ const ImageGalleryNodeView = ({ editor, node, selected, updateAttributes }: Node
               </button>
             ))}
           </div>
-          <div className="edgeever-image-gallery__group" role="group" aria-label={t("editor.imageGallery.fitLabel")}>
+          <div className="ponder-image-gallery__group" role="group" aria-label={t("editor.imageGallery.fitLabel")}>
             {IMAGE_GALLERY_FITS.map((item) => (
               <button
                 key={item}
                 type="button"
-                className={cn("edgeever-image-gallery__button", fit === item && "is-active")}
+                className={cn("ponder-image-gallery__button", fit === item && "is-active")}
                 aria-pressed={fit === item}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => setGalleryAttributes({ fit: item })}
@@ -80,7 +80,7 @@ const ImageGalleryNodeView = ({ editor, node, selected, updateAttributes }: Node
           </div>
         </div>
       ) : null}
-      <NodeViewContent className="edgeever-image-gallery__content" />
+      <NodeViewContent className="ponder-image-gallery__content" />
     </NodeViewWrapper>
   );
 };

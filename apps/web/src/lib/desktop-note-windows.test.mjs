@@ -13,7 +13,7 @@ describe("desktop note windows", () => {
   test("only a desktop renderer with a valid note id is a note window", () => {
     delete globalThis.window;
     expect(getNoteWindowMemoId("?noteWindow=memo_1")).toBeNull();
-    globalThis.window = { edgeeverDesktop: { isAvailable: true }, location: { search: "" } };
+    globalThis.window = { ponderDesktop: { isAvailable: true }, location: { search: "" } };
     expect(getNoteWindowMemoId("?noteWindow=memo_1")).toBe("memo_1");
     expect(getNoteWindowMemoId("?noteWindow=../x")).toBeNull();
     expect(getNoteWindowMemoId("")).toBeNull();

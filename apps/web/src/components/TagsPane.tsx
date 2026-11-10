@@ -7,9 +7,9 @@ import { ButtonTooltip } from "@/components/ui/button-tooltip";
 import { Input } from "@/components/ui/input";
 import { cn, formatDateTime } from "@/lib/utils";
 import { WORKSPACE_PAGE_TITLE_CLASSNAME } from "@/lib/workspace-ui";
-import type { TagSummary } from "@edgeever/shared";
+import type { TagSummary } from "@ponder/shared";
 import { AppConfirmDialog } from "./dialogs/ConfirmDialogs";
-import type { EdgeEverRepository } from "@/lib/repository";
+import type { PonderRepository } from "@/lib/repository";
 import { ExecutionCenterButton } from "@/components/execution/ExecutionCenterButton";
 
 export const TagsPane = ({
@@ -20,7 +20,7 @@ export const TagsPane = ({
 }: {
   onClose: () => void;
   onSelectTag: (tag: string) => void;
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
   onOpenExecutionCenter: () => void;
 }) => {
   const { t } = useTranslation();

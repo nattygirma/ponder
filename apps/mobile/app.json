@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "EdgeEver",
-    "slug": "edgeever",
-    "scheme": "edgeever",
+    "name": "Ponder",
+    "slug": "ponder",
+    "scheme": "ponder",
     "version": "2.19.0",
     "runtimeVersion": {
       "policy": "appVersion"
@@ -19,19 +19,19 @@
     "orientation": "default",
     "userInterfaceStyle": "light",
     "ios": {
-      "bundleIdentifier": "org.edgeever.mobile",
+      "bundleIdentifier": "io.appkeep.ponder.mobile",
       "supportsTablet": false,
       "config": {
         "usesNonExemptEncryption": false
       },
       "infoPlist": {
         "UIRequiresFullScreen": true,
-        "NSMicrophoneUsageDescription": "EdgeEver only uses the microphone if web content inside a note explicitly requests it.",
-        "NSCameraUsageDescription": "Allow EdgeEver to use your camera to take photos and insert them into your notes."
+        "NSMicrophoneUsageDescription": "Ponder only uses the microphone if web content inside a note explicitly requests it.",
+        "NSCameraUsageDescription": "Allow Ponder to use your camera to take photos and insert them into your notes."
       }
     },
     "android": {
-      "package": "org.edgeever.mobile",
+      "package": "io.appkeep.ponder.mobile",
       "versionCode": 257,
       "adaptiveIcon": {
         "backgroundColor": "#16A06E",
@@ -45,9 +45,9 @@
       [
         "expo-image-picker",
         {
-          "cameraPermission": "Allow EdgeEver to take photos and insert them into your notes.",
+          "cameraPermission": "Allow Ponder to take photos and insert them into your notes.",
           "microphonePermission": false,
-          "photosPermission": "Allow EdgeEver to choose photos to insert into your notes."
+          "photosPermission": "Allow Ponder to choose photos to insert into your notes."
         }
       ],
       [
@@ -102,6 +102,6 @@
         "projectId": "59d2a8c8-fe8f-4e59-874f-a5887f584a20"
       }
     },
-    "owner": "tianma-if-edgeever"
+    "owner": "tianma-if-ponder"
   }
 }

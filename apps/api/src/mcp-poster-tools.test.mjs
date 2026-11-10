@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { createPosterDocument, POSTER_FORMATS, POSTER_TEMPLATES, parsePosterDocument, serializePosterDocument } from "@edgeever/shared";
+import { createPosterDocument, POSTER_FORMATS, POSTER_TEMPLATES, parsePosterDocument, serializePosterDocument } from "@ponder/shared";
 import { applyPosterEdits, compilePosterMemo, posterCapabilities } from "./mcp-poster-tools";
 
 test("detailed poster edits preserve unaffected elements and clear optional styles", () => {

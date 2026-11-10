@@ -1,1 +1,1 @@
-export { ja } from "@edgeever/shared/i18n/ja";
+export { ja } from "@ponder/shared/i18n/ja";

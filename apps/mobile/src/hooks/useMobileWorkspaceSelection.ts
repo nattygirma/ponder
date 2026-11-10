@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { toggleMobileMemoSelection } from "@edgeever/shared/mobile-ui";
+import { toggleMobileMemoSelection } from "@ponder/shared/mobile-ui";
 
 export const toggleVisibleMemoSelection = (
   current: ReadonlySet<string>,

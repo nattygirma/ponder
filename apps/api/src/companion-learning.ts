@@ -1,4 +1,4 @@
-import type { CompanionMemory } from "@edgeever/shared";
+import type { CompanionMemory } from "@ponder/shared";
 import type { DatabaseAdapter } from "./storage-contract";
 import type { CompanionScope } from "./companion-service";
 

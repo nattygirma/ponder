@@ -15,7 +15,7 @@ const getStringAttr = (node: TiptapNode, key: string) => {
   return typeof value === "string" ? value : "";
 };
 
-const ATTACHMENT_KIND_CLASS_PREFIX = "edgeever-attachment-kind-";
+const ATTACHMENT_KIND_CLASS_PREFIX = "ponder-attachment-kind-";
 
 const normalizeAttachmentFilename = (label: string) =>
   label.replace(/^\s*(?:附件[：:]|Attachment:)\s*/i, "").trim();
@@ -28,14 +28,14 @@ export const getNativeAttachmentLinkClass = (
   const preservedClasses = typeof existingClass === "string"
     ? existingClass.split(/\s+/).filter((className) =>
         className &&
-        className !== "edgeever-attachment-link" &&
+        className !== "ponder-attachment-link" &&
         !className.startsWith(ATTACHMENT_KIND_CLASS_PREFIX)
       )
     : [];
   const kind = resolveAttachmentKind(mimeType, normalizeAttachmentFilename(filename));
   return [
     ...preservedClasses,
-    "edgeever-attachment-link",
+    "ponder-attachment-link",
     `${ATTACHMENT_KIND_CLASS_PREFIX}${kind}`,
   ].join(" ");
 };
@@ -43,7 +43,7 @@ export const getNativeAttachmentLinkClass = (
 export const getMobileAttachmentLinkClass = getNativeAttachmentLinkClass;
 
 export const NativeAttachmentMetadata = Extension.create({
-  name: "edgeeverNativeAttachmentMetadata",
+  name: "ponderNativeAttachmentMetadata",
   addGlobalAttributes() {
     return [{
       types: ["link"],
@@ -85,7 +85,7 @@ const isAttachmentMark = (mark: TiptapMark) => {
   if (mark.type !== "link") return false;
   const href = typeof mark.attrs?.href === "string" ? mark.attrs.href : "";
   const className = typeof mark.attrs?.class === "string" ? mark.attrs.class : "";
-  return className.split(/\s+/).includes("edgeever-attachment-link") || href.includes("/api/v1/resources/");
+  return className.split(/\s+/).includes("ponder-attachment-link") || href.includes("/api/v1/resources/");
 };
 
 const withAttachmentKindClass = (node: TiptapTextNode): TiptapTextNode => {

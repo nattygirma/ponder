@@ -1,5 +1,5 @@
 {
-  "name": "@edgeever/client",
+  "name": "@ponder/client",
   "version": "0.1.3",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "@ai-sdk/anthropic": "4.0.78",
     "@ai-sdk/google": "4.0.93",
     "@ai-sdk/openai-compatible": "3.0.67",
-    "@edgeever/shared": "workspace:*",
+    "@ponder/shared": "workspace:*",
     "ai": "7.0.137"
   }
 }

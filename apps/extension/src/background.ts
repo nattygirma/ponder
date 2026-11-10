@@ -2,8 +2,8 @@ import { articlePlatform, substackPaywall } from "./article-platform";
 import { configurePlatformImageRequests, isPlatformImageUrl } from "./platform-image-requests";
 import {
   clipNotebookId,
-  edgeEverFormRequest,
-  edgeEverRequest,
+  ponderFormRequest,
+  ponderRequest,
   getInstancePermissionPattern,
   getSettings,
   listNotebooks,
@@ -223,7 +223,7 @@ const notebookForClip = async (settings: ExtensionSettings) => {
 
 const clipImageFeedback = (images: { embedded: number; total: number }) =>
   images.embedded < images.total ? t("platformImagesPartial")
-    : images.total > 0 ? t("platformSavedWithImages") : t("savedToEdgeEver");
+    : images.total > 0 ? t("platformSavedWithImages") : t("savedToPonder");
 
 const createMemo = async (settings: ExtensionSettings, page: CapturedPage, tabId: number | null, expectedUrl?: string) => {
   const contentMarkdown = toMarkdown(page);
@@ -231,7 +231,7 @@ const createMemo = async (settings: ExtensionSettings, page: CapturedPage, tabId
   if (expectedUrl && (tabId === null || (await chrome.tabs.get(tabId)).url !== expectedUrl)) {
     throw new Error(t("platformPageChanged"));
   }
-  const created = await edgeEverRequest<{ memo?: CreatedClipMemo }>(settings, "/api/v1/memos", {
+  const created = await ponderRequest<{ memo?: CreatedClipMemo }>(settings, "/api/v1/memos", {
     method: "POST",
     body: JSON.stringify({
       notebookId,
@@ -244,7 +244,7 @@ const createMemo = async (settings: ExtensionSettings, page: CapturedPage, tabId
 };
 
 const createGithubRepoMemo = async (settings: ExtensionSettings, facts: GithubRepoFacts) => {
-  await edgeEverRequest(settings, "/api/v1/memos", {
+  await ponderRequest(settings, "/api/v1/memos", {
     method: "POST",
     body: JSON.stringify({
       notebookId: await notebookForClip(settings),
@@ -271,7 +271,7 @@ const createGithubRepoMemo = async (settings: ExtensionSettings, facts: GithubRe
 
 const imageNoteClient = (settings: ExtensionSettings): ImageNoteClient => ({
   listNotebooks: () => listNotebooks(settings),
-  createMemo: (body) => edgeEverRequest(settings, "/api/v1/memos", {
+  createMemo: (body) => ponderRequest(settings, "/api/v1/memos", {
     method: "POST",
     body: JSON.stringify(body),
   }),
@@ -279,17 +279,17 @@ const imageNoteClient = (settings: ExtensionSettings): ImageNoteClient => ({
     const uploaded = await uploadMemoImage(settings, memoId, file, signal);
     return uploaded.resource;
   },
-  createEditSession: (memoId) => edgeEverRequest(
+  createEditSession: (memoId) => ponderRequest(
     settings,
     `/api/v1/memos/${encodeURIComponent(memoId)}/edit-sessions`,
     { method: "POST" },
   ),
-  saveMemo: (memoId, body) => edgeEverRequest(
+  saveMemo: (memoId, body) => ponderRequest(
     settings,
     `/api/v1/memos/${encodeURIComponent(memoId)}/save`,
     { method: "POST", body: JSON.stringify(body) },
   ),
-  deleteMemo: (memoId) => edgeEverRequest(
+  deleteMemo: (memoId) => ponderRequest(
     settings,
     `/api/v1/memos/${encodeURIComponent(memoId)}?permanent=1`,
     { method: "DELETE" },
@@ -303,7 +303,7 @@ const imageNoteClient = (settings: ExtensionSettings): ImageNoteClient => ({
     form.append("contentMarkdown", body.contentMarkdown);
     form.append("tags", JSON.stringify(body.tags));
     form.append("file", new File([buffer], body.filename, { type: body.mimeType }));
-    const created = await edgeEverFormRequest<{ memo: { id: string }; resourceId: string }>(
+    const created = await ponderFormRequest<{ memo: { id: string }; resourceId: string }>(
       settings,
       "/api/v1/memos/with-image",
       form,
@@ -321,7 +321,7 @@ const injectImageHelper = async (tabId: number, frameId: number | null, payload:
   await chrome.scripting.executeScript({
     target,
     func: (value: unknown) => {
-      (globalThis as { __edgeeverImageClipPayload?: unknown }).__edgeeverImageClipPayload = value;
+      (globalThis as { __ponderImageClipPayload?: unknown }).__ponderImageClipPayload = value;
     },
     args: [payload],
   });
@@ -725,7 +725,7 @@ const injectTweetReader = async (tabId: number, frameId: number | null, payload:
   await chrome.scripting.executeScript({
     target,
     func: (value: unknown) => {
-      (globalThis as { __edgeeverTweetClipPayload?: unknown }).__edgeeverTweetClipPayload = value;
+      (globalThis as { __ponderTweetClipPayload?: unknown }).__ponderTweetClipPayload = value;
     },
     args: [payload],
   });
@@ -860,7 +860,7 @@ const injectXhsReader = async (tabId: number, frameId: number | null, payload: u
   await chrome.scripting.executeScript({
     target,
     func: (value: unknown) => {
-      (globalThis as { __edgeeverXhsClipPayload?: unknown }).__edgeeverXhsClipPayload = value;
+      (globalThis as { __ponderXhsClipPayload?: unknown }).__ponderXhsClipPayload = value;
     },
     args: [payload],
   });
@@ -984,7 +984,7 @@ const injectZhihuReader = async (tabId: number, frameId: number | null, payload:
   await chrome.scripting.executeScript({
     target,
     func: (value: unknown) => {
-      (globalThis as { __edgeeverZhihuClipPayload?: unknown }).__edgeeverZhihuClipPayload = value;
+      (globalThis as { __ponderZhihuClipPayload?: unknown }).__ponderZhihuClipPayload = value;
     },
     args: [payload],
   });
@@ -1144,7 +1144,7 @@ const readRedditFromPage = async (tabId: number, frameId: number | null, pageUrl
       await chrome.scripting.executeScript({
         target,
         func: (value: unknown) => {
-          (globalThis as { __edgeeverRedditClipPayload?: unknown }).__edgeeverRedditClipPayload = value;
+          (globalThis as { __ponderRedditClipPayload?: unknown }).__ponderRedditClipPayload = value;
         },
         args: [{ requestId, pageUrl }],
       });
@@ -1241,7 +1241,7 @@ const readGithubRepoFromPage = async (tabId: number, frameId: number | null) => 
       await chrome.scripting.executeScript({
         target,
         func: (value: unknown) => {
-          (globalThis as { __edgeeverGithubClipPayload?: unknown }).__edgeeverGithubClipPayload = value;
+          (globalThis as { __ponderGithubClipPayload?: unknown }).__ponderGithubClipPayload = value;
         },
         args: [{ requestId }],
       });
@@ -1354,7 +1354,7 @@ const readPlatformFromPage = async (tabId: number, target: PlatformTarget, selec
       await chrome.scripting.executeScript({
         target: { tabId, frameIds: [0] },
         func: (payload: unknown) => {
-          (globalThis as { __edgeeverPlatformClipPayload?: unknown }).__edgeeverPlatformClipPayload = payload;
+          (globalThis as { __ponderPlatformClipPayload?: unknown }).__ponderPlatformClipPayload = payload;
         },
         args: [{ requestId, url: target.url, sourceUrl, selectionFirst, selectionText, xiaoyuzhouState, jikeState, wechatPictureState }],
       });
@@ -1402,7 +1402,7 @@ const performPlatformSave = async (tabId: number, pageUrl: string, selectionFirs
   // to the detail page the user clicked, not the next active tab or episode.
   const current = await chrome.tabs.get(tabId);
   if (current.url !== pageUrl) throw new Error(t("platformPageChanged"));
-  const created = await edgeEverRequest<{ memo?: CreatedClipMemo }>(settings, "/api/v1/memos", {
+  const created = await ponderRequest<{ memo?: CreatedClipMemo }>(settings, "/api/v1/memos", {
     method: "POST",
     body: JSON.stringify({ notebookId, title: (clip?.title || selection!.title).slice(0, 120), contentMarkdown, tags: clip?.tags || ["web-clip"] }),
   });
@@ -1423,7 +1423,7 @@ const savePlatformFromMenu = async (info: { pageUrl?: string; frameId?: number }
         if (state?.pageUrl === pageUrl) selectedUrl = `https://m.okjike.com/originalPosts/${state.post.id}`;
       } else {
         const located = (await chrome.scripting.executeScript({ target: { tabId, frameIds: [0] }, func: () =>
-          document.querySelector("[data-edgeever-social-target]")?.getAttribute("data-edgeever-social-target") || ""
+          document.querySelector("[data-ponder-social-target]")?.getAttribute("data-ponder-social-target") || ""
         }))[0]?.result;
         if (typeof located === "string" && platformTarget(located)?.platform === socialPlatform(pageUrl)) selectedUrl = located;
       }
@@ -1469,7 +1469,7 @@ const readCapturedPage = async (tabId: number, frameId: number | null, mode: "pa
       await chrome.scripting.executeScript({
         target,
         func: (value: unknown) => {
-          (globalThis as { __edgeeverPageClipPayload?: unknown }).__edgeeverPageClipPayload = value;
+          (globalThis as { __ponderPageClipPayload?: unknown }).__ponderPageClipPayload = value;
         },
         args: [{ mode, requestId, selectionText }],
       });
@@ -1549,7 +1549,7 @@ const saveSelectionFromMenu = async (
     });
     const notebookId = await notebookForClip(settings);
     await checkPage();
-    const created = await edgeEverRequest<{ memo?: CreatedClipMemo }>(settings, "/api/v1/memos", {
+    const created = await ponderRequest<{ memo?: CreatedClipMemo }>(settings, "/api/v1/memos", {
       method: "POST",
       body: JSON.stringify({
         notebookId,
@@ -1658,7 +1658,7 @@ const performVideoSave = async (
     labels: videoLabels(),
     capturedOn: capturedOnDate(),
     attempt,
-    createMemo: (body) => edgeEverRequest(settings, "/api/v1/memos", {
+    createMemo: (body) => ponderRequest(settings, "/api/v1/memos", {
       method: "POST",
       body: JSON.stringify(body),
     }),
@@ -1719,7 +1719,7 @@ const registerClipMenus = () => {
 const createClipMenus = () => {
   chrome.contextMenus.create({
     id: SELECTION_MENU_ID,
-    title: t("saveSelectionToEdgeEver"),
+    title: t("saveSelectionToPonder"),
     contexts: ["selection"],
     documentUrlPatterns: ["http://*/*", "https://*/*"],
   }, () => {
@@ -1727,7 +1727,7 @@ const createClipMenus = () => {
   });
   chrome.contextMenus.create({
     id: IMAGE_MENU_ID,
-    title: t("saveImageToEdgeEver"),
+    title: t("saveImageToPonder"),
     contexts: ["image"],
     documentUrlPatterns: ["http://*/*", "https://*/*"],
   }, () => {
@@ -1735,7 +1735,7 @@ const createClipMenus = () => {
   });
   chrome.contextMenus.create({
     id: TWEET_MENU_ID,
-    title: t("saveTweetToEdgeEver"),
+    title: t("saveTweetToPonder"),
     contexts: ["page", "video"],
     documentUrlPatterns: TWEET_DOCUMENT_PATTERNS,
   }, () => {
@@ -1743,7 +1743,7 @@ const createClipMenus = () => {
   });
   chrome.contextMenus.create({
     id: GITHUB_REPO_MENU_ID,
-    title: t("saveGithubRepoToEdgeEver"),
+    title: t("saveGithubRepoToPonder"),
     contexts: ["page"],
     documentUrlPatterns: GITHUB_DOCUMENT_PATTERNS,
   }, () => {
@@ -1751,7 +1751,7 @@ const createClipMenus = () => {
   });
   chrome.contextMenus.create({
     id: XHS_MENU_ID,
-    title: t("saveXhsToEdgeEver"),
+    title: t("saveXhsToPonder"),
     contexts: ["page", "video"],
     documentUrlPatterns: XHS_DOCUMENT_PATTERNS,
   }, () => {
@@ -1759,7 +1759,7 @@ const createClipMenus = () => {
   });
   chrome.contextMenus.create({
     id: ZHIHU_MENU_ID,
-    title: t("saveZhihuToEdgeEver"),
+    title: t("saveZhihuToPonder"),
     contexts: ["page", "video"],
     documentUrlPatterns: ZHIHU_DOCUMENT_PATTERNS,
   }, () => {
@@ -1767,7 +1767,7 @@ const createClipMenus = () => {
   });
   chrome.contextMenus.create({
     id: REDDIT_MENU_ID,
-    title: t("saveRedditToEdgeEver"),
+    title: t("saveRedditToPonder"),
     contexts: ["page", "video"],
     documentUrlPatterns: REDDIT_DOCUMENT_PATTERNS,
   }, () => {
@@ -1775,7 +1775,7 @@ const createClipMenus = () => {
   });
   chrome.contextMenus.create({
     id: REDDIT_LINK_MENU_ID,
-    title: t("saveRedditToEdgeEver"),
+    title: t("saveRedditToPonder"),
     contexts: ["link"],
     documentUrlPatterns: REDDIT_DOCUMENT_PATTERNS,
     targetUrlPatterns: REDDIT_DOCUMENT_PATTERNS.map((pattern) => pattern.replace("/*", "/*/comments/*")),
@@ -1784,7 +1784,7 @@ const createClipMenus = () => {
   });
   chrome.contextMenus.create({
     id: VIDEO_MENU_ID,
-    title: t("saveVideoNoteToEdgeEver"),
+    title: t("saveVideoNoteToPonder"),
     contexts: ["page", "video"],
     documentUrlPatterns: VIDEO_DOCUMENT_PATTERNS,
   }, () => {

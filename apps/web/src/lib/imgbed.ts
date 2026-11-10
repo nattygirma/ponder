@@ -1,5 +1,5 @@
 // Upload folder templates use PicList's rename placeholders, expanded in the
-// uploader's local time zone, plus EdgeEver's {memoId}. File-specific tokens
+// uploader's local time zone, plus Ponder's {memoId}. File-specific tokens
 // ({filename}, {md5}, ...) are not supported because ImgBed names the file itself.
 export const IMGBED_NAME_TYPES = ["default", "index", "origin", "short"] as const;
 export type ImgBedNameType = typeof IMGBED_NAME_TYPES[number];

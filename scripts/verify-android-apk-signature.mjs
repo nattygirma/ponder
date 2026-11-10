@@ -3,7 +3,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-export const EDGE_EVER_ANDROID_SIGNER_SHA256 =
+export const PONDER_ANDROID_SIGNER_SHA256 =
   "22bf52a9501c89020f5acc966960152c826bfa64f31e578e858d088f8cd75d87";
 
 const normalizeFingerprint = (value) =>
@@ -13,7 +13,7 @@ export const parseAllowedAndroidSignerDigests = (value = "") => {
   const configured = value.split(",").map(normalizeFingerprint).filter(Boolean);
   const digests = configured.length > 0
     ? configured
-    : [EDGE_EVER_ANDROID_SIGNER_SHA256];
+    : [PONDER_ANDROID_SIGNER_SHA256];
   if (digests.some((digest) => digest.length !== 64)) {
     throw new Error("Every allowed Android signer must be a SHA-256 fingerprint.");
   }
@@ -109,7 +109,7 @@ const run = () => {
   try {
     signerSha256 = verifyAndroidSignerOutput(
       output,
-      parseAllowedAndroidSignerDigests(process.env.EDGE_EVER_ANDROID_ALLOWED_SIGNER_SHA256),
+      parseAllowedAndroidSignerDigests(process.env.PONDER_ANDROID_ALLOWED_SIGNER_SHA256),
     );
   } catch (error) {
     process.stderr.write(output);

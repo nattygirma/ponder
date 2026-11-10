@@ -24,7 +24,7 @@ import {
   Type,
   Video,
 } from "lucide-react";
-import { resolveAttachmentKind } from "@edgeever/shared";
+import { resolveAttachmentKind } from "@ponder/shared";
 import { cn } from "@/lib/utils";
 
 export const AttachmentFileIcon = ({

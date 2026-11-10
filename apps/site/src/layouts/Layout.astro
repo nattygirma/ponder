@@ -1,7 +1,7 @@
 ---
 import { SEO } from "astro-seo";
 import { getImage } from "astro:assets";
-import heroProductImage from "@/assets/edgeever-hero-product.png";
+import heroProductImage from "@/assets/ponder-hero-product.png";
 import Footer from "@/components/footer.astro";
 import Navbar from "@/components/navbar/navbar.astro";
 import {
@@ -42,7 +42,6 @@ const localeAlternateUrls = Object.fromEntries(
     new URL(getLocalizedPath(item, Astro.url.pathname), Astro.site).toString(),
   ]),
 ) as Record<(typeof siteLocales)[number], string>;
-const zhAlternateURL = localeAlternateUrls["zh-CN"];
 const enAlternateURL = localeAlternateUrls["en-US"];
 const jaAlternateURL = localeAlternateUrls.ja;
 const plAlternateURL = localeAlternateUrls.pl;
@@ -79,21 +78,20 @@ const resolvedImageWithDomain = new URL(
 ).toString();
 
 const makeTitle = title
-  ? title + " | " + "EdgeEver"
+  ? title + " | " + "Ponder"
   : copy.defaultTitle;
 
-const faviconVersion = "edgeever-open-cat-20260809";
+const faviconVersion = "ponder-open-cat-20260809";
 const localeRedirectScript = `(() => {
   const storageKey = ${JSON.stringify(siteLocaleStorageKey)};
   const localeAttribute = ${JSON.stringify(siteLocaleDataAttribute)};
   const supportedLocales = ${JSON.stringify(siteLocales)};
   const prefixes = ${JSON.stringify(siteLocalePrefixes)};
-  const prefixPattern = /^\\/(en|ja|pl)(?=\\/|$)/;
+  const prefixPattern = /^\\/(ja|pl)(?=\\/|$)/;
   const normalizeLocale = (locale) => {
     if (!locale) return null;
     const normalized = String(locale).trim().replaceAll("_", "-").toLowerCase();
 
-    if (normalized === "zh" || normalized.startsWith("zh-")) return "zh-CN";
     if (normalized === "en" || normalized.startsWith("en-")) return "en-US";
     if (normalized === "ja" || normalized.startsWith("ja-")) return "ja";
     if (normalized === "pl" || normalized.startsWith("pl-")) return "pl";
@@ -128,10 +126,9 @@ const localeRedirectScript = `(() => {
     return sawCandidate ? "en-US" : null;
   };
   const getCurrentLocale = (pathname) => {
-    if (pathname === "/en" || pathname.startsWith("/en/")) return "en-US";
     if (pathname === "/ja" || pathname.startsWith("/ja/")) return "ja";
     if (pathname === "/pl" || pathname.startsWith("/pl/")) return "pl";
-    return "zh-CN";
+    return "en-US";
   };
   const isExplicitLocalePath = (pathname) => prefixPattern.test(pathname);
   const stripPrefix = (pathname) => {
@@ -147,14 +144,7 @@ const localeRedirectScript = `(() => {
   const getDesiredLocale = (pathname) => {
     if (isExplicitLocalePath(pathname)) return null;
 
-    const browserLocale = getBrowserLocale();
-    const storedLocale = getStoredLocale();
-
-    if (browserLocale === "zh-CN" || storedLocale === "zh-CN") {
-      return "zh-CN";
-    }
-
-    return storedLocale ?? browserLocale;
+    return getStoredLocale() ?? getBrowserLocale();
   };
   const desiredLocale = getDesiredLocale(window.location.pathname);
 
@@ -183,11 +173,10 @@ const localeRedirectScript = `(() => {
     <link rel="icon" type="image/svg+xml" href={`/favicon.svg?v=${faviconVersion}`} />
     <link rel="icon" type="image/png" sizes="192x192" href={`/icon-192.png?v=${faviconVersion}`} />
     <link rel="apple-touch-icon" href={`/apple-touch-icon.png?v=${faviconVersion}`} />
-    <link rel="alternate" hreflang="zh-CN" href={zhAlternateURL} />
     <link rel="alternate" hreflang="en-US" href={enAlternateURL} />
     <link rel="alternate" hreflang="ja" href={jaAlternateURL} />
     <link rel="alternate" hreflang="pl" href={plAlternateURL} />
-    <link rel="alternate" hreflang="x-default" href={zhAlternateURL} />
+    <link rel="alternate" hreflang="x-default" href={enAlternateURL} />
     <meta name="theme-color" content="#f8fafc" />
     <meta name="generator" content={Astro.generator} />
     {localeRedirect && <script is:inline set:html={localeRedirectScript} />}
@@ -216,7 +205,7 @@ const localeRedirectScript = `(() => {
         optional: {
           description,
           locale: copy.ogLocale,
-          siteName: "EdgeEver",
+          siteName: "Ponder",
         },
         image: {
           alt: imageAlt,

@@ -82,7 +82,7 @@ describe("web clipper store command", () => {
   });
 
   test("preserves Chrome publish failure when the subsequent status check fails", async () => {
-    const directory = mkdtempSync(join(tmpdir(), "edgeever-submit-diagnostics-"));
+    const directory = mkdtempSync(join(tmpdir(), "ponder-submit-diagnostics-"));
     const zip = join(directory, "addon.zip");
     writeFileSync(zip, "zip");
     let statusCalls = 0;
@@ -116,7 +116,7 @@ describe("web clipper store command", () => {
   });
 
   test("writes preparation failure details to Actions Summary and exits nonzero", () => {
-    const directory = mkdtempSync(join(tmpdir(), "edgeever-report-test-"));
+    const directory = mkdtempSync(join(tmpdir(), "ponder-report-test-"));
     const summary = join(directory, "summary.md");
     try {
       const result = spawnSync(process.execPath, [new URL("./publish-web-clipper.mjs", import.meta.url).pathname, "--invalid-option"], {
@@ -322,12 +322,12 @@ describe("web clipper store command", () => {
   });
 
   test("refuses to submit from a fork", () => {
-    expect(() => assertOfficialRepository("someone/edgeever")).toThrow(OFFICIAL_REPOSITORY);
+    expect(() => assertOfficialRepository("someone/ponder")).toThrow(OFFICIAL_REPOSITORY);
     expect(() => assertOfficialRepository("")).not.toThrow();
   });
 
   test("uses a one-line Firefox note when none was provided", () => {
-    expect(resolveReleaseNotes({ version: "0.1.9" })).toBe("EdgeEver Web Clipper 0.1.9.");
+    expect(resolveReleaseNotes({ version: "0.1.9" })).toBe("Ponder Web Clipper 0.1.9.");
   });
 
   test("includes the review login only in the private approval note", () => {
@@ -347,7 +347,7 @@ describe("web clipper store command", () => {
     expect(shouldCopyExtensionSource("src/background.ts")).toBe(true);
     expect(shouldCopyExtensionSource("dist/manifest.json")).toBe(false);
     expect(shouldCopyExtensionSource("node_modules/web-ext/package.json")).toBe(false);
-    expect(shouldCopyExtensionSource("store-assets/edgeever-web-clipper-v0.1.8.zip")).toBe(false);
+    expect(shouldCopyExtensionSource("store-assets/ponder-web-clipper-v0.1.8.zip")).toBe(false);
     expect(shouldCopyExtensionSource("store-assets/store-icon-128.png")).toBe(true);
 
     const manifests = workspacePackageManifests(new URL("..", import.meta.url).pathname);
@@ -357,7 +357,7 @@ describe("web clipper store command", () => {
   });
 
   test("review source contains shared UI imports without copying the whole Web app", () => {
-    const staging = mkdtempSync(join(tmpdir(), "edgeever-source-test-"));
+    const staging = mkdtempSync(join(tmpdir(), "ponder-source-test-"));
     try {
       copySourceArchive(new URL("..", import.meta.url).pathname, staging);
       for (const file of SHARED_EXTENSION_SOURCE_FILES) {
@@ -371,7 +371,7 @@ describe("web clipper store command", () => {
   });
 
   test("source rebuild audit rejects missing, extra and changed artifacts", () => {
-    const staging = mkdtempSync(join(tmpdir(), "edgeever-rebuild-test-"));
+    const staging = mkdtempSync(join(tmpdir(), "ponder-rebuild-test-"));
     const expected = join(staging, "expected"), rebuilt = join(staging, "rebuilt");
     mkdirSync(expected); mkdirSync(rebuilt);
     try {
@@ -396,7 +396,7 @@ describe("web clipper store command", () => {
   });
 
   test("independent builds do not inherit store credentials or external module paths", () => {
-    const environment = sourceRebuildEnvironment({ PATH: "/usr/bin", HOME: "/tmp/example", CHROME_WEB_STORE_CLIENT_SECRET: "secret", AMO_JWT_SECRET: "secret", EDGE_EVER_REVIEW_API_TOKEN: "secret", GITHUB_TOKEN: "secret", GH_TOKEN: "secret", NODE_PATH: "/original/node_modules", NODE_OPTIONS: "--require external.js" });
+    const environment = sourceRebuildEnvironment({ PATH: "/usr/bin", HOME: "/tmp/example", CHROME_WEB_STORE_CLIENT_SECRET: "secret", AMO_JWT_SECRET: "secret", PONDER_REVIEW_API_TOKEN: "secret", GITHUB_TOKEN: "secret", GH_TOKEN: "secret", NODE_PATH: "/original/node_modules", NODE_OPTIONS: "--require external.js" });
     expect(environment).toEqual({ PATH: "/usr/bin", HOME: "/tmp/example", NODE_PATH: "", NODE_OPTIONS: "" });
   });
 
@@ -448,7 +448,7 @@ describe("web clipper store command", () => {
     const chrome = createChromeClient({ fetchImpl, accessToken: "token" });
     await chrome.publish();
 
-    const directory = mkdtempSync(join(tmpdir(), "edgeever-clipper-api-"));
+    const directory = mkdtempSync(join(tmpdir(), "ponder-clipper-api-"));
     const packagePath = join(directory, "addon.zip");
     writeFileSync(packagePath, "zip");
     const firefox = createFirefoxClient({
@@ -497,7 +497,7 @@ describe("web clipper store command", () => {
     expect(workflow).toContain("CHROME_WEB_STORE_SERVICE_ACCOUNT_JSON");
     expect(workflow).toContain("AMO_JWT_ISSUER");
     expect(workflow).toContain("AMO_JWT_SECRET");
-    expect(workflow).toContain("edgeever-web-clipper-store");
+    expect(workflow).toContain("ponder-web-clipper-store");
     expect(workflow).not.toContain("bun run release");
     expect(workflow).not.toContain("publish:stores");
     expect(workflow).not.toContain("echo ${{ secrets");

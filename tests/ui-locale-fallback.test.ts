@@ -8,7 +8,7 @@ describe("unmatched locale fallback", () => {
     const siteLayout = read("apps/site/src/layouts/Layout.astro");
     const mobileLocale = read("apps/mobile/src/lib/mobile-locale.tsx");
     const mobileUtils = read("apps/mobile/src/screens/workspace-utils.ts");
-    const iosPreferences = read("apps/ios/EdgeEver/Data/Preferences/PreferencesStore.swift");
+    const iosPreferences = read("apps/ios/Ponder/Data/Preferences/PreferencesStore.swift");
     const sharedLocales = read("packages/shared/src/i18n/locales.ts");
 
     expect(sharedLocales).toContain('"ja"');

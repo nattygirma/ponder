@@ -13,31 +13,31 @@ globalThis.indexedDB = indexedDB;
 globalThis.IDBKeyRange = IDBKeyRange;
 const storage = new Map();
 globalThis.window = Object.assign(new EventTarget(), {
-  location: { hostname: "edgeever.test", origin: "http://edgeever.test", href: "http://edgeever.test/" },
+  location: { hostname: "ponder.test", origin: "http://ponder.test", href: "http://ponder.test/" },
   localStorage: { getItem: key => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value), removeItem: key => storage.delete(key), get length() { return storage.size; }, key: index => [...storage.keys()][index] ?? null },
 });
 Object.defineProperty(globalThis, "navigator", { configurable: true, value: { onLine: true } });
 globalThis.document = { documentElement: { classList: { contains: () => false }, dataset: {}, style: { setProperty() {}, removeProperty() {} }, removeAttribute() {} } };
 globalThis.MutationObserver = class { observe() {} disconnect() {} };
 
-const shared = await import("@edgeever/shared");
-const { fetchEdgeEverApp } = await import("../apps/api/src/index.ts");
+const shared = await import("@ponder/shared");
+const { fetchPonderApp } = await import("../apps/api/src/index.ts");
 const { createSelfHostedStorageAdapter } = await import("../apps/api/src/self-hosted-storage-adapter.ts");
-const { createEdgeEverClient } = await import("../packages/client/src/index.ts");
+const { createPonderClient } = await import("../packages/client/src/index.ts");
 const { api } = await import("../apps/web/src/lib/api.ts");
 const { createWebRepository } = await import("../apps/web/src/lib/repository.ts");
 const { createDesktopRepository } = await import("../apps/web/src/lib/desktop-repository.ts");
 const { withRepositoryMutationEvents } = await import("../apps/web/src/lib/repository-events.ts");
-const { EdgeEverPluginHost } = await import("../apps/web/src/lib/plugins/plugin-host.ts");
+const { PonderPluginHost } = await import("../apps/web/src/lib/plugins/plugin-host.ts");
 const { localDb } = await import("../apps/web/src/lib/local-db.ts");
 const { syncQueuedChanges } = await import("../apps/web/src/lib/sync-queue.ts");
 const { syncDesktopData } = await import("../apps/web/src/lib/desktop-sync.ts");
 
-const temporary = await mkdtemp(join(tmpdir(), "edgeever-plugin-sync-"));
+const temporary = await mkdtemp(join(tmpdir(), "ponder-plugin-sync-"));
 const children = new Set();
 let cloud;
 const checked = [];
-const nativePath = resolve(process.env.EDGE_EVER_SIDECAR_PATH ?? "crates/desktop-sidecar/target/debug/edgeever-sidecar");
+const nativePath = resolve(process.env.PONDER_SIDECAR_PATH ?? "crates/desktop-sidecar/target/debug/ponder-sidecar");
 const migrations = resolve("migrations");
 const startNative = async (path, directory, migrationsDir = migrations) => {
   const child = spawn(path, ["--data-dir", directory, "--migrations-dir", migrationsDir], { stdio: ["pipe", "pipe", "inherit"] });
@@ -71,10 +71,10 @@ const startNative = async (path, directory, migrationsDir = migrations) => {
   };
 };
 const attachNative = native => {
-  window.edgeeverDesktop = { isAvailable: true, sidecarRequest: native.request, listStagedResources: async () => [], listStagedResourceAliases: async () => [], remapStagedResourceMemoIds: async () => {} };
+  window.ponderDesktop = { isAvailable: true, sidecarRequest: native.request, listStagedResources: async () => [], listStagedResourceAliases: async () => [], remapStagedResourceMemoIds: async () => {} };
 };
 const makeContext = repository => {
-  const host = new EdgeEverPluginHost({ repository: withRepositoryMutationEvents(repository, "plugin-sync"), scope: "plugin-sync" });
+  const host = new PonderPluginHost({ repository: withRepositoryMutationEvents(repository, "plugin-sync"), scope: "plugin-sync" });
   return host.createContext({ id: "org.test.plugin-sync", permissions: [] }, []);
 };
 const baseline = snapshot => ({ expectedRevision: snapshot.note.revision, expectedContentHash: snapshot.note.contentHash, expectedEditToken: snapshot.editToken });
@@ -91,9 +91,9 @@ const fixtures = [
 try {
   // Use the actual installed old binary only when explicitly supplied. It is
   // started against a test directory, never the installed application's data.
-  if (process.env.EDGE_EVER_LEGACY_SIDECAR_PATH) {
-    const path = resolve(process.env.EDGE_EVER_LEGACY_SIDECAR_PATH);
-    const oldMigrations = process.env.EDGE_EVER_LEGACY_MIGRATIONS_PATH ?? join(dirname(dirname(path)), "migrations");
+  if (process.env.PONDER_LEGACY_SIDECAR_PATH) {
+    const path = resolve(process.env.PONDER_LEGACY_SIDECAR_PATH);
+    const oldMigrations = process.env.PONDER_LEGACY_MIGRATIONS_PATH ?? join(dirname(dirname(path)), "migrations");
     const directory = join(temporary, "legacy");
     let native = await startNative(path, directory, oldMigrations);
     attachNative(native);
@@ -136,14 +136,14 @@ try {
   cloud.exec("PRAGMA foreign_keys = ON");
   for (const name of (await readdir(migrations)).filter(name => name.endsWith(".sql")).sort()) cloud.exec(await readFile(join(migrations, name), "utf8"));
   cloud.query("INSERT OR IGNORE INTO workspaces (id, name, is_personal) VALUES ('ws_default', 'Personal', 1)").run();
-  const environment = { storage: createSelfHostedStorageAdapter(cloud, join(temporary, "resources")), EDGE_EVER_ALLOW_UNAUTHENTICATED: "true", EDGE_EVER_RUNTIME: "self-hosted-bun" };
+  const environment = { storage: createSelfHostedStorageAdapter(cloud, join(temporary, "resources")), PONDER_ALLOW_UNAUTHENTICATED: "true", PONDER_RUNTIME: "self-hosted-bun" };
   let reachable = true;
-  const client = createEdgeEverClient({ baseUrl: "http://edgeever.test", fetch: (input, init) => {
+  const client = createPonderClient({ baseUrl: "http://ponder.test", fetch: (input, init) => {
     if (!reachable) throw new Error("Test network is offline");
-    return fetchEdgeEverApp(new Request(input, init), environment, { waitUntil() {}, passThroughOnException() {} });
+    return fetchPonderApp(new Request(input, init), environment, { waitUntil() {}, passThroughOnException() {} });
   }});
   Object.assign(api, client);
-  const scope = "http://edgeever.test|plugin-sync";
+  const scope = "http://ponder.test|plugin-sync";
   const repository = createWebRepository(scope);
   const context = makeContext(repository);
   const notebook = (await client.createNotebook({ name: "Structured sync" })).notebook;
@@ -244,11 +244,11 @@ try {
   assert.equal(fixture.value(await context[fixture.api].get(memo.id)), "Desktop wins");
   checked.push("two-client sync conflicts preserved until explicit recovery");
   // A failed outbox write must also roll back memo content and local history.
-  const inspection = new Database(join(nativeDirectory, "edgeever.sqlite"));
+  const inspection = new Database(join(nativeDirectory, "ponder.sqlite"));
   const beforeMemo = (await native.request("memo.get", { memoId: memo.id })).memo;
   const beforeHistory = (await native.request("memo.revisions", { memoId: memo.id })).revisions;
   const safeBase = await desktopContext[fixture.api].get(memo.id);
-  inspection.exec("CREATE TRIGGER fail_guarded_queue BEFORE INSERT ON _edgeever_sidecar_outbox BEGIN SELECT RAISE(ABORT, 'test outbox unavailable'); END");
+  inspection.exec("CREATE TRIGGER fail_guarded_queue BEFORE INSERT ON _ponder_sidecar_outbox BEGIN SELECT RAISE(ABORT, 'test outbox unavailable'); END");
   try {
     await assert.rejects(desktopContext[fixture.api].edit(memo.id, { ...baseline(safeBase), ...fixture.edit("Must roll back") }), /test outbox unavailable/);
     assert.deepEqual((await native.request("memo.get", { memoId: memo.id })).memo, beforeMemo);

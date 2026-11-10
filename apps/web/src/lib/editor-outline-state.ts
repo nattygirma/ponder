@@ -2,7 +2,7 @@ import type { Mapping } from "@tiptap/pm/transform";
 import type { OutlineItem } from "./editor-outline";
 
 export type OutlineSnapshot = { items: OutlineItem[]; collapsed: number[] };
-const storageKey = (memoId: string) => `edgeever.editor.outline.v1.${encodeURIComponent(memoId)}`;
+const storageKey = (memoId: string) => `ponder.editor.outline.v1.${encodeURIComponent(memoId)}`;
 const unsaved = new Map<string, OutlineSnapshot>();
 
 export const readOutlineSnapshot = (memoId: string): OutlineSnapshot | null => {

@@ -1,4 +1,4 @@
-// Runs inside the installed WorkBuddy Electron, never EdgeEver's Electron.
+// Runs inside the installed WorkBuddy Electron, never Ponder's Electron.
 // Use WorkBuddy's own codec and native storage; key material stays in this process.
 const { createConnection, createServer } = require("node:net");
 const { randomUUID } = require("node:crypto");
@@ -81,7 +81,7 @@ async function launch() {
     });
     socket.once("error", () => {
       if (Date.now() < deadline) setTimeout(send, 25);
-      else { process.stderr.write("[EdgeEver] WorkBuddy credential bootstrap failed\n"); process.exit(1); }
+      else { process.stderr.write("[Ponder] WorkBuddy credential bootstrap failed\n"); process.exit(1); }
     });
   };
   process.once("exit", () => {
@@ -95,6 +95,6 @@ async function launch() {
 
 launch().catch(() => {
   // Native failures can contain sensitive material. Emit only a stable code.
-  process.stderr.write("[EdgeEver] WorkBuddy credential bootstrap unavailable\n");
+  process.stderr.write("[Ponder] WorkBuddy credential bootstrap unavailable\n");
   process.exit(1);
 });

@@ -9,9 +9,9 @@ import type {
   CompanionToolExecuteResult,
   CompanionTurn,
   CompanionTurnCompleteInput,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import type { ModelMessage } from "ai";
-import { companionFailureDiagnostics, sealCompanionProcess } from "@edgeever/shared";
+import { companionFailureDiagnostics, sealCompanionProcess } from "@ponder/shared";
 import { throwIfAborted } from "./abort-signal";
 import { createClientAiModel } from "./ai-model";
 

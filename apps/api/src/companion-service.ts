@@ -1,7 +1,7 @@
 import type {
   CompanionAnswer, CompanionMention, CompanionMemory, CompanionQuestion, CompanionSource, CompanionTodo,
   CompanionToolCall, CompanionTurn, CompanionTurnAttachmentMeta, CompanionTurnInput,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { refreshCompanionPreferences } from "./companion-learning";
 import { AppError } from "./app-error";
 import { compactCompanionQuestions, compactCompanionTodos, compactCompanionTools, parseJsonArray, parseJsonObject } from "./companion-tool-receipts";

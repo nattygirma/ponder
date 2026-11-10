@@ -8,13 +8,13 @@
     "windowsManifestSha256": "b77c41c3a52b8734c53f3476004b20f197397e672391d70f8a77fc9709564551",
     "windowsManifest": {
       "schemaVersion": 1,
-      "keyId": "edgeever-windows-update-2026-01",
+      "keyId": "ponder-windows-update-2026-01",
       "version": "2.18.0",
       "platform": "win32",
       "arch": "x64",
       "releaseDate": "2026-11-03T10:36:15.210Z",
       "file": {
-        "name": "EdgeEver-2.18.0-windows-x64.exe",
+        "name": "Ponder-2.18.0-windows-x64.exe",
         "size": 132538751,
         "sha512": "c6YJ6ipPYuOvlh7oogHWILIqV86osm2z8fKZ3p0O3retqm8ARvhFu5bIf0DZjWwuxVLWv7ZeeIFDnHT1eQKG5A==",
         "sha256": "26144d402c376455d5def32f19c8ed336fdd756a13fbca00bbd1fa83f1a447ce"
@@ -22,7 +22,7 @@
     },
     "windowsManifestSignature": {
       "schemaVersion": 1,
-      "keyId": "edgeever-windows-update-2026-01",
+      "keyId": "ponder-windows-update-2026-01",
       "signature": "xBtzxZ1ZxGKlLhtGkb4goLa/rOGoNFSFc1c7zqjm350IEFDBYO5ctrFiL54sLJ192UALZ0NocPaN19yqOBnJCw=="
     }
   },
@@ -84,7 +84,7 @@
         "2.17.0",
         "2.18.0"
       ],
-      "installedPath": "/home/runner/work/_temp/release-bridge/previous/EdgeEver.AppImage",
+      "installedPath": "/home/runner/work/_temp/release-bridge/previous/Ponder.AppImage",
       "jobUrl": "https://github.com/tianma-if/edgeever/actions/runs/41630352692/job/125898030507"
     }
   },
@@ -98,7 +98,7 @@
         "2.18.2",
         "2.18.3"
       ],
-      "instrumentation": "Full EdgeEver test builds with isolated app identity, loopback feed and command harness; macOS uses Developer ID signing and Windows an ephemeral test trust key. The production update controller, macOS native preparation and package digest verification are unchanged; real native installer mechanisms are exercised.",
+      "instrumentation": "Full Ponder test builds with isolated app identity, loopback feed and command harness; macOS uses Developer ID signing and Windows an ephemeral test trust key. The production update controller, macOS native preparation and package digest verification are unchanged; real native installer mechanisms are exercised.",
       "scenarios": [
         {
           "scenario": "install-latest",
@@ -158,7 +158,7 @@
         "2.18.2",
         "2.18.3"
       ],
-      "instrumentation": "Full EdgeEver test builds with isolated app identity, loopback feed and command harness; macOS uses Developer ID signing and Windows an ephemeral test trust key. The production update controller, macOS native preparation and package digest verification are unchanged; real native installer mechanisms are exercised.",
+      "instrumentation": "Full Ponder test builds with isolated app identity, loopback feed and command harness; macOS uses Developer ID signing and Windows an ephemeral test trust key. The production update controller, macOS native preparation and package digest verification are unchanged; real native installer mechanisms are exercised.",
       "scenarios": [
         {
           "scenario": "install-latest",
@@ -218,7 +218,7 @@
         "2.18.2",
         "2.18.3"
       ],
-      "instrumentation": "Full EdgeEver test builds with isolated app identity, loopback feed and command harness; macOS uses Developer ID signing and Windows an ephemeral test trust key. The production update controller, macOS native preparation and package digest verification are unchanged; real native installer mechanisms are exercised.",
+      "instrumentation": "Full Ponder test builds with isolated app identity, loopback feed and command harness; macOS uses Developer ID signing and Windows an ephemeral test trust key. The production update controller, macOS native preparation and package digest verification are unchanged; real native installer mechanisms are exercised.",
       "fixtureRun": null,
       "scenarios": [
         {
@@ -282,7 +282,7 @@
         "2.18.2",
         "2.18.3"
       ],
-      "instrumentation": "Full EdgeEver test builds with isolated app identity, loopback feed and command harness; macOS uses Developer ID signing and Windows an ephemeral test trust key. The production update controller, macOS native preparation and package digest verification are unchanged; real native installer mechanisms are exercised.",
+      "instrumentation": "Full Ponder test builds with isolated app identity, loopback feed and command harness; macOS uses Developer ID signing and Windows an ephemeral test trust key. The production update controller, macOS native preparation and package digest verification are unchanged; real native installer mechanisms are exercised.",
       "fixtureRun": null,
       "scenarios": [
         {
@@ -340,8 +340,8 @@
   },
   "scope": {
     "officialReleaseUpgrades": "Unmodified published v2.17.0 installers upgrade to production candidate v2.18.0 on isolated GitHub-hosted runners. Loopback feed and dialog automation use the main-process inspector; installed package bytes and native update verification are unchanged. The updated application must open its existing isolated profile with renderer and sidecar ready.",
-    "cachedIntermediateScenarios": "Three full EdgeEver test builds use an isolated application identity, loopback feed and command harness. macOS installers retain Developer ID signing; Windows uses an ephemeral test trust key. The shared production update controller, macOS native preparation and package digest verification are unchanged. Each scenario must install the latest version once and never boot the cached intermediate version.",
-    "releaseStatus": "CI verification only; no public Release was created or published and no locally installed EdgeEver application was replaced."
+    "cachedIntermediateScenarios": "Three full Ponder test builds use an isolated application identity, loopback feed and command harness. macOS installers retain Developer ID signing; Windows uses an ephemeral test trust key. The shared production update controller, macOS native preparation and package digest verification are unchanged. Each scenario must install the latest version once and never boot the cached intermediate version.",
+    "releaseStatus": "CI verification only; no public Release was created or published and no locally installed Ponder application was replaced."
   },
   "localChecks": {
     "regressionTests": {

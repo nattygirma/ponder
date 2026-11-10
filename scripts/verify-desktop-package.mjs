@@ -25,8 +25,8 @@ const walk = (directory) => {
 };
 
 const files = walk(outputDirectory);
-const requestedPlatform = process.env.EDGE_EVER_VERIFY_TARGET ?? process.platform;
-const requestedArch = process.env.EDGE_EVER_DESKTOP_ARCH ?? process.arch;
+const requestedPlatform = process.env.PONDER_VERIFY_TARGET ?? process.platform;
+const requestedArch = process.env.PONDER_DESKTOP_ARCH ?? process.arch;
 const listAsarFiles = (asarPath, executable) => {
   const paths = new Set(listPackage(asarPath).map((path) => path.replaceAll("\\", "/")));
   assertDesktopProductionFiles(paths);
@@ -80,8 +80,8 @@ const verifyGlibcBaseline = (path, maximum = [2, 35]) => {
   assert.equal(exceedsBaseline, false, `Rust sidecar must not require glibc newer than ${maximum.join(".")}`);
 };
 
-for (const sidecarPath of files.filter((path) => /[\\/]resources[\\/]sidecar[\\/]edgeever-sidecar(?:\.exe)?$/i.test(path))) {
-  const bundleRoot = sidecarPath.replace(/[\\/]resources[\\/]sidecar[\\/]edgeever-sidecar(?:\.exe)?$/i, "");
+for (const sidecarPath of files.filter((path) => /[\\/]resources[\\/]sidecar[\\/]ponder-sidecar(?:\.exe)?$/i.test(path))) {
+  const bundleRoot = sidecarPath.replace(/[\\/]resources[\\/]sidecar[\\/]ponder-sidecar(?:\.exe)?$/i, "");
   assert.ok(existsSync(join(bundleRoot, "resources", "web", "index.html")), `Desktop bundle is missing the Web renderer: ${bundleRoot}`);
   assert.ok(existsSync(join(bundleRoot, "resources", "web", "desktop-storage-bridge.html")), `Desktop bundle is missing the renderer storage bridge: ${bundleRoot}`);
   assert.ok(existsSync(join(bundleRoot, "resources", "migrations")), `Desktop bundle is missing migrations: ${bundleRoot}`);
@@ -89,26 +89,26 @@ for (const sidecarPath of files.filter((path) => /[\\/]resources[\\/]sidecar[\\/
 
 if (requestedPlatform === "darwin") {
   assert.ok(["arm64", "x64"].includes(requestedArch), `Unsupported macOS architecture: ${requestedArch}`);
-  assert.ok(existsSync(join(outputDirectory, `EdgeEver-${version}-mac-${requestedArch}.dmg`)), `macOS package must contain the current ${requestedArch} DMG`);
-  assert.ok(existsSync(join(outputDirectory, `EdgeEver-${version}-mac-${requestedArch}.dmg.blockmap`)), `macOS package must contain the current ${requestedArch} DMG blockmap`);
-  assert.ok(existsSync(join(outputDirectory, `EdgeEver-${version}-mac-${requestedArch}.zip`)), `macOS package must contain the current ${requestedArch} update ZIP`);
-  assert.ok(existsSync(join(outputDirectory, `EdgeEver-${version}-mac-${requestedArch}.zip.blockmap`)), `macOS package must contain the current ${requestedArch} ZIP blockmap`);
+  assert.ok(existsSync(join(outputDirectory, `Ponder-${version}-mac-${requestedArch}.dmg`)), `macOS package must contain the current ${requestedArch} DMG`);
+  assert.ok(existsSync(join(outputDirectory, `Ponder-${version}-mac-${requestedArch}.dmg.blockmap`)), `macOS package must contain the current ${requestedArch} DMG blockmap`);
+  assert.ok(existsSync(join(outputDirectory, `Ponder-${version}-mac-${requestedArch}.zip`)), `macOS package must contain the current ${requestedArch} update ZIP`);
+  assert.ok(existsSync(join(outputDirectory, `Ponder-${version}-mac-${requestedArch}.zip.blockmap`)), `macOS package must contain the current ${requestedArch} ZIP blockmap`);
   const unpackedDirectory = requestedArch === "x64" ? "mac" : `mac-${requestedArch}`;
-  const unpackedApp = join(outputDirectory, unpackedDirectory, "EdgeEver.app");
+  const unpackedApp = join(outputDirectory, unpackedDirectory, "Ponder.app");
   assert.ok(existsSync(unpackedApp), "macOS package must contain the unpacked app bundle");
-  const executable = join(unpackedApp, "Contents", "MacOS", "EdgeEver");
+  const executable = join(unpackedApp, "Contents", "MacOS", "Ponder");
   const appResources = join(unpackedApp, "Contents", "Resources");
-  const sidecar = join(appResources, "sidecar", "edgeever-sidecar");
+  const sidecar = join(appResources, "sidecar", "ponder-sidecar");
   assert.ok(existsSync(sidecar), `macOS app bundle is missing the sidecar: ${sidecar}`);
   verifyMachOArch(executable, requestedArch, "Electron executable");
   verifyMachOArch(sidecar, requestedArch, "Rust sidecar");
-  const shareExtension = join(unpackedApp, "Contents", "PlugIns", "EdgeEverShare.appex", "Contents", "MacOS", "EdgeEverShare");
+  const shareExtension = join(unpackedApp, "Contents", "PlugIns", "PonderShare.appex", "Contents", "MacOS", "PonderShare");
   assert.ok(existsSync(shareExtension), `macOS app bundle is missing the WeChat share extension: ${shareExtension}`);
   verifyMachOArch(shareExtension, requestedArch, "WeChat share extension");
   const extensionSymbols = spawnSync("nm", ["-u", shareExtension], { encoding: "utf8" });
   assert.equal(extensionSymbols.status, 0, `WeChat share extension symbol inspection failed: ${extensionSymbols.stderr || extensionSymbols.stdout}`);
   assert.match(extensionSymbols.stdout, /\b_NSExtensionMain\b/, "WeChat share extension must use the system extension entry point");
-  const shareExtensionInfo = readFileSync(join(unpackedApp, "Contents", "PlugIns", "EdgeEverShare.appex", "Contents", "Info.plist"), "utf8");
+  const shareExtensionInfo = readFileSync(join(unpackedApp, "Contents", "PlugIns", "PonderShare.appex", "Contents", "Info.plist"), "utf8");
   assert.match(shareExtensionInfo, /com\.apple\.share-services/, "WeChat share extension must register a share service");
   assert.match(shareExtensionInfo, /NSExtensionActivationSupportsFileWithMaxCount/, "WeChat share extension must accept shared files");
   const asarPath = join(appResources, "app.asar");
@@ -127,11 +127,11 @@ if (requestedPlatform === "darwin") {
   rmSync(unpackedApp, { recursive: true, force: true });
 } else if (requestedPlatform === "win32") {
   assert.equal(requestedArch, "x64", `Windows release package must target x64, received: ${requestedArch}`);
-  const installer = join(outputDirectory, `EdgeEver-${version}-windows-x64.exe`);
+  const installer = join(outputDirectory, `Ponder-${version}-windows-x64.exe`);
   const unpackedDirectory = join(outputDirectory, "win-unpacked");
-  const executable = join(unpackedDirectory, "EdgeEver.exe");
+  const executable = join(unpackedDirectory, "Ponder.exe");
   const resources = join(unpackedDirectory, "resources");
-  const sidecar = join(resources, "sidecar", "edgeever-sidecar.exe");
+  const sidecar = join(resources, "sidecar", "ponder-sidecar.exe");
   assert.ok(existsSync(installer), `Windows package must contain the current x64 NSIS installer: ${installer}`);
   assert.ok(existsSync(executable), `Windows package must contain the unpacked x64 executable: ${executable}`);
   assert.ok(existsSync(sidecar), `Windows package must contain the x64 sidecar: ${sidecar}`);
@@ -152,16 +152,16 @@ if (requestedPlatform === "darwin") {
   assert.ok(!asarFiles.has("/src/preload/index.mjs"), "Windows app bundle must not contain the unsupported ESM preload");
 } else if (requestedPlatform === "linux") {
   assert.equal(requestedArch, "x64", `Linux Preview package must target x64, received: ${requestedArch}`);
-  const appImage = join(outputDirectory, `EdgeEver-${version}-linux-x64.AppImage`);
+  const appImage = join(outputDirectory, `Ponder-${version}-linux-x64.AppImage`);
   const unpackedDirectory = join(outputDirectory, "linux-unpacked");
-  const executable = ["EdgeEver", "edgeever"]
+  const executable = ["Ponder", "ponder"]
     .map((name) => join(unpackedDirectory, name))
     .find(existsSync);
   const resources = join(unpackedDirectory, "resources");
-  const sidecar = join(resources, "sidecar", "edgeever-sidecar");
+  const sidecar = join(resources, "sidecar", "ponder-sidecar");
   assert.ok(existsSync(appImage), `Linux package must contain the current x64 AppImage: ${appImage}`);
   assert.ok(statSync(appImage).mode & 0o111, "Linux AppImage must be executable");
-  assert.ok(executable, "Linux package must contain the unpacked EdgeEver executable");
+  assert.ok(executable, "Linux package must contain the unpacked Ponder executable");
   assert.ok(existsSync(sidecar), `Linux app bundle is missing the sidecar: ${sidecar}`);
   assert.ok(statSync(sidecar).mode & 0o111, "Linux sidecar must be executable");
   assert.ok(existsSync(join(resources, "web", "index.html")), "Linux app bundle is missing the Web renderer");

@@ -6,7 +6,7 @@ import { initializeTheme } from "@/components/ThemeProvider";
 import { applyEditorBodyFontPreference } from "@/lib/editor-body-font";
 import { installEditorBodyFontFaces } from "@/lib/editor-body-font-faces";
 import { applyUiFontPreference } from "@/lib/ui-font";
-import { installPhoneImageFillStyle } from "@edgeever/shared/image-display";
+import { installPhoneImageFillStyle } from "@ponder/shared/image-display";
 import { bootstrapI18n } from "@/i18n";
 import { errorScreenText as t } from "@/lib/error-screen-copy";
 import "./styles/mobile-markdown-editor.css";
@@ -16,7 +16,7 @@ installPhoneImageFillStyle();
 
 declare global {
   interface Window {
-    edgeeverMobileEditorBootstrap?: {
+    ponderMobileEditorBootstrap?: {
       markMounted: () => void;
       showFailure: () => void;
     };
@@ -88,7 +88,7 @@ const queryClient = new QueryClient({
 
 const MobileEditorApp = () => {
   React.useEffect(() => {
-    window.edgeeverMobileEditorBootstrap?.markMounted();
+    window.ponderMobileEditorBootstrap?.markMounted();
   }, []);
 
   return (

@@ -1,4 +1,4 @@
-import { docToMarkdown, markdownToDoc, type TiptapDoc } from "@edgeever/shared";
+import { docToMarkdown, markdownToDoc, type TiptapDoc } from "@ponder/shared";
 import type { MemoDocumentAction } from "@/lib/app-helpers";
 import type { Editor } from "@tiptap/react";
 import { isEditorReady } from "./editor-pane-helpers";

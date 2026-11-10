@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { serializeInfographicDocument } from "@edgeever/shared";
+import { serializeInfographicDocument } from "@ponder/shared";
 import { advanceInfographicSyncBase, classifyInfographicUpdate, infographicEditorSnapshot, infographicMemoSnapshot } from "./infographic-sync";
 
 const document = { schemaVersion: 1, syntax: "graphic", history: [] };

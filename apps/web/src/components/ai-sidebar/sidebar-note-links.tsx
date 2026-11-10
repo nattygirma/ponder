@@ -1,4 +1,4 @@
-import { createMemoLinkHref } from "@edgeever/shared";
+import { createMemoLinkHref } from "@ponder/shared";
 import type { ComponentProps, ReactNode } from "react";
 import { parseAssistantNoteLinkHref } from "@/lib/assistant-note-links";
 
@@ -31,18 +31,18 @@ export function rewriteSidebarNoteLinks(markdown: string): string {
       // Local agents sometimes report a new note only as an inline-code ID.
       // Turn that exact ID into the same workspace link as a Markdown citation.
       const memoId = /^`(memo_[0-9a-f]{32})`$/i.exec(part)?.[1];
-      return memoId ? `<edgeever-note data-memo-id="${memoId}">${memoId}</edgeever-note>` : part;
+      return memoId ? `<ponder-note data-memo-id="${memoId}">${memoId}</ponder-note>` : part;
     }
     return part.replace(MARKDOWN_LINK, (match, label: string, href: string) => {
       const memoId = parseAssistantNoteLinkHref(href);
       if (!memoId) return match;
-      return `<edgeever-note data-memo-id="${escapeAttr(memoId)}">${escapeAttr(label)}</edgeever-note>`;
+      return `<ponder-note data-memo-id="${escapeAttr(memoId)}">${escapeAttr(label)}</ponder-note>`;
     });
   }).join("");
 }
 
 // hast-util-sanitize matches property names, so this is `dataMemoId`, not the HTML attribute.
-export const sidebarNoteLinkAllowedTags = { "edgeever-note": ["dataMemoId"] };
+export const sidebarNoteLinkAllowedTags = { "ponder-note": ["dataMemoId"] };
 
 const memoIdFromProps = (props: Record<string, unknown>) => {
   const value = props["data-memo-id"] ?? props.dataMemoId;
@@ -69,7 +69,7 @@ export function SidebarNoteLink({
 }
 
 export const sidebarNoteLinkComponents = {
-  "edgeever-note": SidebarNoteLink,
+  "ponder-note": SidebarNoteLink,
 } satisfies Record<string, (props: ComponentProps<typeof SidebarNoteLink>) => ReactNode>;
 
 /** Read a clicked in-app note link. Other anchors stay untouched. */

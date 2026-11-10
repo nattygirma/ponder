@@ -7,11 +7,11 @@ const distDirectory = join(process.cwd(), "apps", "web", "dist");
 const indexHtml = readFileSync(join(distDirectory, "index.html"), "utf8");
 const serviceWorker = readFileSync(join(distDirectory, "sw.js"), "utf8");
 const staticHeaders = readFileSync(join(distDirectory, "_headers"), "utf8");
-assert.match(serviceWorker, /edgeever-resource-blobs/, "PWA must provide a runtime cache for resource bytes");
+assert.match(serviceWorker, /ponder-resource-blobs/, "PWA must provide a runtime cache for resource bytes");
 assert.match(serviceWorker, /CacheFirst/, "PWA resource bytes must use a cache-first runtime strategy");
-assert.match(serviceWorker, /edgeever-app-shell/, "PWA navigation must use a dedicated app-shell runtime cache");
-assert.match(serviceWorker, /edgeever-optional-pdf/, "PWA must cache the optional PDF runtime after first use");
-assert.match(serviceWorker, /edgeever-optional-locales/, "PWA must cache the Japanese catalog after first use");
+assert.match(serviceWorker, /ponder-app-shell/, "PWA navigation must use a dedicated app-shell runtime cache");
+assert.match(serviceWorker, /ponder-optional-pdf/, "PWA must cache the optional PDF runtime after first use");
+assert.match(serviceWorker, /ponder-optional-locales/, "PWA must cache the Japanese catalog after first use");
 assert.match(serviceWorker, /NetworkFirst/, "PWA navigation must prefer the current deployment over cached HTML");
 assert.doesNotMatch(serviceWorker, /PrecacheFallbackPlugin/, "PWA navigation must not fall back to an install-time HTML shell");
 assert.doesNotMatch(serviceWorker, /NavigationRoute/, "PWA navigation must not always serve a cached HTML shell");
@@ -26,7 +26,7 @@ assert.deepEqual(
   ["manifest.webmanifest"],
   `Install-time PWA precache may only keep the web manifest, found: ${precacheURLs.join(", ")}`,
 );
-assert.doesNotMatch(serviceWorker, /edgeever-offline-shell/, "PWA must not retain a versioned offline HTML shell");
+assert.doesNotMatch(serviceWorker, /ponder-offline-shell/, "PWA must not retain a versioned offline HTML shell");
 const modulePreloads = indexHtml.match(/<link rel="modulepreload"[^>]+>/g)?.join("\n") ?? "";
 const initialOptionalPattern = /vendor-code-highlight|vendor-D3|beautiful-mermaid|vendor-(?:mermaid|tiptap|prosemirror|floating|codemirror|x6|infographic|streamdown)|vendor~(?:wasm|emacs-lisp)-|ui-primitives|mermaid\.core|[^"']*Diagram(?:EditorPane)?-/;
 assert.doesNotMatch(modulePreloads, initialOptionalPattern, "Optional editor and diagram chunks must remain out of the initial HTML modulepreload list");

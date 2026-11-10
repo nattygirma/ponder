@@ -4,8 +4,8 @@ import Image from "@tiptap/extension-image";
 import { DOMParser, DOMSerializer } from "@tiptap/pm/model";
 import { parseHTML } from "linkedom";
 import { docToMarkdown, docToText, markdownToDoc } from "./content";
-import { createEdgeEverDocumentExtensions } from "./document-extensions";
-import { createEdgeEverMarkdownMathematics } from "./mathematics-markdown";
+import { createPonderDocumentExtensions } from "./document-extensions";
+import { createPonderMarkdownMathematics } from "./mathematics-markdown";
 
 const imageUrl = "/api/v1/resources/image/blob";
 const link = { href: "/api/v1/resources/manual/blob", title: "Document" };
@@ -50,7 +50,7 @@ describe("linked image persistence", () => {
   });
 
   test("custom image schemas retain link metadata through JSON and HTML clipboard", () => {
-    const schema = getSchema(createEdgeEverDocumentExtensions({ image: Image, mathematics: createEdgeEverMarkdownMathematics() }));
+    const schema = getSchema(createPonderDocumentExtensions({ image: Image, mathematics: createPonderMarkdownMathematics() }));
     const doc = schema.nodeFromJSON({ type: "doc", content: [linked, { type: "paragraph", content: [{ type: "text", text: "Edited text" }] }] });
     doc.check();
     const { document } = parseHTML("<html><body></body></html>");
@@ -61,7 +61,7 @@ describe("linked image persistence", () => {
   });
 
   test("gallery fitting and individual alignment retain image links", () => {
-    const gallery = { type: "doc", content: [{ type: "edgeeverImageGallery", attrs: { fit: "height", layout: "2" }, content: [linked, { type: "image", attrs: { src: "/other.png", alt: "other", width: 72 } }] }] };
+    const gallery = { type: "doc", content: [{ type: "ponderImageGallery", attrs: { fit: "height", layout: "2" }, content: [linked, { type: "image", attrs: { src: "/other.png", alt: "other", width: 72 } }] }] };
     const restored = markdownToDoc(docToMarkdown(gallery));
     expect(restored.content[0]).toMatchObject(gallery.content[0]);
     const aligned = { type: "doc", content: [{ ...linked, attrs: { ...linked.attrs, alignment: "right", width: 35 } }] };
@@ -76,7 +76,7 @@ describe("linked image persistence", () => {
   });
 
   test("keeps linked images valid inside lists, quotes and mixed paragraphs", () => {
-    const schema = getSchema(createEdgeEverDocumentExtensions({ mathematics: createEdgeEverMarkdownMathematics() }));
+    const schema = getSchema(createPonderDocumentExtensions({ mathematics: createPonderMarkdownMathematics() }));
     const source = `[![thumb](${imageUrl})](${link.href} "Document")`;
     for (const markdown of [`- ${source}`, `3. ${source}`, `- [x] ${source}`, `> ${source}`, `Before ${source} after`]) {
       const doc = markdownToDoc(markdown);
@@ -90,7 +90,7 @@ describe("linked image persistence", () => {
   });
 
   test("keeps existing image-only list JSON and nested siblings after exporting and reopening", () => {
-    const schema = getSchema(createEdgeEverDocumentExtensions({ mathematics: createEdgeEverMarkdownMathematics() }));
+    const schema = getSchema(createPonderDocumentExtensions({ mathematics: createPonderMarkdownMathematics() }));
     const paragraph = text => ({ type: "paragraph", content: [{ type: "text", text }] });
     const variants = [["bulletList", "listItem", {}], ["orderedList", "listItem", { start: 3 }], ["taskList", "taskItem", {}]];
     for (const [type, itemType, attrs] of variants) {

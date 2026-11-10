@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "bun:test";
-import { DIAGRAM_CANVAS_DARK, DIAGRAM_CANVAS_LIGHT } from "@edgeever/shared";
+import { DIAGRAM_CANVAS_DARK, DIAGRAM_CANVAS_LIGHT } from "@ponder/shared";
 import { DIAGRAM_THEME_PALETTES, resolveDiagramPalette } from "./diagram-theme.ts";
 
 const channel = (value) => {

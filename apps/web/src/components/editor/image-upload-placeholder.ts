@@ -18,13 +18,13 @@ type ImageUploadPlaceholderAction =
 let nextPlaceholderId = 0;
 
 export const IMAGE_UPLOAD_PLACEHOLDER_PLUGIN_KEY = new PluginKey<DecorationSet>(
-  "edgeever-image-upload-placeholder",
+  "ponder-image-upload-placeholder",
 );
 
 const renderPlaceholder = (placeholder: ImageUploadPlaceholder) => {
   const element = document.createElement("figure");
   const isFile = placeholder.kind === "file";
-  element.className = isFile ? "edgeever-file-upload-placeholder" : "edgeever-image-upload-placeholder";
+  element.className = isFile ? "ponder-file-upload-placeholder" : "ponder-image-upload-placeholder";
   element.contentEditable = "false";
   element.dataset.placeholderId = placeholder.id;
   element.setAttribute("role", "status");
@@ -32,7 +32,7 @@ const renderPlaceholder = (placeholder: ImageUploadPlaceholder) => {
 
   if (isFile) {
     const icon = document.createElement("span");
-    icon.className = "edgeever-file-upload-placeholder__icon";
+    icon.className = "ponder-file-upload-placeholder__icon";
     icon.setAttribute("aria-hidden", "true");
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 24 24");
@@ -48,12 +48,12 @@ const renderPlaceholder = (placeholder: ImageUploadPlaceholder) => {
     element.appendChild(icon);
 
     const filename = document.createElement("span");
-    filename.className = "edgeever-file-upload-placeholder__filename";
+    filename.className = "ponder-file-upload-placeholder__filename";
     filename.textContent = placeholder.filename;
     element.appendChild(filename);
   } else if (placeholder.previewUrl) {
     const preview = document.createElement("img");
-    preview.className = "edgeever-image-upload-placeholder__preview";
+    preview.className = "ponder-image-upload-placeholder__preview";
     preview.src = placeholder.previewUrl;
     preview.alt = "";
     preview.setAttribute("aria-hidden", "true");
@@ -63,15 +63,15 @@ const renderPlaceholder = (placeholder: ImageUploadPlaceholder) => {
 
   const status = document.createElement("figcaption");
   status.className = isFile
-    ? "edgeever-file-upload-placeholder__status"
-    : "edgeever-image-upload-placeholder__status";
+    ? "ponder-file-upload-placeholder__status"
+    : "ponder-image-upload-placeholder__status";
 
   const spinner = document.createElement("span");
-  spinner.className = "edgeever-image-upload-placeholder__spinner";
+  spinner.className = "ponder-image-upload-placeholder__spinner";
   spinner.setAttribute("aria-hidden", "true");
 
   const label = document.createElement("span");
-  label.className = "edgeever-upload-placeholder__label";
+  label.className = "ponder-upload-placeholder__label";
   label.textContent = placeholder.statusLabel;
   status.appendChild(spinner);
   status.appendChild(label);
@@ -112,7 +112,7 @@ export const createImageUploadPlaceholderPlugin = () => new Plugin<DecorationSet
 });
 
 export const ImageUploadPlaceholderExtension = Extension.create({
-  name: "edgeeverImageUploadPlaceholder",
+  name: "ponderImageUploadPlaceholder",
   addProseMirrorPlugins() {
     return [createImageUploadPlaceholderPlugin()];
   },
@@ -197,7 +197,7 @@ export const updateImageUploadPlaceholder = (
   // Update the widget in place so its decoded local preview stays mounted.
   const element = editor.view.dom.querySelector(`[data-placeholder-id="${placeholder.id}"]`);
   element?.setAttribute("aria-label", `${statusLabel}: ${placeholder.filename}`);
-  const label = element?.querySelector(".edgeever-upload-placeholder__label");
+  const label = element?.querySelector(".ponder-upload-placeholder__label");
   if (label) label.textContent = statusLabel;
 };
 

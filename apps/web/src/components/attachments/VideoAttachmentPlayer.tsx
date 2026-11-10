@@ -29,7 +29,7 @@ export const VideoAttachmentPlayer = ({
       className="aspect-video w-full bg-slate-950 object-contain"
       controls
       controlsList="nodownload"
-      data-edgeever-video-player
+      data-ponder-video-player
       playsInline
       preload="metadata"
       src={src}

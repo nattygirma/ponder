@@ -21,7 +21,7 @@ export const createWindowsUpdateMetadata = async ({ directory, version }) => {
   if (!STABLE_VERSION.test(version)) {
     throw new Error(`Windows update version must be stable X.Y.Z: ${version}`);
   }
-  const installerName = `EdgeEver-${version}-windows-x64.exe`;
+  const installerName = `Ponder-${version}-windows-x64.exe`;
   const installerPath = join(directory, installerName);
   const stats = statSync(installerPath);
   if (!stats.isFile() || stats.size <= 0) {

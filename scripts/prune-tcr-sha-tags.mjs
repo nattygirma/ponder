@@ -141,7 +141,7 @@ const isMain =
 
 if (isMain) {
   const keep = Number.parseInt(process.env.TCR_SHA_TAGS_TO_KEEP || "20", 10);
-  const repoName = process.env.TCR_REPOSITORY || "edgeever/edgeever";
+  const repoName = process.env.TCR_REPOSITORY || "ponder/ponder";
   const credentials = {
     region: process.env.TENCENTCLOUD_REGION || "ap-guangzhou",
     secretId: process.env.TENCENTCLOUD_SECRET_ID,

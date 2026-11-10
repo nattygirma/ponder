@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { encryptSharePassword, readSharePassword } from "./share-password-encryption";
 
-const env = { EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "original-root" };
+const env = { PONDER_CREDENTIALS_ENCRYPTION_KEY: "original-root" };
 describe("recoverable share passwords", () => {
   test("encrypts with random IVs and binds each ciphertext to its share", async () => {
     const first = await encryptSharePassword("secret12", "token1", env);
@@ -15,18 +15,18 @@ describe("recoverable share passwords", () => {
   test("uses a previous key after rotation; missing keys never fall back to plaintext", async () => {
     const encrypted = await encryptSharePassword("secret12", "token", env);
     expect(await readSharePassword(encrypted, "token", {
-      EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "new-root",
-      EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS: "original-root",
+      PONDER_CREDENTIALS_ENCRYPTION_KEY: "new-root",
+      PONDER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS: "original-root",
     })).toBe("secret12");
     expect(await readSharePassword(encrypted, "token", {})).toBeUndefined();
     expect(await readSharePassword(null, "token", env)).toBeUndefined();
     await expect(encryptSharePassword("secret12", "token", {})).rejects.toMatchObject({ code: "share_encryption_unavailable" });
   });
   test("supports existing deployment authentication secrets and their fallback", async () => {
-    const encrypted = await encryptSharePassword("secret12", "token", { EDGE_EVER_AUTH_PASSWORD: "old-auth" });
+    const encrypted = await encryptSharePassword("secret12", "token", { PONDER_AUTH_PASSWORD: "old-auth" });
     expect(await readSharePassword(encrypted, "token", {
-      EDGE_EVER_AUTH_PASSWORD_HASH: "new-auth-hash",
-      EDGE_EVER_AUTH_PASSWORD_FALLBACK: "old-auth",
+      PONDER_AUTH_PASSWORD_HASH: "new-auth-hash",
+      PONDER_AUTH_PASSWORD_FALLBACK: "old-auth",
     })).toBe("secret12");
   });
 });

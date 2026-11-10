@@ -1,4 +1,4 @@
-import type { WorkspaceExtension, WorkspaceExtensionUpsertInput } from "@edgeever/shared";
+import type { WorkspaceExtension, WorkspaceExtensionUpsertInput } from "@ponder/shared";
 import { api } from "@/lib/api";
 import type { ExtensionInstallSource, InstalledExtension } from "@/lib/plugins/plugin-host";
 

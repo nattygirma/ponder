@@ -1,7 +1,7 @@
 export const copyTextToClipboard = async (text: string) => {
-  if (typeof window !== "undefined" && window.edgeeverDesktop?.isAvailable) {
+  if (typeof window !== "undefined" && window.ponderDesktop?.isAvailable) {
     try {
-      return await window.edgeeverDesktop.copyText(text);
+      return await window.ponderDesktop.copyText(text);
     } catch {
       return false;
     }
@@ -37,8 +37,8 @@ export const copyTextToClipboard = async (text: string) => {
 };
 
 export const copyHtmlToClipboard = async (html: string, plainText: string) => {
-  if (typeof window !== "undefined" && window.edgeeverDesktop?.isAvailable) {
-    const copied = await window.edgeeverDesktop.copyHtml(html, plainText);
+  if (typeof window !== "undefined" && window.ponderDesktop?.isAvailable) {
+    const copied = await window.ponderDesktop.copyHtml(html, plainText);
     if (!copied) throw new Error("Native rich clipboard verification failed");
     return;
   }
@@ -109,7 +109,7 @@ const toPngBlob = (blob: Blob): Promise<Blob | null> => {
 };
 
 export const copyImageUrlToClipboard = async (url: string): Promise<boolean> => {
-  const copyImage = typeof window !== "undefined" ? window.edgeeverDesktop?.copyImage : undefined;
+  const copyImage = typeof window !== "undefined" ? window.ponderDesktop?.copyImage : undefined;
   if (copyImage) {
     try {
       const response = await fetch(url);
@@ -158,7 +158,7 @@ export const copyResourceToClipboard = async ({
   filename: string;
   asImage: boolean;
 }): Promise<boolean> => {
-  const desktop = typeof window !== "undefined" ? window.edgeeverDesktop : undefined;
+  const desktop = typeof window !== "undefined" ? window.ponderDesktop : undefined;
   if (desktop?.copyImage || desktop?.copyFile) {
     try {
       const response = await load();
@@ -202,7 +202,7 @@ export const copyResourceToClipboard = async ({
 };
 
 export const copyImageBlobToClipboard = async (blob: Blob): Promise<boolean> => {
-  const copyImage = typeof window !== "undefined" ? window.edgeeverDesktop?.copyImage : undefined;
+  const copyImage = typeof window !== "undefined" ? window.ponderDesktop?.copyImage : undefined;
   if (copyImage) {
     // Renderer clipboard writes are denied in the desktop app. Text and HTML
     // already go through the main process; image bytes follow the same path.
@@ -287,7 +287,7 @@ const assignClipboardMethod = (clipboard: Clipboard, name: "write" | "writeText"
 };
 
 export const installDesktopClipboardBridge = () => {
-  if (typeof window === "undefined" || window.edgeeverDesktop?.isAvailable !== true) return false;
+  if (typeof window === "undefined" || window.ponderDesktop?.isAvailable !== true) return false;
   const clipboard = navigator.clipboard;
   if (!clipboard || desktopClipboardBridges.has(clipboard)) return false;
   assignClipboardMethod(clipboard, "writeText", writeDesktopClipboardText);

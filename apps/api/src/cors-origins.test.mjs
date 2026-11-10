@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { DESKTOP_APP_ORIGIN } from "../../desktop/src/main/app-protocol.mjs";
-import { fetchEdgeEverApp } from "./index";
+import { fetchPonderApp } from "./index";
 
 const executionContext = {
   passThroughOnException() {},
@@ -13,7 +13,7 @@ const corsRequest = (origin, { method = "GET", path = "/api/release" } = {}) => 
     headers["Access-Control-Request-Method"] = "GET";
     headers["Access-Control-Request-Headers"] = "authorization,content-type";
   }
-  return fetchEdgeEverApp(
+  return fetchPonderApp(
     new Request(`https://notes.example.com${path}`, { method, headers }),
     {},
     executionContext,
@@ -24,7 +24,7 @@ describe("API CORS origins", () => {
   test("allows the packaged desktop renderer origin on credentialed API requests", async () => {
     const response = await corsRequest(DESKTOP_APP_ORIGIN);
 
-    expect(DESKTOP_APP_ORIGIN).toBe("edgeever-app://app");
+    expect(DESKTOP_APP_ORIGIN).toBe("ponder-app://app");
     expect(response.status).toBe(200);
     expect(response.headers.get("access-control-allow-origin")).toBe(DESKTOP_APP_ORIGIN);
     expect(response.headers.get("access-control-allow-credentials")).toBe("true");

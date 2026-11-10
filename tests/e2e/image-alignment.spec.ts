@@ -22,8 +22,8 @@ const expectPosition = async (figure: Locator, alignment: "left" | "center" | "r
 
 test("positions individual images and preserves alignment through resize, undo, Markdown edits and reload", async ({ page }) => {
   await page.addInitScript(() => {
-    localStorage.setItem("edgeever.locale.preference", "en-US");
-    localStorage.setItem("edgeever.editorToolbarExpanded", "true");
+    localStorage.setItem("ponder.locale.preference", "en-US");
+    localStorage.setItem("ponder.editorToolbarExpanded", "true");
   });
   await page.route("https://example.test/alignment.png", (route) => route.fulfill({
     contentType: "image/svg+xml",
@@ -44,16 +44,16 @@ test("positions individual images and preserves alignment through resize, undo, 
     await page.getByPlaceholder("Search notes").fill(title);
     await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
     const rich = page.locator(".ProseMirror[contenteditable='true']");
-    const images = rich.locator("figure.edgeever-image-node");
+    const images = rich.locator("figure.ponder-image-node");
     const first = images.nth(0);
     const second = images.nth(1);
     await expect(images).toHaveCount(2);
     await expect(first).not.toHaveClass(/is-selected/);
-    await expect(rich.locator(".edgeever-image-controls")).toHaveCount(0);
+    await expect(rich.locator(".ponder-image-controls")).toHaveCount(0);
     await expectPosition(first, "left");
     await selectImage(first);
-    const panel = first.locator(".edgeever-image-panel");
-    await expect(panel.locator("[data-edgeever-resource-menu]")).toHaveCount(1);
+    const panel = first.locator(".ponder-image-panel");
+    await expect(panel.locator("[data-ponder-resource-menu]")).toHaveCount(1);
     await expect(panel.getByRole("button", { name: "Download", exact: true })).toBeVisible();
     await expect(panel.getByRole("button", { name: "Copy", exact: true })).toBeVisible();
     await expect(panel.getByRole("button", { name: "Delete", exact: true })).toBeVisible();

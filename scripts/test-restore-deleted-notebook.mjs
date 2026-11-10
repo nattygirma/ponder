@@ -71,7 +71,7 @@ const createEnv = () => {
     sqlite,
     env: {
       DB: new SqliteD1Database(sqlite),
-      EDGE_EVER_ALLOW_UNAUTHENTICATED: "true",
+      PONDER_ALLOW_UNAUTHENTICATED: "true",
       RESOURCES: {
         delete: async () => undefined,
         get: async () => null,
@@ -83,7 +83,7 @@ const createEnv = () => {
 
 const fetchWorker = async (env, path, init = {}) =>
   worker.fetch(
-    new Request(`https://edgeever.test${path}`, init),
+    new Request(`https://ponder.test${path}`, init),
     env,
     {
       waitUntil: () => undefined,

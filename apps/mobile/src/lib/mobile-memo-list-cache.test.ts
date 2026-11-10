@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { ListMemosResponse } from "@edgeever/client";
+import type { ListMemosResponse } from "@ponder/client";
 import type { InfiniteData } from "@tanstack/react-query";
 import { removeMobileMemosFromListCache } from "./mobile-memo-list-cache";
 

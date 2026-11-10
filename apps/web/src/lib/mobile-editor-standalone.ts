@@ -1,10 +1,10 @@
-import { emptyDoc, resolveMemoContentDoc, type MemoDetail, type Resource, type TiptapDoc } from "@edgeever/shared";
+import { emptyDoc, resolveMemoContentDoc, type MemoDetail, type Resource, type TiptapDoc } from "@ponder/shared";
 import { ApiRequestError, api } from "@/lib/api";
 
 export const MOBILE_EDITOR_LEAVE_SAVE_TIMEOUT_MS = 1600;
 export const MOBILE_EDITOR_INITIAL_FOCUS_DELAY_MS = 160;
-export const MOBILE_EDITOR_DRAFT_STORAGE_PREFIX = "edgeever-mobile-tiptap-draft:";
-export const DEFAULT_MOBILE_EDITOR_MEMO_TITLE = "无标题笔记";
+export const MOBILE_EDITOR_DRAFT_STORAGE_PREFIX = "ponder-mobile-tiptap-draft:";
+export const DEFAULT_MOBILE_EDITOR_MEMO_TITLE = "Untitled note";
 
 export type MobileEditorMemoResponse = {
   memo: MemoDetail;
@@ -36,24 +36,24 @@ export type MobileEditorSaveState =
 
 export const getMobileEditorSaveLabel = (saveState: MobileEditorSaveState) =>
   saveState === "loading"
-    ? "加载中"
+    ? "Loading"
     : saveState === "saving"
-      ? "保存中"
+      ? "Saving"
       : saveState === "compressing"
-        ? "压缩中"
+        ? "Compressing"
         : saveState === "uploading"
-          ? "上传中"
+          ? "Uploading"
           : saveState === "dirty"
-            ? "未保存"
+            ? "Unsaved"
             : saveState === "saved"
-              ? "已保存"
+              ? "Saved"
               : saveState === "local-draft"
-                ? "本地草稿"
+                ? "Local draft"
                 : saveState === "leaving"
-                  ? "返回中"
+                  ? "Going back"
                   : saveState === "error"
-                    ? "保存失败"
-                    : "已保存";
+                    ? "Save failed"
+                    : "Saved";
 
 export const getMobileEditorStatusClassName = (saveState: MobileEditorSaveState) =>
   saveState === "error"

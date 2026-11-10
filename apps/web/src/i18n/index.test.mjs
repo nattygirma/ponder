@@ -23,7 +23,7 @@ describe("lazy Japanese catalog", () => {
   test("keeps the Japanese chunk out of HTML modulepreload and caches it after first use", () => {
     expect(viteConfig).toContain("globPatterns: []");
     expect(viteConfig).toContain("name: \"i18n-ja\"");
-    expect(viteConfig).toContain("edgeever-optional-locales");
+    expect(viteConfig).toContain("ponder-optional-locales");
     expect(viteConfig).toContain("i18n-(?:en-US|ja|pl|ru)-");
   });
 
@@ -43,23 +43,21 @@ describe("lazy Japanese catalog", () => {
 
 describe("optional English catalog", () => {
   test("loads the selected locale and English fallback before rendering", () => {
-    for (const locale of ["en-US", "ja", "pl", "ru", "zh-CN"]) {
+    for (const locale of ["en-US", "ja", "pl", "ru"]) {
       const result = spawnSync(process.execPath, ["-e", `
         import assert from "node:assert/strict";
         globalThis.document = { documentElement: { lang: "" } };
         globalThis.window = { localStorage: {
-          getItem: (key) => key === "edgeever.locale.preference" ? ${JSON.stringify(locale)} : null,
+          getItem: (key) => key === "ponder.locale.preference" ? ${JSON.stringify(locale)} : null,
           setItem() {}, removeItem() {},
         } };
         const { default: i18n, bootstrapI18n, changeAppLocale } = await import(${JSON.stringify(new URL("./index.ts", import.meta.url).pathname)});
         await bootstrapI18n();
         assert.equal(i18n.language, ${JSON.stringify(locale)});
         assert.notEqual(i18n.t("common.save"), "common.save");
-        if (${JSON.stringify(locale)} !== "zh-CN") assert.ok(i18n.hasResourceBundle("en-US", "translation"));
+        assert.ok(i18n.hasResourceBundle("en-US", "translation"));
         await changeAppLocale("en-US");
         assert.equal(i18n.t("common.save"), "Save");
-        await changeAppLocale("zh-CN");
-        assert.equal(i18n.t("common.save"), "保存");
       `], { encoding: "utf8" });
       expect(result.stderr).toBe("");
       expect(result.status).toBe(0);

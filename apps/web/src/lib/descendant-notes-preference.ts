@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from "react";
 
-export const SHOW_DESCENDANT_NOTES_STORAGE_KEY = "edgeever.showDescendantNotes";
+export const SHOW_DESCENDANT_NOTES_STORAGE_KEY = "ponder.showDescendantNotes";
 
-export const SHOW_DESCENDANT_NOTES_CHANGED_EVENT = "edgeever:show-descendant-notes-changed";
+export const SHOW_DESCENDANT_NOTES_CHANGED_EVENT = "ponder:show-descendant-notes-changed";
 
 // Parent notebooks keep aggregating their sub-notebooks unless turned off.
 export const resolveStoredShowDescendantNotes = (stored: string | null): boolean =>

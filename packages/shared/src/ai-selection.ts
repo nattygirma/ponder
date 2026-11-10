@@ -9,7 +9,7 @@ import {
 
 type TiptapInlineContent = NonNullable<TiptapNode["content"]>;
 
-const INLINE_SENTINEL = "edgeever-inline-sentinel";
+const INLINE_SENTINEL = "ponder-inline-sentinel";
 
 const isTextNode = (node: TiptapNode | TiptapTextNode): node is TiptapTextNode =>
   node.type === "text" && "text" in node;

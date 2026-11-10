@@ -1,4 +1,4 @@
-import type { PluginPanelAction, PluginPanelActionVariant, PluginPanelChrome, PluginPanelToolbarItem } from "@edgeever/plugin-api";
+import type { PluginPanelAction, PluginPanelActionVariant, PluginPanelChrome, PluginPanelToolbarItem } from "@ponder/plugin-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";

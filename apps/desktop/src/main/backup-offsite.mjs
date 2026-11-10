@@ -5,7 +5,7 @@ import { join, posix } from "node:path";
 import { Transform } from "node:stream";
 import { backupError } from "./backup-settings.mjs";
 
-export const DEFAULT_OFFSITE_FOLDER = "/EdgeEver/backups";
+export const DEFAULT_OFFSITE_FOLDER = "/Ponder/backups";
 const RETRY_AFTER_MS = 3600000;
 const STALL_TIMEOUT_MS = 120000;
 
@@ -117,7 +117,7 @@ export class OffsiteBackup {
     // An interrupted upload leaves a .part file; remove it on the next start.
     if (this.record.activePart) void this.removeActivePart(generation);
   }
-  assertReady() { if (!this.record) throw backupError("backup_login_required", "Sign in to an EdgeEver instance first."); }
+  assertReady() { if (!this.record) throw backupError("backup_login_required", "Sign in to a Ponder instance first."); }
 
   async save(config, password) {
     this.assertReady(); const generation = this.generation;

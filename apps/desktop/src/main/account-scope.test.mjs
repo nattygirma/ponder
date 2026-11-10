@@ -11,8 +11,8 @@ describe("desktop account scopes", () => {
   });
 
   test("stores accounts below the managed user-data directory", () => {
-    const directory = accountDataDirectory("/tmp/edgeever", "https://notes.example.com", "user-1");
-    expect(directory.startsWith(`${join("/tmp/edgeever", "accounts")}${sep}`)).toBe(true);
+    const directory = accountDataDirectory("/tmp/ponder", "https://notes.example.com", "user-1");
+    expect(directory.startsWith(`${join("/tmp/ponder", "accounts")}${sep}`)).toBe(true);
     expect(directory.endsWith(`${sep}user-1`)).toBe(false);
   });
 });

@@ -2,7 +2,7 @@
 
 ## Observed incident
 
-On 2026-10-31, the desktop login screen reported `http_500` for `tianma.edgeever.org`. Read-only checks found `/api/release` still reporting server version 2.16.0, `/api/health` returning 500, and the unauthenticated session probe returning 200. Worker logs for the failing health request explicitly reported `D1_ERROR: Your account has exceeded D1's free tier daily row read limit`. The database check failed before login; these observations do not attribute the historical reads to a particular operation or establish data loss.
+On 2026-10-31, the desktop login screen reported `http_500` for `appkeep.io`. Read-only checks found `/api/release` still reporting server version 2.16.0, `/api/health` returning 500, and the unauthenticated session probe returning 200. Worker logs for the failing health request explicitly reported `D1_ERROR: Your account has exceeded D1's free tier daily row read limit`. The database check failed before login; these observations do not attribute the historical reads to a particular operation or establish data loss.
 
 The prior release's Demo deployment had already failed with the same account-level quota error. Release artifact validation did not establish readiness of this personal instance. Updating the desktop application does not deploy the server-side read-budget fixes.
 

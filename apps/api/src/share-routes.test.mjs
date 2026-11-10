@@ -1,4 +1,4 @@
-import { FONT_IDS } from "@edgeever/shared/font-catalog";
+import { FONT_IDS } from "@ponder/shared/font-catalog";
 import { describe, expect, test } from "bun:test";
 import { Database } from "bun:sqlite";
 import { globSync, readFileSync } from "node:fs";
@@ -87,7 +87,7 @@ const createDatabaseEnvironment = ({ presentationMigration = true } = {}) => {
 
   return {
     sqlite,
-    environment: { EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "test-share-master-key", storage: { db: new SqliteD1Database(sqlite), resources: {} } },
+    environment: { PONDER_CREDENTIALS_ENCRYPTION_KEY: "test-share-master-key", storage: { db: new SqliteD1Database(sqlite), resources: {} } },
   };
 };
 
@@ -667,7 +667,7 @@ test("workspace login cannot bypass a memo's password or attachment gate", async
     } };
     const base = `/api/public/shares/${sourceToken}`;
     for (const path of [base, `${base}/resources/res_owner/blob`]) {
-      for (const headers of [{ Cookie: "edgeever_session=owner-session" }, { Authorization: "Bearer owner-session" }]) {
+      for (const headers of [{ Cookie: "ponder_session=owner-session" }, { Authorization: "Bearer owner-session" }]) {
         const response = await app.request(path, { headers }, environment);
         expect(response.status).toBe(403);
         expect((await response.json()).error.code).toBe("share_password_required");
@@ -675,13 +675,13 @@ test("workspace login cannot bypass a memo's password or attachment gate", async
     }
     expect(blobReads).toBe(0);
     const unlocked = await app.request(`${base}/unlock`, {
-      method: "POST", headers: { "Content-Type": "application/json", Cookie: "edgeever_session=owner-session" },
+      method: "POST", headers: { "Content-Type": "application/json", Cookie: "ponder_session=owner-session" },
       body: JSON.stringify({ password }),
     }, environment);
     expect(unlocked.status).toBe(200);
     const cookie = readCookieValue(unlocked, "ee_share");
     for (const path of [base, `${base}/resources/res_owner/blob`]) {
-      expect((await app.request(path, { headers: { Cookie: `edgeever_session=owner-session; ee_share=${cookie}` } }, environment)).status).toBe(200);
+      expect((await app.request(path, { headers: { Cookie: `ponder_session=owner-session; ee_share=${cookie}` } }, environment)).status).toBe(200);
     }
   } finally {
     sqlite.close();

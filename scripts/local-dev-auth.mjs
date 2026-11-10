@@ -4,7 +4,7 @@ import { hashPassword } from "../apps/api/src/auth-crypto.ts";
 // Development fixtures only: never imported by either production runtime.
 // Reuse the owner of the existing local workspace without changing credentials.
 export const createLocalDevelopmentSession = async (database) => {
-  const passwordHash = await hashPassword("edgeever-local-dev");
+  const passwordHash = await hashPassword("ponder-local-dev");
   return database.transaction(() => {
     let user = database.query(`
       SELECT u.id, u.username FROM users u
@@ -33,7 +33,7 @@ export const createLocalDevelopmentSession = async (database) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       `sess_${crypto.randomUUID()}`, user.id, createHash("sha256").update(token).digest("hex"),
-      `local-dev_${crypto.randomUUID()}`, "EdgeEver Local Dev", "Local development",
+      `local-dev_${crypto.randomUUID()}`, "Ponder Local Dev", "Local development",
       new Date(Date.now() + maxAge * 1000).toISOString(), now, now,
     );
     return { token, maxAge, username: user.username };

@@ -1,15 +1,16 @@
 import { describe, expect, test } from "bun:test";
 import { Editor } from "@tiptap/core";
-import { createEdgeEverDocumentExtensions, docToMarkdown } from "@edgeever/shared";
-import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
+import { createPonderDocumentExtensions, docToMarkdown } from "@ponder/shared";
+import { createPonderMathematics } from "@ponder/shared/mathematics";
 import { ensureTestWindowDom } from "../../lib/restore-test-global.mjs";
 
 const createEditor = (content = { type: "doc", content: [{ type: "paragraph" }] }) => {
   ensureTestWindowDom();
   const editor = new Editor({
-    extensions: createEdgeEverDocumentExtensions({
-      mathematics: createEdgeEverMathematics(),
-    }),
+    // These tests compare exact documents, which block colours and ids would add empty fields to.
+    extensions: createPonderDocumentExtensions({
+      mathematics: createPonderMathematics(),
+    }).filter((extension) => extension.name !== "pageBlockAttributes"),
     content,
   });
   editor.view.updateState(editor.state.reconfigure({

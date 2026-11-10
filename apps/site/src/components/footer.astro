@@ -8,7 +8,7 @@ const copy = siteCopy[locale].nav;
 <footer class="my-12 sm:my-16 border-t border-slate-200/60 pt-8 pb-12 px-4">
   <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left text-xs sm:text-sm text-slate-500">
     <p class="leading-relaxed">
-      Copyright © {new Date().getFullYear()} EdgeEver. All rights reserved.
+      Copyright © {new Date().getFullYear()} Ponder. All rights reserved.
     </p>
 
     <div class="flex flex-wrap items-center justify-center gap-3">
@@ -17,17 +17,15 @@ const copy = siteCopy[locale].nav;
         target="_blank"
         rel="noopener noreferrer"
         aria-label={
-          locale === "zh-CN"
-            ? "感谢独立博主缙哥哥在项目成长中提出的宝贵建议与教程分享"
-            : locale === "ja"
-              ? "独立ブロガー Dujin さんへの謝辞。製品への助言とチュートリアルに感謝します"
-              : locale === "pl"
-                ? "Podziękowania dla niezależnego blogera Dujina za uwagi do produktu i poradniki"
-                : "Thanks to independent blogger Dujin for product feedback and tutorials"
+          locale === "ja"
+            ? "独立ブロガー Dujin さんへの謝辞。製品への助言とチュートリアルに感謝します"
+            : locale === "pl"
+              ? "Podziękowania dla niezależnego blogera Dujina za uwagi do produktu i poradniki"
+              : "Thanks to independent blogger Dujin for product feedback and tutorials"
         }
         class="inline-flex min-h-11 sm:min-h-0 items-center hover:text-emerald-700 transition-colors"
       >
-        {locale === "zh-CN" ? "特别致谢" : locale === "ja" ? "謝辞" : locale === "pl" ? "Podziękowania" : "Thanks"}
+        {locale === "ja" ? "謝辞" : locale === "pl" ? "Podziękowania" : "Thanks"}
       </a>
       <span class="text-slate-300">•</span>
       <a href={getLocalizedPath(locale, "/guides/best-practices")} class="inline-flex min-h-11 sm:min-h-0 items-center hover:text-emerald-700 transition-colors">

@@ -1,5 +1,5 @@
 import { iconNames } from "lucide-react/dynamic";
-import { NOTEBOOK_ICONS } from "@edgeever/shared";
+import { NOTEBOOK_ICONS } from "@ponder/shared";
 
 // Keep the existing bilingual keywords; add every icon from the installed library.
 const keywords = new Map<string, string>(

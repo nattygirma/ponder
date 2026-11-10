@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { GoogleAuth } from "google-auth-library";
 
 const ANDROID_PUBLISHER_SCOPE = "https://www.googleapis.com/auth/androidpublisher";
-const DEFAULT_PACKAGE_NAME = "org.edgeever.mobile";
+const DEFAULT_PACKAGE_NAME = "io.appkeep.ponder.mobile";
 const DEFAULT_POLL_ATTEMPTS = 30;
 const DEFAULT_POLL_INTERVAL_MS = 10_000;
 const DEFAULT_DOWNLOAD_TIMEOUT_MS = 60 * 60_000;

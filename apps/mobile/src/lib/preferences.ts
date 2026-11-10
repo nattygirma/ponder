@@ -5,16 +5,16 @@ import {
   serializeAiAssistantLastActionStore,
   type AiAssistantLastActionPreference,
   type AiAssistantLastActionScope,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
-const MEMO_LIST_DENSITY_KEY = "edgeever.mobile.memoListDensity";
-const IMAGE_COMPRESSION_KEY = "edgeever.mobile.imageCompressionEnabled";
-const SHOW_DESCENDANT_NOTES_KEY = "edgeever.mobile.showDescendantNotes";
-const LOCALE_PREFERENCE_KEY = "edgeever.mobile.localePreference";
-const THEME_PREFERENCE_KEY = "edgeever.mobile.themePreference";
+const MEMO_LIST_DENSITY_KEY = "ponder.mobile.memoListDensity";
+const IMAGE_COMPRESSION_KEY = "ponder.mobile.imageCompressionEnabled";
+const SHOW_DESCENDANT_NOTES_KEY = "ponder.mobile.showDescendantNotes";
+const LOCALE_PREFERENCE_KEY = "ponder.mobile.localePreference";
+const THEME_PREFERENCE_KEY = "ponder.mobile.themePreference";
 
 export type MobileMemoListDensity = "preview" | "compact";
-export type MobileLocalePreference = "system" | "zh-CN" | "en-US" | "ja" | "pl" | "ru";
+export type MobileLocalePreference = "system" | "en-US" | "ja" | "pl" | "ru";
 export type MobileThemePreference = "system" | "light" | "dark";
 
 export const readMobileMemoListDensity = async (): Promise<MobileMemoListDensity> => {
@@ -70,7 +70,7 @@ export const readMobileThemePreference = async (): Promise<MobileThemePreference
 export const writeMobileThemePreference = (theme: MobileThemePreference) => AsyncStorage.setItem(THEME_PREFERENCE_KEY, theme);
 
 const isMobileLocalePreference = (value: unknown): value is MobileLocalePreference =>
-  value === "system" || value === "zh-CN" || value === "en-US" || value === "ja" || value === "pl" || value === "ru";
+  value === "system" || value === "en-US" || value === "ja" || value === "pl" || value === "ru";
 
 export const readMobileAiAssistantLastAction = async (
   scope: AiAssistantLastActionScope,

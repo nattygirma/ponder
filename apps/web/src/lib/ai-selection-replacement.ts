@@ -4,4 +4,4 @@ export {
   getRichTextAiSelectionReplacement,
   normalizeAiSelectionReplacement,
   type RichTextAiSelectionContext,
-} from "@edgeever/shared";
+} from "@ponder/shared";

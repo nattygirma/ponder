@@ -136,7 +136,7 @@ def source_sha(run: dict) -> str:
 def select_archive_workflow(client: AppStoreConnect, workflow_id: str = "") -> dict:
     product = client.request("GET", f"/v1/apps/{client.app_id}/ciProduct").get("data")
     if not product:
-        raise SystemExit("No Xcode Cloud product found for EdgeEver")
+        raise SystemExit("No Xcode Cloud product found for Ponder")
     workflows = client.collect(
         f"/v1/ciProducts/{product['id']}/workflows?"
         + urllib.parse.urlencode(
@@ -144,7 +144,7 @@ def select_archive_workflow(client: AppStoreConnect, workflow_id: str = "") -> d
         )
     )
     if not workflows:
-        raise SystemExit("No Xcode Cloud workflows found for EdgeEver")
+        raise SystemExit("No Xcode Cloud workflows found for Ponder")
     if workflow_id:
         matches = [workflow for workflow in workflows if workflow["id"] == workflow_id]
     else:
@@ -403,7 +403,7 @@ def print_run_outputs(run: dict, store_build: dict | None = None) -> None:
 def command_inspect(client: AppStoreConnect) -> None:
     product = client.request("GET", f"/v1/apps/{client.app_id}/ciProduct").get("data")
     if not product:
-        raise SystemExit("No Xcode Cloud product found for EdgeEver")
+        raise SystemExit("No Xcode Cloud product found for Ponder")
     workflows = client.collect(
         f"/v1/ciProducts/{product['id']}/workflows?"
         + urllib.parse.urlencode(

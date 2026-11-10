@@ -1,4 +1,4 @@
-import type { ExtensionLocales, LocalizedExtensionMetadata, MarketplaceEntry } from "@edgeever/plugin-api";
+import type { ExtensionLocales, LocalizedExtensionMetadata, MarketplaceEntry } from "@ponder/plugin-api";
 import type { InstalledExtension } from "./plugin-host";
 
 export interface PluginCatalogItem {

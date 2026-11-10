@@ -74,12 +74,12 @@ jobs:
       - name: Test proxy and direct backup/restore
         if: runner.os != 'Linux'
         env:
-          EDGE_EVER_BACKUP_REPORT: ${{ runner.temp }}/backup-network
+          PONDER_BACKUP_REPORT: ${{ runner.temp }}/backup-network
         run: bun run test:desktop:backup-network
       - name: Test proxy and direct backup/restore (Xvfb)
         if: runner.os == 'Linux'
         env:
-          EDGE_EVER_BACKUP_REPORT: ${{ runner.temp }}/backup-network
+          PONDER_BACKUP_REPORT: ${{ runner.temp }}/backup-network
         run: xvfb-run --auto-servernum bun run test:desktop:backup-network
       - name: Upload runtime reports
         if: always()

@@ -1,9 +1,9 @@
 // Remembers the exact Reddit post under the pointer. The reader runs only after
 // the user chooses the context menu command. This classic content script has no imports.
 (() => {
-  const root = globalThis as typeof globalThis & { __edgeeverRedditTarget?: boolean };
-  if (root.__edgeeverRedditTarget) return;
-  root.__edgeeverRedditTarget = true;
+  const root = globalThis as typeof globalThis & { __ponderRedditTarget?: boolean };
+  if (root.__ponderRedditTarget) return;
+  root.__ponderRedditTarget = true;
 
   const idFromUrl = (value: string) => {
     try {
@@ -20,10 +20,10 @@
   };
 
   document.addEventListener("contextmenu", (event) => {
-    document.querySelectorAll("[data-edgeever-reddit-target]").forEach((node) => node.removeAttribute("data-edgeever-reddit-target"));
+    document.querySelectorAll("[data-ponder-reddit-target]").forEach((node) => node.removeAttribute("data-ponder-reddit-target"));
     const target = event.target instanceof Element ? event.target
       : event.target instanceof Node ? event.target.parentElement : null;
     const post = target?.closest("shreddit-post, article[data-testid='post-container'], [data-testid='post-container'], .thing.link[data-fullname]");
-    if (post && postId(post)) post.setAttribute("data-edgeever-reddit-target", "1");
+    if (post && postId(post)) post.setAttribute("data-ponder-reddit-target", "1");
   }, true);
 })();

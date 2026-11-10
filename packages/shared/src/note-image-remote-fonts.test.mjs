@@ -70,7 +70,7 @@ const withNetwork = async (respond, run) => {
 
 test('deduplicates downloads and persists manifests and subsets for a fresh offline session', async () => {
   const loader = createRemoteFontResourceLoader();
-  const base = 'https://cdn.jsdelivr.net/npm/@edgeever/font-cache-test@1.0.0/';
+  const base = 'https://cdn.jsdelivr.net/npm/@ponder/font-cache-test@1.0.0/';
   const urls = [base + 'font.woff2', base + 'result.css'];
   await withNetwork(url => ({ data: url.endsWith('.css') ? new TextEncoder().encode(css).buffer : woff() }), async requests => {
     await Promise.all([loader(urls[0]), loader(urls[0]), loader(urls[1], true)]);
@@ -86,7 +86,7 @@ test('deduplicates downloads and persists manifests and subsets for a fresh offl
 
 test('falls back to the second mirror, rejects non-font responses and permits retry after failure', async () => {
   const loader = createRemoteFontResourceLoader();
-  const url = 'https://cdn.jsdelivr.net/npm/@edgeever/font-cache-test@1.0.0/retry.woff2';
+  const url = 'https://cdn.jsdelivr.net/npm/@ponder/font-cache-test@1.0.0/retry.woff2';
   await withNetwork(() => ({ data: new TextEncoder().encode('<html>not a font</html>').buffer }), async requests => {
     await expect(loader(url)).rejects.toThrow('NOTE_IMAGE_FONT_UNAVAILABLE');
     expect(requests).toHaveLength(2);
@@ -144,7 +144,7 @@ test('offline first use exports readable defaults, preserves the choice, and kee
     await withNetwork(url => url === urls['offline-sans.woff2'] ? { status: 0, data: sans } : url === urls['geist/GeistMono.ttf'] ? { status: 0, data: mono } : undefined, async requests => {
       const result = await prepareNoteImageAssets({ theme: 'memo', fontStyle: 'youshe', text: '离线笔记 Offline', urls });
       expect(result.fontFallback).toBe(true);
-      expect(result.fontCss).toContain('EdgeEver Offline Sans');
+      expect(result.fontCss).toContain('Ponder Offline Sans');
       expect(result.fontCss).toContain('data:font/woff2;base64,');
       expect(installed).toContain('Geist Mono Variable');
       expect(requests.every(url => url.startsWith('file:'))).toBe(true);
@@ -157,7 +157,7 @@ test('offline first use exports readable defaults, preserves the choice, and kee
 test('invalid tiny and oversized font responses are rejected without DataView errors', async () => {
   for (const data of [new Uint8Array(1).buffer, new Uint8Array(24_000_001).buffer]) {
     await withNetwork(() => ({ data }), async () => {
-      await expect(createRemoteFontResourceLoader()('https://cdn.jsdelivr.net/npm/@edgeever/font-cache-test@1.0.0/invalid.woff2')).rejects.toThrow('NOTE_IMAGE_FONT_UNAVAILABLE');
+      await expect(createRemoteFontResourceLoader()('https://cdn.jsdelivr.net/npm/@ponder/font-cache-test@1.0.0/invalid.woff2')).rejects.toThrow('NOTE_IMAGE_FONT_UNAVAILABLE');
     });
   }
 });
@@ -181,7 +181,7 @@ test('a timed-out template exposes its original download and restores the origin
     const pending = new Promise(resolve => { finish = resolve; });
     const BaseFace = globalThis.FontFace;
     globalThis.FontFace = class extends BaseFace {
-      async load() { if (this.family === 'EdgeEver Share Anton') await pending; return this; }
+      async load() { if (this.family === 'Ponder Share Anton') await pending; return this; }
     };
     await withNetwork(url => url.endsWith('/anton.woff2') ? { data: anton } : undefined, async () => {
       const options = { theme: 'memo', fontStyle: 'anton', text: 'Recover template', urls: {} };
@@ -194,7 +194,7 @@ test('a timed-out template exposes its original download and restores the origin
       const restored = await prepareNoteImageAssets(options);
       expect(restored.fontFallback).toBe(false);
       expect(restored.fontsReady).toBeUndefined();
-      expect(restored.fontCss).toContain('font-family:"EdgeEver Share Anton"');
+      expect(restored.fontCss).toContain('font-family:"Ponder Share Anton"');
       expect(restored.css).not.toContain('sans-serif!important');
     });
   });

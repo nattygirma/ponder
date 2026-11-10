@@ -1,12 +1,12 @@
 # 🤝 Sponsors & Partners
 
-EdgeEver is an open-source, AI-native personal knowledge base and modern productivity workspace. We remain fully open-source, transparent, and neutral, while welcoming sustainable collaborations with the broader commercial and developer ecosystems. We invite enterprises, cloud providers, AI platforms, and developer tooling teams to partner with us.
+Ponder is an open-source, AI-native personal knowledge base and modern productivity workspace. We remain fully open-source, transparent, and neutral, while welcoming sustainable collaborations with the broader commercial and developer ecosystems. We invite enterprises, cloud providers, AI platforms, and developer tooling teams to partner with us.
 
 ---
 
-## Why Sponsor EdgeEver
+## Why Sponsor Ponder
 
-* **High-Value Technical & Knowledge Worker Audience**: EdgeEver brings together software engineers, self-hosting enthusiasts, researchers, and productivity power users who possess sustained, high-lifetime demand for cloud storage, compute platforms, developer tools, and AI services.
+* **High-Value Technical & Knowledge Worker Audience**: Ponder brings together software engineers, self-hosting enthusiasts, researchers, and productivity power users who possess sustained, high-lifetime demand for cloud storage, compute platforms, developer tools, and AI services.
 * **Full-Stack Cross-Platform Matrix**: Spanning macOS, Windows, Linux desktop apps, iOS (native Swift) and Android (Expo) mobile apps, alongside Docker and Cloudflare Serverless runtimes—delivering global, multi-platform brand exposure.
 * **Pioneer in AI Agent & MCP Ecosystem**: Deeply integrated with the Model Context Protocol (MCP) and AI Agent workflows, positioning sponsors at the forefront of the modern AI developer wave.
 
@@ -24,7 +24,7 @@ We welcome and support the following forms of collaboration:
   * Joint technical articles, featured case studies, social media highlights, and open-source advocacy;
   * Collaborative developer workshops, community meetups, and ecosystem synergies.
 * **Infrastructure & Key Resources**:
-  * High-availability cloud compute, object storage (S3/OSS), and global CDN acceleration for our public demo (demo.edgeever.org);
+  * High-availability cloud compute, object storage (S3/OSS), and global CDN acceleration for our public demo (appkeep.io);
   * CI/CD build environments and physical device testing clusters;
   * Generous AI model API quotas and developer access.
 * **Professional Tooling & Platform Licenses**:
@@ -76,7 +76,7 @@ Upon mutual confirmation, we can feature your company's **Name, Logo, Descriptio
 
 ## Interested in Partnering?
 
-If your organization is interested in supporting EdgeEver or exploring infrastructure, cloud services, and co-marketing partnerships, please reach out to us:
+If your organization is interested in supporting Ponder or exploring infrastructure, cloud services, and co-marketing partnerships, please reach out to us:
 
 - **Partnership Email**: [yingwaizhiying@gmail.com](mailto:yingwaizhiying@gmail.com)
-- **WeChat**: `m1245207870` (Please note: **EdgeEver Partner** along with your organization/name)
+- **WeChat**: `m1245207870` (Please note: **Ponder Partner** along with your organization/name)

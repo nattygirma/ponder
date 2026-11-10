@@ -28,6 +28,6 @@ test("rejects truncated file parts and still closes the handle", () => {
     offset: 0,
     readBytes: () => new Uint8Array([1]),
     close: () => { closed = true; },
-  }), 0, 2)).toThrow("附件读取不完整");
+  }), 0, 2)).toThrow("could not be read completely");
   expect(closed).toBe(true);
 });

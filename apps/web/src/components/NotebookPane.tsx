@@ -1,3 +1,4 @@
+import { NotionImportHost, openNotionImport } from "@/components/pages/NotionImport";
 import { lazy, Suspense, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
@@ -26,6 +27,7 @@ import {
   RefreshCw,
   CheckCircle2,
   CircleUserRound,
+  Database,
   Download,
   ExternalLink,
   RotateCcw,
@@ -49,14 +51,14 @@ import { api, getConfiguredDesktopApiBaseUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { useShowDescendantNotesPreference } from "@/lib/descendant-notes-preference";
 import { BETA_BADGE_CLASSNAME } from "@/lib/workspace-ui";
-import type { Notebook, AuthUser, NoteCreateKind } from "@edgeever/shared";
+import type { Notebook, AuthUser, NoteCreateKind } from "@ponder/shared";
 import type { NotebookDropPosition, NotebookSortMode } from "@/lib/app-helpers";
 import type { SyncQueueSummary } from "@/lib/sync-queue";
 import {
   buildNotebookTree,
   getNotebookSortOptions,
   getNotebookSortComparator,
-  hasEdgeEverDragData,
+  hasPonderDragData,
   readNotebookSectionCollapsedPreference,
   readNotebookTreeCollapsedIdsPreference,
   readNotebookSortPreference,
@@ -64,24 +66,28 @@ import {
   writeNotebookTreeCollapsedIdsPreference,
   writeNotebookSortPreference,
 } from "@/lib/app-helpers";
-import type { EdgeEverRepository } from "@/lib/repository";
-import type { EdgeEverPluginHost } from "@/lib/plugins/plugin-host";
+import type { PonderRepository } from "@/lib/repository";
+import type { PonderPluginHost } from "@/lib/plugins/plugin-host";
 import { statusSettleMotion } from "@/lib/motion";
 import { DesktopUpdateNotice } from "./DesktopUpdateNotice";
 import { useDeployedUpdateNotice } from "@/hooks/useDeployedUpdateNotice";
 import { PluginToolbarMenu } from "./plugins/PluginToolbarMenu";
+import { usePages } from "./pages/PagesProvider";
+import { NotificationsButton } from "./comments/NotificationsButton";
+import { WorkspaceSwitcher } from "./teams/Teams";
+import { PagesSidebar } from "./pages/PagesSidebar";
 
 const DesktopSyncIssuesDialog = lazy(() => import("./DesktopSyncIssuesDialog").then((module) => ({ default: module.DesktopSyncIssuesDialog })));
 
-const NOTEBOOK_SIDEBAR_ID = "edgeever-notebook-sidebar";
+const NOTEBOOK_SIDEBAR_ID = "ponder-notebook-sidebar";
 const NOTEBOOK_DRAG_SCROLL_EDGE_PX = 56;
 const NOTEBOOK_DRAG_SCROLL_MAX_STEP_PX = 18;
-const DESKTOP_DOWNLOAD_URL = "https://github.com/tianma-if/edgeever/releases/latest";
-const ANDROID_PLAY_URL = "https://play.google.com/store/apps/details?id=org.edgeever.mobile";
-const ANDROID_APK_URL = "https://github.com/tianma-if/edgeever/releases/latest";
-const IOS_DOWNLOAD_URL = "https://apps.apple.com/us/app/edgeever/id6792625631";
-const CHROMIUM_CLIPPER_URL = "https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo";
-const FIREFOX_CLIPPER_URL = "https://addons.mozilla.org/firefox/addon/edgeever-web-clipper/";
+const DESKTOP_DOWNLOAD_URL = "https://appkeep.io";
+const ANDROID_PLAY_URL = "https://appkeep.io";
+const ANDROID_APK_URL = "https://appkeep.io";
+const IOS_DOWNLOAD_URL = "https://appkeep.io";
+const CHROMIUM_CLIPPER_URL = "https://appkeep.io";
+const FIREFOX_CLIPPER_URL = "https://appkeep.io";
 
 const BrandIconContainer = ({ children, className }: { children: ReactNode; className?: string }) => (
   <span
@@ -155,7 +161,7 @@ const SidebarNavButton = ({
       tone === "warning"
         ? "text-amber-700 hover:bg-amber-50/70 hover:text-amber-800"
         : active
-          ? "edgeever-workspace-selection text-slate-950 font-medium"
+          ? "ponder-workspace-selection text-slate-950 font-medium"
           : "text-slate-700 hover:bg-slate-50 hover:text-slate-950"
     )}
     type="button"
@@ -184,7 +190,7 @@ const SidebarShortcutButton = ({
     <button
       className={cn(
         "flex h-9 min-w-0 w-full items-center justify-center rounded-md px-0 text-xs font-medium transition-colors duration-200",
-        active ? "edgeever-workspace-selection text-slate-950" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+        active ? "ponder-workspace-selection text-slate-950" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
       )}
       type="button"
       aria-current={active ? "page" : undefined}
@@ -364,7 +370,7 @@ const SidebarRailButton = ({
         onClick={onClick}
         className={cn(
           "relative flex h-9 w-9 items-center justify-center rounded-lg text-slate-600 transition-colors duration-150 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 disabled:cursor-not-allowed disabled:opacity-50",
-          active && "edgeever-workspace-selection text-slate-950"
+          active && "ponder-workspace-selection text-slate-950"
         )}
       >
         {icon}
@@ -377,6 +383,7 @@ const SidebarRailButton = ({
 
 const CreateMemoTypeItems = ({ onCreateMemo }: { onCreateMemo: (kind?: NoteCreateKind) => void }) => {
   const { t } = useTranslation();
+  const pages = usePages();
 
   return (
     <>
@@ -408,6 +415,16 @@ const CreateMemoTypeItems = ({ onCreateMemo }: { onCreateMemo: (kind?: NoteCreat
       <DropdownMenuItem className="gap-2 text-xs leading-5" onSelect={() => onCreateMemo("table")}>
         <Table2 className="h-4 w-4 shrink-0" />
         <span className="min-w-0 flex-1 truncate">{t("structuredTable.name")}</span>
+      </DropdownMenuItem>
+      {pages?.enabled ? (
+        <DropdownMenuItem className="gap-2 text-xs leading-5" onSelect={() => void pages.createDatabase({})}>
+          <Database className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 flex-1 truncate">{t("pages.db.newDatabase")}</span>
+        </DropdownMenuItem>
+      ) : null}
+      <DropdownMenuItem className="gap-2 text-xs leading-5" data-notion-import-menu onSelect={openNotionImport}>
+        <Download className="h-4 w-4 shrink-0" />
+        <span className="min-w-0 flex-1 truncate">{t("pages.notionImport.menu")}</span>
       </DropdownMenuItem>
     </>
   );
@@ -570,8 +587,31 @@ export const NotebookPane = ({
   collapsed = false,
   onToggleCollapsed,
   collapseShortcutLabel,
+  pagesSidebar = false,
+  homeActive = false,
+  libraryActive = false,
+  connectionsActive = false,
+  onOpenConnections,
+  onOpenLibrary,
+  onOpenExternalAgents,
+  onOpenHome,
+  onOpenSearch,
+  onNewChat,
+  searchHint = "",
 }: {
-  repository: EdgeEverRepository;
+  /** Use the page-first sidebar. Only the desktop layout has one. */
+  pagesSidebar?: boolean;
+  homeActive?: boolean;
+  libraryActive?: boolean;
+  connectionsActive?: boolean;
+  onOpenConnections?: () => void;
+  onOpenLibrary?: () => void;
+  onOpenExternalAgents?: () => void;
+  onOpenHome?: () => void;
+  onOpenSearch?: () => void;
+  onNewChat?: () => void;
+  searchHint?: string;
+  repository: PonderRepository;
   user: AuthUser | null;
   view: string;
   selectedNotebookId: string | null;
@@ -586,7 +626,7 @@ export const NotebookPane = ({
   onOpenTags: () => void;
   onOpenAssets: () => void;
   onOpenTemplates: () => void;
-  pluginHost: EdgeEverPluginHost;
+  pluginHost: PonderPluginHost;
   onOpenPluginManager: () => void;
   onOpenTrash: () => void;
   onEmptyTrash: () => void;
@@ -612,6 +652,7 @@ export const NotebookPane = ({
   collapseShortcutLabel?: string;
 }) => {
   const { t } = useTranslation();
+  const pages = usePages();
   const showDescendantNotes = useShowDescendantNotesPreference();
   const { unseen: deployedUpdateUnseen } = useDeployedUpdateNotice();
   // Temporarily keep template actions out of the primary workspace navigation.
@@ -644,7 +685,7 @@ export const NotebookPane = ({
   }, []);
 
   const handleNotebookScrollDragOver = (event: React.DragEvent<HTMLDivElement>) => {
-    if (!hasEdgeEverDragData(event.dataTransfer)) {
+    if (!hasPonderDragData(event.dataTransfer)) {
       stopNotebookDragAutoScroll();
       return;
     }
@@ -700,6 +741,9 @@ export const NotebookPane = ({
   const sharedNotebookIds = useMemo(() => new Set(notebookSharesQuery.data?.shares.map(share => share.notebookId) ?? []), [notebookSharesQuery.data]);
   const tree = useMemo(() => buildNotebookTree(notebooks, getNotebookSortComparator(notebookSortMode)), [notebooks, notebookSortMode]);
   const isLoading = notebooksQuery.isLoading;
+  // The inbox is where loose pages live, so its pages are the sidebar's top level rather than a folder.
+  const rootTreeNode = pagesSidebar ? tree.find((node) => node.id === pages?.rootNotebookId) : undefined;
+  const sidebarNotebooks = pagesSidebar ? [...(rootTreeNode?.children ?? []), ...tree.filter((node) => node !== rootTreeNode)] : tree;
   const activeNotebookSortLabel = notebookSortOptions.find((option) => option.value === notebookSortMode)?.label ?? t("options.notebookSort.nameAsc");
 
   useEffect(() => {
@@ -753,6 +797,29 @@ export const NotebookPane = ({
     }, 0);
   }, [selectedNotebookId, tree]);
 
+  const notebookRows = sidebarNotebooks.map((node) => (
+    <NotebookTreeItem
+                key={node.id}
+                node={node}
+                depth={0}
+                selectedNotebookId={selectedNotebookId}
+                onSelect={onSelect}
+                onCreateNotebook={onCreateNotebook}
+                onRenameNotebook={onRenameNotebook}
+              onEditNotebookAppearance={onEditNotebookAppearance}
+                onDeleteNotebook={onDeleteNotebook}
+                onMoveNotebook={handleMoveNotebook}
+                onMoveMemos={onMoveMemos}
+                onDragScroll={handleNotebookScrollDragOver}
+                collapsedNotebookIds={collapsedNotebookIds}
+                onOpenChange={handleNotebookOpenChange}
+                expandSiblingsRequest={expandSiblingsRequest}
+                onExpandSiblings={handleExpandNotebookSiblings}
+                sharedNotebookIds={sharedNotebookIds}
+                showDescendantNotes={showDescendantNotes}
+              />
+  ));
+
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden" data-notebook-sidebar-collapsed={collapsed ? "true" : "false"}>
       <div className={cn("flex min-h-0 flex-1 flex-col", collapsed && "hidden")}>
@@ -771,6 +838,48 @@ export const NotebookPane = ({
         </div>
       </header>
 
+      <NotionImportHost />
+      {pagesSidebar ? (
+        <PagesSidebar
+          homeActive={homeActive}
+          libraryActive={libraryActive}
+          connectionsActive={connectionsActive}
+          canCreate={canCreateMemo && !isCreatingMemo}
+          createMenu={<CreateMemoTypeItems onCreateMemo={onCreateMemo} />}
+          notebookRows={<div className="space-y-px" data-notebook-tree>{notebookRows}</div>}
+          searchHint={searchHint}
+          showSettingsNotice={deployedUpdateUnseen}
+          downloadUrl={DESKTOP_DOWNLOAD_URL}
+          demoRow={demoMode && onResetDemo ? (
+            <SidebarNavButton
+              tone="warning"
+              icon={<RotateCcw className={cn("h-4 w-4 text-amber-600", isResettingDemo && "animate-spin")} />}
+              label={isResettingDemo ? t("demo.resetting") : t("demo.resetButton")}
+              onClick={onResetDemo}
+            />
+          ) : null}
+          collapseButton={onToggleCollapsed ? <TooltipProvider delayDuration={0} skipDelayDuration={0}><SidebarCollapseButton collapsed={collapsed} onToggle={onToggleCollapsed} className="inline-flex" shortcutLabel={collapseShortcutLabel} /></TooltipProvider> : null}
+          onNewChat={onNewChat ?? onBackToList}
+          bottomControls={(
+            <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+              <PluginToolbarMenu host={pluginHost} onManage={onOpenPluginManager} align="start" className="h-7 w-7 rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-950" />
+              <DesktopUpdateNotice />
+            </TooltipProvider>
+          )}
+          onOpenHome={onOpenHome ?? onBackToList}
+          onOpenSearch={onOpenSearch ?? onBackToList}
+          onOpenSettings={onOpenSettings}
+          onOpenLibrary={onOpenLibrary ?? onBackToList}
+          onOpenExternalAgents={onOpenExternalAgents ?? onOpenSettings}
+          onOpenTrash={onOpenTrash}
+          onEmptyTrash={onEmptyTrash}
+          onOpenTags={onOpenTags}
+          onOpenAssets={onOpenAssets}
+          onOpenConnections={onOpenConnections ?? onOpenPluginManager}
+        />
+      ) : (
+      <>
+      {pages?.enabled ? <WorkspaceSwitcher /> : null}
       <TooltipProvider delayDuration={0} skipDelayDuration={0}>
         <nav className="grid shrink-0 grid-cols-2 gap-0.5 border-b border-slate-100 px-2 py-1.5 sm:grid-cols-3 lg:grid-cols-5" aria-label={t("notebookPane.secondaryEntries")}>
           <SidebarShortcutButton icon={<Tag className="h-4 w-4" />} label={t("mobileSheets.tags")} onClick={onOpenTags} />
@@ -783,10 +892,18 @@ export const NotebookPane = ({
             className="h-9 w-full rounded-md px-0 text-slate-600 hover:bg-slate-50 hover:text-slate-950"
           />
           <SidebarTrashShortcut active={view === "trash"} onOpenTrash={onOpenTrash} onEmptyTrash={onEmptyTrash} />
+          {pages?.enabled ? <NotificationsButton /> : null}
+          {pages?.layoutSupported ? (
+            <SidebarShortcutButton
+              icon={<LayoutList className="h-4 w-4" />}
+              label={pages.layout === "pages" ? t("pages.useNoteList") : t("pages.usePageTree")}
+              onClick={() => pages.setLayout(pages.layout === "pages" ? "notes" : "pages")}
+            />
+          ) : null}
         </nav>
       </TooltipProvider>
 
-      {window.edgeeverDesktop?.isAvailable && (
+      {window.ponderDesktop?.isAvailable && (
         <div className="px-3 pt-1.5">
           <SyncStatusBar
             summary={syncSummary}
@@ -800,7 +917,7 @@ export const NotebookPane = ({
       )}
 
       <div className="hidden shrink-0 px-3 pb-2 pt-2 lg:block">
-        <div className="edgeever-create-memo-split flex overflow-hidden rounded-2xl border border-slate-200/90 bg-card shadow-[0_5px_16px_rgba(15,23,42,0.06)] transition-shadow duration-200 hover:shadow-[0_7px_20px_rgba(15,23,42,0.09)]">
+        <div className="ponder-create-memo-split flex overflow-hidden rounded-2xl border border-slate-200/90 bg-card shadow-[0_5px_16px_rgba(15,23,42,0.06)] transition-shadow duration-200 hover:shadow-[0_7px_20px_rgba(15,23,42,0.09)]">
           <button
             className="group flex h-12 max-w-[calc(100%-2.25rem)] shrink-0 items-center gap-2 px-2.5 text-left transition-colors duration-150 hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
@@ -821,7 +938,7 @@ export const NotebookPane = ({
                 aria-label={t("diagram.createType")}
                 disabled={!canCreateMemo || isCreatingMemo}
               >
-                <span className="edgeever-create-memo-split__more-label min-w-0 truncate">{t("diagram.moreTypes")}</span>
+                <span className="ponder-create-memo-split__more-label min-w-0 truncate">{t("diagram.moreTypes")}</span>
                 <ChevronDown className="h-3.5 w-3.5 shrink-0 transition-transform duration-150 group-data-[state=open]:rotate-180" aria-hidden="true" />
               </button>
             </DropdownMenuTrigger>
@@ -930,32 +1047,13 @@ export const NotebookPane = ({
           <div className="mb-4 px-2 py-3 text-sm text-slate-500">{t("notebookPane.loading")}</div>
         ) : (
           <div className="mb-4 space-y-1" data-notebook-tree>
-            {tree.map((node) => (
-              <NotebookTreeItem
-                key={node.id}
-                node={node}
-                depth={0}
-                selectedNotebookId={selectedNotebookId}
-                onSelect={onSelect}
-                onCreateNotebook={onCreateNotebook}
-                onRenameNotebook={onRenameNotebook}
-              onEditNotebookAppearance={onEditNotebookAppearance}
-                onDeleteNotebook={onDeleteNotebook}
-                onMoveNotebook={handleMoveNotebook}
-                onMoveMemos={onMoveMemos}
-                onDragScroll={handleNotebookScrollDragOver}
-                collapsedNotebookIds={collapsedNotebookIds}
-                onOpenChange={handleNotebookOpenChange}
-                expandSiblingsRequest={expandSiblingsRequest}
-                onExpandSiblings={handleExpandNotebookSiblings}
-                sharedNotebookIds={sharedNotebookIds}
-                showDescendantNotes={showDescendantNotes}
-              />
-            ))}
+            {notebookRows}
           </div>
         )}
 
       </div>
+      </>
+      )}
       </div>
 
       {collapsed && onToggleCollapsed ? (
@@ -1042,20 +1140,20 @@ export const NotebookPane = ({
             </nav>
           </div>
         </TooltipProvider>
-      ) : (
-      <footer className="edgeever-workspace-sidebar-footer border-t border-[var(--workspace-divider)] px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
+      ) : pagesSidebar ? null : (
+      <footer className="ponder-workspace-sidebar-footer border-t border-[var(--workspace-divider)] px-3 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-2">
         <div className="space-y-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 className="flex h-9 w-full items-center gap-3 rounded-md px-3 text-left text-xs font-medium leading-5 text-slate-700 transition-colors duration-200 hover:bg-workspace-hover hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900/20 data-[state=open]:bg-workspace-hover data-[state=open]:text-slate-950"
                 type="button"
-                aria-label={t("pwa.sidebarDownloadsTitle") || "下载 EdgeEver 客户端与浏览器插件"}
+                aria-label={t("pwa.sidebarDownloadsTitle")}
               >
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                   <Download className="h-4 w-4" />
                 </span>
-                <span className="min-w-0 flex-1 truncate">{t("pwa.sidebarDownloads") || "下载客户端"}</span>
+                <span className="min-w-0 flex-1 truncate">{t("pwa.sidebarDownloads")}</span>
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -1067,7 +1165,7 @@ export const NotebookPane = ({
               <TooltipProvider delayDuration={0} skipDelayDuration={0}>
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="px-2 py-1 text-xs font-medium uppercase tracking-wider text-slate-400 ">
-                  {t("pwa.sidebarGroupApps") || "客户端应用"}
+                  {t("pwa.sidebarGroupApps")}
                 </DropdownMenuLabel>
                 <DropdownMenuItem asChild>
                   <a
@@ -1147,7 +1245,7 @@ export const NotebookPane = ({
                     href={ANDROID_PLAY_URL}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label={t("pwa.sidebarAndroidTitle") || "在 Google Play 下载 EdgeEver 安卓端"}
+                    aria-label={t("pwa.sidebarAndroidTitle")}
                     className="group flex cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 text-sm text-slate-700 outline-none transition-colors hover:bg-slate-100 hover:text-slate-900 focus:bg-slate-100 focus:text-slate-900   "
                   >
                     <div className="flex min-w-0 items-center gap-2.5">
@@ -1173,7 +1271,7 @@ export const NotebookPane = ({
                       <BrandIconContainer>
                         <Download className="h-3.5 w-3.5 text-slate-700" />
                       </BrandIconContainer>
-                      <span className="truncate font-medium">{t("pwa.sidebarAndroidApk") || "APK 下载"}</span>
+                      <span className="truncate font-medium">{t("pwa.sidebarAndroidApk")}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 text-slate-400 group-hover:text-slate-600 ">
                       <span className="text-xs">Releases</span>
@@ -1186,7 +1284,7 @@ export const NotebookPane = ({
                     href={IOS_DOWNLOAD_URL}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label={t("pwa.sidebarIosTitle") || "在 App Store 下载 EdgeEver iOS 端（仅支持非大陆区 Apple ID）"}
+                    aria-label={t("pwa.sidebarIosTitle")}
                     className="group flex cursor-pointer items-center justify-between gap-2.5 rounded-md px-2 py-1.5 text-sm text-slate-700 outline-none transition-colors hover:bg-slate-100 hover:text-slate-900 focus:bg-slate-100 focus:text-slate-900   "
                   >
                     <div className="flex min-w-0 items-center gap-2">
@@ -1195,7 +1293,7 @@ export const NotebookPane = ({
                       </BrandIconContainer>
                       <span className="truncate font-medium">{t("pwa.sidebarIos") || "iOS"}</span>
                       <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-xs font-medium text-slate-500  ">
-                        {t("pwa.sidebarIosRegionBadge") || "海外 ID"}
+                        {t("pwa.sidebarIosRegionBadge")}
                       </span>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 text-slate-400 group-hover:text-slate-600 ">
@@ -1208,7 +1306,7 @@ export const NotebookPane = ({
               <DropdownMenuSeparator className="my-1 bg-slate-100 " />
               <DropdownMenuGroup>
                 <DropdownMenuLabel className="px-2 py-1 text-xs font-medium uppercase tracking-wider text-slate-400 ">
-                  {t("pwa.sidebarGroupClippers") || "浏览器剪藏插件"}
+                  {t("pwa.sidebarGroupClippers")}
                 </DropdownMenuLabel>
                 <DropdownMenuItem asChild>
                   <a
@@ -1224,7 +1322,7 @@ export const NotebookPane = ({
                       <span className="truncate font-medium">{t("pwa.sidebarChromeEdge") || "Chrome / Edge"}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 text-slate-400 group-hover:text-slate-600 ">
-                      <span className="text-xs">{t("pwa.sidebarWebStoreBadge") || "扩展商店"}</span>
+                      <span className="text-xs">{t("pwa.sidebarWebStoreBadge")}</span>
                       <ExternalLink className="h-3.5 w-3.5" />
                     </div>
                   </a>
@@ -1243,7 +1341,7 @@ export const NotebookPane = ({
                       <span className="truncate font-medium">{t("pwa.sidebarFirefox") || "Firefox"}</span>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 text-slate-400 group-hover:text-slate-600 ">
-                      <span className="text-xs">{t("pwa.sidebarAddonsBadge") || "附加组件"}</span>
+                      <span className="text-xs">{t("pwa.sidebarAddonsBadge")}</span>
                       <ExternalLink className="h-3.5 w-3.5" />
                     </div>
                   </a>

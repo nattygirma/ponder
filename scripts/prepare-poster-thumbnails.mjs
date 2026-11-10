@@ -21,8 +21,8 @@ export const sources = [
   "tests/browser/poster-thumbnail-generator.html", "tests/browser/poster-thumbnail-generator.ts",
 ];
 const digest = data => createHash("sha256").update(data).digest("hex");
-const languages = ["zh", "en"];
-const assetName = /^[a-z0-9-]+\.(zh|en)\.webp$/;
+const languages = ["en"];
+const assetName = /^[a-z0-9-]+\.en\.webp$/;
 const readJson = file => readFile(file, "utf8").then(JSON.parse).catch(error => {
   if (error.code === "ENOENT") return undefined;
   throw error;
@@ -57,7 +57,7 @@ export async function thumbnailsCurrent(output, state) {
 
 async function launchBrowser(root) {
   const { chromium } = await import("@playwright/test");
-  const executablePath = process.env.EDGE_EVER_POSTER_CHROME_EXECUTABLE;
+  const executablePath = process.env.PONDER_POSTER_CHROME_EXECUTABLE;
   if (executablePath) return chromium.launch({ executablePath, headless: true });
   try { return await chromium.launch({ channel: "chrome", headless: true }); }
   catch { /* Standard desktop/CI Chrome may not be installed. */ }
@@ -71,7 +71,7 @@ async function launchBrowser(root) {
   }
 }
 async function cacheGeneratorFonts(root, page) {
-  const directory = path.join(root, "node_modules/.cache/edgeever/poster-thumbnail-fonts");
+  const directory = path.join(root, "node_modules/.cache/ponder/poster-thumbnail-fonts");
   await mkdir(directory, { recursive: true });
   const cacheable = bytes => bytes.length > 48 && bytes.length <= 24_000_000 &&
     ([0x774f4632, 0x00010000, 0x4f54544f].includes(bytes.readUInt32BE(0)) || bytes.toString("utf8").includes("@font-face"));
@@ -104,7 +104,7 @@ async function cacheGeneratorFonts(root, page) {
 export async function openRenderer(root) {
   root = await realpath(root);
   const { build } = await import("vite");
-  const bundle = await mkdtemp(path.join(tmpdir(), "edgeever-poster-renderer-"));
+  const bundle = await mkdtemp(path.join(tmpdir(), "ponder-poster-renderer-"));
   const types = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".woff2": "font/woff2", ".ttf": "font/ttf", ".png": "image/png" };
   const server = createHttpServer(async (request, response) => {
     try {
@@ -160,7 +160,7 @@ export async function openRenderer(root) {
 }
 
 async function acquireLock(root) {
-  const file = path.join(root, "node_modules/.cache/edgeever/poster-thumbnails.lock");
+  const file = path.join(root, "node_modules/.cache/ponder/poster-thumbnails.lock");
   await mkdir(path.dirname(file), { recursive: true });
   const started = Date.now();
   while (true) {
@@ -196,7 +196,7 @@ export async function ensurePosterThumbnails({ root = projectRoot, output = path
     runtime = await renderer(root);
     const templates = await runtime.list();
     if (!templates.length || new Set(templates.map(template => template.id)).size !== templates.length) throw new Error("Invalid poster template catalog");
-    temporary = await mkdtemp(path.join(tmpdir(), "edgeever-poster-thumbnails-"));
+    temporary = await mkdtemp(path.join(tmpdir(), "ponder-poster-thumbnails-"));
     let generated = 0;
     for (const template of templates) {
       if (!/^[a-z0-9-]+$/.test(template.id)) throw new Error("Invalid poster template ID");

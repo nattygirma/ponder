@@ -46,7 +46,7 @@ describe("application color system", () => {
     expect(globals).toContain("--workspace-selection: #dde3e9;");
     expect(globals).toContain("--color-workspace-canvas: var(--workspace-canvas);");
     expect(globals).toContain("--workspace-hover: color-mix(in srgb, var(--workspace-sidebar) 40%, white);");
-    expect(globals).toContain(".edgeever-workspace-sidebar-footer {\n  background: var(--workspace-sidebar);");
+    expect(globals).toContain(".ponder-workspace-sidebar-footer {\n  background: var(--workspace-sidebar);");
     expect(globals).toContain("--slate-500-rgb: 115 115 115;");
     expect(globals).toContain("--slate-950-rgb: 10 10 10;");
     expect(globals).toContain("--amber-50-rgb: 255 251 235;");

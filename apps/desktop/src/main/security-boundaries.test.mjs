@@ -8,10 +8,10 @@ import { resourceResponseHeaders } from "./resource-url.mjs";
 import { isAllowedAppNavigation } from "./window-open-policy.mjs";
 import { credentialForUrl, decodeSessionCredential, encodeSessionCredential } from "./session-credential.mjs";
 import { validateAiProviderUrl } from "./ai-direct.mjs";
-import { createPublicLookup } from "@edgeever/public-network/node";
+import { createPublicLookup } from "@ponder/public-network/node";
 
 test("ACP ignores caller paths on all execution channels and preserves main-owned choices across registration", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-acp-boundary-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-acp-boundary-"));
   try {
     const filename = join(directory, "chosen.json");
     const sender = { isFocused: () => true };
@@ -58,9 +58,9 @@ test("ACP ignores caller paths on all execution channels and preserves main-owne
 });
 
 test("privileged window cannot navigate to resource documents or origin-prefix spoofs", () => {
-  for (const app of ["http://127.0.0.1:5173/", "edgeever-app://app/index.html", "file:///app/web/index.html"]) {
+  for (const app of ["http://127.0.0.1:5173/", "ponder-app://app/index.html", "file:///app/web/index.html"]) {
     expect(isAllowedAppNavigation(app, app)).toBe(true);
-    for (const target of ["http://127.0.0.1:5173@evil.example/", "http://127.0.0.1:51730/", "edgeever-app://app.evil/index.html", "edgeever-resource://resource/html", "edgeever-staged://html", "file:///etc/passwd"]) {
+    for (const target of ["http://127.0.0.1:5173@evil.example/", "http://127.0.0.1:51730/", "ponder-app://app.evil/index.html", "ponder-resource://resource/html", "ponder-staged://html", "file:///etc/passwd"]) {
       expect(isAllowedAppNavigation(target, app)).toBe(false);
     }
   }
@@ -137,7 +137,7 @@ test("AI accepts configured private endpoints while plugin DNS remains public-on
 });
 
 test("custom ACP executables cannot be anchored in renderer-writable client storage", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-acp-storage-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-acp-storage-"));
   try {
     const filename = join(directory, "..payload.bin");
     await writeFile(filename, "test", { mode: 0o700 });

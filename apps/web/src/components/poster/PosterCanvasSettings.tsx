@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import type { PosterDocument } from "@edgeever/shared";
+import type { PosterDocument } from "@ponder/shared";
 import { PLATFORMS } from "@/lib/poster-design/templates";
 import { PosterColor, PosterNumber, PosterSection } from "./PosterControls";
 export function PosterCanvasSettings({
@@ -31,7 +31,7 @@ export function PosterCanvasSettings({
               onClick={() => onPlatform(platform.id)}
             >
               <div className="truncate text-[11px] font-medium">
-                {zh ? platform.zh : platform.en}
+                {platform.en}
               </div>
               <div className="mt-1 text-[10px] tabular-nums text-slate-400">
                 {platform.width} × {platform.height}

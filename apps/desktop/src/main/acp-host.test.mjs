@@ -169,7 +169,7 @@ const stream = acp.ndJsonStream(
   }),
 );
 
-acp.agent({ name: "edgeever-fake-agent" })
+acp.agent({ name: "ponder-fake-agent" })
   .onRequest("initialize", (ctx) => {
     if (${stderrText ? "true" : "false"}) {
       const diagnostic = ${JSON.stringify(stderrText ?? "")};
@@ -306,7 +306,7 @@ describe("ACP command allow-list", () => {
   });
 
   test("lists Codex from PATH presence without marking it available", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-path-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-path-"));
     try {
       const binary = path.join(directory, "codex-acp");
       await writeFile(binary, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
@@ -340,7 +340,7 @@ describe("ACP command allow-list", () => {
   });
 
   test("starts the official DeepSeek ACP profile and uses a separate adapter for pi", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-new-agents-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-new-agents-"));
     try {
       const bin = path.join(directory, "bin");
       await mkdir(bin);
@@ -372,7 +372,7 @@ describe("ACP command allow-list", () => {
   });
 
   test("resolves the three additional ACP entry points from installed commands", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-extra-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-extra-"));
     try {
       for (const name of ["claude-agent-acp", "openclaw", "hermes"]) {
         await writeFile(path.join(directory, name), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
@@ -458,7 +458,7 @@ describe("ACP command allow-list", () => {
   });
 
   test("runs an installed Grok Build CLI through its built-in ACP mode", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-grok-acp-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-grok-acp-"));
     try {
       const binary = path.join(directory, ".grok", "bin", "grok");
       await mkdir(path.dirname(binary), { recursive: true });
@@ -474,7 +474,7 @@ describe("ACP command allow-list", () => {
   });
 
   test("keeps WorkBuddy domestic and international ACP authentication environments separate", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-workbuddy-acp-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-workbuddy-acp-"));
     try {
       const bundled = path.join(directory, "Applications", "WorkBuddy AI.app", "Contents", "Resources", "app.asar.unpacked", "cli", "bin", "codebuddy");
       await mkdir(path.dirname(bundled), { recursive: true });
@@ -494,7 +494,7 @@ describe("ACP command allow-list", () => {
       expect(international.command.unsetEnv).toEqual(["CODEBUDDY_INTERNET_ENVIRONMENT"]);
       expect(createAcpSpawnPlan(international.command, directory).options.env.CODEBUDDY_INTERNET_ENVIRONMENT).toBeUndefined();
       // New encrypted builds need their own native key provider, unavailable in
-      // EdgeEver's Electron. Keep the CLI and edition while changing the host.
+      // Ponder's Electron. Keep the CLI and edition while changing the host.
       const nativeHost = path.resolve(path.dirname(bundled), "../../../../MacOS/Electron");
       await mkdir(path.dirname(nativeHost), { recursive: true });
       await writeFile(nativeHost, "// fake WorkBuddy Electron");
@@ -525,7 +525,7 @@ describe("ACP command allow-list", () => {
   });
 
   test("requires an Antigravity absolute file and does not accept a directory", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-agy-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-agy-"));
     try {
       const file = path.join(directory, "antigravity-acp");
       await writeFile(file, "", { mode: 0o755 });
@@ -582,7 +582,7 @@ describe("ACP prompt blocks", () => {
     const picture = allowed.blocks.find((block) => block.type === "image");
     const resource = allowed.blocks.find((block) => block.type === "resource");
     expect(picture).toEqual({ type: "image", data: image.dataBase64, mimeType: "image/png" });
-    expect(resource.resource.uri).toBe("edgeever-attachment:secret.pdf");
+    expect(resource.resource.uri).toBe("ponder-attachment:secret.pdf");
     expect(resource.resource.mimeType).toBe("application/pdf");
     expect(resource.resource.blob).toBe(pdf.dataBase64);
     const serialized = JSON.stringify(allowed.blocks);
@@ -599,7 +599,7 @@ describe("ACP spawn and failure mapping", () => {
     expect(source).toContain("shell: false");
     expect(source).not.toContain("shell: true");
     expect(() => createAcpSpawnPlan("/bin/echo", home)).toThrow(/invalid_workspace/);
-    const workspace = await mkdtemp(path.join(tmpdir(), "edgeever-acp-spawn-"));
+    const workspace = await mkdtemp(path.join(tmpdir(), "ponder-acp-spawn-"));
     const child = new EventEmitter();
     let captured;
     const spawned = spawnAcpChild((command, args, options) => {
@@ -619,7 +619,7 @@ describe("ACP spawn and failure mapping", () => {
   });
 
   test("adds node tool directories so a Dock-launched agent can exec npx", async () => {
-    const workspace = await mkdtemp(path.join(tmpdir(), "edgeever-acp-path-"));
+    const workspace = await mkdtemp(path.join(tmpdir(), "ponder-acp-path-"));
     const homeDir = "/Users/example";
     const nvmBin = path.join(homeDir, ".nvm", "versions", "node", "v22.14.0", "bin");
     const present = new Set(["/opt/homebrew/bin", path.join(homeDir, ".volta", "bin"), nvmBin]);
@@ -699,7 +699,7 @@ describe("ACP spawn and failure mapping", () => {
         fs: { readTextFile: false, writeTextFile: false },
         terminal: false,
       },
-      clientInfo: { name: "edgeever", version: "1.2.3" },
+      clientInfo: { name: "ponder", version: "1.2.3" },
     });
   });
 
@@ -799,7 +799,7 @@ describe("ACP stdio session", () => {
   const readReport = async (reportPath) => JSON.parse(await readFile(reportPath, "utf8"));
 
   sessionTest("probes a session, then closes the process", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-probe-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-probe-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -839,7 +839,7 @@ describe("ACP stdio session", () => {
         terminal: false,
       });
       expect(path.resolve(report.newSession.cwd)).not.toBe(home);
-      expect(report.newSession.cwd).toContain(`${path.sep}edgeever-acp-`);
+      expect(report.newSession.cwd).toContain(`${path.sep}ponder-acp-`);
       expect(report.newSession.mcpServers).toEqual([]);
       const pid = Number(await readFile(`${reportPath}.pid`, "utf8"));
       await waitUntilExited(pid);
@@ -854,7 +854,7 @@ describe("ACP stdio session", () => {
 
   for (const kind of ["none", "account", "api_key", "gateway", "external", undefined]) {
     sessionTest(`handles delayed auth identity ${kind ?? "not reported"} with successful session/new`, async () => {
-      const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-identity-"));
+      const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-identity-"));
       const reportPath = path.join(directory, "report.json");
       try {
         const scriptPath = await writeFakeAgent(directory, { reportPath, authStatusKind: kind, advertiseAuthStatus: true, authStatusDelay: 80 });
@@ -879,7 +879,7 @@ describe("ACP stdio session", () => {
   }
 
   sessionTest("accepts new credentials after authentication and ignores the earlier logged-out identity", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-identity-login-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-identity-login-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, authStatusKind: "none", advertiseAuthStatus: true, advertiseAuth: true });
@@ -892,7 +892,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("reports credentials revoked during a live prompt as needs_login", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-identity-expired-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-identity-expired-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, authStatusKind: "api_key", advertiseAuthStatus: true, promptAuthStatusKind: "none", hold: true });
@@ -906,7 +906,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("drains split stderr and records only sanitized diagnostics", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-stderr-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-stderr-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const diagnostics = [];
@@ -929,7 +929,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("a managed Codex connector is unchecked after restart and becomes available after a real probe", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-restart-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-restart-"));
     try {
       const scriptPath = await writeFakeAgent(directory, {
         reportPath: path.join(directory, "report.json"),
@@ -960,7 +960,7 @@ describe("ACP stdio session", () => {
     { name: "session timeout", options: { hangSession: true }, state: "failed", message: "connection_timeout" },
   ]) {
     sessionTest(`replaces an available connector status after prompt ${failure.name} and recovers on reconnection`, async () => {
-      const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-status-"));
+      const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-status-"));
       try {
         const agentOptions = { reportPath: path.join(directory, "report.json"), secretPath: path.join(directory, "secret.txt") };
         const scriptPath = await writeFakeAgent(directory, agentOptions);
@@ -989,8 +989,8 @@ describe("ACP stdio session", () => {
     }, 15_000);
   }
 
-  sessionTest("an EdgeEver MCP setup failure does not mark a healthy Agent as disconnected", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-mcp-status-"));
+  sessionTest("a Ponder MCP setup failure does not mark a healthy Agent as disconnected", async () => {
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-mcp-status-"));
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath: path.join(directory, "report.json"), secretPath: path.join(directory, "secret.txt") });
       let noteAccessFailure = "workspace_unavailable";
@@ -1013,7 +1013,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("provides the signed-in workspace MCP server only during an ACP prompt", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-mcp-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-mcp-"));
     const reportPath = path.join(directory, "report.json");
     let closed = false;
     try {
@@ -1037,8 +1037,8 @@ describe("ACP stdio session", () => {
       await events.waitFor((event) => event.type === "done");
       const servers = (await readReport(reportPath)).newSession.mcpServers;
       expect(servers).toHaveLength(1);
-      expect(servers[0].name).toBe("edgeever-current-workspace");
-      expect(servers[0].env).toContainEqual({ name: "EDGEEVER_TOKEN", value: "temporary-secret" });
+      expect(servers[0].name).toBe("ponder-current-workspace");
+      expect(servers[0].env).toContainEqual({ name: "PONDER_TOKEN", value: "temporary-secret" });
       expect(JSON.stringify(servers)).not.toContain("login-secret");
       expect(closed).toBe(true);
     } finally {
@@ -1047,7 +1047,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("starts Codex prompts with the request while preserving workspace MCP guidance", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-codex-title-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-codex-title-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1067,17 +1067,17 @@ describe("ACP stdio session", () => {
       await events.waitFor((event) => event.type === "done");
       const report = await readReport(reportPath);
       expect(report.prompt[0]).toEqual({ type: "text", text: "分析资金往来" });
-      expect(report.prompt[1].text).toContain("edgeever-current-workspace");
+      expect(report.prompt[1].text).toContain("ponder-current-workspace");
       expect(report.prompt[1].text).toContain("[note title](#memo=exact_memo_id_from_tool_result)");
       expect(report.prompt[2]).toEqual({ type: "text", text: "Current note and earlier turns" });
-      expect(report.newSession.mcpServers[0].name).toBe("edgeever-current-workspace");
+      expect(report.newSession.mcpServers[0].name).toBe("ponder-current-workspace");
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
   }, 15_000);
 
   sessionTest("keeps infographic prompts from granting note write access", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-infographic-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-infographic-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1102,7 +1102,7 @@ describe("ACP stdio session", () => {
       await events.waitFor((event) => event.type === "done");
       const report = await readReport(reportPath);
       expect(report.newSession.mcpServers).toEqual([]);
-      expect(JSON.stringify(report.prompt)).not.toContain("edgeever-current-workspace");
+      expect(JSON.stringify(report.prompt)).not.toContain("ponder-current-workspace");
       expect(report.prompt).toEqual([
         { type: "text", text: "Reply with one json proposal." },
         { type: "text", text: "换成小米" },
@@ -1113,7 +1113,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("keeps OpenClaw ACP sessions free of unsupported session MCP servers", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-openclaw-acp-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-openclaw-acp-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1143,7 +1143,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("offers advertised agent login and verifies a session after authentication", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-auth-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-auth-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1167,7 +1167,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   for (const id of ["workbuddyCn", "workbuddyIntl"]) sessionTest(`${id} keeps login methods after connection failure and can reconnect`, async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-retry-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-retry-"));
     const reportPath = path.join(directory, "report.json");
     const methodId = id === "workbuddyCn" ? "internal" : "external";
     try {
@@ -1185,7 +1185,7 @@ describe("ACP stdio session", () => {
   }, 10_000);
 
   sessionTest("WorkBuddy encrypted metadata cannot count as a usable connection or successful login", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-unreadable-auth-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-unreadable-auth-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, requireAuth: true, workBuddyAccountApi: true, workBuddyUnreadable: true, authMethodId: "external" });
@@ -1202,7 +1202,7 @@ describe("ACP stdio session", () => {
   }, 10_000);
 
   sessionTest("WorkBuddy login must survive a fresh chat process before reporting success", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-auth-restore-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-auth-restore-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, requireAuth: true, workBuddyAccountApi: true, workBuddyUnreadableAfterLogin: true, authMethodId: "external" });
@@ -1233,12 +1233,12 @@ describe("ACP stdio session", () => {
   };
 
   sessionTest("CodeBuddy reports success only after a fresh process restores the account", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-codebuddy-login-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-codebuddy-login-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, advertiseAuth: true, authMethodId: "internal", codeBuddy: { persist: true, authUrls: [loginLink] } });
       const { runtime, opened, diagnostics } = codeBuddyRuntime(scriptPath);
-      // The CLI starts a session without an account; EdgeEver must still call it signed out.
+      // The CLI starts a session without an account; Ponder must still call it signed out.
       expect(await runtime.probeAdapter({ id: "codebuddy" })).toMatchObject({ state: "needs_login", authMethods: [{ id: "internal", name: "Browser" }] });
       expect(await runtime.authenticateAdapter({ id: "codebuddy", methodId: "internal" })).toMatchObject({ state: "available" });
       // A second, fresh process must restore the account before success is reported.
@@ -1247,7 +1247,7 @@ describe("ACP stdio session", () => {
       expect(new Set(sessions).size).toBe(2);
       expect(sessions[1]).toBe((await readFile(`${reportPath}.pid`, "utf8")).trim());
       expect(await runtime.probeAdapter({ id: "codebuddy" })).toMatchObject({ state: "available" });
-      // The CLI opens the browser itself; EdgeEver opens nothing on its own.
+      // The CLI opens the browser itself; Ponder opens nothing on its own.
       expect(opened).toEqual([]);
       expect(runtime.reopenLoginPage("codebuddy")).toEqual({ opened: false });
       expect(JSON.stringify(diagnostics)).not.toContain("private-login-state");
@@ -1258,7 +1258,7 @@ describe("ACP stdio session", () => {
     ["an account without a token", { persist: true, tokenless: true }],
     ["a login the next process cannot restore", { persist: true, forgetAfterLogin: true }],
   ]) sessionTest(`CodeBuddy treats ${name} as signed out`, async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-codebuddy-signed-out-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-codebuddy-signed-out-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, advertiseAuth: true, authMethodId: "internal", codeBuddy });
@@ -1274,7 +1274,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("CodeBuddy sign-in keeps only verified links, throttles reopening and can be cancelled", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-codebuddy-cancel-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-codebuddy-cancel-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1305,7 +1305,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("CodeBuddy cancel during the post-login check is reported as cancelled", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-codebuddy-cancel-check-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-codebuddy-cancel-check-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, advertiseAuth: true, authMethodId: "internal", codeBuddy: { persist: true, slowRestore: true } });
@@ -1320,7 +1320,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("CodeBuddy sign-in that never finishes ends as a timeout", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-codebuddy-timeout-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-codebuddy-timeout-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, advertiseAuth: true, hangAuth: true, authMethodId: "internal", codeBuddy: { authUrls: [loginLink] } });
@@ -1331,7 +1331,7 @@ describe("ACP stdio session", () => {
   }, 10_000);
 
   sessionTest("other agents ignore CodeBuddy login links", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-codebuddy-other-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-codebuddy-other-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, { reportPath, requireAuth: true, codeBuddy: { authUrls: [loginLink] } });
@@ -1343,7 +1343,7 @@ describe("ACP stdio session", () => {
   }, 10_000);
 
   for (const adapterId of ["workbuddyIntl", "workbuddyCn"]) for (const loginFailure of [false, true]) sessionTest(`${adapterId} account login ${loginFailure ? "returns failure without hanging" : "verifies ACP session without the broken authenticate RPC"}`, async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-workbuddy-auth-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-workbuddy-auth-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1373,7 +1373,7 @@ describe("ACP stdio session", () => {
   }, 10_000);
 
   sessionTest("ends an unanswered login with retry methods instead of a connection failure", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-auth-timeout-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-auth-timeout-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1395,7 +1395,7 @@ describe("ACP stdio session", () => {
   }, 10_000);
 
   sessionTest("keeps a session timeout after successful login classified as a connection failure", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-auth-session-timeout-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-auth-session-timeout-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1417,7 +1417,7 @@ describe("ACP stdio session", () => {
   }, 10_000);
 
   sessionTest("keeps ACP login methods visible when another agent can already create a session", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-optional-auth-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-optional-auth-"));
     try {
       const scriptPath = await writeFakeAgent(directory, {
         reportPath: path.join(directory, "report.json"),
@@ -1437,7 +1437,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("reports a prompt-time authentication refusal instead of an empty reply", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-refusal-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-refusal-"));
     try {
       const scriptPath = await writeFakeAgent(directory, {
         reportPath: path.join(directory, "report.json"),
@@ -1463,7 +1463,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("streams updates, auto-approves tools, and never reads a local file", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-prompt-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-prompt-"));
     const reportPath = path.join(directory, "report.json");
     const secretPath = path.join(directory, "secret.txt");
     await writeFile(secretPath, "SENTINEL_SECRET_CONTENT");
@@ -1495,7 +1495,7 @@ describe("ACP stdio session", () => {
       expect(serialized).not.toContain(secretPath);
       expect(serialized).not.toContain("resource_link");
       expect(report.prompt.some((block) => block.type === "image" && block.mimeType === "image/png")).toBe(true);
-      expect(report.prompt.some((block) => block.type === "resource" && String(block.resource?.uri).startsWith("edgeever-attachment:"))).toBe(true);
+      expect(report.prompt.some((block) => block.type === "resource" && String(block.resource?.uri).startsWith("ponder-attachment:"))).toBe(true);
       expect(events.events).toContainEqual({ requestId: result.requestId, type: "reasoning", text: "thinking" });
       expect(events.events).toContainEqual({ requestId: result.requestId, type: "text-delta", text: "hello from agent" });
       expect(events.events).toContainEqual({
@@ -1512,7 +1512,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("drops image and PDF blocks when the agent does not advertise them", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-omit-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-omit-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1544,7 +1544,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("cancels an in-flight prompt and ignores unknown ids", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-cancel-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-cancel-"));
     const reportPath = path.join(directory, "report.json");
     try {
       const scriptPath = await writeFakeAgent(directory, {
@@ -1576,7 +1576,7 @@ describe("ACP stdio session", () => {
   const otherChat = "22222222-2222-4222-8222-222222222222";
 
   sessionTest("reuses one ACP process for the same chat and omits replayed history", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-warm-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-warm-"));
     const reportPath = path.join(directory, "report.json");
     let closed = false;
     const runtime = createAcpHostRuntime({
@@ -1620,9 +1620,9 @@ describe("ACP stdio session", () => {
       const report = await readReport(reportPath);
       expect(report.sessionCount).toBe(1);
       expect(report.prompts).toHaveLength(2);
-      expect(JSON.stringify(report.prompts[0])).toContain("edgeever-current-workspace");
+      expect(JSON.stringify(report.prompts[0])).toContain("ponder-current-workspace");
       expect(JSON.stringify(report.prompts[0])).toContain("Earlier turns");
-      expect(JSON.stringify(report.prompts[1])).not.toContain("edgeever-current-workspace");
+      expect(JSON.stringify(report.prompts[1])).not.toContain("ponder-current-workspace");
       expect(JSON.stringify(report.prompts[1])).not.toContain("Earlier turns");
       expect(JSON.stringify(report.prompts[1])).toContain("Current note");
       expect(closed).toBe(false);
@@ -1636,7 +1636,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("keeps a cancelled chat process and rejects an overlapping prompt", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-warm-cancel-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-warm-cancel-"));
     const reportPath = path.join(directory, "report.json");
     const runtime = createAcpHostRuntime();
     try {
@@ -1690,7 +1690,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("starts a separate process for another chat or another account", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-warm-reset-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-warm-reset-"));
     const reportPath = path.join(directory, "report.json");
     let accountId = "account-a";
     const runtime = createAcpHostRuntime({
@@ -1736,7 +1736,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("starts over after the chat process has been idle", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-warm-idle-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-warm-idle-"));
     const reportPath = path.join(directory, "report.json");
     const runtime = createAcpHostRuntime({ warmIdleMs: 80 });
     try {
@@ -1772,7 +1772,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("a read-only turn does not continue inside the note-writing process", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-warm-readonly-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-warm-readonly-"));
     const reportPath = path.join(directory, "report.json");
     const runtime = createAcpHostRuntime({
       mcpAccess: () => ({ baseUrl: "https://notes.example", sessionToken: "login-secret", accountId: "account-a" }),
@@ -1808,7 +1808,7 @@ describe("ACP stdio session", () => {
       expect(resumedPid).not.toBe(readingPid);
       expect(processAlive(readingPid)).toBe(false);
       expect(JSON.stringify((await readReport(reportPath)).prompt)).toContain("Earlier turns");
-      expect(JSON.stringify((await readReport(reportPath)).newSession.mcpServers)).toContain("edgeever-current-workspace");
+      expect(JSON.stringify((await readReport(reportPath)).newSession.mcpServers)).toContain("ponder-current-workspace");
     } finally {
       await runtime.releaseWarmSessions();
       await rm(directory, { recursive: true, force: true });
@@ -1816,7 +1816,7 @@ describe("ACP stdio session", () => {
   }, 15_000);
 
   sessionTest("starts one ACP process for a prepared chat and keeps it for the next turn", async () => {
-    const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-prepare-"));
+    const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-prepare-"));
     const reportPath = path.join(directory, "report.json");
     const runtime = createAcpHostRuntime();
     try {

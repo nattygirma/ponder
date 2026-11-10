@@ -1,4 +1,4 @@
-import type { PluginSettingField, PluginSettingValue } from "@edgeever/plugin-api";
+import type { PluginSettingField, PluginSettingValue } from "@ponder/plugin-api";
 
 export const pluginSettingLoadSignature = (fields: readonly { key: string; type: string; default?: unknown }[]) =>
   fields.map((field) => `${field.key}\0${field.type}\0${JSON.stringify(field.default ?? null)}`).join("\n");

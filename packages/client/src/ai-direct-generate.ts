@@ -1,5 +1,5 @@
-import type { AiPreparedTagSuggestions, AiPreparedTextGeneration, CompanionDiscoveryItem, CompanionPreparedDiscovery } from "@edgeever/shared";
-import { finalizeAiTagSuggestions, parseAiTagSuggestionNames } from "@edgeever/shared";
+import type { AiPreparedTagSuggestions, AiPreparedTextGeneration, CompanionDiscoveryItem, CompanionPreparedDiscovery } from "@ponder/shared";
+import { finalizeAiTagSuggestions, parseAiTagSuggestionNames } from "@ponder/shared";
 import { createClientAiModel } from "./ai-model";
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
@@ -106,7 +106,7 @@ export const generateDirectDiscoveryOutput = async (
   options: { fetch: typeof fetch; signal?: AbortSignal },
 ) => {
   const { ToolLoopAgent, Output } = await import("ai");
-  const { CompanionDiscoveryOutputSchema } = await import("@edgeever/shared");
+  const { CompanionDiscoveryOutputSchema } = await import("@ponder/shared");
   const agent = new ToolLoopAgent({
     model: createClientAiModel({
       provider: prepared.provider,

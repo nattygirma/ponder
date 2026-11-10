@@ -47,7 +47,7 @@ describe("native gallery editing", () => {
   test("an unfinished upload between images stays outside the gallery", () => {
     const editor = makeEditor([
       image("old"),
-      image("edgeever-image-upload://pending"),
+      image("ponder-image-upload://pending"),
       image("new"),
     ]);
     const original = editor.state.doc;
@@ -118,11 +118,11 @@ describe("native gallery editing", () => {
   test("groups only successful Android placeholder replacements and leaves pending uploads alone", () => {
     const editor = makeEditor([gallery()]);
     editor.view.dispatch(createImageInsertTransaction(editor.state, { src: "upload:third" }, { from: 4, to: 4 }));
-    editor.view.dispatch(createImageInsertTransaction(editor.state, { src: "edgeever-image-upload://pending" }));
+    editor.view.dispatch(createImageInsertTransaction(editor.state, { src: "ponder-image-upload://pending" }));
     editor.view.dispatch(editor.state.tr.setNodeMarkup(4, undefined, { src: "third", alt: "third" }));
     expect(groupUploadedImages(editor, ["third"])).toBe(true);
     expect(editor.state.doc.firstChild.childCount).toBe(3);
-    expect(editor.state.doc.lastChild.attrs.src).toBe("edgeever-image-upload://pending");
+    expect(editor.state.doc.lastChild.attrs.src).toBe("ponder-image-upload://pending");
     // Cancelling the pending upload must leave the existing gallery intact.
     const pendingPos = editor.state.doc.firstChild.nodeSize;
     editor.view.dispatch(editor.state.tr.delete(pendingPos, pendingPos + 1));
@@ -164,7 +164,7 @@ describe("native gallery editing", () => {
     const doc = schema.nodes.doc.create(null, [gallery()]);
     expect(schema.nodeFromJSON(doc.toJSON()).toJSON()).toEqual(doc.toJSON());
     expect(NATIVE_IMAGE_GALLERY_CSS).toContain("min-height: 44px");
-    expect(NATIVE_IMAGE_GALLERY_CSS).toContain(".edgeever-native-gallery-content .edgeever-image-size-controls { display: none !important; }");
+    expect(NATIVE_IMAGE_GALLERY_CSS).toContain(".ponder-native-gallery-content .ponder-image-size-controls { display: none !important; }");
   });
 
   test("labels the gallery layout controls in every app language", () => {
@@ -172,8 +172,8 @@ describe("native gallery editing", () => {
     expect(imageGalleryCopy("pl").columns("3")).toBe("3 kolumny");
     expect(imageGalleryCopy("ja").columns("2")).toBe("2列");
     expect(imageGalleryCopy("en-US").columns("2")).toBe("2 columns");
-    expect(imageGalleryCopy("zh-CN").columns("2")).toBe("2 栏");
+    expect(imageGalleryCopy("zh-CN").columns("2")).toBe("2 columns");
     // Unknown locales keep the previous Chinese copy.
-    expect(imageGalleryCopy("xx").label).toBe("图片画廊布局");
+    expect(imageGalleryCopy("xx").label).toBe("Image gallery layout");
   });
 });

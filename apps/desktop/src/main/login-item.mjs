@@ -2,7 +2,7 @@
 // A login launch always opens the main window. Older installs may still have
 // saved "tray" or passed --start-hidden; both are treated as a normal window.
 
-export const LOGIN_ITEM_NAME = "EdgeEver";
+export const LOGIN_ITEM_NAME = "Ponder";
 export const START_HIDDEN_ARG = "--start-hidden";
 
 export const loginItemSupported = ({ platform, packaged }) =>
@@ -54,7 +54,7 @@ export const commandLineOpensContent = (argv, { isAssociatedFile } = {}) => {
   for (let index = 0; index < argv.length; index += 1) {
     const value = argv[index];
     if (typeof value !== "string") continue;
-    if (value.startsWith("edgeever://")) return true;
+    if (value.startsWith("ponder://")) return true;
     if (value === "--share-file") {
       const filePath = argv[index + 1];
       if (typeof filePath === "string" && filePath.length > 0 && !filePath.startsWith("-")) return true;

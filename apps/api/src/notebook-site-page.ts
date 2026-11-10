@@ -1,5 +1,5 @@
-import { getMemoDisplayTitle } from "@edgeever/shared/memo-title";
-import { PUBLIC_PAGE_HEADERS, PUBLIC_PAGE_ROBOTS } from "@edgeever/shared/public-page-headers";
+import { getMemoDisplayTitle } from "@ponder/shared/memo-title";
+import { PUBLIC_PAGE_HEADERS, PUBLIC_PAGE_ROBOTS } from "@ponder/shared/public-page-headers";
 import type { DatabaseAdapter } from "./storage-contract";
 import { getNotebookSite, publicTreeSql, resolveNotebookSiteToken } from "./notebook-site-service";
 
@@ -21,8 +21,8 @@ export const renderNotebookSitePage = async (
   const resolved = alias ? await resolveNotebookSiteToken(db, identity) : { token: identity };
   const site = resolved ? await getNotebookSite(db, resolved.token) : null;
   let status = site ? 200 : 404;
-  let title = "Shared notebook · EdgeEver";
-  let description = "Read a shared notebook on EdgeEver.";
+  let title = "Shared notebook · Ponder";
+  let description = "Read a shared notebook on Ponder.";
   let indexable = false;
   let canonical = `${url.origin}${url.pathname}`;
   let image = new URL("/apple-touch-icon.png", url).href;
@@ -32,7 +32,7 @@ export const renderNotebookSitePage = async (
       .bind(site.token, selected).first<{ title: string | null; excerpt: string }>() : null;
     if (memoId && !note) status = 404;
     if (status === 200) {
-      title = `${getMemoDisplayTitle(note?.title, site.name)} · EdgeEver`;
+      title = `${getMemoDisplayTitle(note?.title, site.name)} · Ponder`;
       description = note?.excerpt || site.name;
       indexable = alias && site.settings.allowIndexing;
       const base = site.site_slug ? `/s/${encodeURIComponent(site.site_slug)}` : `/share/notebook/${encodeURIComponent(site.token)}`;

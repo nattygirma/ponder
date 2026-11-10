@@ -116,7 +116,7 @@ const rewriteAttributeValue = (
   return shareToken ? `/share/${encodeURIComponent(shareToken)}` : value;
 };
 
-/** Rewrites EdgeEver-owned resources and publicly shared memo links for anonymous viewers. */
+/** Rewrites Ponder-owned resources and publicly shared memo links for anonymous viewers. */
 export const rewriteMemoResourcesForShare = (
   doc: TiptapDoc,
   token: string,

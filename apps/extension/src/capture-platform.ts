@@ -15,10 +15,10 @@ import { platformHtmlMarkdown, platformTarget, type PlatformLabels, type Platfor
 // Built as a standalone IIFE and injected only after a user action.
 (() => {
   const root = globalThis as typeof globalThis & {
-    __edgeeverPlatformClipPayload?: { requestId?: string; url?: string; selectionFirst?: boolean; selectionText?: string; sourceUrl?: string; xiaoyuzhouState?: unknown; jikeState?: unknown; wechatPictureState?: unknown };
+    __ponderPlatformClipPayload?: { requestId?: string; url?: string; selectionFirst?: boolean; selectionText?: string; sourceUrl?: string; xiaoyuzhouState?: unknown; jikeState?: unknown; wechatPictureState?: unknown };
   };
-  const payload = root.__edgeeverPlatformClipPayload;
-  delete root.__edgeeverPlatformClipPayload;
+  const payload = root.__ponderPlatformClipPayload;
+  delete root.__ponderPlatformClipPayload;
   if (!payload?.requestId || !payload.url || !payload.sourceUrl) return;
   const requestId = payload.requestId;
   const expected = platformTarget(payload.url);

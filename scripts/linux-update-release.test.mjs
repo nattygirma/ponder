@@ -11,10 +11,10 @@ afterEach(async () => {
 });
 
 const fixture = async ({ metadataSha512, checksumSha256 } = {}) => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-linux-update-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-linux-update-"));
   directories.push(directory);
   const version = "1.62.0";
-  const name = `EdgeEver-${version}-linux-x64.AppImage`;
+  const name = `Ponder-${version}-linux-x64.AppImage`;
   const content = Buffer.from("real-appimage-bytes");
   const sha512 = createHash("sha512").update(content).digest("base64");
   const sha256 = createHash("sha256").update(content).digest("hex");

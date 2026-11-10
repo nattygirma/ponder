@@ -187,7 +187,7 @@ try {
 
   const decisions = [
     ["R01", "article_toc", "keep", "issue_requirement", "H1-H4 navigation and scrollspy are explicit requirements."],
-    ["R02", "light_dark_system", "keep_reuse", "source_inspection", "Reuse ThemeProvider and edgeever.theme; no second preference system."],
+    ["R02", "light_dark_system", "keep_reuse", "source_inspection", "Reuse ThemeProvider and ponder.theme; no second preference system."],
     ["R03", "code_copy_language_collapse", "keep_reuse", "issue_and_source", "Copy/highlighting already exist; add only missing labels and collapse controls."],
     ["R04", "internal_hover_preview", "keep", "payload_measurement", "Keep a bounded on-demand preview; do not inflate every directory item or fetch complete articles."],
     ["R05", "image_and_diagram_controls", "keep_reuse", "issue_and_source", "Reuse lightbox/zoom/fit; add single-click entry and fullscreen, not another viewer."],
@@ -231,7 +231,7 @@ try {
   ].map(([id, subject, decision, evidenceType, rationale]) => ({ id, subject, decision, evidenceType, rationale }));
   assert.equal(decisions.filter((x) => /^R\d+$/.test(x.id)).length, 13);
   const sourceTheme = readFileSync(new URL("../apps/web/src/components/ThemeProvider.tsx", import.meta.url), "utf8");
-  assert(sourceTheme.includes('THEME_STORAGE_KEY = "edgeever.theme"'));
+  assert(sourceTheme.includes('THEME_STORAGE_KEY = "ponder.theme"'));
   const sourcePage = readFileSync(new URL("../apps/web/src/components/PublicNotebookSharePage.tsx", import.meta.url), "utf8");
   assert(sourcePage.includes("refetchInterval: 30_000"));
   const previous = JSON.parse(readFileSync(new URL("../docs/public-notebook-site-schema-ablation.json", import.meta.url), "utf8"));

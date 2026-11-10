@@ -36,18 +36,18 @@ async function fixture() {
   return { root, output, options, catalog, documents, rendered, change, opened: () => opened, fail: () => { failed = true; } };
 }
 
-test("fresh builds skip the browser; editing one template renders only its two languages", async () => {
+test("fresh builds skip the browser; editing one template renders only that template", async () => {
   const f = await fixture();
-  expect((await ensurePosterThumbnails(f.options)).generated).toBe(4);
+  expect((await ensurePosterThumbnails(f.options)).generated).toBe(2);
   f.rendered.length = 0;
   expect(await ensurePosterThumbnails(f.options)).toMatchObject({ generated: 0, skipped: true });
   expect(f.opened()).toBe(1);
-  const before = await readFile(path.join(f.output, "two.zh.webp"));
+  const before = await readFile(path.join(f.output, "two.en.webp"));
   f.documents.set("one", "new layout");
   await f.change();
-  expect((await ensurePosterThumbnails(f.options)).generated).toBe(2);
-  expect(f.rendered).toEqual(["one.zh", "one.en"]);
-  expect(await readFile(path.join(f.output, "two.zh.webp"))).toEqual(before);
+  expect((await ensurePosterThumbnails(f.options)).generated).toBe(1);
+  expect(f.rendered).toEqual(["one.en"]);
+  expect(await readFile(path.join(f.output, "two.en.webp"))).toEqual(before);
 });
 
 test("new templates get images and removed templates lose orphaned thumbnails", async () => {
@@ -56,44 +56,44 @@ test("new templates get images and removed templates lose orphaned thumbnails", 
   f.rendered.length = 0;
   f.catalog.push({ id: "three", recommended: true });
   await f.change();
-  expect((await ensurePosterThumbnails(f.options)).generated).toBe(2);
-  expect(f.rendered).toEqual(["three.zh", "three.en"]);
+  expect((await ensurePosterThumbnails(f.options)).generated).toBe(1);
+  expect(f.rendered).toEqual(["three.en"]);
   f.catalog.splice(0, 1);
   await f.change();
   expect((await ensurePosterThumbnails(f.options)).generated).toBe(0);
-  expect(await readdir(f.output)).not.toContain("one.zh.webp");
+  expect(await readdir(f.output)).not.toContain("one.en.webp");
 });
 
 test("missing or corrupt images repair only themselves; painter changes refresh all", async () => {
   const f = await fixture();
   await ensurePosterThumbnails(f.options);
   await rm(path.join(f.output, "one.en.webp"));
-  await writeFile(path.join(f.output, "two.zh.webp"), "corrupt");
+  await writeFile(path.join(f.output, "two.en.webp"), "corrupt");
   f.rendered.length = 0;
   expect((await ensurePosterThumbnails(f.options)).generated).toBe(2);
-  expect(f.rendered).toEqual(["one.en", "two.zh"]);
+  expect(f.rendered).toEqual(["one.en", "two.en"]);
   await writeFile(path.join(f.root, "apps/web/src/lib/poster-canvas.ts"), "new painter");
-  expect((await ensurePosterThumbnails(f.options)).generated).toBe(4);
+  expect((await ensurePosterThumbnails(f.options)).generated).toBe(2);
 });
 
 test("failed generation preserves previous assets and manifest, and releases the lock", async () => {
   const f = await fixture();
   await ensurePosterThumbnails(f.options);
   const before = await readFile(path.join(f.output, "manifest.json"));
-  const image = await readFile(path.join(f.output, "one.zh.webp"));
+  const image = await readFile(path.join(f.output, "one.en.webp"));
   f.documents.set("one", "changed");
   f.fail();
   await f.change();
   await expect(ensurePosterThumbnails(f.options)).rejects.toThrow("font download failed");
   expect(await readFile(path.join(f.output, "manifest.json"))).toEqual(before);
-  expect(await readFile(path.join(f.output, "one.zh.webp"))).toEqual(image);
-  expect(await readdir(path.join(f.root, "node_modules/.cache/edgeever"))).toEqual([]);
+  expect(await readFile(path.join(f.output, "one.en.webp"))).toEqual(image);
+  expect(await readdir(path.join(f.root, "node_modules/.cache/ponder"))).toEqual([]);
 });
 
 test("simultaneous dev/build requests serialize and render once", async () => {
   const f = await fixture();
   const results = await Promise.all([ensurePosterThumbnails(f.options), ensurePosterThumbnails(f.options)]);
-  expect(results.map(result => result.generated).sort()).toEqual([0, 4]);
+  expect(results.map(result => result.generated).sort()).toEqual([0, 2]);
   expect(f.opened()).toBe(1);
 });
 

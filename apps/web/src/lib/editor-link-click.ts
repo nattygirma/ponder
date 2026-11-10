@@ -23,9 +23,9 @@ export const shouldShowEditorLinkOpenHint = (
   mode: EditorLinkOpenMode
 ): boolean => editable && !isMobileViewport && mode === "modifier";
 
-export const EDITOR_LINK_OPEN_MODE_STORAGE_KEY = "edgeever.editor.linkOpenMode";
+export const EDITOR_LINK_OPEN_MODE_STORAGE_KEY = "ponder.editor.linkOpenMode";
 
-export const EDITOR_LINK_OPEN_MODE_CHANGED_EVENT = "edgeever:editor-link-open-mode-changed";
+export const EDITOR_LINK_OPEN_MODE_CHANGED_EVENT = "ponder:editor-link-open-mode-changed";
 
 export const resolveStoredEditorLinkOpenMode = (stored: string | null): EditorLinkOpenMode =>
   stored === "click" || stored === "modifier" ? stored : DEFAULT_EDITOR_LINK_OPEN_MODE;

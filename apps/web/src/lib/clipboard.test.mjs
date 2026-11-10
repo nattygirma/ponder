@@ -30,7 +30,7 @@ describe("copyTextToClipboard", () => {
   test("uses the verified native clipboard bridge in the desktop app", async () => {
     const calls = [];
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyText: async (value) => {
           calls.push(value);
@@ -49,7 +49,7 @@ describe("copyTextToClipboard", () => {
 
   test("does not report success when native clipboard verification fails", async () => {
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyText: async () => false,
       },
@@ -76,7 +76,7 @@ describe("installDesktopClipboardBridge", () => {
     const calls = [];
     const browserWrites = [];
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyText: async (value) => {
           calls.push(["text", value]);
@@ -111,7 +111,7 @@ describe("installDesktopClipboardBridge", () => {
 
   test("rejects when the desktop clipboard bridge cannot verify the write", async () => {
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyText: async () => false,
       },
@@ -145,7 +145,7 @@ describe("copyHtmlToClipboard", () => {
   test("uses the native rich clipboard bridge in the desktop app", async () => {
     const calls = [];
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyHtml: async (...values) => {
           calls.push(values);
@@ -164,7 +164,7 @@ describe("copyHtmlToClipboard", () => {
 
   test("fails when native rich clipboard verification fails", async () => {
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyHtml: async () => false,
       },
@@ -220,7 +220,7 @@ describe("copyImageBlobToClipboard", () => {
     const calls = [];
     const png = new Blob([Uint8Array.from([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" });
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyImage: async (bytes) => {
           calls.push(bytes);
@@ -239,7 +239,7 @@ describe("copyImageBlobToClipboard", () => {
 
   test("does not report success when native image verification fails", async () => {
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyImage: async () => false,
       },
@@ -362,7 +362,7 @@ describe("copyResourceToClipboard", () => {
     const calls = [];
     const png = new Blob([Uint8Array.from([0x89, 0x50, 0x4e, 0x47])], { type: "image/png" });
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyImage: async (bytes) => {
           calls.push(bytes);
@@ -386,7 +386,7 @@ describe("copyResourceToClipboard", () => {
     const calls = [];
     const pdf = new Blob([Uint8Array.from([7, 8, 9])], { type: "application/pdf" });
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyImage: async () => {
           throw new Error("image clipboard should not be used for an attachment");
@@ -408,7 +408,7 @@ describe("copyResourceToClipboard", () => {
 
   test("reports failure when the resource cannot be loaded", async () => {
     globalThis.window = {
-      edgeeverDesktop: {
+      ponderDesktop: {
         isAvailable: true,
         copyImage: async () => true,
         copyFile: async () => true,

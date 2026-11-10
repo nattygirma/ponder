@@ -1,4 +1,4 @@
-import { PosterDocumentSchema, parsePosterDocument, serializePosterDocument } from "@edgeever/shared";
+import { PosterDocumentSchema, parsePosterDocument, serializePosterDocument } from "@ponder/shared";
 import { buildPosterDesign, applyPosterDesign, templatesFor } from "../../apps/web/src/lib/poster-design/templates";
 import { paperListSampleCopy } from "../../apps/web/src/lib/poster-design/paper-list-content";
 import { renderPosterBlob } from "../../apps/web/src/lib/poster-canvas";

@@ -7,11 +7,11 @@ import path from "node:path";
 
 export const CODEBUDDY_PACKAGE = "@tencent-ai/codebuddy-code";
 // The CLI picks its region from the login method; an inherited override can
-// route requests to the wrong endpoint, so EdgeEver never forwards one.
+// route requests to the wrong endpoint, so Ponder never forwards one.
 export const CODEBUDDY_UNSET_ENV = ["CODEBUDDY_INTERNET_ENVIRONMENT", "CODEBUDDY_INTERNET_ENVIROMENT"];
 // Hosts observed for the verified login methods: `internal` (WeChat) opens
 // copilot.tencent.com and `external` (Google / GitHub) opens www.codebuddy.ai.
-// Other hosts, including enterprise domains, are not opened by EdgeEver.
+// Other hosts, including enterprise domains, are not opened by Ponder.
 export const CODEBUDDY_LOGIN_HOSTS = ["copilot.tencent.com", "codebuddy.ai"];
 
 export function codeBuddyLoginUrl(value) {

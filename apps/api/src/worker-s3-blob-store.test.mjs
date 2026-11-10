@@ -29,7 +29,7 @@ describe("Worker S3-compatible blob store", () => {
     await testWorkerS3Connection({
       endpoint: "https://objects.example.com",
       region: "us-east-1",
-      bucket: "edgeever",
+      bucket: "ponder",
       accessKeyId: "access-key",
       secretAccessKey: "secret-key",
       forcePathStyle: true,
@@ -37,7 +37,7 @@ describe("Worker S3-compatible blob store", () => {
     });
 
     expect(requests.map((request) => request.method)).toEqual(["PUT", "GET", "DELETE"]);
-    expect(new URL(requests[0].url).pathname).toStartWith("/edgeever/notes/.edgeever-connection-test/");
+    expect(new URL(requests[0].url).pathname).toStartWith("/ponder/notes/.ponder-connection-test/");
     expect(objects.size).toBe(0);
   });
 
@@ -56,7 +56,7 @@ describe("Worker S3-compatible blob store", () => {
     const store = createWorkerS3BlobStore({
       endpoint: "https://objects.example.com",
       region: "us-east-1",
-      bucket: "edgeever",
+      bucket: "ponder",
       accessKeyId: "access-key",
       secretAccessKey: "secret-key",
       forcePathStyle: true,
@@ -89,7 +89,7 @@ describe("Worker S3-compatible blob store", () => {
     const store = createWorkerS3BlobStore({
       endpoint: "https://objects.example.com",
       region: "us-east-1",
-      bucket: "edgeever",
+      bucket: "ponder",
       accessKeyId: "access-key",
       secretAccessKey: "secret-key",
       forcePathStyle: true,

@@ -46,7 +46,7 @@ describe("TCR sha tag retention", () => {
   test("signs requests without exposing the secret key", () => {
     const request = createTencentCloudRequest({
       action: "DescribeImagePersonal",
-      body: { RepoName: "edgeever/edgeever", Offset: 0, Limit: 100 },
+      body: { RepoName: "ponder/ponder", Offset: 0, Limit: 100 },
       region: "ap-guangzhou",
       secretId: "example-secret-id",
       secretKey: "example-secret-key",

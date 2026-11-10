@@ -1,17 +1,16 @@
 import AppKit
 import UniformTypeIdentifiers
 
-/// Copies a file from the macOS share sheet into Downloads and opens EdgeEver.
+/// Copies a file from the macOS share sheet into Downloads and opens Ponder.
 /// WeChat merged-forward ZIPs stay on this path; the app turns those into chat notes
 /// and turns every other file into a note attachment.
 @objc(ShareViewController)
 final class ShareViewController: NSViewController {
-    private let incomingDirectoryName = "EdgeEver Incoming"
+    private let incomingDirectoryName = "Ponder Incoming"
     private var started = false
 
     override func loadView() {
-        let chinese = Locale.preferredLanguages.first?.hasPrefix("zh") == true
-        let label = NSTextField(labelWithString: chinese ? "正在保存到 EdgeEver…" : "Saving to EdgeEver…")
+        let label = NSTextField(labelWithString: "Saving to Ponder…")
         label.frame = NSRect(x: 16, y: 28, width: 248, height: 24)
         let container = NSView(frame: NSRect(x: 0, y: 0, width: 280, height: 80))
         container.addSubview(label)
@@ -74,7 +73,7 @@ final class ShareViewController: NSViewController {
         }
         guard let type = contentType(for: provider) else { return nil }
         // The provider's temporary file exists only inside this callback.
-        let filename = preferredFilename(suggested: provider.suggestedName, fileURL: fileURL, copiedSource: fileURL ?? URL(fileURLWithPath: "共享的文件"))
+        let filename = preferredFilename(suggested: provider.suggestedName, fileURL: fileURL, copiedSource: fileURL ?? URL(fileURLWithPath: "Shared file"))
         return try await copyFileRepresentation(provider, type: type, filename: filename)
     }
 
@@ -215,7 +214,7 @@ final class ShareViewController: NSViewController {
     }
 
     private func sanitizedFilename(_ suggested: String?) -> String {
-        let fallback = Locale.preferredLanguages.first?.hasPrefix("zh") == true ? "共享的文件" : "Shared file"
+        let fallback = "Shared file"
         let base = ((suggested ?? fallback) as NSString).lastPathComponent
         let trimmed = base
             .replacingOccurrences(of: "/", with: "")
@@ -230,7 +229,7 @@ final class ShareViewController: NSViewController {
 
     private func shareURL(for file: URL) -> URL? {
         var components = URLComponents()
-        components.scheme = "edgeever"
+        components.scheme = "ponder"
         components.host = "share-import"
         components.queryItems = [URLQueryItem(name: "path", value: file.path)]
         return components.url

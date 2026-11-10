@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { createSourceArchive, verifySourceArchive } from "./publish-web-clipper.mjs";
 
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
-const staging = mkdtempSync(join(tmpdir(), "edgeever-extension-source-check-"));
+const staging = mkdtempSync(join(tmpdir(), "ponder-extension-source-check-"));
 try {
   const sourceZip = join(staging, "source.zip");
   createSourceArchive(repoRoot, sourceZip);

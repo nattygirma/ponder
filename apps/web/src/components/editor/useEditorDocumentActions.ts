@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Editor } from "@tiptap/react";
-import { docToMarkdown, markdownToDoc, type MemoDetail, type ResolvedNoteProse, type TiptapDoc } from "@edgeever/shared";
+import { docToMarkdown, markdownToDoc, type MemoDetail, type ResolvedNoteProse, type TiptapDoc } from "@ponder/shared";
 import { useMermaidTheme } from "@/components/ThemeProvider";
 import type { MemoDocumentActionRequest } from "@/lib/app-helpers";
 import { notePrintAppearanceFromProse } from "@/lib/note-print-appearance";

@@ -48,7 +48,7 @@ const modernMcpRequest = (payload, headers = {}) => {
     ...payload.params,
     _meta: {
       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
-      "io.modelcontextprotocol/clientInfo": { name: "edgeever-test", version: "1.0.0" },
+      "io.modelcontextprotocol/clientInfo": { name: "ponder-test", version: "1.0.0" },
       "io.modelcontextprotocol/clientCapabilities": {},
       ...payload.params?._meta,
     },
@@ -101,7 +101,7 @@ describe("MCP HTTP routes", () => {
       id: 1,
       result: {
         protocolVersion: "2025-06-18",
-        serverInfo: { name: "edgeever" },
+        serverInfo: { name: "ponder" },
         capabilities: { tools: { listChanged: false } },
       },
     });
@@ -125,7 +125,7 @@ describe("MCP HTTP routes", () => {
         ttlMs: 3_600_000,
         cacheScope: "public",
         _meta: {
-          "io.modelcontextprotocol/serverInfo": { name: "edgeever" },
+          "io.modelcontextprotocol/serverInfo": { name: "ponder" },
         },
       },
     });
@@ -140,7 +140,7 @@ describe("MCP HTTP routes", () => {
       resultType: "complete",
       ttlMs: 3_600_000,
       cacheScope: "public",
-      _meta: { "io.modelcontextprotocol/serverInfo": { name: "edgeever" } },
+      _meta: { "io.modelcontextprotocol/serverInfo": { name: "ponder" } },
     });
     expect(body.result.tools).toEqual(expect.arrayContaining([expect.objectContaining({ name: "get_current_user" })]));
     expect(body.result.tools).toEqual(expect.arrayContaining([
@@ -234,7 +234,7 @@ describe("MCP HTTP routes", () => {
     );
 
     expect(response.status).toBe(401);
-    expect(response.headers.get("WWW-Authenticate")).toBe('Bearer realm="EdgeEver MCP"');
+    expect(response.headers.get("WWW-Authenticate")).toBe('Bearer realm="Ponder MCP"');
     expect(await response.json()).toMatchObject({ error: { code: -32001 } });
   });
 
@@ -279,7 +279,7 @@ describe("MCP HTTP routes", () => {
         resultType: "complete",
         structuredContent: { name: "get_current_user" },
         isError: false,
-        _meta: { "io.modelcontextprotocol/serverInfo": { name: "edgeever" } },
+        _meta: { "io.modelcontextprotocol/serverInfo": { name: "ponder" } },
       },
     });
   });

@@ -23,15 +23,15 @@ import {
 
 describe("merged memo title", () => {
   test("prefers an explicit title, then the first custom source title", () => {
-    const sources = [{ title: "无标题笔记" }, { title: "  手动标题  " }, { title: "另一个标题" }];
+    const sources = [{ title: "Untitled note" }, { title: "  手动标题  " }, { title: "另一个标题" }];
 
     expect(resolveMergedMemoTitle("  指定标题  ", sources)).toBe("指定标题");
     expect(resolveMergedMemoTitle(undefined, sources)).toBe("手动标题");
   });
 
   test("uses a dated merge title when every source is untitled", () => {
-    expect(resolveMergedMemoTitle(undefined, [{ title: null }, { title: "无标题笔记" }], new Date(2026, 7, 2)))
-      .toBe("合并笔记 2026/8/2");
+    expect(resolveMergedMemoTitle(undefined, [{ title: null }, { title: "Untitled note" }], new Date(2026, 7, 2)))
+      .toBe("Merged note 8/2/2026");
   });
 });
 
@@ -82,7 +82,7 @@ describe("PDF attachment Markdown compatibility", () => {
             type: "link",
             attrs: {
               href: "/api/v1/resources/res_pdf/blob",
-              class: "edgeever-attachment-link edgeever-attachment-kind-pdf",
+              class: "ponder-attachment-link ponder-attachment-kind-pdf",
               attachmentFilename: "报告.pdf",
               attachmentMimeType: "application/pdf",
               attachmentByteSize: 12582912,
@@ -174,7 +174,7 @@ describe("file attachment Markdown compatibility", () => {
   });
 
   test("keeps an ordinary standalone web link as text", () => {
-    const doc = markdownToDoc("[EdgeEver](https://edgeever.org)");
+    const doc = markdownToDoc("[Ponder](https://appkeep.io)");
     expect(doc.content[0]?.content?.[0]?.type).toBe("text");
   });
 
@@ -222,7 +222,7 @@ describe("file attachment Markdown compatibility", () => {
     const markdown = "Before [](https://example.com/path) and [named](https://example.com).";
     const doc = markdownToDoc(markdown);
     expect(doc.content[0]?.content?.[1]).toMatchObject({
-      type: "edgeeverEmptyExternalLink",
+      type: "ponderEmptyExternalLink",
       attrs: { href: "https://example.com/path" },
     });
     expect(docToMarkdown(doc)).toBe(markdown);
@@ -261,9 +261,9 @@ describe("file attachment Markdown compatibility", () => {
 
 describe("memo character count", () => {
   test("counts punctuation while excluding whitespace and formatting", () => {
-    const doc = markdownToDoc("你好， **EdgeEver**!\n\n下一行");
+    const doc = markdownToDoc("你好， **Ponder**!\n\n下一行");
 
-    expect(countMemoCharacters(doc)).toBe(15);
+    expect(countMemoCharacters(doc)).toBe(13);
   });
 
   test("counts grapheme clusters and ignores image labels", () => {
@@ -518,7 +518,7 @@ describe("Theme block compatibility", () => {
     const doc = {
       type: "doc",
       content: [{
-        type: "edgeeverThemeBlock",
+        type: "ponderThemeBlock",
         attrs: { kind: "key-point" },
         content: [{ type: "paragraph", content: [{ type: "text", text: "Important" }] }],
       }],
@@ -531,7 +531,7 @@ describe("Theme block compatibility", () => {
     const doc = {
       type: "doc",
       content: [{
-        type: "edgeeverThemeBlock",
+        type: "ponderThemeBlock",
         attrs: { kind: "intro" },
         content: [{ type: "paragraph", content: [{ type: "text", text: "Read this first" }] }],
       }],
@@ -743,7 +743,7 @@ describe("image gallery compatibility", () => {
   const galleryDoc = {
     type: "doc",
     content: [{
-      type: "edgeeverImageGallery",
+      type: "ponderImageGallery",
       attrs: { layout: "auto" },
       content: [
         { type: "image", attrs: { src: "/one.png", alt: "one" } },

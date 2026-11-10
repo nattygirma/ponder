@@ -16,8 +16,8 @@ describe("Worker bundle boundaries", () => {
     expect(sharedIndex).not.toContain('export * from "./mathematics"');
     expect(contentSource).toContain('from "./mathematics-markdown"');
     expect(contentSource).not.toContain('from "./mathematics"');
-    expect(contentSource).not.toContain("createEdgeEverMathematics");
+    expect(contentSource).not.toContain("createPonderMathematics");
     expect(documentExtensions).not.toContain('from "./mathematics"');
-    expect(documentExtensions).not.toContain("createEdgeEverMathematics");
+    expect(documentExtensions).not.toContain("createPonderMathematics");
   });
 });

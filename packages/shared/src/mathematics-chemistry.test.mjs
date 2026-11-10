@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 import katex from "katex";
 // Only the shared math module is imported: it must register mhchem for every client.
-import { createEdgeEverMathematics } from "./mathematics.ts";
+import { createPonderMathematics } from "./mathematics.ts";
 import { docToMarkdown, markdownToDoc } from "./content.ts";
 
 const options = { throwOnError: true, strict: "warn", trust: false };
 
 describe("chemistry formulas", () => {
   test("the shared math extensions register \\ce and \\pu on KaTeX", () => {
-    expect(createEdgeEverMathematics()).toHaveLength(2);
+    expect(createPonderMathematics()).toHaveLength(2);
     for (const latex of [
       "\\ce{H2O}",
       "\\ce{SO4^2-}",

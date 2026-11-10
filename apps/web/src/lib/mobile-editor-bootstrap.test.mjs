@@ -16,7 +16,7 @@ describe("standalone mobile editor bootstrap", () => {
 
     expect(bootstrapIndex).toBeGreaterThan(0);
     expect(moduleIndex).toBeGreaterThan(bootstrapIndex);
-    expect(mobileEditorHtml).toContain("edgeeverMobileEditorBootstrap");
+    expect(mobileEditorHtml).toContain("ponderMobileEditorBootstrap");
     expect(mobileEditorHtml).toContain("showFailure");
     expect(mobileEditorHtml).toContain('id="mobile-editor-bootstrap-back"');
     expect(mobileEditorHtml).toContain('id="mobile-editor-bootstrap-retry"');
@@ -25,11 +25,11 @@ describe("standalone mobile editor bootstrap", () => {
   test("replaces bootstrap failures with a React recovery boundary after startup", () => {
     expect(mobileEditorEntry).toContain("MobileEditorErrorBoundary");
     expect(mobileEditorEntry).toContain("onUncaughtError");
-    expect(mobileEditorEntry).toContain("edgeeverMobileEditorBootstrap?.markMounted()");
+    expect(mobileEditorEntry).toContain("ponderMobileEditorBootstrap?.markMounted()");
   });
 
   test("does not load desktop syntax highlighting on the mobile editor critical path", () => {
-    expect(mobileEditorComponent).toContain("createEdgeEverDocumentExtensions({");
+    expect(mobileEditorComponent).toContain("createPonderDocumentExtensions({");
     expect(mobileEditorComponent).toContain("starterKit: { link: false }");
     expect(mobileEditorComponent).not.toContain("codeBlock: false");
     expect(mobileEditorComponent).not.toContain('from "@/lib/code-block"');

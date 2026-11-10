@@ -12,7 +12,7 @@ describe("GitHub plugin release asset proxy", () => {
     const calls = [];
     const buffer = await downloadGithubReleaseAsset({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       assetId: "42",
       assetName: "main.js",
       request: async (input) => {
@@ -22,13 +22,13 @@ describe("GitHub plugin release asset proxy", () => {
     });
 
     expect(new TextDecoder().decode(buffer)).toBe("export default {};");
-    expect(calls).toEqual(["https://api.github.com/repos/example/edgeever-plugin/releases/assets/42"]);
+    expect(calls).toEqual(["https://api.github.com/repos/example/ponder-plugin/releases/assets/42"]);
   });
 
   test("rejects an oversized release asset", async () => {
     await expect(downloadGithubReleaseAsset({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       assetId: "42",
       assetName: "manifest.json",
       request: async () => new Response("", { headers: { "content-length": String(300 * 1024) } }),
@@ -39,7 +39,7 @@ describe("GitHub plugin release asset proxy", () => {
     const calls = [];
     const buffer = await downloadGithubReleaseAssetByTag({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       releaseTag: "v1.2.3-preview.1",
       assetName: "main.js",
       request: async (input) => {
@@ -50,7 +50,7 @@ describe("GitHub plugin release asset proxy", () => {
 
     expect(new TextDecoder().decode(buffer)).toBe("export default {};");
     expect(calls).toEqual([
-      "https://github.com/example/edgeever-plugin/releases/download/v1.2.3-preview.1/main.js",
+      "https://github.com/example/ponder-plugin/releases/download/v1.2.3-preview.1/main.js",
     ]);
   });
 
@@ -58,16 +58,16 @@ describe("GitHub plugin release asset proxy", () => {
     const calls = [];
     const buffer = await downloadGithubReleaseAssetByTag({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       releaseTag: "0.5.6",
       assetName: "manifest.json",
       request: async (input) => {
         const url = String(input);
         calls.push(url);
-        if (url === "https://github.com/example/edgeever-plugin/releases/download/0.5.6/manifest.json") {
+        if (url === "https://github.com/example/ponder-plugin/releases/download/0.5.6/manifest.json") {
           return new Response("missing", { status: 404 });
         }
-        if (url === "https://github.com/example/edgeever-plugin/releases/download/v0.5.6/manifest.json") {
+        if (url === "https://github.com/example/ponder-plugin/releases/download/v0.5.6/manifest.json") {
           return new Response("{\"version\":\"0.5.6\"}", { headers: { "content-length": "19" } });
         }
         throw new Error(url);
@@ -76,8 +76,8 @@ describe("GitHub plugin release asset proxy", () => {
 
     expect(new TextDecoder().decode(buffer)).toBe("{\"version\":\"0.5.6\"}");
     expect(calls).toEqual([
-      "https://github.com/example/edgeever-plugin/releases/download/0.5.6/manifest.json",
-      "https://github.com/example/edgeever-plugin/releases/download/v0.5.6/manifest.json",
+      "https://github.com/example/ponder-plugin/releases/download/0.5.6/manifest.json",
+      "https://github.com/example/ponder-plugin/releases/download/v0.5.6/manifest.json",
     ]);
   });
 
@@ -85,7 +85,7 @@ describe("GitHub plugin release asset proxy", () => {
     const calls = [];
     const buffer = await downloadGithubReleaseAssetByTag({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       releaseTag: "0.5.6",
       assetName: "main.js",
       request: async (input) => {
@@ -101,8 +101,8 @@ describe("GitHub plugin release asset proxy", () => {
               id: 42,
               name: "main.js",
               size: 18,
-              url: "https://api.github.com/repos/example/edgeever-plugin/releases/assets/42",
-              browser_download_url: "https://github.com/example/edgeever-plugin/releases/download/v0.5.6/main.js",
+              url: "https://api.github.com/repos/example/ponder-plugin/releases/assets/42",
+              browser_download_url: "https://github.com/example/ponder-plugin/releases/download/v0.5.6/main.js",
             }],
           });
         }
@@ -114,16 +114,16 @@ describe("GitHub plugin release asset proxy", () => {
     });
 
     expect(new TextDecoder().decode(buffer)).toBe("export default {};");
-    expect(calls).toContain("https://api.github.com/repos/example/edgeever-plugin/releases/tags/0.5.6");
-    expect(calls).toContain("https://api.github.com/repos/example/edgeever-plugin/releases/tags/v0.5.6");
-    expect(calls).toContain("https://api.github.com/repos/example/edgeever-plugin/releases/assets/42");
+    expect(calls).toContain("https://api.github.com/repos/example/ponder-plugin/releases/tags/0.5.6");
+    expect(calls).toContain("https://api.github.com/repos/example/ponder-plugin/releases/tags/v0.5.6");
+    expect(calls).toContain("https://api.github.com/repos/example/ponder-plugin/releases/assets/42");
   });
 
   test("falls back to the GitHub API asset endpoint when the public download URL fails", async () => {
     const calls = [];
     const buffer = await downloadGithubReleaseAssetByTag({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       releaseTag: "v1.2.3",
       assetName: "main.js",
       request: async (input) => {
@@ -138,8 +138,8 @@ describe("GitHub plugin release asset proxy", () => {
               id: 42,
               name: "main.js",
               size: 18,
-              url: "https://api.github.com/repos/example/edgeever-plugin/releases/assets/42",
-              browser_download_url: "https://github.com/example/edgeever-plugin/releases/download/v1.2.3/main.js",
+              url: "https://api.github.com/repos/example/ponder-plugin/releases/assets/42",
+              browser_download_url: "https://github.com/example/ponder-plugin/releases/download/v1.2.3/main.js",
             }],
           });
         }
@@ -151,14 +151,14 @@ describe("GitHub plugin release asset proxy", () => {
     });
 
     expect(new TextDecoder().decode(buffer)).toBe("export default {};");
-    expect(calls[0]).toBe("https://github.com/example/edgeever-plugin/releases/download/v1.2.3/main.js");
-    expect(calls).toContain("https://api.github.com/repos/example/edgeever-plugin/releases/assets/42");
+    expect(calls[0]).toBe("https://github.com/example/ponder-plugin/releases/download/v1.2.3/main.js");
+    expect(calls).toContain("https://api.github.com/repos/example/ponder-plugin/releases/assets/42");
   });
 
   test("rejects release coordinates that could escape the GitHub download path", async () => {
     await expect(downloadGithubReleaseAssetByTag({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       releaseTag: "../../latest",
       assetName: "main.js",
       request: async () => new Response("should not be fetched"),
@@ -177,13 +177,13 @@ describe("GitHub plugin release asset proxy", () => {
     const calls = [];
     const release = await readGithubReleaseByTag({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       releaseTag: "v1.2.3",
       request: async (input) => {
         const url = String(input);
         calls.push(url);
         if (url.includes("api.github.com")) return new Response("rate limited", { status: 403 });
-        if (url === "https://github.com/example/edgeever-plugin/releases/download/v1.2.3/manifest.json") {
+        if (url === "https://github.com/example/ponder-plugin/releases/download/v1.2.3/manifest.json") {
           return new Response("{\"version\":\"1.2.3\"}");
         }
         return new Response("missing", { status: 404 });
@@ -192,19 +192,19 @@ describe("GitHub plugin release asset proxy", () => {
     expect(release.tag_name).toBe("v1.2.3");
     expect(release.assets.map((asset) => asset.name)).toEqual(["manifest.json", "main.js", "styles.css"]);
     expect(calls[0]).toContain("/releases/tags/v1.2.3");
-    expect(calls).toContain("https://github.com/example/edgeever-plugin/releases/download/v1.2.3/manifest.json");
+    expect(calls).toContain("https://github.com/example/ponder-plugin/releases/download/v1.2.3/manifest.json");
   });
 
   test("falls back to raw.githubusercontent.com when the GitHub REST API rate-limits the instance", async () => {
     const calls = [];
     const text = await readGithubRepositoryManifestText({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       request: async (input) => {
         const url = String(input);
         calls.push(url);
         if (url.includes("api.github.com")) return new Response("rate limited", { status: 403 });
-        if (url === "https://raw.githubusercontent.com/example/edgeever-plugin/HEAD/manifest.json") {
+        if (url === "https://raw.githubusercontent.com/example/ponder-plugin/HEAD/manifest.json") {
           return new Response("{\"version\":\"0.4.1\"}");
         }
         return new Response("missing", { status: 404 });
@@ -212,14 +212,14 @@ describe("GitHub plugin release asset proxy", () => {
     });
     expect(text).toBe("{\"version\":\"0.4.1\"}");
     expect(calls[0]).toContain("/contents/manifest.json");
-    expect(calls).toContain("https://raw.githubusercontent.com/example/edgeever-plugin/HEAD/manifest.json");
+    expect(calls).toContain("https://raw.githubusercontent.com/example/ponder-plugin/HEAD/manifest.json");
   });
 
   test("reads the latest GitHub Release manifest without using the REST API", async () => {
     const calls = [];
     const text = await readGithubLatestReleaseManifestText({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       request: async (input) => {
         calls.push(String(input));
         if (String(input).endsWith("/releases/latest/download/manifest.json")) {
@@ -230,7 +230,7 @@ describe("GitHub plugin release asset proxy", () => {
     });
     expect(text).toBe("{\"version\":\"0.4.1\"}");
     expect(calls).toEqual([
-      "https://github.com/example/edgeever-plugin/releases/latest/download/manifest.json",
+      "https://github.com/example/ponder-plugin/releases/latest/download/manifest.json",
     ]);
   });
 
@@ -238,7 +238,7 @@ describe("GitHub plugin release asset proxy", () => {
     const calls = [];
     const text = await readGithubLatestReleaseManifestText({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       request: async (input) => {
         const url = String(input);
         calls.push(url);
@@ -255,36 +255,36 @@ describe("GitHub plugin release asset proxy", () => {
       },
     });
     expect(text).toBe("{\"version\":\"0.4.1\"}");
-    expect(calls[0]).toBe("https://github.com/example/edgeever-plugin/releases/latest/download/manifest.json");
-    expect(calls).toContain("https://api.github.com/repos/example/edgeever-plugin/releases/latest");
+    expect(calls[0]).toBe("https://github.com/example/ponder-plugin/releases/latest/download/manifest.json");
+    expect(calls).toContain("https://api.github.com/repos/example/ponder-plugin/releases/latest");
   });
 
   test("falls back to raw.githubusercontent.com when latest-release lookup is rate-limited", async () => {
     const calls = [];
     const text = await readGithubLatestReleaseManifestText({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       request: async (input) => {
         const url = String(input);
         calls.push(url);
         if (url.includes("api.github.com") || url.includes("/releases/latest/download/")) {
           return new Response("rate limited", { status: 403 });
         }
-        if (url === "https://raw.githubusercontent.com/example/edgeever-plugin/HEAD/manifest.json") {
+        if (url === "https://raw.githubusercontent.com/example/ponder-plugin/HEAD/manifest.json") {
           return new Response("{\"version\":\"0.4.1\"}");
         }
         return new Response("missing", { status: 404 });
       },
     });
     expect(text).toBe("{\"version\":\"0.4.1\"}");
-    expect(calls[0]).toBe("https://github.com/example/edgeever-plugin/releases/latest/download/manifest.json");
-    expect(calls).toContain("https://raw.githubusercontent.com/example/edgeever-plugin/HEAD/manifest.json");
+    expect(calls[0]).toBe("https://github.com/example/ponder-plugin/releases/latest/download/manifest.json");
+    expect(calls).toContain("https://raw.githubusercontent.com/example/ponder-plugin/HEAD/manifest.json");
   });
 
   test("reads the raw repository manifest for live official plugin resolution", async () => {
     const text = await readGithubRepositoryManifestText({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       request: async () => new Response("{\"version\":\"0.5.4\"}", { headers: { "content-length": "20" } }),
     });
     expect(text).toBe("{\"version\":\"0.5.4\"}");
@@ -293,7 +293,7 @@ describe("GitHub plugin release asset proxy", () => {
   test("reads a GitHub release by tag without exposing unrelated fields", async () => {
     const release = await readGithubReleaseByTag({
       owner: "example",
-      repository: "edgeever-plugin",
+      repository: "ponder-plugin",
       releaseTag: "v0.5.4",
       request: async () => Response.json({
         tag_name: "v0.5.4",

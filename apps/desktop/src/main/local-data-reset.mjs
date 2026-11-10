@@ -31,7 +31,7 @@ export class LocalDataResetError extends Error {
 }
 
 // Electron derives userData from the package name, so a scoped package such as
-// "@edgeever/desktop" lives at "<appData>/@edgeever/desktop".
+// "@ponder/desktop" lives at "<appData>/@ponder/desktop".
 const isManagedRelativePath = (relativeTarget) => {
   const segments = relativeTarget.split(sep);
   if (segments.some((segment) => !segment || segment === "." || segment === "..")) return false;
@@ -50,7 +50,7 @@ export const managedUserDataDirectory = (userDataDirectory, appDataDirectory) =>
   ) {
     throw new LocalDataResetError(
       "unsafe-data-directory",
-      "EdgeEver local data must be a direct child of the application-data directory or a single @scope/name directory in it",
+      "Ponder local data must be a direct child of the application-data directory or a single @scope/name directory in it",
     );
   }
   return target;
@@ -66,7 +66,7 @@ export const macApplicationBundlePath = (executablePath) => {
   }
   throw new LocalDataResetError(
     "application-bundle-not-found",
-    "EdgeEver must be running from a macOS application bundle",
+    "Ponder must be running from a macOS application bundle",
   );
 };
 
@@ -84,7 +84,7 @@ export const scheduleMacLocalDataReset = async ({
     [
       "-c",
       LOCAL_DATA_RESET_HELPER,
-      "edgeever-local-data-reset",
+      "ponder-local-data-reset",
       String(parentPid),
       target,
       applicationPath,
@@ -102,7 +102,7 @@ export const scheduleMacLocalDataReset = async ({
   } catch (error) {
     throw new LocalDataResetError(
       "helper-start-failed",
-      "EdgeEver could not start the local-data reset helper",
+      "Ponder could not start the local-data reset helper",
       { cause: error },
     );
   }

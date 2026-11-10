@@ -1,4 +1,4 @@
-import type { CompanionToolCall, CompanionToolEffect, CompanionTodo, CompanionQuestion } from "@edgeever/shared";
+import type { CompanionToolCall, CompanionToolEffect, CompanionTodo, CompanionQuestion } from "@ponder/shared";
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;

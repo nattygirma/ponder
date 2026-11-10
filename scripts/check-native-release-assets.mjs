@@ -12,12 +12,12 @@ export const nativeReleaseAssetsReady = ({
 }) => {
   if (platform === "mobile") {
     const apkNames = assetNames.filter((name) =>
-      /^edgeever-android-v.*-arm64-v8a\.apk$/.test(name),
+      /^ponder-android-v.*-arm64-v8a\.apk$/.test(name),
     );
     if (apkNames.length !== 1) return false;
     return (
       !rebuild ||
-      apkNames[0] === `edgeever-android-${currentTag}-arm64-v8a.apk`
+      apkNames[0] === `ponder-android-${currentTag}-arm64-v8a.apk`
     );
   }
 
@@ -25,15 +25,15 @@ export const nativeReleaseAssetsReady = ({
     const versions = new Set();
     for (const arch of ["arm64", "x64"]) {
       const dmgNames = assetNames.filter((name) =>
-        new RegExp(`^EdgeEver-(.+)-mac-${arch}\\.dmg$`).test(name)
+        new RegExp(`^Ponder-(.+)-mac-${arch}\\.dmg$`).test(name)
       );
       const zipNames = assetNames.filter((name) =>
-        new RegExp(`^EdgeEver-(.+)-mac-${arch}\\.zip$`).test(name)
+        new RegExp(`^Ponder-(.+)-mac-${arch}\\.zip$`).test(name)
       );
       if (dmgNames.length !== 1 || zipNames.length !== 1) return false;
       const prefix = dmgNames[0].replace(/\.dmg$/, "");
       if (zipNames[0] !== `${prefix}.zip`) return false;
-      const version = new RegExp(`^EdgeEver-(.+)-mac-${arch}\\.dmg$`)
+      const version = new RegExp(`^Ponder-(.+)-mac-${arch}\\.dmg$`)
         .exec(dmgNames[0])?.[1];
       if (!version) return false;
       versions.add(version);
@@ -49,18 +49,18 @@ export const nativeReleaseAssetsReady = ({
       }
     }
     const windowsInstallerNames = assetNames.filter((name) =>
-      /^EdgeEver-(.+)-windows-x64\.exe$/.test(name)
+      /^Ponder-(.+)-windows-x64\.exe$/.test(name)
     );
     if (windowsInstallerNames.length !== 1) return false;
-    const windowsVersion = /^EdgeEver-(.+)-windows-x64\.exe$/
+    const windowsVersion = /^Ponder-(.+)-windows-x64\.exe$/
       .exec(windowsInstallerNames[0])?.[1];
     if (!windowsVersion) return false;
     versions.add(windowsVersion);
     const linuxAppImageNames = assetNames.filter((name) =>
-      /^EdgeEver-(.+)-linux-x64\.AppImage$/.test(name)
+      /^Ponder-(.+)-linux-x64\.AppImage$/.test(name)
     );
     if (linuxAppImageNames.length !== 1) return false;
-    const linuxVersion = /^EdgeEver-(.+)-linux-x64\.AppImage$/
+    const linuxVersion = /^Ponder-(.+)-linux-x64\.AppImage$/
       .exec(linuxAppImageNames[0])?.[1];
     if (!linuxVersion) return false;
     versions.add(linuxVersion);

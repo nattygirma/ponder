@@ -26,7 +26,6 @@ export type MemoTemplateGalleryEntry = {
 
 const item = (
   key: string,
-  zhCN: MemoTemplateSeedTranslation,
   enUS: MemoTemplateSeedTranslation,
   ja: MemoTemplateSeedTranslation,
   pl: MemoTemplateSeedTranslation,
@@ -34,17 +33,12 @@ const item = (
 ): MemoTemplateGalleryItem => ({
   key,
   tag: key,
-  translations: { "zh-CN": zhCN, "en-US": enUS, ja, pl, ru },
+  translations: { "en-US": enUS, ja, pl, ru },
 });
 
 export const MEMO_TEMPLATE_GALLERY: readonly MemoTemplateGalleryItem[] = [
   item(
     "daily-journal",
-    {
-      title: "每日日志",
-      description: "规划当天重点，记录发生的事情与当日反思。",
-      contentMarkdown: "## 🎯 今日三件要事\n\n1. \n2. \n3. \n\n## 📅 今日记录\n\n- \n\n## 🙏 值得感恩\n\n- \n\n## 🌙 今日反思\n\n- 做得好的：\n- 可以改进的：\n- 明天要做的：\n",
-    },
     {
       title: "Daily Journal",
       description: "Plan the day's priorities, log what happened, and reflect in the evening.",
@@ -69,11 +63,6 @@ export const MEMO_TEMPLATE_GALLERY: readonly MemoTemplateGalleryItem[] = [
   item(
     "retrospective",
     {
-      title: "复盘回顾",
-      description: "回顾一个阶段：哪些做得好、哪些不足，以及具体改进行动。",
-      contentMarkdown: "# 🔁 复盘回顾\n\n- **周期**：\n- **参与人**：\n\n## ✅ 做得好的\n\n- \n\n## ⚠️ 不足与问题\n\n- \n\n## 💡 可以尝试的改进\n\n- \n\n## 📋 改进行动\n\n- [ ] **[负责人]** 行动描述 (截止日期：MM-DD)\n",
-    },
-    {
       title: "Retrospective",
       description: "Look back on a period: what went well, what didn't, and concrete improvements.",
       contentMarkdown: "# 🔁 Retrospective\n\n- **Period**:\n- **Participants**:\n\n## ✅ What Went Well\n\n- \n\n## ⚠️ What Didn't Go Well\n\n- \n\n## 💡 Ideas to Try\n\n- \n\n## 📋 Action Items\n\n- [ ] **[Owner]** Action (Due: MM-DD)\n",
@@ -96,11 +85,6 @@ export const MEMO_TEMPLATE_GALLERY: readonly MemoTemplateGalleryItem[] = [
   ),
   item(
     "one-on-one",
-    {
-      title: "一对一沟通",
-      description: "记录 1:1 沟通的议题、反馈、共识与后续跟进。",
-      contentMarkdown: "# 🤝 一对一沟通\n\n- **时间**：\n- **参与人**：\n\n## 🗂️ 议题\n\n- \n\n## 💬 反馈\n\n- 给对方的：\n- 收到的：\n\n## ✅ 共识\n\n- \n\n## 📋 后续跟进\n\n- [ ] \n",
-    },
     {
       title: "1:1 Meeting",
       description: "Track 1:1 topics, feedback both ways, agreements, and follow-ups.",
@@ -125,11 +109,6 @@ export const MEMO_TEMPLATE_GALLERY: readonly MemoTemplateGalleryItem[] = [
   item(
     "project-plan",
     {
-      title: "项目计划",
-      description: "明确项目目标、范围、里程碑、风险与相关人员。",
-      contentMarkdown: "# 🗺️ 项目计划\n\n- **负责人**：\n- **开始 / 截止日期**：\n\n## 🎯 目标\n\n- \n\n## 📦 范围\n\n- 包含：\n- 不包含：\n\n## 🏁 里程碑\n\n- [ ] 里程碑 1 (MM-DD)\n- [ ] 里程碑 2 (MM-DD)\n\n## ⚠️ 风险与应对\n\n- \n\n## 👥 相关人员\n\n- \n",
-    },
-    {
       title: "Project Plan",
       description: "Define the project's goals, scope, milestones, risks, and stakeholders.",
       contentMarkdown: "# 🗺️ Project Plan\n\n- **Owner**:\n- **Start / Due**:\n\n## 🎯 Goals\n\n- \n\n## 📦 Scope\n\n- In scope:\n- Out of scope:\n\n## 🏁 Milestones\n\n- [ ] Milestone 1 (MM-DD)\n- [ ] Milestone 2 (MM-DD)\n\n## ⚠️ Risks & Mitigations\n\n- \n\n## 👥 Stakeholders\n\n- \n",
@@ -152,11 +131,6 @@ export const MEMO_TEMPLATE_GALLERY: readonly MemoTemplateGalleryItem[] = [
   ),
   item(
     "cornell-notes",
-    {
-      title: "康奈尔笔记",
-      description: "用线索问题、课堂笔记和总结三段式整理学习内容。",
-      contentMarkdown: "# 🎓 康奈尔笔记\n\n- **主题**：\n- **来源**：\n\n## ❓ 线索与问题\n\n- \n\n## 📝 笔记\n\n- \n\n## 🧾 总结\n\n\n",
-    },
     {
       title: "Cornell Notes",
       description: "Organize what you learn into cue questions, notes, and a summary.",
@@ -181,11 +155,6 @@ export const MEMO_TEMPLATE_GALLERY: readonly MemoTemplateGalleryItem[] = [
   item(
     "bug-report",
     {
-      title: "问题报告",
-      description: "记录复现步骤、预期与实际结果、运行环境和附加信息。",
-      contentMarkdown: "# 🐞 问题报告\n\n## 📄 概述\n\n\n\n## 🔁 复现步骤\n\n1. \n2. \n3. \n\n## ✅ 预期结果\n\n\n\n## ❌ 实际结果\n\n\n\n## 🖥️ 运行环境\n\n- 版本：\n- 系统 / 浏览器：\n\n## 📎 附加信息\n\n- \n",
-    },
-    {
       title: "Bug Report",
       description: "Capture reproduction steps, expected vs. actual results, environment, and extra context.",
       contentMarkdown: "# 🐞 Bug Report\n\n## 📄 Summary\n\n\n\n## 🔁 Steps to Reproduce\n\n1. \n2. \n3. \n\n## ✅ Expected Result\n\n\n\n## ❌ Actual Result\n\n\n\n## 🖥️ Environment\n\n- Version:\n- OS / Browser:\n\n## 📎 Additional Context\n\n- \n",
@@ -209,11 +178,6 @@ export const MEMO_TEMPLATE_GALLERY: readonly MemoTemplateGalleryItem[] = [
   item(
     "decision-record",
     {
-      title: "决策记录",
-      description: "记录决策背景、备选方案、最终决定及其影响。",
-      contentMarkdown: "# ⚖️ 决策记录\n\n- **日期**：\n- **状态**：提议 / 已采纳 / 已废弃\n- **决策人**：\n\n## 🧭 背景\n\n\n\n## 🔀 备选方案\n\n1. **方案 A**：\n   - 优点：\n   - 缺点：\n2. **方案 B**：\n   - 优点：\n   - 缺点：\n\n## ✅ 决定\n\n\n\n## 📈 影响\n\n- \n",
-    },
-    {
       title: "Decision Record",
       description: "Document the context, options considered, the decision, and its consequences.",
       contentMarkdown: "# ⚖️ Decision Record\n\n- **Date**:\n- **Status**: Proposed / Accepted / Superseded\n- **Decided by**:\n\n## 🧭 Context\n\n\n\n## 🔀 Options Considered\n\n1. **Option A**:\n   - Pros:\n   - Cons:\n2. **Option B**:\n   - Pros:\n   - Cons:\n\n## ✅ Decision\n\n\n\n## 📈 Consequences\n\n- \n",
@@ -236,11 +200,6 @@ export const MEMO_TEMPLATE_GALLERY: readonly MemoTemplateGalleryItem[] = [
   ),
   item(
     "travel-checklist",
-    {
-      title: "旅行清单",
-      description: "整理行程、预订信息、行李清单和出发前待办。",
-      contentMarkdown: "# ✈️ 旅行清单\n\n- **目的地**：\n- **日期**：\n\n## 🗓️ 行程\n\n- 第 1 天：\n- 第 2 天：\n\n## 🎫 预订信息\n\n- 交通：\n- 住宿：\n\n## 🧳 行李清单\n\n- [ ] 证件\n- [ ] 充电器\n- [ ] 衣物\n- [ ] 洗漱用品\n- [ ] 常用药品\n\n## ✅ 出发前待办\n\n- [ ] \n",
-    },
     {
       title: "Travel Checklist",
       description: "Keep the itinerary, bookings, packing list, and pre-departure to-dos in one place.",

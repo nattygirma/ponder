@@ -22,7 +22,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 import { getMemoSortOptions, getNotebookMoveOptions } from "@/lib/app-helpers";
 import type { MemoListDensity, MemoSortMode } from "@/lib/app-helpers";
-import type { Notebook } from "@edgeever/shared";
+import type { Notebook } from "@ponder/shared";
 
 const CheckCircleCheck = ({ className }: { className?: string }) => (
   <svg className={cn("h-4 w-4 fill-current", className)} viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

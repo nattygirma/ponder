@@ -277,8 +277,8 @@ export const MarkdownSourceEditor = forwardRef<MarkdownSourceEditorRef, Markdown
           highlight(view: EditorView) {
             return Decoration.set(getMarkdownSearchMatches(view.state.doc, searchQuery).map((match, index) =>
               Decoration.mark({ class: index === searchIndex
-                ? "edgeever-search-match edgeever-search-match-active"
-                : "edgeever-search-match" }).range(match.from, match.to)), true);
+                ? "ponder-search-match ponder-search-match-active"
+                : "ponder-search-match" }).range(match.from, match.to)), true);
           }
         }, { decorations: (plugin) => plugin.decorations }),
         markdown(),
@@ -388,7 +388,7 @@ export const MarkdownSourceEditor = forwardRef<MarkdownSourceEditorRef, Markdown
     return (
       <div
         className={cn(
-          "relative h-full w-full overflow-hidden edgeever-markdown-source-editor",
+          "relative h-full w-full overflow-hidden ponder-markdown-source-editor",
           className,
         )}
         aria-label={ariaLabel}

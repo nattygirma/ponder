@@ -7,7 +7,7 @@ import {
   isAiTextAttachment,
   type AiAttachmentInput,
   type AiAttachmentMediaType,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 export const AI_ATTACHMENT_ACCEPT = AI_ATTACHMENT_MEDIA_TYPES.join(",");
 

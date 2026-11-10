@@ -1,7 +1,7 @@
-import { FONT_IDS, isRemoteNoteImageFont, shouldLoadFontPreview } from "@edgeever/shared/font-catalog";
-import { resolveNoteImageTypography, type NoteImageFontStyle, type NoteImageTheme } from "@edgeever/shared/note-image-card";
-import { prepareNoteImageAssets } from "@edgeever/shared/note-image-fonts";
-import { noteImageAssetUrls } from "@edgeever/shared/note-image-assets";
+import { FONT_IDS, isRemoteNoteImageFont, shouldLoadFontPreview } from "@ponder/shared/font-catalog";
+import { resolveNoteImageTypography, type NoteImageFontStyle, type NoteImageTheme } from "@ponder/shared/note-image-card";
+import { prepareNoteImageAssets } from "@ponder/shared/note-image-fonts";
+import { noteImageAssetUrls } from "@ponder/shared/note-image-assets";
 
 type PickerConfiguration = {
   selected: NoteImageFontStyle;
@@ -16,12 +16,12 @@ type PickerConfiguration = {
 };
 
 type PickerWindow = Window & {
-  EdgeEverFontPickerConfiguration?: PickerConfiguration;
+  PonderFontPickerConfiguration?: PickerConfiguration;
   webkit?: { messageHandlers?: { fontPicker?: { postMessage: (message: unknown) => void } } };
 };
 
 const host = window as PickerWindow;
-const config = host.EdgeEverFontPickerConfiguration;
+const config = host.PonderFontPickerConfiguration;
 const list = document.getElementById("font-list");
 
 if (config && list) {

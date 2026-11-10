@@ -1,6 +1,6 @@
 import type { LocalDraft } from "@/lib/local-db";
 
-const EMERGENCY_DRAFT_PREFIX = "edgeever.emergency-draft.";
+const EMERGENCY_DRAFT_PREFIX = "ponder.emergency-draft.";
 
 const getStorage = () => {
   try {

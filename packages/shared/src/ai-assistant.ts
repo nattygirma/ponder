@@ -109,8 +109,7 @@ export const resolveAiAssistantOpenAction = ({
 });
 
 const DEFAULT_AI_TARGET_LANGUAGE_BY_UI_LOCALE: Record<SupportedLocale, AiTargetLanguage> = {
-  "zh-CN": "en",
-  "en-US": "zh-CN",
+  "en-US": "es",
   ja: "ja",
   pl: "en",
   ru: "en",
@@ -118,10 +117,10 @@ const DEFAULT_AI_TARGET_LANGUAGE_BY_UI_LOCALE: Record<SupportedLocale, AiTargetL
 
 export const getDefaultAiTargetLanguage = (locale: string | undefined): AiTargetLanguage => {
   const uiLocale = matchSupportedLocale(locale);
-  return uiLocale ? DEFAULT_AI_TARGET_LANGUAGE_BY_UI_LOCALE[uiLocale] : "zh-CN";
+  return uiLocale ? DEFAULT_AI_TARGET_LANGUAGE_BY_UI_LOCALE[uiLocale] : "en";
 };
 
-export const AI_ASSISTANT_LAST_ACTION_STORAGE_KEY = "edgeever.aiAssistant.lastAction";
+export const AI_ASSISTANT_LAST_ACTION_STORAGE_KEY = "ponder.invalidAssistant.lastAction";
 
 export type AiPromptSeedAction = Exclude<AiAction, "custom">;
 

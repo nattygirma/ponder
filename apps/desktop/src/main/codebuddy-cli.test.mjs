@@ -168,7 +168,7 @@ describe("CodeBuddy CLI resolution", () => {
   });
 
   test("resolves a real npm-style install and clears inherited region overrides", async () => {
-    const directory = realpathSync(await mkdtemp(path.join(tmpdir(), "edgeever-codebuddy-cli-")));
+    const directory = realpathSync(await mkdtemp(path.join(tmpdir(), "ponder-codebuddy-cli-")));
     try {
       const root = path.join(directory, "lib", "node_modules", "@tencent-ai", "codebuddy-code");
       await mkdir(path.join(root, "bin"), { recursive: true });
@@ -273,7 +273,7 @@ describe("nvm default alias", () => {
   });
 
   test("finds CodeBuddy under nvm's lts default with a minimal desktop PATH", async () => {
-    const directory = realpathSync(await mkdtemp(path.join(tmpdir(), "edgeever-codebuddy-nvm-")));
+    const directory = realpathSync(await mkdtemp(path.join(tmpdir(), "ponder-codebuddy-nvm-")));
     try {
       const prefix = path.join(directory, ".nvm", "versions", "node", "v22.14.0");
       const root = path.join(prefix, "lib", "node_modules", "@tencent-ai", "codebuddy-code");

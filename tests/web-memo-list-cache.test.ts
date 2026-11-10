@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { Database } from "bun:sqlite";
 import { readFileSync } from "node:fs";
 import { QueryClient, QueryObserver } from "@tanstack/react-query";
-import type { MemoSummary } from "@edgeever/shared";
+import type { MemoSummary } from "@ponder/shared";
 import { remapMemoIdsInLists, sortDesktopTitleMemoSummaries, updateMemoSummaryInLists, type MemoListQueryData } from "../apps/web/src/lib/memo-list-cache";
 
 const memo = (overrides: Partial<MemoSummary> = {}): MemoSummary => ({
@@ -115,7 +115,7 @@ describe("desktop title list cache ordering (#750)", () => {
   beforeEach(() => {
     Object.defineProperty(globalThis, "window", {
       configurable: true,
-      value: { edgeeverDesktop: { isAvailable: true } },
+      value: { ponderDesktop: { isAvailable: true } },
     });
   });
 

@@ -16,7 +16,7 @@ import {
 const decodeBase64Url = (value: string) => Buffer.from(value, "base64url");
 
 describe("password reset script", () => {
-  test("creates hashes compatible with EdgeEver authentication", () => {
+  test("creates hashes compatible with Ponder authentication", () => {
     const password = "demo-password";
     const salt = Buffer.alloc(16, 7);
     const encoded = createPasswordHash(password, salt);

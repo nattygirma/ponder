@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { createDefaultDiagramDocument, serializeDiagramDocument } from "@edgeever/shared";
+import { createDefaultDiagramDocument, serializeDiagramDocument } from "@ponder/shared";
 import { listMemos, mapMemoSummary, toFtsQuery } from "./memo-list-service.ts";
 
 const memoRow = (id, overrides = {}) => ({
@@ -105,7 +105,7 @@ describe("memo list service", () => {
   });
 
   test("paginates title Z-A by reverse title and keeps the update-time tie break", async () => {
-    const titleExpression = "LOWER(COALESCE(NULLIF(m.title, ''), '无标题笔记'))";
+    const titleExpression = "LOWER(COALESCE(NULLIF(m.title, ''), 'Untitled note'))";
     const firstDatabase = createDatabase({
       rows: [memoRow("memo_1", { title: "Zulu" }), memoRow("memo_2", { title: "Alpha" })],
       totalCount: 2,

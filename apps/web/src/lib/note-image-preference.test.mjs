@@ -20,7 +20,7 @@ const withStorage = (entries, run) => {
 };
 
 test('migrates the existing title choice and signature without losing explicit false', () => {
-  withStorage({ edgeever_share_image_show_title: 'false', edgeever_share_author_name: '天马' }, () => {
+  withStorage({ ponder_share_image_show_title: 'false', ponder_share_author_name: '天马' }, () => {
     const migrated = readNoteImagePreferences();
     expect(migrated.showTitle).toBe(false);
     expect(migrated.author).toBe('天马');
@@ -44,7 +44,7 @@ test('saved classic theme opens as glass while preserving custom typography and 
 
 test('malformed JSON and non-object storage retain usable legacy defaults', () => {
   for (const stored of ['{broken', 'null', '[]', 'false', '"book"']) {
-    withStorage({ [key]: stored, edgeever_share_image_show_title: 'false' }, () => {
+    withStorage({ [key]: stored, ponder_share_image_show_title: 'false' }, () => {
       expect(readNoteImagePreferences()).toMatchObject({ theme: 'glass', showTitle: false });
     });
   }

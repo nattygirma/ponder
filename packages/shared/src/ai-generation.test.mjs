@@ -13,7 +13,7 @@ const prepared = {
   system: "System",
   prompt: "Note content",
   maxOutputTokens: 4096,
-  resultBoundary: { start: "<edgeever-result-abc>", end: "</edgeever-result-abc>" },
+  resultBoundary: { start: "<ponder-result-abc>", end: "</ponder-result-abc>" },
 };
 
 describe("direct AI provider requests", () => {
@@ -59,8 +59,8 @@ describe("direct AI provider requests", () => {
   test("still strips result boundaries while streaming", () => {
     const normalizer = createAiGenerationStreamNormalizer(prepared.resultBoundary);
     const output = [
-      normalizer.push("preamble\n<edgeever-result-abc>\nVisible"),
-      normalizer.push(" text</edgeever-result-abc>\npost"),
+      normalizer.push("preamble\n<ponder-result-abc>\nVisible"),
+      normalizer.push(" text</ponder-result-abc>\npost"),
       normalizer.finish(),
     ].join("");
     expect(output).toBe("Visible text");

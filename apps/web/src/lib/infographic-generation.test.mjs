@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { parseSyntax, getTemplate, getTemplates } from "@antv/infographic";
-import { compileInfographicNote, INFOGRAPHIC_NOTE_TEMPLATES } from "@edgeever/shared";
+import { compileInfographicNote, INFOGRAPHIC_NOTE_TEMPLATES } from "@ponder/shared";
 import {
   buildInfographicSyntax,
   buildOfficialInfographicSyntax,

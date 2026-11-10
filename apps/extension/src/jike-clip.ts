@@ -101,7 +101,7 @@ export const jikePostCard = (doc: Document, target: PlatformTarget, pageUrl: str
         !platformElementHidden(link) && safePlatformUrl(link.getAttribute("href") || "", pageUrl) === `${url.origin}${profilePath}`));
     return cards.length === 1 ? cards[0] : null;
   }
-  const web = Array.from(doc.querySelectorAll(`[data-edgeever-jike-id="${target.id}"]`)).filter(card => isJikeWebCard(card) && !platformElementHidden(card));
+  const web = Array.from(doc.querySelectorAll(`[data-ponder-jike-id="${target.id}"]`)).filter(card => isJikeWebCard(card) && !platformElementHidden(card));
   if (web.length) return web.length === 1 ? web[0] : null;
   return Array.from(doc.querySelectorAll(JIKE_CARD_SELECTOR)).find(card=>jikeCardTarget(card,pageUrl)?.id === target.id) || null;
 };

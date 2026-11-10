@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { MobilePlayUpdate } from "./mobile-play-update";
-import type { GooglePlayUpdateResult, GooglePlayUpdateState } from "../../modules/edgeever-app-store";
+import type { GooglePlayUpdateResult, GooglePlayUpdateState } from "../../modules/ponder-app-store";
 
 const available: GooglePlayUpdateState = { status: "available", versionCode: 234 };
 const unavailable: GooglePlayUpdateState = { status: "unavailable", versionCode: 0 };

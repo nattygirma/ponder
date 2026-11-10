@@ -10,11 +10,11 @@ export {
   computeDiagramLayoutResult,
   DIAGRAM_READABLE_MIN_SCALE,
   getDiagramLayoutViewport,
-} from "@edgeever/shared/diagram-layout";
+} from "@ponder/shared/diagram-layout";
 export type {
   DiagramLayoutNodeGeometry,
   DiagramLayoutOptions,
   DiagramLayoutResult,
   DiagramLayoutStrategy,
   DiagramLayoutViewport,
-} from "@edgeever/shared/diagram-layout";
+} from "@ponder/shared/diagram-layout";

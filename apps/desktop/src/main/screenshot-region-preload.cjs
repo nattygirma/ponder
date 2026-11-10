@@ -1,6 +1,6 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-contextBridge.exposeInMainWorld("edgeeverScreenshotRegion", {
+contextBridge.exposeInMainWorld("ponderScreenshotRegion", {
   onStart(callback) {
     ipcRenderer.on("desktop:screenshot-region-start", (_event, payload) => callback(payload));
   },

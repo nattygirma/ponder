@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "slug": "ponder",
+  "name": "Ponder",
+  "icon": "icon.svg",
+  "version": "2.19.3",
+  "tagline": "Notes, notebooks and a web clipper, with AI and MCP",
+  "description": "Self-hosted knowledge base: nested notebooks, rich text and Markdown, tables, diagrams, attachments, full-text search, sharing and an MCP server. Based on EdgeEver (github.com/tianma-if/edgeever). Free software under the AGPL-3.0: the complete source is at github.com/nattygirma/ponder.",
+  "category": "productivity",
+  "replaces": [{ "name": "Evernote", "monthly_cents": 1499 }, { "name": "Notion", "monthly_cents": 1000 }],
+  "license": "AGPL-3.0",
+  "original_source": "https://github.com/nattygirma/ponder",
+  "entry": "dist/app.js",
+  "migrations": "migrations",
+  "healthcheck": "/api/health",
+  "services": [
+    { "name": "storage", "why": "Keeps your note attachments and images" },
+    { "name": "email", "why": "Sends team invitations and comment alerts" }
+  ],
+  "connections": [
+    { "provider": "google", "why": "Shows your Google Calendar events and saves pages to Google Drive", "scopes": ["https://www.googleapis.com/auth/calendar.readonly", "https://www.googleapis.com/auth/drive.file"] },
+    { "provider": "microsoft", "why": "Shows your Outlook calendar events", "scopes": ["Calendars.Read"] },
+    { "provider": "slack", "why": "Shows Slack message links as previews in your pages", "scopes": ["channels:read", "channels:history"] },
+    { "provider": "github", "why": "Shows GitHub links as live previews and finds issues in Search", "scopes": ["repo"] }
+  ],
+  "egress": [
+    { "host": "api.openai.com", "why": "AI features, with your own OpenAI key" },
+    { "host": "api.anthropic.com", "why": "AI features, with your own Anthropic key" },
+    { "host": "generativelanguage.googleapis.com", "why": "AI features, with your own Gemini key" },
+    { "host": "calendar.google.com", "why": "Reads a Google calendar you connect, by the address you paste" },
+    { "host": "outlook.office365.com", "why": "Reads an Outlook calendar you connect, by the address you paste" },
+    { "host": "outlook.live.com", "why": "Reads an Outlook calendar you connect, by the address you paste" },
+    { "host": "*.icloud.com", "why": "Reads an Apple calendar you connect, by the address you paste" },
+    { "host": "api.github.com", "why": "Installs and updates Ponder plugins from their GitHub releases" },
+    { "host": "github.com", "why": "Downloads Ponder plugin release files" },
+    { "host": "objects.githubusercontent.com", "why": "GitHub's download host for plugin release files" },
+    { "host": "release-assets.githubusercontent.com", "why": "GitHub's download host for plugin release files" }
+  ],
+  "settings": [
+    { "key": "PONDER_CREDENTIALS_ENCRYPTION_KEY", "label": "Credential encryption key", "secret": true, "generate": "secret" }
+  ]
+}

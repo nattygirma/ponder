@@ -1,7 +1,7 @@
 import { Link2, X } from "lucide-react";
-import { getMemoDisplayTitle } from "@edgeever/shared";
+import { getMemoDisplayTitle } from "@ponder/shared";
 import { useTranslation } from "react-i18next";
-import type { MemoSummary } from "@edgeever/shared";
+import type { MemoSummary } from "@ponder/shared";
 import {
   Command,
   CommandEmpty,

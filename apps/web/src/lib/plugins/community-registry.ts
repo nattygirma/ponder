@@ -4,7 +4,7 @@ import {
   rememberMarketplaceRevocations,
   type MarketplaceRegistry,
   type MarketplaceRevocation,
-} from "@edgeever/plugin-api";
+} from "@ponder/plugin-api";
 import { api, getConfiguredDesktopApiBaseUrl } from "@/lib/api";
 import {
   communityRegistryPublicKeys,

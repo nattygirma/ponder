@@ -77,7 +77,7 @@ describe("diagram reader opening view", () => {
     const source = readFileSync(new URL("./diagram-reader.ts", import.meta.url), "utf8");
     expect(source).toContain("if (diagramReaderOpeningMode(graph.scale().sx) === \"read\") read()");
     expect(source).toContain("graph.on(\"node:click\", onNodeFocus)");
-    expect(source).not.toContain("edgeever-diagram-reader-controls");
+    expect(source).not.toContain("ponder-diagram-reader-controls");
     expect(source).not.toContain("适应画布");
     expect(source).not.toContain("从中心阅读");
     expect(source).not.toContain("if (diagram.kind === 'flowchart' && graph.scale().sx < FLOWCHART_READABLE_MIN_SCALE) read()");

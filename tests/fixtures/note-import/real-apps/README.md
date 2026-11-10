@@ -1,7 +1,5 @@
 # Real source-app exports
 
-[简体中文](README.zh-CN.md)
-
 Obsidian/Joplin samples were created in isolated local libraries on macOS arm64 on 2026-10-29. The Evernote sample was created separately in a test account and exported on 2026-10-31. All note content and attachment bytes are self-authored; no personal library, account data or application binaries are included.
 
 - **Obsidian 1.14.5:** six notes and five source attachments created through the official CLI and Vault API. `obsidian-1.14.5.zip` packages the native Vault directory with its outer folder and `.obsidian` configuration. Obsidian stores the original Markdown directly; there is no separate Markdown exporter.

@@ -20,7 +20,7 @@ describe("local development real sessions", () => {
     const session = await createLocalDevelopmentSession(db);
     const user = db.query("SELECT * FROM users").get();
     expect(session.username).toBe("owner");
-    expect(await verifyPassword("edgeever-local-dev", user.password_hash)).toBe(true);
+    expect(await verifyPassword("ponder-local-dev", user.password_hash)).toBe(true);
     expect(db.query("SELECT * FROM workspace_members WHERE user_id = ?").get(user.id)).toMatchObject({
       workspace_id: "ws_default", role: "owner",
     });

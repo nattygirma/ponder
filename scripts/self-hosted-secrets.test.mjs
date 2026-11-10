@@ -13,12 +13,12 @@ import {
 } from "../apps/api/src/ai-service.ts";
 import { encryptSecret } from "../apps/api/src/secret-encryption.ts";
 
-const makeDataDirectory = async () => mkdtemp(`${tmpdir()}/edgeever-secrets-`);
+const makeDataDirectory = async () => mkdtemp(`${tmpdir()}/ponder-secrets-`);
 
 describe("self-hosted credential secret persistence", () => {
   test("names the secrets file beside SQLite, not inside it", () => {
-    expect(SELF_HOSTED_SECRETS_FILE_NAME).toBe("edgeever-secrets.json");
-    expect(resolveSelfHostedSecretsPath("/data")).toBe("/data/edgeever-secrets.json");
+    expect(SELF_HOSTED_SECRETS_FILE_NAME).toBe("ponder-secrets.json");
+    expect(resolveSelfHostedSecretsPath("/data")).toBe("/data/ponder-secrets.json");
     expect(resolveSelfHostedSecretsPath("/data")).not.toContain("sqlite");
   });
 
@@ -26,10 +26,10 @@ describe("self-hosted credential secret persistence", () => {
     const dataDirectory = await makeDataDirectory();
     try {
       const first = await ensureSelfHostedCredentialSecrets(dataDirectory, {
-        EDGE_EVER_AUTH_PASSWORD: "instance-password",
+        PONDER_AUTH_PASSWORD: "instance-password",
       });
       const originalKey = resolvePrimaryAiCredentialEncryptionKey(first);
-      expect(originalKey).toBe("edgeever:ai-credentials:v1:instance-password");
+      expect(originalKey).toBe("ponder:ai-credentials:v1:instance-password");
       expect(hasSelfHostedCredentialSeed(first)).toBe(true);
 
       const stored = JSON.parse(await readFile(resolveSelfHostedSecretsPath(dataDirectory), "utf8"));
@@ -42,7 +42,7 @@ describe("self-hosted credential secret persistence", () => {
       }
 
       const restored = await ensureSelfHostedCredentialSecrets(dataDirectory, {});
-      expect(restored.EDGE_EVER_AUTH_PASSWORD).toBe("instance-password");
+      expect(restored.PONDER_AUTH_PASSWORD).toBe("instance-password");
       expect(resolvePrimaryAiCredentialEncryptionKey(restored)).toBe(originalKey);
 
       const encrypted = await encryptSecret("provider-key", originalKey);
@@ -69,13 +69,13 @@ describe("self-hosted credential secret persistence", () => {
     const dataDirectory = await makeDataDirectory();
     try {
       const environment = await ensureSelfHostedCredentialSecrets(dataDirectory, {}, { generateIfMissing: true });
-      expect(environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY).toMatch(/^[a-f0-9]{64}$/);
+      expect(environment.PONDER_CREDENTIALS_ENCRYPTION_KEY).toMatch(/^[a-f0-9]{64}$/);
       expect(resolvePrimaryAiCredentialEncryptionKey(environment)).toBe(
-        `edgeever:ai-credentials:v1:${environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY}`,
+        `ponder:ai-credentials:v1:${environment.PONDER_CREDENTIALS_ENCRYPTION_KEY}`,
       );
 
       const second = await ensureSelfHostedCredentialSecrets(dataDirectory, {}, { generateIfMissing: true });
-      expect(second.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY).toBe(environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY);
+      expect(second.PONDER_CREDENTIALS_ENCRYPTION_KEY).toBe(environment.PONDER_CREDENTIALS_ENCRYPTION_KEY);
     } finally {
       await rm(dataDirectory, { recursive: true, force: true });
     }
@@ -85,17 +85,17 @@ describe("self-hosted credential secret persistence", () => {
     const dataDirectory = await makeDataDirectory();
     try {
       await ensureSelfHostedCredentialSecrets(dataDirectory, {
-        EDGE_EVER_AUTH_PASSWORD: "original-password",
+        PONDER_AUTH_PASSWORD: "original-password",
       });
       const rotated = await ensureSelfHostedCredentialSecrets(dataDirectory, {
-        EDGE_EVER_AUTH_PASSWORD: "rotated-password",
+        PONDER_AUTH_PASSWORD: "rotated-password",
       });
-      expect(rotated.EDGE_EVER_AUTH_PASSWORD).toBe("rotated-password");
-      expect(rotated.EDGE_EVER_AUTH_PASSWORD_FALLBACK).toBe("original-password");
+      expect(rotated.PONDER_AUTH_PASSWORD).toBe("rotated-password");
+      expect(rotated.PONDER_AUTH_PASSWORD_FALLBACK).toBe("original-password");
 
       const encrypted = await encryptSecret(
         "provider-key",
-        resolvePrimaryAiCredentialEncryptionKey({ EDGE_EVER_AUTH_PASSWORD: "original-password" }),
+        resolvePrimaryAiCredentialEncryptionKey({ PONDER_AUTH_PASSWORD: "original-password" }),
       );
       await expect(decryptAiCredential(encrypted, rotated)).resolves.toBe("provider-key");
     } finally {
@@ -107,18 +107,18 @@ describe("self-hosted credential secret persistence", () => {
     const dataDirectory = await makeDataDirectory();
     try {
       await ensureSelfHostedCredentialSecrets(dataDirectory, {
-        EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "original-credentials-key",
+        PONDER_CREDENTIALS_ENCRYPTION_KEY: "original-credentials-key",
       });
       const rotated = await ensureSelfHostedCredentialSecrets(dataDirectory, {
-        EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "rotated-credentials-key",
+        PONDER_CREDENTIALS_ENCRYPTION_KEY: "rotated-credentials-key",
       });
-      expect(rotated.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY).toBe("rotated-credentials-key");
-      expect(rotated.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS).toBe("original-credentials-key");
+      expect(rotated.PONDER_CREDENTIALS_ENCRYPTION_KEY).toBe("rotated-credentials-key");
+      expect(rotated.PONDER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS).toBe("original-credentials-key");
 
       const encrypted = await encryptSecret(
         "provider-key",
         resolvePrimaryAiCredentialEncryptionKey({
-          EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "original-credentials-key",
+          PONDER_CREDENTIALS_ENCRYPTION_KEY: "original-credentials-key",
         }),
       );
       await expect(decryptAiCredential(encrypted, rotated)).resolves.toBe("provider-key");
@@ -132,7 +132,7 @@ describe("self-hosted credential secret persistence", () => {
     try {
       await writeFile(resolveSelfHostedSecretsPath(dataDirectory), "{not-json", "utf8");
       await expect(ensureSelfHostedCredentialSecrets(dataDirectory, {
-        EDGE_EVER_AUTH_PASSWORD: "instance-password",
+        PONDER_AUTH_PASSWORD: "instance-password",
       }, { generateIfMissing: true })).rejects.toThrow(/do not generate a replacement key/);
     } finally {
       await rm(dataDirectory, { recursive: true, force: true });
@@ -144,7 +144,7 @@ describe("self-hosted credential secret persistence", () => {
     try {
       await writeFile(resolveSelfHostedSecretsPath(dataDirectory), `${JSON.stringify({ version: 1 })}\n`, "utf8");
       await expect(ensureSelfHostedCredentialSecrets(dataDirectory, {
-        EDGE_EVER_AUTH_PASSWORD: "instance-password",
+        PONDER_AUTH_PASSWORD: "instance-password",
       })).rejects.toThrow(/do not generate a replacement key/);
     } finally {
       await rm(dataDirectory, { recursive: true, force: true });

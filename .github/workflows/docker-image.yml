@@ -78,21 +78,21 @@ jobs:
       - name: Build local image
         run: |
           docker build \
-            --build-arg EDGE_EVER_BUILD_ID="${GITHUB_SHA}" \
-            --build-arg EDGE_EVER_BUILD_CREATED_AT="2026-01-02T03:04:05Z" \
-            --build-arg EDGE_EVER_BUILD_TRIGGER=main_push \
-            --build-arg EDGE_EVER_BUILD_METHOD=github_actions \
-            --tag edgeever:ci .
-          docker build --tag edgeever:ci-default .
+            --build-arg PONDER_BUILD_ID="${GITHUB_SHA}" \
+            --build-arg PONDER_BUILD_CREATED_AT="2026-01-02T03:04:05Z" \
+            --build-arg PONDER_BUILD_TRIGGER=main_push \
+            --build-arg PONDER_BUILD_METHOD=github_actions \
+            --tag ponder:ci .
+          docker build --tag ponder:ci-default .
 
       - name: Start container
         run: |
-          docker run --detach --name edgeever-ci \
-            --env EDGE_EVER_AUTH_PASSWORD=container-ci-password \
-            --env EDGE_EVER_DEPLOYMENT_TRIGGER=manual \
-            --env EDGE_EVER_DEPLOYMENT_METHOD=docker \
+          docker run --detach --name ponder-ci \
+            --env PONDER_AUTH_PASSWORD=container-ci-password \
+            --env PONDER_DEPLOYMENT_TRIGGER=manual \
+            --env PONDER_DEPLOYMENT_METHOD=docker \
             --publish 127.0.0.1:8787:8787 \
-            edgeever:ci
+            ponder:ci
 
       - name: Verify shared API and persistent storage
         run: |
@@ -106,28 +106,28 @@ jobs:
           echo "${health}" | jq -e '.buildCreatedAt == "2026-01-02T03:04:05.000Z" and .buildProvenance == {"trigger": "main_push", "method": "github_actions"}'
           echo "${health}" | jq -e '.deployment == {"trigger": "manual", "method": "docker"} and .deploymentVersionCreatedAt == null and .containerImageSource == "unknown"'
           curl --fail --silent --show-error http://127.0.0.1:8787/ | grep -F '<!doctype html>'
-          docker exec edgeever-ci test -f /data/edgeever.sqlite
-          docker exec edgeever-ci test -d /data/resources
-          docker exec edgeever-ci test -s /app/scripts/self-hosted-server.js
-          docker exec edgeever-ci test -s /app/scripts/self-hosted-server.mjs
-          docker exec edgeever-ci cmp -s /app/scripts/self-hosted-server.js /app/scripts/self-hosted-server.mjs
-          docker exec edgeever-ci test ! -e /app/node_modules
-          docker exec edgeever-ci test ! -e /app/apps/api
-          docker exec edgeever-ci test ! -e /app/packages
+          docker exec ponder-ci test -f /data/ponder.sqlite
+          docker exec ponder-ci test -d /data/resources
+          docker exec ponder-ci test -s /app/scripts/self-hosted-server.js
+          docker exec ponder-ci test -s /app/scripts/self-hosted-server.mjs
+          docker exec ponder-ci cmp -s /app/scripts/self-hosted-server.js /app/scripts/self-hosted-server.mjs
+          docker exec ponder-ci test ! -e /app/node_modules
+          docker exec ponder-ci test ! -e /app/apps/api
+          docker exec ponder-ci test ! -e /app/packages
 
       - name: Stop container gracefully
         run: |
-          docker stop --timeout 30 edgeever-ci
-          docker logs edgeever-ci | grep -F '[self-hosted] shutdown complete'
+          docker stop --timeout 30 ponder-ci
+          docker logs ponder-ci | grep -F '[self-hosted] shutdown complete'
 
       - name: Verify a default self-built image reports unknown build metadata
         run: |
-          docker run --detach --name edgeever-ci-default \
-            --env EDGE_EVER_AUTH_PASSWORD=container-ci-password \
-            --env EDGE_EVER_BUILD_TRIGGER=not-a-trigger \
-            --env EDGE_EVER_BUILD_CREATED_AT=not-a-date \
+          docker run --detach --name ponder-ci-default \
+            --env PONDER_AUTH_PASSWORD=container-ci-password \
+            --env PONDER_BUILD_TRIGGER=not-a-trigger \
+            --env PONDER_BUILD_CREATED_AT=not-a-date \
             --publish 127.0.0.1:8788:8787 \
-            edgeever:ci-default
+            ponder:ci-default
           for attempt in $(seq 1 60); do
             if health="$(curl --fail --silent --show-error http://127.0.0.1:8788/api/health)"; then
               break
@@ -136,13 +136,13 @@ jobs:
           done
           echo "${health}" | jq -e '.build == "unknown" and .buildCreatedAt == null and .buildProvenance == {"trigger": "unknown", "method": "unknown"}'
           echo "${health}" | jq -e '.deployment == {"trigger": "unknown", "method": "unknown"} and .deploymentVersionCreatedAt == null'
-          docker stop --timeout 30 edgeever-ci-default
+          docker stop --timeout 30 ponder-ci-default
 
       - name: Show container logs on failure
         if: failure()
         run: |
-          docker logs edgeever-ci || true
-          docker logs edgeever-ci-default || true
+          docker logs ponder-ci || true
+          docker logs ponder-ci-default || true
 
   publish:
     if: >-
@@ -231,10 +231,10 @@ jobs:
         with:
           context: .
           build-args: |
-            EDGE_EVER_BUILD_ID=${{ github.sha }}
-            EDGE_EVER_BUILD_CREATED_AT=${{ steps.image.outputs.created_at }}
-            EDGE_EVER_BUILD_TRIGGER=${{ steps.image.outputs.build_trigger }}
-            EDGE_EVER_BUILD_METHOD=github_actions
+            PONDER_BUILD_ID=${{ github.sha }}
+            PONDER_BUILD_CREATED_AT=${{ steps.image.outputs.created_at }}
+            PONDER_BUILD_TRIGGER=${{ steps.image.outputs.build_trigger }}
+            PONDER_BUILD_METHOD=github_actions
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ steps.image.outputs.tags }}
@@ -254,10 +254,10 @@ jobs:
             jq -e '([.manifests[].platform.architecture] | index("amd64") != null) and ([.manifests[].platform.architecture] | index("arm64") != null)'
           docker pull "${GHCR_IMAGE_NAME}:${{ steps.image.outputs.audit_tag }}"
 
-          container_name=edgeever-published-audit
+          container_name=ponder-published-audit
           trap 'docker rm --force "${container_name}" >/dev/null 2>&1 || true' EXIT
           docker run --detach --name "${container_name}" \
-            --env EDGE_EVER_AUTH_PASSWORD=published-container-audit-password \
+            --env PONDER_AUTH_PASSWORD=published-container-audit-password \
             --publish 127.0.0.1:8787:8787 \
             "${GHCR_IMAGE_NAME}:${{ steps.image.outputs.audit_tag }}"
 

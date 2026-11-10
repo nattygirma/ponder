@@ -133,7 +133,7 @@ export const createDesktopUpdateController = ({
 
   const check = (reason) => {
     if (nativePreparationFailed) {
-      return Promise.reject(new Error("Restart EdgeEver before retrying native macOS update preparation"));
+      return Promise.reject(new Error("Restart Ponder before retrying native macOS update preparation"));
     }
     if (installing) return Promise.resolve(null);
     if (checkInFlight) return checkInFlight;
@@ -223,7 +223,7 @@ export const createDesktopUpdateController = ({
         // Electron exposes no cancellation for Squirrel. A timed-out or failed
         // operation may still complete later; never let it race a new target.
         nativePreparationFailed = true;
-        fail(new Error(`macOS native update preparation failed; restart EdgeEver before retrying: ${error.message}`), "install");
+        fail(new Error(`macOS native update preparation failed; restart Ponder before retrying: ${error.message}`), "install");
       } else if (status.state !== "idle") {
         fail(error, "install");
       }

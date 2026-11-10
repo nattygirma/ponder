@@ -1,5 +1,5 @@
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
-import { FRONT_MATTER_LANGUAGE } from "@edgeever/shared";
+import { FRONT_MATTER_LANGUAGE } from "@ponder/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { copyTextToClipboard } from "@/lib/clipboard";
@@ -17,7 +17,7 @@ export const NotebookSiteCodeBlock = (props: NodeViewProps) => {
   if (language === "mermaid") return <MermaidCodeBlock {...props} />;
   const copyLabel = t(copied === "ok" ? "editorToolbar.codeCopied" : copied === "error" ? "editorToolbar.codeCopyFailed" : "editorToolbar.copyCode");
   const collapseLabel = t(collapsed ? "notebookSite.expand" : "notebookSite.collapse");
-  return <NodeViewWrapper className="edgeever-notebook-code not-prose my-5 overflow-hidden rounded-lg border">
+  return <NodeViewWrapper className="ponder-notebook-code not-prose my-5 overflow-hidden rounded-lg border">
     <div contentEditable={false} className="flex items-center justify-between gap-3 border-b bg-muted px-3 py-1.5 text-xs">
       <span aria-label={t("notebookSite.language")}>{language}</span>
       <div className="flex gap-2"><ButtonTooltip title={copyLabel}><Button variant="ghost" size="sm" onClick={() => { void copyTextToClipboard(props.node.textContent).then((ok) => setCopied(ok ? "ok" : "error")); }}>{copyLabel}</Button></ButtonTooltip><ButtonTooltip title={collapseLabel}><Button variant="ghost" size="sm" aria-expanded={!collapsed} onClick={() => setCollapsed((value) => !value)}>{collapseLabel}</Button></ButtonTooltip></div>

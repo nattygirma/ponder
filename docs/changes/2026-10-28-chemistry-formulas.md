@@ -1,7 +1,5 @@
 # Chemical formulas and equations in "Insert formula"
 
-[简体中文](2026-10-28-chemistry-formulas.zh-CN.md)
-
 ## Problem and outcome
 
 Implements [Issue #717](https://github.com/tianma-if/edgeever/issues/717). Chemistry had to be written by hand with subscripts, superscripts, arrow commands and `\mathrm{}`. Note math now understands the KaTeX `mhchem` extension: `\ce{…}` for formulas and equations and `\pu{…}` for quantities with units. The "Insert formula" dialog has a Math / Chemistry switch with one-click examples.

@@ -1,9 +1,9 @@
-import { ApiRequestError } from "@edgeever/client";
+import { ApiRequestError } from "@ponder/client";
 import { translateMobileText, getMobileCatalog, formatMobileCopy } from "./mobile-locale";
 
-export type MobileLoginLocale = "zh-CN" | "en-US" | "ja" | "pl" | "ru";
+export type MobileLoginLocale = "en-US" | "ja" | "pl" | "ru";
 
-export const MISSING_MOBILE_SESSION_MESSAGE = "登录成功但服务端没有返回移动端会话。请确认服务端已更新到支持 App 登录的版本。";
+export const MISSING_MOBILE_SESSION_MESSAGE = "Signed in, but the server did not return a mobile session. Make sure the server is updated to a version that supports app sign-in.";
 
 const appendDiagnostics = (
   message: string,
@@ -60,17 +60,17 @@ export const formatMobileLoginError = (error: unknown, locale: MobileLoginLocale
     if (error.status === 404) {
       return appendDiagnostics(
         getMobileCatalog(locale).mobile.login.apiNotFound,
-        "edgeever_api_not_found",
+        "ponder_api_not_found",
         rayId,
       );
     }
     if (error.status === 403) {
-      const isEdgeEverApiError = error.responseDiagnostics?.isEdgeEverApiError;
+      const isPonderApiError = error.responseDiagnostics?.isPonderApiError;
       return appendDiagnostics(
-        isEdgeEverApiError
+        isPonderApiError
           ? getMobileCatalog(locale).mobile.login.loginRejected
           : getMobileCatalog(locale).mobile.login.securityPolicyBlocked,
-        isEdgeEverApiError ? error.code || "http_403" : "security_policy_blocked",
+        isPonderApiError ? error.code || "http_403" : "security_policy_blocked",
         rayId,
       );
     }

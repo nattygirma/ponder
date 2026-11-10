@@ -1,4 +1,4 @@
-export const LOCAL_RESOURCE_CACHE_NAME = "edgeever-resource-blobs";
+export const LOCAL_RESOURCE_CACHE_NAME = "ponder-resource-blobs";
 
 const absoluteResourceUrl = (url: string) => {
   if (typeof window === "undefined" || !window.location?.origin) return url;

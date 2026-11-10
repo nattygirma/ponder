@@ -1,4 +1,4 @@
-# EdgeEver Android Builds
+# Ponder Android Builds
 
 The Android app in `apps/mobile` is built with Expo and React Native. iOS store binaries come from `apps/ios` (SwiftUI), not this tree. Main-branch Android packages are built directly on GitHub Actions, without using EAS Build quota.
 
@@ -35,7 +35,7 @@ Compilation and automated state-machine tests do not replace this real old-to-ne
 
 ## Main-Branch Android APK
 
-The `Build EdgeEver Mobile` workflow runs on GitHub Actions and produces a
+The `Build Ponder Mobile` workflow runs on GitHub Actions and produces a
 fast arm64 APK after mobile changes land on `main`. This APK uses the same
 pinned production signing certificate as formal GitHub Release APKs. The fast
 build only disables R8, resource shrinking, and PNG crunching; it must never
@@ -50,7 +50,7 @@ bun run build:android:fast
 ```
 
 The APK is uploaded as a GitHub Actions artifact named
-`edgeever-android-main-apk`. If the stable signing credentials are unavailable,
+`ponder-android-main-apk`. If the stable signing credentials are unavailable,
 the workflow fails and does not upload an APK with a different signer.
 
 For a local fast build, load the same signing environment used for release
@@ -110,9 +110,9 @@ GitHub Actions. Keep the upload keystore and signing environment outside the
 repository:
 
 ```sh
-mkdir -p "$HOME/.config/edgeever/android"
-cp .env.android.local.example "$HOME/.config/edgeever/android/signing.env"
-chmod 600 "$HOME/.config/edgeever/android/signing.env"
+mkdir -p "$HOME/.config/ponder/android"
+cp .env.android.local.example "$HOME/.config/ponder/android/signing.env"
+chmod 600 "$HOME/.config/ponder/android/signing.env"
 ```
 
 Fill in the existing upload key's absolute path and credentials. Android
@@ -137,7 +137,7 @@ and the upload keystore outside the repository. Do not replace or regenerate
 the upload key for an existing Play app unless the key reset has been completed
 in Play Console.
 
-Set `EDGE_EVER_ANDROID_ENV_FILE` to use a different secure environment file.
+Set `PONDER_ANDROID_ENV_FILE` to use a different secure environment file.
 
 ### Automated store delivery
 
@@ -158,7 +158,7 @@ repository.
 ### iOS App Store build
 
 iOS is a SwiftUI app in `apps/ios`, using the same bundle identifier
-`org.edgeever.mobile`. Do not build or submit iOS from `apps/mobile` or EAS.
+`io.appkeep.ponder.mobile`. Do not build or submit iOS from `apps/mobile` or EAS.
 On macOS beta hosts, archives must go through Xcode Cloud. Formal Releases
 start that Archive and submit App Review automatically when iOS runtime
 changes are in the audited range. See

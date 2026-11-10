@@ -1,4 +1,4 @@
-import type { createEdgeEverClient } from "@edgeever/client";
+import type { createPonderClient } from "@ponder/client";
 import {
   docToMarkdown,
   FILE_ATTACHMENT_NODE_TYPE,
@@ -6,7 +6,7 @@ import {
   PDF_ATTACHMENT_NODE_TYPE,
   resourceUrlsReferToSameAttachment,
   type TiptapDoc,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 export type MobileResourceTarget = {
   filename: string;
@@ -18,7 +18,7 @@ export type MobileResourceTarget = {
 export type MobileAttachmentTarget = MobileResourceTarget & { kind: "attachment" };
 export type MobileImageTarget = MobileResourceTarget & { kind: "image" };
 
-type AttachmentClient = Pick<ReturnType<typeof createEdgeEverClient>, "getResourceBlob">;
+type AttachmentClient = Pick<ReturnType<typeof createPonderClient>, "getResourceBlob">;
 
 export type MobileResourceDownloadOptions = {
   baseUrl: string;
@@ -44,13 +44,13 @@ export const readBlobAsUint8Array = async (blob: Blob): Promise<Uint8Array> => {
 
   return await new Promise<Uint8Array>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = () => reject(reader.error ?? new Error("资源读取失败"));
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read the resource"));
     reader.onloadend = () => {
       if (reader.result instanceof ArrayBuffer) {
         resolve(new Uint8Array(reader.result));
         return;
       }
-      reject(new Error("资源读取失败"));
+      reject(new Error("Could not read the resource"));
     };
     reader.readAsArrayBuffer(blob);
   });
@@ -275,7 +275,7 @@ export const resolveExportFilename = (filename: string, mimeType: string) => {
 export class MobileResourceCancelledError extends Error {
   readonly code = "cancelled" as const;
 
-  constructor(message = "已取消下载") {
+  constructor(message = "Download canceled") {
     super(message);
     this.name = "MobileResourceCancelledError";
   }
@@ -287,7 +287,7 @@ const cacheMobileResource = async (
   options: MobileResourceDownloadOptions,
 ) => {
   const { Directory, File, Paths } = await import("expo-file-system");
-  const directory = new Directory(Paths.cache, "edgeever-attachments");
+  const directory = new Directory(Paths.cache, "ponder-attachments");
   if (!directory.exists) directory.create({ idempotent: true, intermediates: true });
   const file = new File(directory, `${target.resourceId}-${safeCacheFilename(target.filename)}`);
   if (file.exists) file.delete();
@@ -306,7 +306,7 @@ const shareCachedResource = async (
 ) => {
   const Sharing = await import("expo-sharing");
   if (!(await Sharing.isAvailableAsync())) {
-    throw new Error("当前设备无法打开系统分享面板");
+    throw new Error("This device cannot open the system share sheet");
   }
   await Sharing.shareAsync(fileUri, {
     dialogTitle: options.dialogTitle,
@@ -350,7 +350,7 @@ export const saveMobileResourceAs = async (
       const permission = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
       if (!permission.granted) {
         // Do not return null — callers treated that as success and closed the sheet.
-        throw new MobileResourceCancelledError("已取消下载");
+        throw new MobileResourceCancelledError("Download canceled");
       }
       const destination = await FileSystem.StorageAccessFramework.createFileAsync(
         permission.directoryUri,
@@ -365,7 +365,7 @@ export const saveMobileResourceAs = async (
       }
       // SAF is flaky on some OEM builds — fall back to the share sheet so download still works.
       await shareCachedResource(file.uri, {
-        dialogTitle: `下载 ${exportName}`,
+        dialogTitle: `Download ${exportName}`,
         mimeType,
       });
       return { kind: "share" as const, uri: file.uri, filename: exportName };
@@ -373,7 +373,7 @@ export const saveMobileResourceAs = async (
   }
 
   await shareCachedResource(file.uri, {
-    dialogTitle: `下载 ${exportName}`,
+    dialogTitle: `Download ${exportName}`,
     mimeType,
   });
   return { kind: "share" as const, uri: file.uri, filename: exportName };

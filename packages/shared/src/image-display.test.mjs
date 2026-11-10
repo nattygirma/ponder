@@ -38,9 +38,9 @@ describe("shared image display widths", () => {
     expect(PHONE_IMAGE_FILL_CSS).toContain("@media screen and (max-width: 640px)");
     expect(PHONE_IMAGE_FILL_CSS).toContain("width: 100% !important");
     expect(PHONE_IMAGE_FILL_CSS).toContain("max-width: 100% !important");
-    expect(PHONE_IMAGE_FILL_CSS).toContain(".edgeever-image-node");
+    expect(PHONE_IMAGE_FILL_CSS).toContain(".ponder-image-node");
     expect(PHONE_IMAGE_FILL_CSS).toContain(".ProseMirror img[data-width]");
-    expect(PHONE_IMAGE_FILL_CSS).toContain(":not(.edgeever-image-card *)");
+    expect(PHONE_IMAGE_FILL_CSS).toContain(":not(.ponder-image-card *)");
     expect(readRepoFile("../../../apps/mobile/src/components/LocalTiptapEditor.tsx")).toContain("${PHONE_IMAGE_FILL_CSS}");
     expect(readRepoFile("../../../apps/ios/EditorSource/src/main.ts")).toContain("installPhoneImageFillStyle(");
     expect(readRepoFile("../../../apps/web/src/main.tsx")).toContain("installPhoneImageFillStyle(");

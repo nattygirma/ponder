@@ -1,15 +1,16 @@
+import { PAGE_BLOCK_NODE_TYPES } from "./page-blocks";
 import { MarkdownManager } from "@tiptap/markdown";
 import {
-  createEdgeEverDocumentExtensions,
-  type CreateEdgeEverDocumentExtensionsOptions,
+  createPonderDocumentExtensions,
+  type CreatePonderDocumentExtensionsOptions,
 } from "./document-extensions";
 import { MERGE_DIVIDER_NODE_TYPE } from "./merge-divider";
-import { DEFAULT_MEMO_TITLE } from "./memo-title";
+import { DEFAULT_MEMO_TITLE, isDefaultMemoTitle } from "./memo-title";
 import { PDF_ATTACHMENT_NODE_TYPE, upgradeStandalonePdfLinks } from "./pdf-attachment";
 import { FILE_ATTACHMENT_NODE_TYPE, upgradeStandaloneFileLinks } from "./file-attachment";
 import {
   BLOCK_MATH_NODE_TYPE,
-  createEdgeEverMarkdownMathematics,
+  createPonderMarkdownMathematics,
   INLINE_MATH_NODE_TYPE,
 } from "./mathematics-markdown";
 import { projectNativeUnknownContentForMarkdown } from "./mobile-content-compatibility";
@@ -19,7 +20,7 @@ import { IMAGE_GALLERY_NODE_TYPE, groupConsecutiveImagesIntoGalleries, normalize
 import { EMPTY_EXTERNAL_LINK_NODE_TYPE } from "./empty-external-link";
 import { FRONT_MATTER_LANGUAGE, createFrontMatterNode, getFrontMatterSource, splitMarkdownFrontMatter } from "./front-matter";
 import { splitMarkdownParseChunks } from "./markdown-block-start";
-import { createEdgeEverMarked } from "./markdown-options";
+import { createPonderMarked } from "./markdown-options";
 
 export { PluginEmbed, PLUGIN_EMBED_NODE_TYPE, pluginEmbedToMarkdown, normalizePluginEmbedAttributes } from "./plugin-embed";
 export type { PluginEmbedAttributes } from "./plugin-embed";
@@ -93,8 +94,8 @@ export const resolveMergedMemoTitle = (
 
   const customTitle = sourceMemos
     .map((memo) => memo.title?.trim())
-    .find((title): title is string => Boolean(title && title !== DEFAULT_MEMO_TITLE));
-  return customTitle ?? `合并笔记 ${date.toLocaleDateString("zh-CN")}`;
+    .find((title): title is string => Boolean(title && !isDefaultMemoTitle(title)));
+  return customTitle ?? `Merged note ${date.toLocaleDateString("en-US")}`;
 };
 
 export const emptyDoc = (): TiptapDoc => ({
@@ -102,18 +103,18 @@ export const emptyDoc = (): TiptapDoc => ({
   content: [{ type: "paragraph" }],
 });
 
-export const createEdgeEverMarkdownManager = (
-  options: CreateEdgeEverDocumentExtensionsOptions,
+export const createPonderMarkdownManager = (
+  options: CreatePonderDocumentExtensionsOptions,
 ) => new MarkdownManager({
-  marked: createEdgeEverMarked(),
-  extensions: createEdgeEverDocumentExtensions({
+  marked: createPonderMarked(),
+  extensions: createPonderDocumentExtensions({
     ...options,
     markdown: true,
   }),
 });
 
-const markdownManager = createEdgeEverMarkdownManager({
-  mathematics: createEdgeEverMarkdownMathematics(),
+const markdownManager = createPonderMarkdownManager({
+  mathematics: createPonderMarkdownMathematics(),
 });
 
 const PROTECTED_MARKDOWN_SEGMENT = /(```[\s\S]*?```|~~~[\s\S]*?~~~|\$\$[\s\S]*?\$\$)/g;
@@ -211,7 +212,7 @@ export const resolveMemoContentDoc = (
     !contentMarkdown?.trim() ||
     docContainsNodeType(currentDoc, "table") ||
     docContainsNodeType(currentDoc, "taskList") ||
-    docContainsNodeType(currentDoc, "edgeeverThemeBlock") ||
+    docContainsNodeType(currentDoc, "ponderThemeBlock") ||
     docContainsNodeType(currentDoc, IMAGE_GALLERY_NODE_TYPE) ||
     docContainsNodeType(currentDoc, MERGE_DIVIDER_NODE_TYPE) ||
     docContainsNodeType(currentDoc, PLUGIN_EMBED_NODE_TYPE) ||
@@ -221,6 +222,7 @@ export const resolveMemoContentDoc = (
     || docContainsNodeType(currentDoc, FILE_ATTACHMENT_NODE_TYPE)
     || docContainsNodeType(currentDoc, EMPTY_EXTERNAL_LINK_NODE_TYPE)
     || docContainsNodeType(currentDoc, "details")
+    || PAGE_BLOCK_NODE_TYPES.some((type) => docContainsNodeType(currentDoc, type))
   ) {
     return currentDoc;
   }
@@ -273,7 +275,7 @@ const upgradeLegacyAttachmentLinks = (doc: TiptapDoc): TiptapDoc => {
         text: `${match[1]}${match[2]}`,
         marks: [
           ...existingMarks,
-          { type: "link", attrs: { href: match[3], target: "_blank", class: "edgeever-attachment-link" } },
+          { type: "link", attrs: { href: match[3], target: "_blank", class: "ponder-attachment-link" } },
         ],
       };
     }
@@ -414,7 +416,7 @@ export const docToMarkdown = (doc: unknown): string => {
   return properties === null ? markdown : `---\n${properties}\n---\n\n${markdown}`;
 };
 
-const LITERAL_DOLLAR_PLACEHOLDER = "\uE000edgeever-dollar\uE001";
+const LITERAL_DOLLAR_PLACEHOLDER = "\uE000ponder-dollar\uE001";
 
 /** Preserve dollar pairs that are text rather than inline-math nodes. */
 const protectLiteralDollarPairs = (value: unknown): unknown => {
@@ -458,13 +460,13 @@ const stripEditorOnlyNodes = (doc: unknown): unknown => {
   }
 
   const node = doc as { type?: unknown; attrs?: Record<string, unknown>; content?: unknown };
-  if (node.type === "edgeeverThemeBlock") {
+  if (node.type === "ponderThemeBlock") {
     const label = getStringAttr(node.attrs, "kind");
     const content = Array.isArray(node.content) ? node.content : [];
     return {
       type: "blockquote",
       content: [
-        { type: "paragraph", content: [{ type: "text", text: label ? `[${label}]` : "[主题化组件]" }] },
+        { type: "paragraph", content: [{ type: "text", text: label ? `[${label}]` : "[Themed component]" }] },
         ...content.map(stripEditorOnlyNodes),
       ],
     };

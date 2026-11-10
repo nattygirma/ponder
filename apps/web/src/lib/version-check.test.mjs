@@ -4,22 +4,22 @@ import { findDesktopReleaseVersion, getReleaseTagForVersion, isClientAheadOfInst
 describe("platform release version checks", () => {
   test("derives the installed desktop version from the DMG asset", () => {
     expect(findDesktopReleaseVersion([
-      "EdgeEver-1.6.50-mac-arm64.dmg",
-      "EdgeEver-1.6.50-mac-arm64.dmg.blockmap",
-      "EdgeEver-1.6.50-mac-x64.dmg",
-      "EdgeEver-1.6.50-mac-x64.dmg.blockmap",
-      "edgeever-android-v1.6.49-arm64-v8a.apk",
+      "Ponder-1.6.50-mac-arm64.dmg",
+      "Ponder-1.6.50-mac-arm64.dmg.blockmap",
+      "Ponder-1.6.50-mac-x64.dmg",
+      "Ponder-1.6.50-mac-x64.dmg.blockmap",
+      "ponder-android-v1.6.49-arm64-v8a.apk",
     ])).toBe("1.6.50");
   });
 
   test("rejects missing or ambiguous desktop assets", () => {
     expect(findDesktopReleaseVersion([])).toBeNull();
     expect(findDesktopReleaseVersion([
-      "EdgeEver-1.6.49-mac-arm64.dmg",
-      "EdgeEver-1.6.50-mac-x64.dmg",
+      "Ponder-1.6.49-mac-arm64.dmg",
+      "Ponder-1.6.50-mac-x64.dmg",
     ])).toBeNull();
     expect(findDesktopReleaseVersion([
-      "EdgeEver-1.6.50-mac-arm64.dmg",
+      "Ponder-1.6.50-mac-arm64.dmg",
     ])).toBeNull();
   });
 

@@ -1,6 +1,6 @@
-import type { MemoDetail, Notebook, Resource } from "@edgeever/shared";
-import { sanitizeExportPathSegment, uniqueExportName, buildNotebookExportPaths, buildNoteMarkdown, getExportResourceExtension, replaceExportResourceUrl } from "@edgeever/shared/backup-markdown";
-export { sanitizeExportPathSegment, uniqueExportName, buildNotebookExportPaths, buildNoteMarkdown, buildMarkdownFrontMatter, getExportResourceExtension, replaceExportResourceUrl } from "@edgeever/shared/backup-markdown";
+import type { MemoDetail, Notebook, Resource } from "@ponder/shared";
+import { sanitizeExportPathSegment, uniqueExportName, buildNotebookExportPaths, buildNoteMarkdown, getExportResourceExtension, replaceExportResourceUrl } from "@ponder/shared/backup-markdown";
+export { sanitizeExportPathSegment, uniqueExportName, buildNotebookExportPaths, buildNoteMarkdown, buildMarkdownFrontMatter, getExportResourceExtension, replaceExportResourceUrl } from "@ponder/shared/backup-markdown";
 import { strToU8, Zip, ZipDeflate, ZipPassThrough } from "fflate";
 
 export type MarkdownExportProgress = {
@@ -144,7 +144,7 @@ export const downloadMarkdownExport = (blob: Blob) => {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `edgeever-markdown-${date}.zip`;
+  anchor.download = `ponder-markdown-${date}.zip`;
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();

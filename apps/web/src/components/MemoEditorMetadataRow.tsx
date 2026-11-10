@@ -2,19 +2,21 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { ChevronDown, Notebook as NotebookIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { NotebookMoveOption } from "@/lib/app-helpers";
-import type { EdgeEverRepository } from "@/lib/repository";
+import type { PonderRepository } from "@/lib/repository";
 import { EditorTagPicker } from "@/components/EditorTagPicker";
 import { IconTooltip, MobileNotebookSelectSheet } from "@/components/editor/EditorPaneChrome";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type MemoEditorMetadataRowProps = {
+  /** The page layout moves pages from its menu instead. */
+  hideNotebook?: boolean;
   contentMarkdown: string;
   disabled: boolean;
   mobileNotebookPickerOpen: boolean;
   notebookOptions: NotebookMoveOption[];
   notebookUpdatePending: boolean;
-  repository: Pick<EdgeEverRepository, "listTags">;
+  repository: Pick<PonderRepository, "listTags">;
   selectedNotebookId: string;
   tagsText: string;
   title: string;
@@ -39,6 +41,7 @@ export const MemoEditorMetadataRow = ({
   trailingActions,
   rowClassName,
   includeMobileSheet = true,
+  hideNotebook = false,
   onMobileNotebookPickerOpenChange,
   onNotebookChange,
   onTagsChange,
@@ -125,17 +128,17 @@ export const MemoEditorMetadataRow = ({
           <span className="min-w-0 truncate">{currentNotebookLabel}</span>
           <ChevronDown className="h-3.5 w-3.5 shrink-0 text-slate-400" />
         </button>
-        <div className="edgeever-editor-notebook-select hidden min-w-7 max-w-[18rem] shrink overflow-hidden sm:block">
+        <div className={cn("ponder-editor-notebook-select min-w-7 max-w-[18rem] shrink overflow-hidden", hideNotebook ? "hidden" : "hidden sm:block")}>
           <Select
             value={selectedNotebookId}
             disabled={disabled || notebookUpdatePending}
             onValueChange={onNotebookChange}
           >
             <IconTooltip label={t("editor.currentNotebookAria", { name: currentNotebookLabel })}>
-              <SelectTrigger aria-label={t("editor.currentNotebookAria", { name: currentNotebookLabel })} className="edgeever-editor-notebook-trigger h-7 w-auto max-w-full min-w-7 gap-1 overflow-hidden border-transparent bg-transparent px-2 text-xs font-medium text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900 [&_svg]:shrink-0 [&>span]:min-w-0 [&>span]:truncate">
-                <NotebookIcon className="edgeever-editor-metadata-icon h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              <SelectTrigger aria-label={t("editor.currentNotebookAria", { name: currentNotebookLabel })} className="ponder-editor-notebook-trigger h-7 w-auto max-w-full min-w-7 gap-1 overflow-hidden border-transparent bg-transparent px-2 text-xs font-medium text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900 [&_svg]:shrink-0 [&>span]:min-w-0 [&>span]:truncate">
+                <NotebookIcon className="ponder-editor-metadata-icon h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <SelectValue placeholder={t("editor.notebookPlaceholder")}>
-                  <span className="edgeever-editor-notebook-label min-w-0 truncate">{currentNotebookLabel}</span>
+                  <span className="ponder-editor-notebook-label min-w-0 truncate">{currentNotebookLabel}</span>
                 </SelectValue>
               </SelectTrigger>
             </IconTooltip>
@@ -148,14 +151,15 @@ export const MemoEditorMetadataRow = ({
             </SelectContent>
           </Select>
         </div>
-        <EditorTagPicker
-          contentMarkdown={contentMarkdown}
-          disabled={disabled}
-          loadTags={() => repository.listTags()}
-          title={title}
-          value={tagsText}
-          onChange={onTagsChange}
-        />
+        {hideNotebook && !tagsText.trim() ? null : (        <EditorTagPicker
+            contentMarkdown={contentMarkdown}
+            disabled={disabled}
+            loadTags={() => repository.listTags()}
+            title={title}
+            value={tagsText}
+            onChange={onTagsChange}
+          />
+        )}
         {trailingActions}
       </div>
 

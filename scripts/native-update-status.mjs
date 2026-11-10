@@ -20,8 +20,8 @@ export const readNativeUpdateStatus = async (endpoint) => {
       socket.send(JSON.stringify({ id: 1, method: "Runtime.evaluate", params: { awaitPromise: true, returnByValue: true,
         expression: `(async () => {
           const req = process.getBuiltinModule('module').createRequire(process.resourcesPath + '/app.asar/package.json');
-          const window = req('electron').BrowserWindow.getAllWindows().find(value => value.webContents.getURL().startsWith('edgeever-app://app/'));
-          return window ? await window.webContents.executeJavaScript('window.edgeeverDesktop.updateStatus()') : {error: 'fixture window unavailable'};
+          const window = req('electron').BrowserWindow.getAllWindows().find(value => value.webContents.getURL().startsWith('ponder-app://app/'));
+          return window ? await window.webContents.executeJavaScript('window.ponderDesktop.updateStatus()') : {error: 'fixture window unavailable'};
         })()`,
       } }));
     });

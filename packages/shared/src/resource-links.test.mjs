@@ -9,20 +9,20 @@ describe("resource link identity", () => {
   test("extracts resource ids from API and desktop URLs", () => {
     expect(getResourceIdFromUrl("/api/v1/resources/res_123/blob")).toBe("res_123");
     expect(getResourceIdFromUrl("https://notes.example.com/api/v1/resources/res%20one/blob?download=1")).toBe("res one");
-    expect(getResourceIdFromUrl("edgeever-resource://resource/res_456")).toBe("res_456");
+    expect(getResourceIdFromUrl("ponder-resource://resource/res_456")).toBe("res_456");
   });
 
   test("treats API and desktop URLs for the same resource as one attachment", () => {
     expect(resourceUrlsReferToSameAttachment(
-      "edgeever-resource://resource/res_video",
+      "ponder-resource://resource/res_video",
       "/api/v1/resources/res_video/blob",
     )).toBe(true);
     expect(resourceUrlsReferToSameAttachment(
       "/api/v1/resources/res_video/blob",
       "/api/v1/resources/res_other/blob",
     )).toBe(false);
-    expect(resourceUrlsReferToSameAttachment("edgeever-staged://stage_1", "edgeever-staged://stage_1")).toBe(true);
-    expect(resourceUrlsReferToSameAttachment("edgeever-staged://stage_1", "edgeever-staged://stage_2")).toBe(false);
+    expect(resourceUrlsReferToSameAttachment("ponder-staged://stage_1", "ponder-staged://stage_1")).toBe(true);
+    expect(resourceUrlsReferToSameAttachment("ponder-staged://stage_1", "ponder-staged://stage_2")).toBe(false);
     expect(resourceUrlsReferToSameAttachment("", "")).toBe(false);
   });
 

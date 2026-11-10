@@ -1,7 +1,5 @@
 # Custom address for single-note share links
 
-[简体中文](2026-10-27-memo-share-custom-address.zh-CN.md)
-
 ## Problem and outcome
 
 Implements [Issue #691](https://github.com/tianma-if/edgeever/issues/691). A single-note share link is always `/share/<43-character random token>`. It is safe but cannot be read aloud, typed or remembered. The owner can now give an active note share an optional custom address, for example `/share/meeting-notes`, from the share dialog. The random token link keeps working, so links that were already sent and clients that do not know the new field are unaffected.

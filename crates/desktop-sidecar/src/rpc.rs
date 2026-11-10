@@ -95,14 +95,14 @@ pub(crate) fn handle(
             set_meta(database, "sync.last_synced_at", &chrono_like_now())?;
             database
                 .execute(
-                    "DELETE FROM _edgeever_sidecar_meta WHERE key = ?1",
+                    "DELETE FROM _ponder_sidecar_meta WHERE key = ?1",
                     [SYNC_BOOTSTRAP_RESET_KEY],
                 )
                 .map_err(|e| e.to_string())?;
             database
                 .execute_batch(
-                    "DROP TABLE IF EXISTS temp._edgeever_bootstrap_preserved_memos;
-                     DROP TABLE IF EXISTS temp._edgeever_bootstrap_preserved_notebooks;",
+                    "DROP TABLE IF EXISTS temp._ponder_bootstrap_preserved_memos;
+                     DROP TABLE IF EXISTS temp._ponder_bootstrap_preserved_notebooks;",
                 )
                 .map_err(|e| e.to_string())?;
             Ok(json!({ "ok": true }))

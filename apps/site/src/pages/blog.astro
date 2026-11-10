@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content";
-import Container from "@/components/container.astro";
 import Layout from "@/layouts/Layout.astro";
+import Container from "@/components/container.astro";
 import { getFormattedDate } from "@/utils/all";
 import { getLocalizedPath, getSiteLocale, siteCopy } from "@/i18n";
 
@@ -13,32 +13,28 @@ const entries = (await getCollection("blog", ({ data }) => !data.draft)).sort(
 const locale = getSiteLocale(Astro.url.pathname);
 const copy = siteCopy[locale].nav;
 
-const blogUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const blogDescription =
-  "EdgeEver 官方博客，记录 Cloudflare 自托管部署、印象笔记迁移、产品更新与 AI Agent 工作流。";
+  "English Ponder notes about Cloudflare self-hosting, Evernote migration, product updates, and AI Agent workflows.";
 
+const blogUrl = new URL(Astro.url.pathname, Astro.site).toString();
 const blogJsonLd = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
-  name: "EdgeEver Blog",
+  name: "Ponder Blog",
   url: blogUrl,
-  inLanguage: "zh-CN",
+  inLanguage: "en-US",
   description: blogDescription,
 };
 ---
 
-<Layout title="博客" description={blogDescription} jsonLd={blogJsonLd}>
+<Layout title="Blog" description={blogDescription} jsonLd={blogJsonLd}>
   <Container>
-    <main class="mx-auto max-w-4xl py-16 md:py-24">
-      <div class="mb-8">
-        <p class="text-sm font-semibold text-brand-text">EdgeEver Blog</p>
-        <h1 class="mt-3 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-          博客
-        </h1>
-      </div>
+    <section class="mx-auto max-w-4xl py-16 md:py-24">
+      <p class="text-sm font-semibold text-brand-text">Ponder Blog</p>
+      <h1 class="mt-3 text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">Blog</h1>
 
-      <!-- 标签筛选工具条 (全部默认为普通态，通过客户端 Script 激活) -->
-      <div class="flex flex-wrap gap-2 mb-10 select-none">
+      <!-- Tag filter toolbar (all start in the normal state; the client script activates them) -->
+      <div class="flex flex-wrap gap-2 mt-8 mb-10 select-none">
         <a
           href={getLocalizedPath(locale, "/blog")}
           data-tag-btn="all"
@@ -95,7 +91,7 @@ const blogJsonLd = {
           ))
         }
       </div>
-    </main>
+    </section>
   </Container>
 </Layout>
 
@@ -105,7 +101,7 @@ const blogJsonLd = {
       const urlParams = new URLSearchParams(window.location.search);
       const tag = urlParams.get("tag");
 
-      // 1. 更新按钮激活状态
+      // 1. Update the active button
       const buttons = document.querySelectorAll("[data-tag-btn]");
       const activeClasses = ["text-brand", "bg-brand/5", "border-brand-border/40", "font-semibold", "shadow-sm"];
       const inactiveClasses = ["text-slate-600", "bg-slate-50", "border-slate-200", "hover:bg-slate-100", "hover:text-slate-900"];
@@ -123,7 +119,7 @@ const blogJsonLd = {
         }
       });
 
-      // 2. 隐藏或显示对应的文章卡片
+      // 2. Show or hide the matching article cards
       const cards = document.querySelectorAll("[data-blog-card]");
       cards.forEach((card) => {
         if (!tag) {

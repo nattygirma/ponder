@@ -5,22 +5,22 @@ import { globToRegExp, selectReleaseAssets } from "./download-release-assets.mjs
 describe("release asset download", () => {
   test("matches the published audit filenames", () => {
     const assets = [
-      { name: "EdgeEver-1.84.0-linux-x64.AppImage" },
-      { name: "EdgeEver-1.84.0-windows-x64.exe" },
-      { name: "edgeever-android-v1.84.0-arm64-v8a.apk" },
+      { name: "Ponder-1.84.0-linux-x64.AppImage" },
+      { name: "Ponder-1.84.0-windows-x64.exe" },
+      { name: "ponder-android-v1.84.0-arm64-v8a.apk" },
       { name: "latest-linux.yml" },
       { name: "SHA256SUMS-linux.txt" },
     ];
     expect(selectReleaseAssets(assets, [
-      "EdgeEver-*-linux-x64.AppImage",
+      "Ponder-*-linux-x64.AppImage",
       "latest-linux.yml",
       "SHA256SUMS-linux.txt",
     ]).map((asset) => asset.name)).toEqual([
-      "EdgeEver-1.84.0-linux-x64.AppImage",
+      "Ponder-1.84.0-linux-x64.AppImage",
       "latest-linux.yml",
       "SHA256SUMS-linux.txt",
     ]);
-    expect(globToRegExp("edgeever-android-v*-arm64-v8a.apk").test(assets[2].name)).toBe(true);
+    expect(globToRegExp("ponder-android-v*-arm64-v8a.apk").test(assets[2].name)).toBe(true);
   });
 
   test("rejects a pattern that matches nothing", () => {

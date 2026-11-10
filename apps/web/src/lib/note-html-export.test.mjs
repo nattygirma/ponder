@@ -139,14 +139,14 @@ describe("buildNoteHtmlContentMarkup", () => {
       updatedAt: "2026-01-02",
       bodyHtml: "<p>Body</p>",
     });
-    expect(markup).toContain('<div class="edgeever-html-meta">Work · 2026-01-02 · #a · #b</div>');
-    expect(markup).toContain('<h1 class="edgeever-html-title">Plan</h1>');
+    expect(markup).toContain('<div class="ponder-html-meta">Work · 2026-01-02 · #a · #b</div>');
+    expect(markup).toContain('<h1 class="ponder-html-title">Plan</h1>');
     expect(markup).toContain("<p>Body</p>");
   });
 
   test("omits the metadata line when there is no metadata", () => {
     const markup = mod.buildNoteHtmlContentMarkup({ title: "Only title", bodyHtml: "" });
-    expect(markup).not.toContain("edgeever-html-meta");
+    expect(markup).not.toContain("ponder-html-meta");
   });
 
   test("escapes user-controlled title and metadata so they cannot inject markup", () => {
@@ -166,7 +166,7 @@ describe("buildNoteHtmlContentMarkup", () => {
 
     const parsed = createRoot(markup);
     expect(parsed.querySelectorAll("script, img, svg, b")).toHaveLength(0);
-    expect(parsed.querySelector(".edgeever-html-title").textContent).toBe("<script>alert(1)</script>");
+    expect(parsed.querySelector(".ponder-html-title").textContent).toBe("<script>alert(1)</script>");
   });
 });
 
@@ -175,7 +175,7 @@ describe("buildStandaloneHtmlDocument", () => {
     const html = mod.buildStandaloneHtmlDocument({ title: "Doc", bodyHtml: "<p>Hi</p>" });
     expect(html.startsWith("<!DOCTYPE html>\n<html lang=\"en\">")).toBe(true);
     expect(html).toContain('<meta charset="utf-8" />');
-    expect(html).toContain('<meta name="generator" content="EdgeEver" />');
+    expect(html).toContain('<meta name="generator" content="Ponder" />');
     expect(html).toContain("<title>Doc</title>");
     expect(html).toContain("<style>\n\n</style>");
     expect(html).toContain("<p>Hi</p>");
@@ -377,7 +377,7 @@ describe("code block preparation", () => {
 
     await mod.renderMermaidBlocksForHtmlExport(root);
 
-    const figures = root.querySelectorAll("figure.edgeever-html-mermaid");
+    const figures = root.querySelectorAll("figure.ponder-html-mermaid");
     expect(figures).toHaveLength(1);
     expect(figures[0].querySelector("svg")).not.toBeNull();
     expect(figures[0].innerHTML).toContain("Start");

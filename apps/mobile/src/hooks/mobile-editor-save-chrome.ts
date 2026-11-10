@@ -12,13 +12,13 @@ export type MobileEditorSaveChromeInput = {
 export type MobileEditorSaveChrome = {
   /** Green pill. Routine autosave stays on the quiet gray chip. */
   emphasized: boolean;
-  label: "保存失败" | "上传中" | "本地草稿" | "未保存" | "已保存" | "加载中";
+  label: "Save failed" | "Uploading" | "Local draft" | "Not saved" | "Saved" | "Loading";
 };
 
 /**
  * Status chip for an existing note.
  * A background save keeps the unsaved label, so the header does not cycle
- * through “保存中” and “已保存” on every pause. The Done button stays a label.
+ * through "Saving" and "Saved" on every pause. The Done button stays a label.
  */
 export const getMobileEditorSaveChrome = ({
   dirty,
@@ -28,11 +28,11 @@ export const getMobileEditorSaveChrome = ({
   saving,
   uploading,
 }: MobileEditorSaveChromeInput): MobileEditorSaveChrome => {
-  if (error) return { emphasized: false, label: "保存失败" };
-  if (uploading) return { emphasized: true, label: "上传中" };
-  if (dirty || saving) return { emphasized: false, label: draftRestored ? "本地草稿" : "未保存" };
-  if (ready) return { emphasized: false, label: "已保存" };
-  return { emphasized: false, label: "加载中" };
+  if (error) return { emphasized: false, label: "Save failed" };
+  if (uploading) return { emphasized: true, label: "Uploading" };
+  if (dirty || saving) return { emphasized: false, label: draftRestored ? "Local draft" : "Not saved" };
+  if (ready) return { emphasized: false, label: "Saved" };
+  return { emphasized: false, label: "Loading" };
 };
 
 export const shouldScheduleMobileEditorAutosave = ({

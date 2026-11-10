@@ -1,4 +1,4 @@
-import { buildDiagramPalette, DIAGRAM_SELECTABLE_THEMES, resolveDiagramTheme, type DiagramTheme } from "@edgeever/shared";
+import { buildDiagramPalette, DIAGRAM_SELECTABLE_THEMES, resolveDiagramTheme, type DiagramTheme } from "@ponder/shared";
 
 export type DiagramAppearance = "light" | "dark";
 

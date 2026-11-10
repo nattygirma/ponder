@@ -1,8 +1,8 @@
-import { MAX_SINGLE_REQUEST_UPLOAD_BYTES, type createEdgeEverClient } from "@edgeever/client";
+import { MAX_SINGLE_REQUEST_UPLOAD_BYTES, type createPonderClient } from "@ponder/client";
 import { File as ExpoFile, FileMode } from "expo-file-system";
 import { readMobileResourcePart } from "./mobile-resource-part";
 
-type ResourceUploadClient = Pick<ReturnType<typeof createEdgeEverClient>, "uploadMemoResource" | "uploadMemoResourceParts">;
+type ResourceUploadClient = Pick<ReturnType<typeof createPonderClient>, "uploadMemoResource" | "uploadMemoResourceParts">;
 
 export const uploadMobileResource = (
   client: ResourceUploadClient,

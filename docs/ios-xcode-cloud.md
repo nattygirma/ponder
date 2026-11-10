@@ -23,14 +23,14 @@ Native store target: **`apps/ios`** (SwiftUI). Expo `apps/mobile` is not the iOS
    ```sh
    cd apps/ios
    xcodegen generate   # if needed
-   open EdgeEver.xcodeproj
+   open Ponder.xcodeproj
    ```
 2. **Xcode → Product → Xcode Cloud → Create Workflow…** (or Report navigator → Cloud).
-3. Product: **EdgeEver** (`org.edgeever.mobile`), repository `tianma-if/edgeever`.
-4. When asked for the project path in a monorepo, select **`apps/ios/EdgeEver.xcodeproj`**.
+3. Product: **Ponder** (`io.appkeep.ponder.mobile`), repository `tianma-if/edgeever`.
+4. When asked for the project path in a monorepo, select **`apps/ios/Ponder.xcodeproj`**.
 5. **Workflow settings (important):**
    - **Start condition:** **Manual** only — do **not** start on every git push / PR (saves the 25h quota). Formal Releases start this workflow through the App Store Connect API.
-   - **Actions:** **Archive** (scheme `EdgeEver`, platform iOS).
+   - **Actions:** **Archive** (scheme `Ponder`, platform iOS).
    - **Deployment preparation:** App Store Connect / App Store eligible (or TestFlight Internal Only).
    - **Xcode / macOS:** latest **release** — not a beta toolchain.
 6. Signing: project uses **Automatic** signing so Xcode Cloud can mint Development + Distribution profiles. First run may ask the Account Holder to confirm certificates in App Store Connect.
@@ -38,7 +38,7 @@ Native store target: **`apps/ios`** (SwiftUI). Expo `apps/mobile` is not the iOS
 
 ### Shared secrets (auto-upload)
 
-In **App Store Connect → EdgeEver → Xcode Cloud → Settings → Shared Environment Variables**, add (secret):
+In **App Store Connect → Ponder → Xcode Cloud → Settings → Shared Environment Variables**, add (secret):
 
 | Variable | Value |
 | --- | --- |
@@ -58,7 +58,7 @@ base64 -i AuthKey_XXXX.p8 | tr -d '\n'
 
 Xcode Cloud **overwrites** `CFBundleVersion` with its managed counter:
 
-**App Store Connect → EdgeEver → Xcode Cloud → Settings → Build Number → Next build number**
+**App Store Connect → Ponder → Xcode Cloud → Settings → Build Number → Next build number**
 
 Rules:
 
@@ -91,7 +91,7 @@ Rules:
 | `apps/ios/ci_scripts/ci_post_xcodebuild.sh` | Upload App Store IPA via `altool` when secrets are set |
 | `apps/ios/Scripts/upload-app-store-ipa.sh` | Manual upload of `.ipa` or Cloud `app-store.zip` |
 | `apps/ios/Scripts/ensure-xcode-cloud-build-number.sh` | Recommend / sync next build number from ASC history |
-| `apps/ios/EdgeEver.xcodeproj/xcshareddata/xcodecloud/manifest.json` | Cloud product linkage (commit this file) |
+| `apps/ios/Ponder.xcodeproj/xcshareddata/xcodecloud/manifest.json` | Cloud product linkage (commit this file) |
 
 ## Routine: ship a store binary
 
@@ -122,10 +122,10 @@ Cloud **next build number** above the latest ASC build
 ```sh
 cd apps/ios
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer bash Scripts/archive-app-store.sh
-bash Scripts/upload-app-store-ipa.sh build/export/EdgeEver.ipa
+bash Scripts/upload-app-store-ipa.sh build/export/Ponder.ipa
 ```
 
-On **macOS beta**, do **not** upload that IPA; use Xcode Cloud instead. `archive-app-store.sh` refuses beta hosts unless `EDGE_EVER_IOS_ALLOW_BETA_HOST=1`.
+On **macOS beta**, do **not** upload that IPA; use Xcode Cloud instead. `archive-app-store.sh` refuses beta hosts unless `PONDER_IOS_ALLOW_BETA_HOST=1`.
 
 ## Troubleshooting
 

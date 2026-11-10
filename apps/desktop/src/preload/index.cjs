@@ -24,7 +24,7 @@ const normalizeIpcBytes = (value) => {
 let screenshotImportListener = null;
 let rendererReadySent = false;
 
-contextBridge.exposeInMainWorld("edgeeverDesktop", Object.freeze({
+contextBridge.exposeInMainWorld("ponderDesktop", Object.freeze({
   isAvailable: true,
   canClearLocalData: ipcRenderer.sendSync("desktop:local-data-reset-available-sync"),
   recoveredAfterAbnormalExit: ipcRenderer.sendSync("desktop:recovered-after-abnormal-exit-sync"),

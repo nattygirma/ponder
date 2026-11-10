@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const createAppearanceNotebook = async (page: Page) => {
-  await page.addInitScript(() => localStorage.setItem("edgeever.locale.preference", "en-US"));
+  await page.addInitScript(() => localStorage.setItem("ponder.locale.preference", "en-US"));
   await page.goto("/");
   const name = `Appearance interaction ${Date.now()}`;
   const created = await page.request.post("/api/v1/notebooks", { data: { name } });
@@ -95,8 +95,8 @@ test("keeps icon searches as drafts on Enter and supports keyboard selection and
 
 const createAppearanceScenario = async (page: Page, styled = false) => {
   await page.addInitScript(() => {
-    localStorage.setItem("edgeever.locale.preference", "en-US");
-    if (!localStorage.getItem("edgeever.notebook-color-palette")) localStorage.setItem("edgeever.notebook-color-palette", JSON.stringify(["#2563eb", "#16a34a", "#ca8a04", "#dc2626", "#7c3aed"]));
+    localStorage.setItem("ponder.locale.preference", "en-US");
+    if (!localStorage.getItem("ponder.notebook-color-palette")) localStorage.setItem("ponder.notebook-color-palette", JSON.stringify(["#2563eb", "#16a34a", "#ca8a04", "#dc2626", "#7c3aed"]));
   });
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/");

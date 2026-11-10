@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 
 for (const bundled of [false, true]) test(`credential launcher transfers ${bundled ? "Rolldown" : "named"} codec bootstrap before CLI readiness`, async () => {
-  const directory = await mkdtemp(path.join(tmpdir(), "edgeever-wb-codec-"));
+  const directory = await mkdtemp(path.join(tmpdir(), "ponder-wb-codec-"));
   try {
     const main = path.join(directory, "app.asar", "main");
     const bin = path.join(directory, "app.asar.unpacked", "cli", "bin");
@@ -66,7 +66,7 @@ for (const bundled of [false, true]) test(`credential launcher transfers ${bundl
 });
 
 for (const mode of ["legacy", "partial", "native-failure"]) test(`credential launcher handles ${mode} without leaking native errors`, async () => {
-  const directory = await mkdtemp(path.join(tmpdir(), "edgeever-wb-codec-"));
+  const directory = await mkdtemp(path.join(tmpdir(), "ponder-wb-codec-"));
   try {
     const main = path.join(directory, "app.asar", "main");
     const bin = path.join(directory, "app.asar.unpacked", "cli", "bin");
@@ -82,7 +82,7 @@ for (const mode of ["legacy", "partial", "native-failure"]) test(`credential lau
     const result = spawnSync("node", ["--require", preload, fileURLToPath(new URL("./workbuddy-launch.cjs", import.meta.url)), cli, "--acp"], { encoding: "utf8", timeout: 5_000 });
     expect(result.status).toBe(mode === "legacy" ? 0 : 1);
     expect(result.stdout.trim()).toBe(mode === "legacy" ? "legacy-cli-started" : "");
-    expect(result.stderr).toBe(mode === "legacy" ? "" : "[EdgeEver] WorkBuddy credential bootstrap unavailable\n");
+    expect(result.stderr).toBe(mode === "legacy" ? "" : "[Ponder] WorkBuddy credential bootstrap unavailable\n");
   } finally { await rm(directory, { recursive: true, force: true }); }
 });
 

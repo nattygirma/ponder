@@ -1,16 +1,16 @@
-import type { AiAttachmentInput, AiDirectTarget, AiPreparedGeneration, AiStreamEvent } from "@edgeever/shared";
+import type { AiAttachmentInput, AiDirectTarget, AiPreparedGeneration, AiStreamEvent } from "@ponder/shared";
 import {
   buildAiDirectProviderRequest,
   createAiGenerationStreamNormalizer,
   extractAiDirectStreamDelta,
   redactAiProviderError,
-} from "@edgeever/shared/ai-generation";
+} from "@ponder/shared/ai-generation";
 
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === "object" ? value as Record<string, unknown> : null;
 
-import { consumeProviderEventStream } from "@edgeever/shared/provider-event-stream";
-export { consumeProviderEventStream } from "@edgeever/shared/provider-event-stream";
+import { consumeProviderEventStream } from "@ponder/shared/provider-event-stream";
+export { consumeProviderEventStream } from "@ponder/shared/provider-event-stream";
 
 export const streamDirectAiGeneration = async (
   prepared: AiPreparedGeneration,
@@ -88,11 +88,11 @@ export const probeAiProviderCors = async (
 ) => {
   const request = buildAiDirectProviderRequest({
     ...target,
-    apiKey: "edgeever-cors-probe",
+    apiKey: "ponder-cors-probe",
     system: "ping",
     prompt: "ping",
     maxOutputTokens: 1,
-    resultBoundary: { start: "<edgeever-result-probe>", end: "</edgeever-result-probe>" },
+    resultBoundary: { start: "<ponder-result-probe>", end: "</ponder-result-probe>" },
   });
   try {
     // POST with the dummy key so the browser preflight matches the real direct request.

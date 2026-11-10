@@ -42,7 +42,7 @@ describe("diagram document", () => {
       globalThis.TextDecoder = undefined;
       globalThis.TextEncoder = undefined;
       const document = createDefaultDiagramDocument("mind-map");
-      document.nodes[0].label = "核心主题";
+      document.nodes[0].label = "Main topic";
       expect(parseDiagramDocument(serializeDiagramDocument(document))).toEqual(document);
     } finally {
       globalThis.atob = originalAtob;
@@ -55,23 +55,23 @@ describe("diagram document", () => {
   test("accepts wrapped metadata and strips invalid envelopes from visible content", () => {
     const serialized = serializeDiagramDocument(createDefaultDiagramDocument("mind-map"));
     const wrapped = serialized.replace(
-      /(edgeever-diagram-v1:)([A-Za-z0-9_-]+)/,
+      /(ponder-diagram-v1:)([A-Za-z0-9_-]+)/,
       (_match, prefix, payload) => `${prefix}${payload.match(/.{1,48}/g).join("\n")}`,
     );
     expect(parseDiagramDocument(wrapped)?.kind).toBe("mind-map");
 
-    const invalid = `${diagramFallbackMarkdown(createDefaultDiagramDocument("flowchart"))}\n\n<!-- edgeever-diagram-v1:not-json -->`;
+    const invalid = `${diagramFallbackMarkdown(createDefaultDiagramDocument("flowchart"))}\n\n<!-- ponder-diagram-v1:not-json -->`;
     expect(hasDiagramDocumentMarker(invalid)).toBe(true);
     expect(parseDiagramDocument(invalid)).toBeNull();
-    expect(stripDiagramDocumentMarker(invalid)).not.toContain("edgeever-diagram-v1");
+    expect(stripDiagramDocumentMarker(invalid)).not.toContain("ponder-diagram-v1");
     expect(stripDiagramDocumentMarker(invalid)).toContain("```mermaid");
   });
 
   test("persists a Mermaid fallback in the portable Markdown envelope", () => {
     const markdown = serializeDiagramDocument(createDefaultDiagramDocument("flowchart"));
-    expect(markdown).toContain("# 流程图");
+    expect(markdown).toContain("# Flowchart");
     expect(markdown).toContain("```mermaid\nflowchart TD");
-    expect(markdown).toContain('n1["处理步骤"]');
+    expect(markdown).toContain('n1["Process step"]');
     expect(markdown).toContain("classDef flowProcess fill:#FFFFFF,stroke:#D4D4D4,color:#212121");
     expect(markdown).toContain("classDef flowTerminator fill:#707070,stroke:#707070,color:#FFFFFF");
     expect(markdown).toContain("class n1 flowProcess");
@@ -129,7 +129,7 @@ describe("diagram document", () => {
     expect(nested.attrs.underline.stroke).toBe("#55B891");
     expect(light.edges[0].attrs.line.stroke).toBe("#55B891");
     expect(light.edges[0].attrs.line.targetMarker).toBeNull();
-    expect(light.edges[0].connector.name).toBe("edgeever-mindmap");
+    expect(light.edges[0].connector.name).toBe("ponder-mindmap");
     expect(light.edges[0].source.anchor.name).toBe("right");
     expect(light.edges.find((edge) => edge.target.cell === "topic-1-a").target.anchor.args.dy).toBeGreaterThan(0);
     const boxed = diagramDocumentToX6Cells({ ...document, structure: "box" }, "light");
@@ -171,13 +171,13 @@ describe("diagram document", () => {
     expect(parsed.schemaVersion).toBe(2);
     expect(parsed.nodes.find((node) => node.id === "api").parentId).toBe("system");
     expect(parsed.edges.find((edge) => edge.id === "request").kind).toBe("request");
-    expect(diagramFallbackMarkdown(document)).toContain("# 架构图");
+    expect(diagramFallbackMarkdown(document)).toContain("# Architecture diagram");
     const fallback = diagramDocumentToMermaid(document);
-    expect(fallback).toContain('subgraph n0["应用系统"]');
-    expect(fallback).toContain('shape: display, label: "Web 客户端"');
-    expect(fallback).toContain('shape: st-rect, label: "API 服务"');
-    expect(fallback).toContain('shape: cyl, label: "数据库"');
-    expect(fallback).toContain('shape: disk, label: "对象存储"');
+    expect(fallback).toContain('subgraph n0["Application"]');
+    expect(fallback).toContain('shape: display, label: "Web client"');
+    expect(fallback).toContain('shape: st-rect, label: "API service"');
+    expect(fallback).toContain('shape: cyl, label: "Database"');
+    expect(fallback).toContain('shape: disk, label: "Object storage"');
     expect(fallback).toContain("classDef archDatabase");
   });
 
@@ -202,7 +202,7 @@ describe("diagram document", () => {
     expect(withoutLabels(localized)).toEqual(withoutLabels(fallback));
 
     expect(createDefaultDiagramDocument("mind-map", { mindMapRoot: "Main topic" }).nodes[0].label).toBe("Main topic");
-    expect(createDefaultDiagramDocument("mind-map").nodes[0].label).toBe("核心主题");
+    expect(createDefaultDiagramDocument("mind-map").nodes[0].label).toBe("Main topic");
     expect(createDefaultDiagramDocument("flowchart", { flowchartStart: "Start", flowchartProcess: "Process step", flowchartEnd: "End" })
       .nodes.map((node) => node.label)).toEqual(["Start", "Process step", "End"]);
   });

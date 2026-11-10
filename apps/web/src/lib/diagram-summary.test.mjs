@@ -16,7 +16,7 @@ test('list preview uses primary topics, keeps counts and does not change the doc
 test('ordinary or malformed notes safely omit optional diagram metadata', () => {
   expect(getDiagramSummary('ordinary text')).toEqual({ diagramKind: null });
   expect(getDiagramSummary(null)).toEqual({ diagramKind: null });
-  expect(getDiagramSummary('<!-- edgeever-diagram-v1:broken -->')).toEqual({ diagramKind: null });
+  expect(getDiagramSummary('<!-- ponder-diagram-v1:broken -->')).toEqual({ diagramKind: null });
 });
 
 test('preview payload is bounded and prioritizes architecture boundaries', () => {

@@ -1,9 +1,10 @@
+import { Globe } from "lucide-react";
 import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-const GITHUB_REPOSITORY_URL = "https://github.com/tianma-if/edgeever";
+const WEBSITE_URL = "https://appkeep.io";
 
 export const GitHubMark = ({ className }: { className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -18,7 +19,7 @@ export const GitHubMark = ({ className }: { className?: string }) => (
 export const GitHubRepositoryLink = ({
   children,
   className,
-  href = GITHUB_REPOSITORY_URL,
+  href,
   iconClassName,
   label,
   showTooltip = true,
@@ -36,11 +37,13 @@ export const GitHubRepositoryLink = ({
     <a
       aria-label={children ? undefined : resolvedTitle}
       className={cn("inline-flex items-center gap-2", className)}
-      href={href}
+      href={href ?? WEBSITE_URL}
       rel="noopener noreferrer"
       target="_blank"
     >
-      <GitHubMark className={cn("h-4 w-4 shrink-0", iconClassName)} />
+      {href
+        ? <GitHubMark className={cn("h-4 w-4 shrink-0", iconClassName)} />
+        : <Globe className={cn("h-4 w-4 shrink-0", iconClassName)} aria-hidden="true" />}
       {children}
     </a>
   );

@@ -40,7 +40,7 @@ test('public transport preserves upstream status and useful headers without foll
     return new Response('moved', { status: 302, headers: { Location: 'https://127.0.0.1/private', 'Set-Cookie': 'secret=not-for-plugin', 'X-Internal': 'hidden' } });
   } });
   const response = await call('network/fetch', { url: 'https://example.org/feed', headers: { Accept: 'application/rss+xml' } });
-  expect(response.status).toBe(200); expect(response.headers.get('x-edgeever-upstream-status')).toBe('302'); expect(await response.text()).toBe('moved'); expect(response.headers.get('x-edgeever-upstream-header-location')).toBe('https://127.0.0.1/private'); expect(response.headers.get('x-edgeever-upstream-header-set-cookie')).toBeNull(); expect(response.headers.get('x-edgeever-upstream-header-x-internal')).toBeNull(); expect(calls).toBe(1);
+  expect(response.status).toBe(200); expect(response.headers.get('x-ponder-upstream-status')).toBe('302'); expect(await response.text()).toBe('moved'); expect(response.headers.get('x-ponder-upstream-header-location')).toBe('https://127.0.0.1/private'); expect(response.headers.get('x-ponder-upstream-header-set-cookie')).toBeNull(); expect(response.headers.get('x-ponder-upstream-header-x-internal')).toBeNull(); expect(calls).toBe(1);
 });
 
 test('oversized and cancelled public responses fail without exposing upstream error details', async () => {

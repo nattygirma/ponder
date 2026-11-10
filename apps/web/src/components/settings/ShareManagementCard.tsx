@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Clock3, Eye, FileText, Link2, LoaderCircle, LockKeyhole } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { memoSharePathSegment, type ManagedMemoShare } from "@edgeever/shared";
+import { memoSharePathSegment, type ManagedMemoShare } from "@ponder/shared";
 import { ShareManagementActions } from "./ShareManagementActions";
 import { NotebookShareManagement } from "./NotebookShareManagement";
 import { Button } from "@/components/ui/button";

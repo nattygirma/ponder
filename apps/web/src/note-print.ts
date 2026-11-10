@@ -20,7 +20,7 @@ import "@fontsource-variable/noto-sans-sc/wght.css";
 import "@/styles/note-print-screen.css";
 
 const PRINT_FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", "Noto Sans SC Variable", sans-serif';
-let printTitle = "EdgeEver";
+let printTitle = "Ponder";
 let printPreparingLabel = "";
 let printReadyLabel = "";
 const toolbar = document.getElementById("print-toolbar");
@@ -55,7 +55,7 @@ const renderMermaidBlocks = async (root: HTMLElement, theme: MermaidThemeName, f
         padding: 24,
       });
       const figure = document.createElement("figure");
-      figure.className = "edgeever-print-mermaid";
+      figure.className = "ponder-print-mermaid";
       figure.innerHTML = svg;
       container.replaceWith(figure);
     } catch {
@@ -87,7 +87,7 @@ const waitForImages = async (root: HTMLElement) => {
 const waitForPrintFonts = async (text: string, fontId: NotePrintPayload["appearance"]["fontId"]) => {
   installEditorBodyFontFaces();
   if (fontId) {
-    const { loadBodyFont } = await import("@edgeever/shared/font-loader");
+    const { loadBodyFont } = await import("@ponder/shared/font-loader");
     await loadBodyFont(fontId, text);
   }
   await document.fonts.ready;
@@ -95,17 +95,17 @@ const waitForPrintFonts = async (text: string, fontId: NotePrintPayload["appeara
 
 const buildSource = (payload: NotePrintPayload) => {
   const article = document.createElement("article");
-  article.className = "edgeever-print-document edgeever-editor";
+  article.className = "ponder-print-document ponder-editor";
   article.dataset.notePalette = payload.appearance.palette;
   article.lang = payload.language;
 
   const title = document.createElement("h1");
-  title.className = "edgeever-print-title";
+  title.className = "ponder-print-title";
   title.textContent = payload.title;
   article.appendChild(title);
 
   const metadata = document.createElement("div");
-  metadata.className = "edgeever-print-meta";
+  metadata.className = "ponder-print-meta";
   const metadataParts = [payload.notebook, payload.updatedAt, ...payload.tags.map((tag) => `#${tag}`)].filter(Boolean);
   metadata.textContent = metadataParts.join(" · ");
   if (metadataParts.length > 0) {
@@ -113,7 +113,7 @@ const buildSource = (payload: NotePrintPayload) => {
   }
 
   const content = document.createElement("div");
-  content.className = "edgeever-print-content ProseMirror";
+  content.className = "ponder-print-content ProseMirror";
   content.innerHTML = payload.html;
   article.appendChild(content);
   return article;
@@ -124,9 +124,9 @@ const renderPreview = async (payload: NotePrintPayload) => {
   printPreparingLabel = payload.labels.preparing;
   printReadyLabel = payload.labels.ready;
   document.documentElement.lang = payload.language;
-  document.title = withEnvironmentTitlePrefix(`${payload.title} · EdgeEver`, {
+  document.title = withEnvironmentTitlePrefix(`${payload.title} · Ponder`, {
     development: import.meta.env.DEV,
-    profile: __EDGEEVER_DEVELOPMENT_PROFILE__,
+    profile: __PONDER_DEVELOPMENT_PROFILE__,
   });
   setText(status, payload.labels.preparing);
   setText(hint, "");
@@ -167,7 +167,7 @@ printButton?.addEventListener("click", () => {
   if (!preview || !printButton || printButton.disabled) return;
   printButton.disabled = true;
   setText(status, printPreparingLabel);
-  void downloadNotePrintPdf(preview, printTitle, "EdgeEver").then(() => {
+  void downloadNotePrintPdf(preview, printTitle, "Ponder").then(() => {
     setText(status, printReadyLabel);
     printButton.disabled = false;
   }).catch((error) => {
@@ -202,5 +202,5 @@ if (window.opener && token) {
     getMessageTargetOrigin(window.location.origin)
   );
 } else {
-  setText(status, "EdgeEver");
+  setText(status, "Ponder");
 }

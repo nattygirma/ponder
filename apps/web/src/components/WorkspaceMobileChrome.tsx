@@ -13,7 +13,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useDeployedUpdateNotice } from "@/hooks/useDeployedUpdateNotice";
 import { BETA_BADGE_CLASSNAME } from "@/lib/workspace-ui";
-import type { NoteCreateKind, Notebook } from "@edgeever/shared";
+import type { NoteCreateKind, Notebook } from "@ponder/shared";
 import type { MobileBottomNavItem, NotebookNode } from "@/lib/app-helpers";
 import {
   buildNotebookTree,

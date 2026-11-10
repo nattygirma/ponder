@@ -1,11 +1,11 @@
 import { expect, test } from "bun:test";
-import { createEdgeEverClient } from "./index.ts";
+import { createPonderClient } from "./index.ts";
 
 const credential = { provider: "openai-compatible", baseUrl: "http://192.168.1.20:11434/v1", apiKey: "model-key", modelId: "local-model" };
 
 test("model connection tests prepare credentials then call the provider on the client", async () => {
   const paths = []; const requests = [];
-  const client = createEdgeEverClient({ baseUrl: "https://notes.example", token: "session-token", fetch: async (url, init) => {
+  const client = createPonderClient({ baseUrl: "https://notes.example", token: "session-token", fetch: async (url, init) => {
     paths.push(String(url)); expect(new Headers(init.headers).get("Authorization")).toBe("Bearer session-token");
     return Response.json(credential);
   }, providerFetch: async (url, init) => {
@@ -21,7 +21,7 @@ test("model connection tests prepare credentials then call the provider on the c
 
 test("model discovery issues one authenticated GET from the client", async () => {
   const paths = []; const requests = [];
-  const client = createEdgeEverClient({ fetch: async url => { paths.push(String(url)); return Response.json(credential); },
+  const client = createPonderClient({ fetch: async url => { paths.push(String(url)); return Response.json(credential); },
     providerFetch: async (url, init) => { requests.push({ url, init }); return Response.json({ data: [{ id: "model-a", name: "Model A" }] }); },
   });
   expect(await client.discoverAiProviderModels("provider-1")).toEqual({ models: [{ modelId: "model-a", displayName: "Model A" }] });
@@ -33,7 +33,7 @@ test("model discovery issues one authenticated GET from the client", async () =>
 
 for (const operation of ["test", "discovery"]) test(`${operation} network failure never falls back to a server call`, async () => {
   const paths=[];let calls=0;
-  const client=createEdgeEverClient({fetch:async url=>{paths.push(String(url));return Response.json(credential);},providerFetch:async()=>{calls++;throw new TypeError("Failed to fetch");}});
+  const client=createPonderClient({fetch:async url=>{paths.push(String(url));return Response.json(credential);},providerFetch:async()=>{calls++;throw new TypeError("Failed to fetch");}});
   await expect(operation === "test" ? client.testAiProvider("provider-1",{modelId:"model"}) : client.discoverAiProviderModels("provider-1")).rejects.toThrow();
   expect(paths).toEqual(["/api/v1/ai/providers/provider-1/direct-credential"]);expect(calls).toBe(1);
 });
@@ -41,7 +41,7 @@ for (const operation of ["test", "discovery"]) test(`${operation} network failur
 test("infographic tools and model loop run on the client after credential preparation", async () => {
   const paths=[];let calls=0;const events=[];
   const proposal={template:"list-grid-simple",data:{title:"Direct",lists:[{label:"One"}]},explanation:"Created"};
-  const client=createEdgeEverClient({fetch:async url=>{paths.push(String(url));return Response.json(credential);},providerFetch:async (url,init)=>{
+  const client=createPonderClient({fetch:async url=>{paths.push(String(url));return Response.json(credential);},providerFetch:async (url,init)=>{
     expect(url).toBe(`${credential.baseUrl}/chat/completions`);expect(new Headers(init.headers).get("Authorization")).toBe("Bearer model-key");
     calls++;
     const chunks=calls===1?[
@@ -56,7 +56,7 @@ test("infographic tools and model loop run on the client after credential prepar
 });
 
 test("Anthropic client generation and model discovery opt in to browser-direct access", async () => {
-  const { buildAiDirectProviderRequest } = await import("@edgeever/shared/ai-generation");
+  const { buildAiDirectProviderRequest } = await import("@ponder/shared/ai-generation");
   const prepared = { ...credential, provider: "anthropic", baseUrl: "https://api.anthropic.com/v1", system: "Reply", prompt: "OK", maxOutputTokens: 16 };
   const request = buildAiDirectProviderRequest(prepared);
   expect(request.headers["anthropic-dangerous-direct-browser-access"]).toBe("true");

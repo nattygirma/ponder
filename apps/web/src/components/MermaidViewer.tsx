@@ -66,7 +66,7 @@ export const MermaidViewer = ({
         <TooltipTrigger asChild>
           <button
             type="button"
-            className="edgeever-mermaid-viewer-reset"
+            className="ponder-mermaid-viewer-reset"
             disabled={zoom <= 1}
             aria-label={resetZoomLabel}
             onClick={() => zoomRef.current?.changeZoom(1)}
@@ -81,7 +81,7 @@ export const MermaidViewer = ({
 
   return (
     <Lightbox
-      className="edgeever-mermaid-viewer"
+      className="ponder-mermaid-viewer"
       open
       close={onClose}
       index={0}

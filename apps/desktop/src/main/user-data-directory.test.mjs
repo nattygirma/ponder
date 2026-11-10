@@ -3,17 +3,17 @@ import { userDataDirectoryFromArguments } from "./user-data-directory.mjs";
 
 describe("desktop user data directory", () => {
   test("reads the equals form", () => {
-    expect(userDataDirectoryFromArguments(["EdgeEver", "--user-data-dir=/tmp/edgeever-profile"]))
-      .toBe("/tmp/edgeever-profile");
+    expect(userDataDirectoryFromArguments(["Ponder", "--user-data-dir=/tmp/ponder-profile"]))
+      .toBe("/tmp/ponder-profile");
   });
 
   test("reads the separate value form", () => {
-    expect(userDataDirectoryFromArguments(["EdgeEver", "--user-data-dir", "/tmp/edgeever-profile"]))
-      .toBe("/tmp/edgeever-profile");
+    expect(userDataDirectoryFromArguments(["Ponder", "--user-data-dir", "/tmp/ponder-profile"]))
+      .toBe("/tmp/ponder-profile");
   });
 
   test("ignores missing and empty values", () => {
-    expect(userDataDirectoryFromArguments(["EdgeEver"])).toBe("");
-    expect(userDataDirectoryFromArguments(["EdgeEver", "--user-data-dir="])).toBe("");
+    expect(userDataDirectoryFromArguments(["Ponder"])).toBe("");
+    expect(userDataDirectoryFromArguments(["Ponder", "--user-data-dir="])).toBe("");
   });
 });

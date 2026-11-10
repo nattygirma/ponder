@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 // renderer's network session, including each user's system proxy configuration.
 export const createBackupWorkerFactory = ({ utilityProcess, session }) => (data) => {
   const worker = utilityProcess.fork(fileURLToPath(new URL("../../build/backup-worker.mjs", import.meta.url)), [], {
-    session, serviceName: "EdgeEver Backup", stdio: "ignore",
+    session, serviceName: "Ponder Backup", stdio: "ignore",
   });
   worker.terminate = () => worker.kill();
   worker.on("message", (message) => {

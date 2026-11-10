@@ -1,4 +1,5 @@
-import { hasPosterDocumentMarker, parsePosterDocument } from "@edgeever/shared";
+import { collabPurgeStatements } from "./collab-service";
+import { hasPosterDocumentMarker, parsePosterDocument } from "@ponder/shared";
 import {
   createExcerpt,
   DEFAULT_MEMO_TITLE,
@@ -21,12 +22,13 @@ import {
   type MemoSummary,
   type MemoUpdateInput,
   type TiptapDoc,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { auditStatement } from "./audit";
 import type { AppContext, AuditActor, AuthContext, Bindings } from "./api-context";
 import { AppError } from "./app-error";
 import { clampNumber, createId, isoNow, parseJsonArray } from "./entity-utils";
 import { notebookExists, workspaceInboxId } from "./notebook-service";
+import { listPageDescendantIds, replaceMemoLinksStatements } from "./page-service";
 import { sha256 } from "./hash-utils";
 import { getRequiredString } from "./mcp-json-rpc";
 import {
@@ -107,7 +109,11 @@ export const getCurrentWorkspaceIdentity = async (db: DatabaseAdapter, auth: Aut
     `SELECT w.id AS workspace_id, w.name AS workspace_name, w.is_personal,
             u.id AS user_id, u.username, u.display_name, wm.role
      FROM workspaces w
-     INNER JOIN workspace_members wm ON wm.workspace_id = w.id
+     INNER JOIN (
+       SELECT workspace_id, user_id, role, created_at FROM workspace_members
+       UNION ALL
+       SELECT workspace_id, user_id, role, created_at FROM team_members
+     ) wm ON wm.workspace_id = w.id
      INNER JOIN users u ON u.id = wm.user_id
      WHERE w.id = ?
      ORDER BY CASE WHEN u.id = ? THEN 0 ELSE 1 END, wm.created_at ASC
@@ -228,7 +234,7 @@ export const searchMemoSummaries = async (
   }
 
   if (typeof options.poster === "boolean") {
-    filters.push("(instr(c.content_markdown, '<!-- edgeever-poster-v1:') > 0) = ?");
+    filters.push("(instr(c.content_markdown, '<!-- ponder-poster-v1:') > 0) = ?");
     binds.push(options.poster ? 1 : 0);
   }
 
@@ -260,7 +266,7 @@ export const searchMemoSummaries = async (
            )
            SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned,
                   m.is_archived, m.is_deleted, m.created_at, m.updated_at, m.deleted_at, c.revision,
-                  c.content_text, (instr(c.content_markdown, '<!-- edgeever-poster-v1:') > 0) AS is_poster
+                  c.content_text, (instr(c.content_markdown, '<!-- ponder-poster-v1:') > 0) AS is_poster
            FROM search_matches s
            INNER JOIN memos m ON m.id = s.memo_id
            INNER JOIN memo_contents c ON c.memo_id = m.id
@@ -279,7 +285,7 @@ export const searchMemoSummaries = async (
     .prepare(
       `SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned,
               m.is_archived, m.is_deleted, m.created_at, m.updated_at, m.deleted_at, c.revision,
-              c.content_text, (instr(c.content_markdown, '<!-- edgeever-poster-v1:') > 0) AS is_poster
+              c.content_text, (instr(c.content_markdown, '<!-- ponder-poster-v1:') > 0) AS is_poster
        FROM memos m
        INNER JOIN memo_contents c ON c.memo_id = m.id
        WHERE ${filters.join(" AND ")}
@@ -301,7 +307,7 @@ export const listMemosForMcp = async (
   const offset = clampNumber(options.offset, 0, 100_000);
   const pageSize = limit + 1;
   const posterFilter = typeof options.poster === "boolean"
-    ? `(instr(c.content_markdown, '<!-- edgeever-poster-v1:') > 0) = ${options.poster ? 1 : 0}`
+    ? `(instr(c.content_markdown, '<!-- ponder-poster-v1:') > 0) = ${options.poster ? 1 : 0}`
     : "1 = 1";
   const deletedFilter = options.includeDeleted ? "1 = 1" : "m.is_deleted = 0";
 
@@ -336,7 +342,7 @@ export const listMemosForMcp = async (
     .prepare(
       `SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned,
               m.is_archived, m.is_deleted, m.created_at, m.updated_at, m.deleted_at, c.revision,
-              c.content_text, (instr(c.content_markdown, '<!-- edgeever-poster-v1:') > 0) AS is_poster
+              c.content_text, (instr(c.content_markdown, '<!-- ponder-poster-v1:') > 0) AS is_poster
        FROM memos m
        INNER JOIN memo_contents c ON c.memo_id = m.id
        WHERE m.workspace_id = ? AND ${deletedFilter} AND ${posterFilter}
@@ -450,12 +456,35 @@ export const createMemoEditSession = async (c: AppContext, memoId: string): Prom
   return session;
 };
 
+// D1 caps one statement at 100 bound values, and each delete statement also binds the workspace.
+const MEMO_DELETE_CHUNK = 80;
+
 export const deleteMemosRecord = async (
   env: Bindings,
   workspaceId: string,
   memoIds: string[],
   permanent: boolean,
   actor: { actorType: "user" | "agent"; actorId: string | null }
+) => {
+  // One timestamp for the whole subtree: restore finds what was deleted together by matching it.
+  const deletedAt = isoNow();
+  const deleted = await deleteMemoRows(env, workspaceId, memoIds, permanent, actor, deletedAt);
+  if (deleted === 0) return 0;
+  // Deleting a page takes its sub-pages with it, and they come back together on restore.
+  const descendants = await listPageDescendantIds(env.storage.db, workspaceId, memoIds, permanent ? 1 : 0, new Set(memoIds));
+  for (let index = 0; index < descendants.length; index += MEMO_DELETE_CHUNK) {
+    await deleteMemoRows(env, workspaceId, descendants.slice(index, index + MEMO_DELETE_CHUNK), permanent, actor, deletedAt);
+  }
+  return deleted;
+};
+
+const deleteMemoRows = async (
+  env: Bindings,
+  workspaceId: string,
+  memoIds: string[],
+  permanent: boolean,
+  actor: { actorType: "user" | "agent"; actorId: string | null },
+  deletedAt: string,
 ) => {
   const db = env.storage.db;
   const uniqueMemoIds = Array.from(new Set(memoIds));
@@ -483,7 +512,7 @@ export const deleteMemosRecord = async (
     );
   }
 
-  const now = isoNow();
+  const now = deletedAt;
   const statements: PreparedStatementAdapter[] = [];
 
   if (permanent) {
@@ -501,6 +530,7 @@ export const deleteMemosRecord = async (
     }
 
     statements.push(
+      ...collabPurgeStatements(db, placeholders, uniqueMemoIds),
       db.prepare(`DELETE FROM resources WHERE memo_id IN (${placeholders})`).bind(...uniqueMemoIds),
       db.prepare(`DELETE FROM memo_revisions WHERE memo_id IN (${placeholders})`).bind(...uniqueMemoIds),
       db.prepare(`DELETE FROM memo_contents WHERE memo_id IN (${placeholders})`).bind(...uniqueMemoIds),
@@ -588,6 +618,39 @@ export const getMemosForBulkAction = async (db: DatabaseAdapter, workspaceId: st
 };
 
 export const restoreMemosRecord = async (
+  db: DatabaseAdapter,
+  workspaceId: string,
+  memoIds: string[],
+  actor: { actorType: "user" | "agent"; actorId: string | null }
+) => {
+  // Sub-pages deleted along with a page share its deleted_at; ones trashed earlier stay in the trash.
+  const companions: string[] = [];
+  if (memoIds.length > 0) {
+    const roots = await db
+      .prepare(`SELECT id, deleted_at FROM memos WHERE workspace_id = ? AND is_deleted = 1 AND id IN (${memoIds.map(() => "?").join(", ")})`)
+      .bind(workspaceId, ...memoIds)
+      .all<{ id: string; deleted_at: string | null }>();
+    for (const root of roots.results) {
+      const descendants = await listPageDescendantIds(db, workspaceId, [root.id], 1, new Set(memoIds));
+      for (let index = 0; index < descendants.length; index += MEMO_DELETE_CHUNK) {
+        const chunk = descendants.slice(index, index + MEMO_DELETE_CHUNK);
+        const sameDeletion = await db
+          .prepare(`SELECT id FROM memos WHERE workspace_id = ? AND deleted_at IS ? AND id IN (${chunk.map(() => "?").join(", ")})`)
+          .bind(workspaceId, root.deleted_at, ...chunk)
+          .all<{ id: string }>();
+        companions.push(...sameDeletion.results.map((row) => row.id));
+      }
+    }
+  }
+  const restored = await restoreMemoRows(db, workspaceId, memoIds, actor);
+  const uniqueCompanions = Array.from(new Set(companions));
+  for (let index = 0; index < uniqueCompanions.length; index += MEMO_DELETE_CHUNK) {
+    await restoreMemoRows(db, workspaceId, uniqueCompanions.slice(index, index + MEMO_DELETE_CHUNK), actor);
+  }
+  return restored;
+};
+
+const restoreMemoRows = async (
   db: DatabaseAdapter,
   workspaceId: string,
   memoIds: string[],
@@ -725,6 +788,7 @@ export const emptyTrashMemosRecord = async (
     db.prepare(`DELETE FROM resources WHERE memo_id IN (SELECT id FROM memos WHERE workspace_id = ? AND is_deleted = 1)`).bind(workspaceId),
     db.prepare(`DELETE FROM memo_revisions WHERE memo_id IN (SELECT id FROM memos WHERE workspace_id = ? AND is_deleted = 1)`).bind(workspaceId),
     db.prepare(`DELETE FROM memo_contents WHERE memo_id IN (SELECT id FROM memos WHERE workspace_id = ? AND is_deleted = 1)`).bind(workspaceId),
+    ...collabPurgeStatements(db, "SELECT id FROM memos WHERE workspace_id = ? AND is_deleted = 1", [workspaceId]),
     db.prepare(`DELETE FROM memos WHERE workspace_id = ? AND is_deleted = 1`).bind(workspaceId),
     auditStatement(db, actor.actorType, actor.actorId, "memo.trash_empty", "trash", "memos", { deleted }),
   ]);
@@ -992,6 +1056,7 @@ export const createMemoRecord = async (
       )
       .bind(id, JSON.stringify(contentJson), contentMarkdown, contentText, contentHash, createdAt, updatedAt),
     upsertMemoSearchDocumentStatement(db, id, title, contentText, tags.join(" ")),
+    ...replaceMemoLinksStatements(db, workspaceId, id, contentJson),
     auditStatement(db, actor.actorType, actor.actorId, "memo.create", "memo", id, {
       notebookId: input.notebookId,
     }),
@@ -1440,6 +1505,7 @@ export const updateMemoRecord = async (
     ...(commit?.before ?? []),
     ...revisionStatements,
     ...releaseResourceStatements,
+    ...(hasDocumentUpdate ? replaceMemoLinksStatements(db, workspaceId, id, contentJson as TiptapDoc) : []),
     db
       .prepare(
         `UPDATE memos

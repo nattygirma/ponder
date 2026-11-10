@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ApiRequestError } from "@edgeever/client";
+import { ApiRequestError } from "@ponder/client";
 import { useQuery } from "@tanstack/react-query";
 import {
   AI_TARGET_LANGUAGES,
@@ -17,7 +17,7 @@ import {
   type AiTargetLanguage,
   type AiTone,
   type MemoDetail,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import * as Clipboard from "expo-clipboard";
 import { Modal, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

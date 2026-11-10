@@ -1,2 +1,2 @@
 export const isNativeDesktopRuntime = () =>
-  Boolean(typeof window !== "undefined" && window.edgeeverDesktop?.isAvailable);
+  Boolean(typeof window !== "undefined" && window.ponderDesktop?.isAvailable);

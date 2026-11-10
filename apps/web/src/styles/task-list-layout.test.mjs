@@ -5,10 +5,10 @@ const readSource = (relativePath) => readFileSync(new URL(relativePath, import.m
 
 const TASK_ITEM_LAYOUT_SOURCES = [
   ["./globals.css", '.ProseMirror ul[data-type="taskList"] li[data-checked]'],
-  ["./mobile-markdown-editor.css", '.edgeever-mobile-tiptap-content ul[data-type="taskList"] li[data-checked]'],
-  ["./note-html-export.css", '.edgeever-html-content ul[data-type="taskList"] li[data-checked]'],
-  ["./note-print.css", '.edgeever-print-content ul[data-type="taskList"] li[data-checked]'],
-  ["../../../mobile/src/components/LocalTiptapEditor.tsx", '.edgeever-editor-content ul[data-type="taskList"] li[data-checked]'],
+  ["./mobile-markdown-editor.css", '.ponder-mobile-tiptap-content ul[data-type="taskList"] li[data-checked]'],
+  ["./note-html-export.css", '.ponder-html-content ul[data-type="taskList"] li[data-checked]'],
+  ["./note-print.css", '.ponder-print-content ul[data-type="taskList"] li[data-checked]'],
+  ["../../../mobile/src/components/LocalTiptapEditor.tsx", '.ponder-editor-content ul[data-type="taskList"] li[data-checked]'],
   ["../../../ios/EditorSource/src/styles.css", '.ProseMirror ul[data-type="taskList"] li[data-checked]'],
 ];
 

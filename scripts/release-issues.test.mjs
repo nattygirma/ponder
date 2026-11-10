@@ -3,7 +3,7 @@ import { parseReleaseArgs } from "./release.mjs";
 import { parseChangeIssues, finishResolvedIssues, validateResolvedIssues } from "./release-issues.mjs";
 
 const release = { tagName: "v2.19.0", url: "https://github.com/tianma-if/edgeever/releases/tag/v2.19.0", targetCommitish: "abc123", isDraft: false, isPrerelease: false };
-const issues = [{ number: 767, language: "en" }, { number: 751, language: "zh" }];
+const issues = [{ number: 767, language: "en" }, { number: 751, language: "en" }];
 const fixture = () => {
   const records = new Map(issues.map(({ number }) => [number, { number, state: "open", comments: [] }]));
   const calls = [];
@@ -18,18 +18,18 @@ const fixture = () => {
 const finish = (f, overrides = {}) => finishResolvedIssues({ release, auditedSha: "abc123", issues, client: f.client, ...overrides });
 
 describe("release Issue follow-up", () => {
-  test("requires an explicit per-change declaration and rejects PRs and conflicting languages", () => {
+  test("requires an explicit per-change declaration and rejects PRs and unsupported languages", () => {
     expect(() => parseChangeIssues([], 1)).toThrow("Each change requires");
-    expect(parseChangeIssues(["767:en,751:zh", "767:en", "none"], 3)).toEqual([issues[1], issues[0]]);
+    expect(parseChangeIssues(["767:en,751:en", "767:en", "none"], 3)).toEqual([issues[1], issues[0]]);
     for (const value of ["0:en", "-1:en", "767", "767:fr", "other/repo#767:en", "none,767:en", "9007199254740992:en"]) {
       expect(() => parseChangeIssues([value], 1)).toThrow("Invalid");
     }
-    expect(() => parseChangeIssues(["767:en,767:zh"], 1)).toThrow("Conflicting");
+    expect(() => parseChangeIssues(["767:en,767:zh"], 1)).toThrow("Invalid");
     expect(() => validateResolvedIssues(issues, (number) => ({ number, pull_request: {} }))).toThrow("not a PR");
   });
 
   test("CLI cannot omit Issue decisions, and supports a separate published-release retry", () => {
-    const args = ["--bump", "patch", "--issue-title", "Fix", "--label", "bug", "--change-en", "Fix PDF", "--change-zh", "修复 PDF", "--change-locale", "ja:PDF を修正", "--change-commit", "abc1234"];
+    const args = ["--bump", "patch", "--issue-title", "Fix", "--label", "bug", "--change-en", "Fix PDF", "--change-locale", "ja:PDF を修正", "--change-commit", "abc1234"];
     expect(() => parseReleaseArgs(args)).toThrow("--change-issue");
     expect(parseReleaseArgs([...args, "--change-issue", "767:en"]).resolvedIssues).toEqual([issues[0]]);
     expect(parseReleaseArgs(["--finish-issues", "v2.19.0"])).toMatchObject({ finishIssues: "v2.19.0" });
@@ -50,7 +50,7 @@ describe("release Issue follow-up", () => {
     finish(f);
     expect(f.calls).toEqual([["comment", 767], ["close", 767], ["comment", 751], ["close", 751]]);
     expect(f.records.get(767).comments[0].body).toContain(`Released in [v2.19.0](${release.url})`);
-    expect(f.records.get(751).comments[0].body).toContain(`本问题已在 [v2.19.0](${release.url}) 发布`);
+    expect(f.records.get(751).comments[0].body).toContain(`Released in [v2.19.0](${release.url})`);
     finish(f);
     expect(f.calls).toHaveLength(4);
   });

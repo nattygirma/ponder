@@ -5,7 +5,6 @@ import {
   resolveTheme, resolveNoteImageTypography, buildImageExportBasename, buildNoteImageCardMarkup,
   estimateReadingStats, generateCardCss,
 } from "./note-image-card";
-import { zhCN } from "./i18n/zh-CN";
 import { enUS } from "./i18n/en-US";
 import { ja } from "./i18n/ja";
 import { pl } from "./i18n/pl";
@@ -17,10 +16,10 @@ describe("note image templates", () => {
     for (const theme of NOTE_IMAGE_THEME_OPTIONS) {
       const markup = buildNoteImageCardMarkup({ theme, title: "Note", bodyHtml: "<p>Text</p>", author: "天马", showAuthor: true });
       const { document } = parseHTML(markup);
-      const signature = document.querySelector(".edgeever-footer-author");
+      const signature = document.querySelector(".ponder-footer-author");
       expect(signature?.textContent).toBe("天马");
       expect(signature?.children.length).toBe(1);
-      expect(document.querySelector(".edgeever-card-avatar")).toBeNull();
+      expect(document.querySelector(".ponder-card-avatar")).toBeNull();
     }
   });
 
@@ -45,7 +44,7 @@ describe("note image templates", () => {
     for (const theme of NOTE_IMAGE_THEME_OPTIONS) {
       expect(NOTE_IMAGE_THEMES[theme]).toBeDefined();
       expect(NOTE_IMAGE_BACKGROUND_COLORS[theme]).toMatch(/^#[\da-f]{6}$/i);
-      for (const locale of [zhCN, enUS, ja, pl, ru]) expect(locale.editor.imageShare.themes[theme]).toBeTruthy();
+      for (const locale of [enUS, ja, pl, ru]) expect(locale.editor.imageShare.themes[theme]).toBeTruthy();
     }
     for (const retired of ["paper", "press", "highlight", "slate", "mint", "aurora", "sunset", "terminal"]) {
       expect(NOTE_IMAGE_THEME_OPTIONS).not.toContain(retired);
@@ -86,7 +85,7 @@ describe("note image templates", () => {
         theme, title: "Private title", notebook: "Private notebook", author: "Private author", tags: ["Private tag"],
         updatedAt: "Private date", bodyHtml: "<p>Public body</p>", showUpdatedAt: false, showBranding: false,
       });
-      for (const hidden of ["Private title", "Private notebook", "Private author", "Private tag", "Private date", "EdgeEver"]) expect(markup).not.toContain(hidden);
+      for (const hidden of ["Private title", "Private notebook", "Private author", "Private tag", "Private date", "Ponder"]) expect(markup).not.toContain(hidden);
       expect(markup).toContain("<p>Public body</p>");
     }
   });
@@ -114,27 +113,27 @@ describe("note image templates", () => {
     const shown = buildNoteImageCardMarkup({ theme: "code", title: "Visible", bodyHtml: "", showTitle: true });
     expect(shown.match(/Visible/g)).toHaveLength(1);
     const mono = buildNoteImageCardMarkup({ theme: "book", title: "Note", bodyHtml: "", fontStyle: "mono" });
-    expect(mono).not.toContain("edgeever-terminal-header");
+    expect(mono).not.toContain("ponder-terminal-header");
   });
 
   test("an empty author does not create an empty footer when branding is hidden", () => {
     const markup = buildNoteImageCardMarkup({ title: "Note", bodyHtml: "", author: "  ", showAuthor: true, showBranding: false });
-    expect(markup).not.toContain("edgeever-card-footer");
+    expect(markup).not.toContain("ponder-card-footer");
   });
 
   test("branding never creates an anonymous header avatar", () => {
     for (const theme of NOTE_IMAGE_THEME_OPTIONS) {
       for (const author of ["", "  ", "Hidden author"]) {
         const markup = buildNoteImageCardMarkup({ theme, title: "Note", bodyHtml: "<p>Body</p>", author, showBranding: true });
-        expect(markup).not.toContain('class="edgeever-card-avatar"');
-        expect(markup.match(/class="edgeever-brand-badge"/g)).toHaveLength(1);
+        expect(markup).not.toContain('class="ponder-card-avatar"');
+        expect(markup.match(/class="ponder-brand-badge"/g)).toHaveLength(1);
       }
     }
     const signed = buildNoteImageCardMarkup({ theme: "bento", title: "Note", bodyHtml: "", author: "天马", showAuthor: true, showBranding: false });
-    expect(signed).not.toContain('class="edgeever-card-avatar"');
+    expect(signed).not.toContain('class="ponder-card-avatar"');
     expect(signed).toContain('<span>天马</span>');
     expect(signed).toContain('<span>天马</span>');
-    expect(signed).not.toContain('class="edgeever-brand-badge"');
+    expect(signed).not.toContain('class="ponder-brand-badge"');
   });
 
   test("every metadata combination keeps date above content and auxiliary details below it", () => {
@@ -145,19 +144,19 @@ describe("note image templates", () => {
         theme, title: "Title", updatedAt: "2026/10/18", notebook: "Notebook", tags: ["tag"], author: "Author",
         bodyHtml: "<p>Content</p>", showTitle, showUpdatedAt, showNotebook, showTags, showReadingTime, showAuthor, showBranding,
       }));
-      const header = document.querySelector(".edgeever-card-header");
-      const footer = document.querySelector(".edgeever-card-footer");
+      const header = document.querySelector(".ponder-card-header");
+      const footer = document.querySelector(".ponder-card-footer");
       expect(Boolean(header)).toBe(showTitle || showUpdatedAt);
       expect(Boolean(footer)).toBe(showNotebook || showTags || showReadingTime || showAuthor || showBranding);
-      expect(Boolean(header?.querySelector(".edgeever-meta-date"))).toBe(showUpdatedAt);
-      expect(Boolean(header?.querySelector(".edgeever-card-title"))).toBe(showTitle);
-      expect(Boolean(footer?.querySelector(".edgeever-meta-notebook"))).toBe(showNotebook);
-      expect(Boolean(footer?.querySelector(".edgeever-meta-tag"))).toBe(showTags);
-      expect(Boolean(footer?.querySelector(".edgeever-meta-reading"))).toBe(showReadingTime);
-      expect(Boolean(footer?.querySelector(".edgeever-footer-author"))).toBe(showAuthor);
-      expect(Boolean(footer?.querySelector(".edgeever-brand-badge"))).toBe(showBranding);
-      expect(header?.querySelector(".edgeever-card-avatar")).toBeFalsy();
-      expect(document.querySelector(".edgeever-terminal-header")?.textContent || "").not.toContain("Notebook");
+      expect(Boolean(header?.querySelector(".ponder-meta-date"))).toBe(showUpdatedAt);
+      expect(Boolean(header?.querySelector(".ponder-card-title"))).toBe(showTitle);
+      expect(Boolean(footer?.querySelector(".ponder-meta-notebook"))).toBe(showNotebook);
+      expect(Boolean(footer?.querySelector(".ponder-meta-tag"))).toBe(showTags);
+      expect(Boolean(footer?.querySelector(".ponder-meta-reading"))).toBe(showReadingTime);
+      expect(Boolean(footer?.querySelector(".ponder-footer-author"))).toBe(showAuthor);
+      expect(Boolean(footer?.querySelector(".ponder-brand-badge"))).toBe(showBranding);
+      expect(header?.querySelector(".ponder-card-avatar")).toBeFalsy();
+      expect(document.querySelector(".ponder-terminal-header")?.textContent || "").not.toContain("Notebook");
     }
   });
 
@@ -165,8 +164,8 @@ describe("note image templates", () => {
     for (const theme of NOTE_IMAGE_THEME_OPTIONS) {
       const markup = buildNoteImageCardMarkup({ theme, title: " ", updatedAt: " ", notebook: " ", tags: ["", " "], author: " ", bodyHtml: "<p>Content</p>",
         showTitle: true, showUpdatedAt: true, showNotebook: true, showTags: true, showAuthor: true, showBranding: false });
-      expect(markup).not.toContain('class="edgeever-card-header"');
-      expect(markup).not.toContain('class="edgeever-card-footer"');
+      expect(markup).not.toContain('class="ponder-card-header"');
+      expect(markup).not.toContain('class="ponder-card-footer"');
     }
   });
 

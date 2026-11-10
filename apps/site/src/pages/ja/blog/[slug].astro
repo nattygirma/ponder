@@ -4,7 +4,7 @@ import AgentInstallTabs from "@/components/agent-install-tabs.astro";
 import BlogLayout from "@/layouts/BlogLayout.astro";
 
 export async function getStaticPaths() {
-  const entries = await getCollection("blog_en", ({ data }) => !data.draft);
+  const entries = await getCollection("blog", ({ data }) => !data.draft);
   return entries.map((entry) => ({
     params: { slug: entry.id },
     props: { entry },

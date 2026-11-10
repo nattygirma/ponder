@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 import { MockLanguageModelV4 } from "ai/test";
-import { CompanionDiscoveryOutputSchema } from "@edgeever/shared";
+import { CompanionDiscoveryOutputSchema } from "@ponder/shared";
 import { discoveryContext, discoveryInputHash } from "./companion-discovery-context.ts";
 import { generateCompanionDiscovery } from "../../../packages/client/src/discovery-direct.ts";
 
@@ -49,7 +49,7 @@ test("analysis fingerprint includes content, real IDs, context and model configu
   const hash = await discoveryInputHash(request);
   expect(hash).toMatch(/^[0-9a-f]{64}$/);
   expect(await discoveryInputHash({ ...request })).toBe(hash);
-  for (const patch of [{ locale: "zh-CN" }, { settingsVersion: 2 }, { contextRevision: 1 }, { anchorId: candidates[1].id },
+  for (const patch of [{ locale: "ja" }, { settingsVersion: 2 }, { contextRevision: 1 }, { anchorId: candidates[1].id },
     { modelConfiguration: { default_model_id: "model-b" } },
     ...["title", "contentMarkdown", "updatedAt"].map(key => ({ candidates: candidates.map((note, i) => i ? note : { ...note, [key]: `${note[key]} changed` }) })),
     { candidates: candidates.map((note, i) => i ? note : { ...note, plainText: true }) },
@@ -72,7 +72,7 @@ test("actual SDK uses compact input and translates its output before leaving the
 
 test("asks for the reply in the interface language, falling back to English", () => {
   const reply = (locale) => discoveryContext({ ...input, locale }).instructions.match(/Reply in ([A-Za-z ]+)\./)?.[1];
-  expect(reply("zh-CN")).toBe("Simplified Chinese");
+  expect(reply("zh-CN")).toBe("English");
   expect(reply("en-US")).toBe("English");
   expect(reply("ja")).toBe("Japanese");
   expect(reply("pl-PL")).toBe("Polish");

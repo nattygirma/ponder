@@ -1,5 +1,5 @@
 /** Public App Review / marketing demo. Never use a fake example host as the login placeholder. */
-export const PUBLIC_DEMO_INSTANCE_URL = "https://demo.edgeever.org";
+export const PUBLIC_DEMO_INSTANCE_URL = "https://appkeep.io";
 
 const publicDemoAliasHost = (value: string) =>
   value

@@ -8,7 +8,7 @@ export const PLUGIN_TRUST_WARNING_COPY = {
 } as const;
 
 export const PLUGIN_TRUST_ACKNOWLEDGEMENT_STORAGE_KEY =
-  `edgeever:plugins:trusted-code:${PLUGIN_TRUST_WARNING_COPY.version}`;
+  `ponder:plugins:trusted-code:${PLUGIN_TRUST_WARNING_COPY.version}`;
 
 const getDefaultStorage = (): PluginTrustStorage | null => {
   if (typeof window === "undefined") return null;

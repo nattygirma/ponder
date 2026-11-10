@@ -11,7 +11,7 @@ import { executeRealAcpHandshake } from "./verify-acp-adapter-real-e2e.mjs";
 // and ACP initialize only. Never authenticate or send a model prompt.
 export const verifyAcpNpmUpgrade = async ({ oldNpmPath, executablePath = process.execPath }) => {
   assert.ok(oldNpmPath && existsSync(oldNpmPath), "Provide the previous npm CLI path");
-  const root = await mkdtemp(path.join(tmpdir(), "edgeever-acp-npm-upgrade-"));
+  const root = await mkdtemp(path.join(tmpdir(), "ponder-acp-npm-upgrade-"));
   let version = "2.2.1";
   const fetchImpl = async () => new Response(JSON.stringify({ agents: [{
     id: "codex-acp",

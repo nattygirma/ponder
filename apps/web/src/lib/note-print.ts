@@ -1,12 +1,12 @@
 import { DOMSerializer } from "@tiptap/pm/model";
 import type { Editor } from "@tiptap/react";
-import type { TiptapDoc } from "@edgeever/shared";
+import type { TiptapDoc } from "@ponder/shared";
 import { getAppPagePath, getMessageTargetOrigin } from "@/lib/app-page-path";
 import { createClientUuid } from "@/lib/client-id";
 import type { NotePrintAppearance } from "@/lib/note-print-appearance";
 
-export const NOTE_PRINT_MESSAGE = "edgeever:note-print";
-export const NOTE_PRINT_READY_MESSAGE = "edgeever:note-print-ready";
+export const NOTE_PRINT_MESSAGE = "ponder:note-print";
+export const NOTE_PRINT_READY_MESSAGE = "ponder:note-print-ready";
 export const NOTE_PRINT_PATH = getAppPagePath("note-print.html", import.meta.env.BASE_URL);
 
 export type NotePrintLabels = {

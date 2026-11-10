@@ -96,7 +96,7 @@ const paragraphChunkBoundaries = (markdown: string): ChunkBoundary[] => {
       continue;
     }
     if (gallery) {
-      if (line.includes("<!-- /edgeever:image-gallery -->")) gallery = false;
+      if (line.includes("<!-- /ponder:image-gallery -->")) gallery = false;
       continue;
     }
     if (isBlankLine(line)) continue;
@@ -110,11 +110,11 @@ const paragraphChunkBoundaries = (markdown: string): ChunkBoundary[] => {
       math = true;
       continue;
     }
-    if (line.includes("<!-- edgeever:image-gallery ") && !line.includes("<!-- /edgeever:image-gallery -->")) {
+    if (line.includes("<!-- ponder:image-gallery ") && !line.includes("<!-- /ponder:image-gallery -->")) {
       gallery = true;
     }
-    const opened = line.match(/<details\b/gi)?.length ?? 0;
-    const closed = line.match(/<\/details\b/gi)?.length ?? 0;
+    const opened = line.match(/<(?:details|ponder-callout|ponder-columns)\b/gi)?.length ?? 0;
+    const closed = line.match(/<\/(?:details|ponder-callout|ponder-columns)\b/gi)?.length ?? 0;
     details = Math.max(0, details + opened - closed);
   }
 

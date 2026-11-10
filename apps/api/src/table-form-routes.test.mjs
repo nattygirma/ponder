@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { Database } from "bun:sqlite";
 import { globSync, readFileSync } from "node:fs";
 import { Hono } from "hono";
-import { createDefaultTableDocument, serializeTableDocument } from "@edgeever/shared";
+import { createDefaultTableDocument, serializeTableDocument } from "@ponder/shared";
 import { hashPassword } from "./auth-crypto.ts";
 import { updateMemoRecord } from "./memo-service.ts";
 import { registerPublicTableFormRoutes } from "./table-form-routes.ts";
@@ -76,8 +76,8 @@ describe("public table forms", () => {
     const listed = await app.request(`/api/public/forms/${token}`, {}, environment);
     expect(listed.status).toBe(200);
     const body = JSON.stringify(await listed.json());
-    expect(body).toContain("名称");
-    expect(body).not.toContain("示例记录");
+    expect(body).toContain("Name");
+    expect(body).not.toContain("Sample record");
 
     const submitted = await app.request(`/api/public/forms/${token}/submissions`, {
       method: "POST",
@@ -108,7 +108,7 @@ describe("public table forms", () => {
     const lockedBody = await locked.json();
     expect(lockedBody.form.passwordRequired).toBe(true);
     expect(lockedBody.form.fields).toEqual([]);
-    expect(JSON.stringify(lockedBody)).not.toContain("示例记录");
+    expect(JSON.stringify(lockedBody)).not.toContain("Sample record");
 
     sqlite.query("UPDATE table_forms SET enabled = 0 WHERE id = 'form_1'").run();
     const closed = await app.request(`/api/public/forms/${token}`, {}, environment);

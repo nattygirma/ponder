@@ -1,7 +1,7 @@
 import { watchUiCatalogFont } from "./editor-catalog-fonts";
-import { isRemoteNoteImageFont } from "@edgeever/shared/font-catalog-data";
-import { LEGACY_BODY_FONTS } from "@edgeever/shared/font-defaults";
-import type { BodyFontId } from "@edgeever/shared/font-loader";
+import { isRemoteNoteImageFont } from "@ponder/shared/font-catalog-data";
+import { LEGACY_BODY_FONTS } from "@ponder/shared/font-defaults";
+import type { BodyFontId } from "@ponder/shared/font-loader";
 import {
   BUNDLED_FONT_STACKS,
   type EditorBodyFontChoice,
@@ -10,8 +10,8 @@ import {
   resolveEditorBodyFontStack,
 } from "./editor-body-font";
 
-export const UI_FONT_STORAGE_KEY = "edgeever.uiFont";
-export const UI_FONT_CUSTOM_STORAGE_KEY = "edgeever.uiFontCustom";
+export const UI_FONT_STORAGE_KEY = "ponder.uiFont";
+export const UI_FONT_CUSTOM_STORAGE_KEY = "ponder.uiFontCustom";
 
 export type UiFontChoice = EditorBodyFontChoice;
 export type UiFontPreference = EditorBodyFontPreference;

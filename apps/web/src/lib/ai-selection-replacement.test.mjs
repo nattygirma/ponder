@@ -3,7 +3,7 @@ import { Editor } from "@tiptap/core";
 import { TableKit } from "@tiptap/extension-table";
 import { NodeSelection } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
-import { markdownToDoc } from "@edgeever/shared";
+import { markdownToDoc } from "@ponder/shared";
 import {
   getRichTextAiSelectionContext,
   getRichTextAiReplacementRange,

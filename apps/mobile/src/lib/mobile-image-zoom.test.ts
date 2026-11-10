@@ -96,7 +96,7 @@ describe("extractImagesFromTiptapDoc", () => {
           attrs: { src: "blob:image-1", alt: "First image" },
         },
         {
-          type: "edgeeverImageGallery",
+          type: "ponderImageGallery",
           attrs: { layout: "2" },
           content: [
             {

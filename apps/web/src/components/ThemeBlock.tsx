@@ -20,18 +20,18 @@ const ThemeBlockView = ({ node, deleteNode, selected }: NodeViewProps) => {
 
   return (
     <NodeViewWrapper
-      className="edgeever-theme-block"
+      className="ponder-theme-block"
       data-theme-block-kind={kind}
       data-theme-block-selected={selected ? "true" : undefined}
     >
-      <div className="edgeever-theme-block__toolbar" contentEditable={false}>
-        <span className="edgeever-theme-block__label">
+      <div className="ponder-theme-block__toolbar" contentEditable={false}>
+        <span className="ponder-theme-block__label">
           <Icon aria-hidden="true" className="h-3.5 w-3.5" />
           {t(`editorToolbar.themeBlocks.${kind}`)}
         </span>
         <button
           type="button"
-          className="edgeever-theme-block__delete"
+          className="ponder-theme-block__delete"
           aria-label={t("editorToolbar.deleteThemeBlock")}
           title={t("editorToolbar.deleteThemeBlock")}
           onMouseDown={(event) => event.preventDefault()}
@@ -40,13 +40,13 @@ const ThemeBlockView = ({ node, deleteNode, selected }: NodeViewProps) => {
           <Trash2 aria-hidden="true" className="h-3.5 w-3.5" />
         </button>
       </div>
-      <NodeViewContent className="edgeever-theme-block__content" />
+      <NodeViewContent className="ponder-theme-block__content" />
     </NodeViewWrapper>
   );
 };
 
 export const ThemeBlock = Node.create({
-  name: "edgeeverThemeBlock",
+  name: "ponderThemeBlock",
   group: "block",
   content: "block+",
   defining: true,
@@ -69,7 +69,7 @@ export const ThemeBlock = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ["section", mergeAttributes(HTMLAttributes, { "data-edgeever-theme-block": "true" }), 0];
+    return ["section", mergeAttributes(HTMLAttributes, { "data-ponder-theme-block": "true" }), 0];
   },
 
   addNodeView() {
@@ -87,7 +87,7 @@ export const insertThemeBlock = (editor: { chain: () => any; state: any }, kind:
     .insertContentAt(
       { from, to },
       {
-        type: "edgeeverThemeBlock",
+        type: "ponderThemeBlock",
         attrs: { kind },
         content: [{ type: "paragraph", content: selectedText ? [{ type: "text", text: selectedText }] : undefined }],
       }

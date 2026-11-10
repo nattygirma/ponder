@@ -1,1 +1,1 @@
-export * from "@edgeever/shared/video-outline";
+export * from "@ponder/shared/video-outline";

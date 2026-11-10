@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
-import type { MemoDetail } from "@edgeever/shared";
+import type { MemoDetail } from "@ponder/shared";
 
 export const NOTE_WINDOW_QUERY_PARAM = "noteWindow";
 const MEMO_ID_PATTERN = /^[A-Za-z0-9_-]{1,128}$/;
 
 /** The note shown by this renderer when it is a desktop note window. */
 export const getNoteWindowMemoId = (search = typeof window === "undefined" ? "" : window.location.search) => {
-  if (typeof window === "undefined" || !window.edgeeverDesktop?.isAvailable) return null;
+  if (typeof window === "undefined" || !window.ponderDesktop?.isAvailable) return null;
   const memoId = new URLSearchParams(search).get(NOTE_WINDOW_QUERY_PARAM);
   return memoId && MEMO_ID_PATTERN.test(memoId) ? memoId : null;
 };
 
 export const canOpenNoteWindows = () =>
-  typeof window !== "undefined" && Boolean(window.edgeeverDesktop?.openNoteWindow) && !getNoteWindowMemoId();
+  typeof window !== "undefined" && Boolean(window.ponderDesktop?.openNoteWindow) && !getNoteWindowMemoId();
 
 /** Notes currently shown in their own desktop windows, as reported by the main process. */
 export const useDetachedMemoIds = () => {
   const [memoIds, setMemoIds] = useState<ReadonlySet<string>>(() => new Set());
 
   useEffect(() => {
-    const bridge = window.edgeeverDesktop;
+    const bridge = window.ponderDesktop;
     if (!bridge?.noteWindows || !bridge.onNoteWindowsChanged || getNoteWindowMemoId()) return;
     let active = true;
     const unsubscribe = bridge.onNoteWindowsChanged((ids) => setMemoIds(new Set(ids)));
@@ -35,7 +35,7 @@ export const useDetachedMemoIds = () => {
   return [memoIds, setMemoIds] as const;
 };
 
-/** The `edgeever:sync-completed` event detail that EditorPane reads. */
+/** The `ponder:sync-completed` event detail that EditorPane reads. */
 export type NoteWindowSyncCompletedDetail = {
   failed?: number;
   conflicted?: number;

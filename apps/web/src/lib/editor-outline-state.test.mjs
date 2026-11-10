@@ -80,7 +80,7 @@ describe("outline restoration", () => {
       writeOutlineSnapshot("note-b", { ...snapshot, collapsed: [] });
       expect(readOutlineSnapshot("note-a")).toEqual(snapshot);
       expect(readOutlineSnapshot("note-b").collapsed).toEqual([]);
-      storage.set("edgeever.editor.outline.v1.bad", '{"items":[null],"collapsed":[]}');
+      storage.set("ponder.editor.outline.v1.bad", '{"items":[null],"collapsed":[]}');
       expect(readOutlineSnapshot("bad")).toBeNull();
       window.localStorage.setItem = () => { throw new Error("quota"); };
       writeOutlineSnapshot("unavailable", snapshot);

@@ -5,7 +5,7 @@ import { chromium } from "@playwright/test";
 
 const entryPath = resolve(process.argv[2] || "apps/web/dist/index.html");
 if (!existsSync(entryPath)) {
-  throw new Error("Desktop renderer is missing. Run EDGE_EVER_DESKTOP_BUILD=1 bun run build:web first.");
+  throw new Error("Desktop renderer is missing. Run PONDER_DESKTOP_BUILD=1 bun run build:web first.");
 }
 const componentTestPath = resolve(entryPath, "../desktop-renderer-test.html");
 if (!existsSync(componentTestPath)) {
@@ -49,7 +49,7 @@ try {
 
   await verifyEntry({
     filePath: entryPath,
-    readySelector: '[data-edgeever-renderer-ready="true"] #root > *',
+    readySelector: '[data-ponder-renderer-ready="true"] #root > *',
     label: "Desktop renderer",
   });
   await verifyEntry({

@@ -1,7 +1,7 @@
 import TurndownService from "turndown";
 import { createDocument } from "@mixmark-io/domino";
 import { tables, taskListItems } from "@joplin/turndown-plugin-gfm";
-import type { ImportResource } from "@edgeever/shared/note-import/types";
+import type { ImportResource } from "@ponder/shared/note-import/types";
 import { resourceLinkToMarkdown, resourceNodeToMarkdown } from "../../../../../packages/shared/src/resource-links";
 
 const hasStyleFlag = (node: Element, name: string) => new RegExp(`(?:^|;)\\s*${name}\\s*:\\s*true\\s*(?:;|$)`, "i").test(node.getAttribute("style") ?? "");

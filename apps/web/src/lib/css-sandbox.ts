@@ -1,23 +1,23 @@
 /**
- * 安全的 CSS 过滤器与作用域限制器
+ * CSS safety filter and scope limiter
  */
 
-import { sanitizeNoteProseDeclarationBlock } from "@edgeever/shared";
+import { sanitizeNoteProseDeclarationBlock } from "@ponder/shared";
 
 const sanitizeRulesBlock = (block: string): string => sanitizeNoteProseDeclarationBlock(block);
 
 const scopeSelector = (selector: string): string => {
   const trimmed = selector.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\s+/g, " ").trim();
   if (!trimmed) return "";
-  if (trimmed.startsWith(".ProseMirror") || trimmed.includes(".edgeever-editor")) return trimmed;
+  if (trimmed.startsWith(".ProseMirror") || trimmed.includes(".ponder-editor")) return trimmed;
   const dark = trimmed.match(/^(?:html\.dark|:root\.dark)\s+(.+)$/);
-  if (dark) return `:root.dark .edgeever-editor .ProseMirror ${dark[1]}`;
-  return `.edgeever-editor .ProseMirror ${trimmed}`;
+  if (dark) return `:root.dark .ponder-editor .ProseMirror ${dark[1]}`;
+  return `.ponder-editor .ProseMirror ${trimmed}`;
 };
 
 /**
- * 对用户的 CSS 进行安全过滤，并将其作用域限定在当前编辑器的 ProseMirror 区域。
- * :root.dark 留在作用域外面，这样深色规则跟着应用主题走。
+ * Filters user CSS for safety and scopes it to the current editor ProseMirror area.
+ * :root.dark stays outside the scope, so dark rules follow the app theme.
  */
 export const sanitizeAndScopeCss = (css: string): string => {
   if (!css) return "";
@@ -51,13 +51,13 @@ export const previewNoteProseCss = (css: string): string =>
   sanitizeAndScopeCss(css).replaceAll(":root.dark", `.${NOTE_PROSE_CSS_PREVIEW_DARK_CLASS}`);
 
 /**
- * 动态解析用户的自定义 CSS，并提取出能直接应用于微信/富文本一键复制时的标签样式字典
+ * Parses user CSS and extracts a tag style map that WeChat and rich-text copy can apply directly
  */
 export const parseCustomCssToStyles = (css: string): Record<string, string> => {
   const stylesMap: Record<string, string> = {};
   if (!css) return stylesMap;
 
-  // 使用简单的正则匹配选择器和规则内容
+  // Match selectors and rule bodies with a simple regular expression
   const regex = /([^{]+){([^}]+)}/g;
   let match;
 
@@ -70,7 +70,7 @@ export const parseCustomCssToStyles = (css: string): Record<string, string> => {
 
     selectors.forEach((sel) => {
       const key = sel.replace(/\/\*[\s\S]*?\*\//g, " ").replace(/\s+/g, " ").trim().toLowerCase();
-      // 只提取针对纯标签的简单选择器（如 h1, p, blockquote 等），这样便于直接在微信复制里进行标签内联样式动态覆盖
+      // Only keep plain tag selectors (h1, p, blockquote and so on), which WeChat copy can inline directly
       if (/^[a-z0-9]+$/i.test(key)) {
         if (stylesMap[key]) {
           stylesMap[key] = `${stylesMap[key]} ${safeRules}`;

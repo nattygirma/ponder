@@ -2,27 +2,27 @@
 import Container from "@/components/container.astro";
 import Layout from "@/layouts/Layout.astro";
 
-const title = "EdgeEver AI Agent の応用";
-const description = "EdgeEver MCP で、実ノートから人物像、知識マップ、よりきれいなタグ体系を整理させます。";
+const title = "Ponder AI Agent の応用";
+const description = "Ponder MCP で、実ノートから人物像、知識マップ、よりきれいなタグ体系を整理させます。";
 
 const prompts = [
   {
     title: "人物像",
     summary: "ノートから長期テーマ、仕事の好み、能力の手がかり、繰り返し現れる問題、最近の方向を抜き出します。",
     prompt:
-      "Use EdgeEver MCP to read my notes and create a persona profile based on the real note content. Judge only from evidence in the notes, do not make psychological diagnoses, and do not exaggerate traits. Include long-term themes, work preferences, capability signals, recurring problems, recent direction, and list related note titles or memo ids after each conclusion.",
+      "Use Ponder MCP to read my notes and create a persona profile based on the real note content. Judge only from evidence in the notes, do not make psychological diagnoses, and do not exaggerate traits. Include long-term themes, work preferences, capability signals, recurring problems, recent direction, and list related note titles or memo ids after each conclusion.",
   },
   {
     title: "知識マップ",
     summary: "ノートを知識領域、重要概念、関連資料、すでに分かっていること、穴に分けます。",
     prompt:
-      "Use EdgeEver MCP to read my notes and organize a knowledge map. Identify the main knowledge areas, key concepts in each area, related notes, what I already understand, and the gaps I still need to fill. Structure the output so it is useful for continued learning and writing.",
+      "Use Ponder MCP to read my notes and organize a knowledge map. Identify the main knowledge areas, key concepts in each area, related notes, what I already understand, and the gaps I still need to fill. Structure the output so it is useful for continued learning and writing.",
   },
   {
     title: "タグ提案",
     summary: "既存ノートとタグを見て、重複、狭すぎ、広すぎ、揺れを指摘してから変更します。",
     prompt:
-      "Use EdgeEver MCP to read my notes and existing tags, then design a clearer tag system. Point out duplicate, overly narrow, overly broad, or inconsistently named tags, and suggest merges, renames, and new tags. Do not modify notes yet. Wait for my confirmation before applying changes.",
+      "Use Ponder MCP to read my notes and existing tags, then design a clearer tag system. Point out duplicate, overly narrow, overly broad, or inconsistently named tags, and suggest merges, renames, and new tags. Do not modify notes yet. Wait for my confirmation before applying changes.",
   },
 ];
 
@@ -36,7 +36,7 @@ const jsonLd = {
   inLanguage: "ja",
   publisher: {
     "@type": "Organization",
-    name: "EdgeEver",
+    name: "Ponder",
   },
 };
 ---

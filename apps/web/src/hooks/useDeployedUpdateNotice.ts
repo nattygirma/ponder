@@ -8,10 +8,10 @@ import {
 import { api, getConfiguredDesktopApiBaseUrl, type InstanceRelease } from "@/lib/api";
 import { getReleaseTagForVersion } from "@/lib/version-check";
 
-const isDesktopClient = () => window.edgeeverDesktop?.isAvailable === true;
+const isDesktopClient = () => window.ponderDesktop?.isAvailable === true;
 const bundledRelease: InstanceRelease = {
-  version: __EDGEEVER_RELEASE_SUMMARY__.version,
-  changes: __EDGEEVER_RELEASE_SUMMARY__.changes,
+  version: __PONDER_RELEASE_SUMMARY__.version,
+  changes: __PONDER_RELEASE_SUMMARY__.changes,
 };
 
 const subscribe = (notify: () => void) => {

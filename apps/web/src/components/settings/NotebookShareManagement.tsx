@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Notebook, LoaderCircle, Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { getNotebookDescendantIds, type NotebookShare } from "@edgeever/shared";
+import { getNotebookDescendantIds, type NotebookShare } from "@ponder/shared";
 import { getNotebookMoveOptions } from "@/lib/app-helpers";
 import {
   Select,

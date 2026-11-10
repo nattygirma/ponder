@@ -110,7 +110,7 @@ describe("writeFileClipboard", () => {
   const writtenPath = (writes) => fileURLToPath(String(writes.at(-1)[0].data["text/uri-list"]).trim());
 
   test("copies the original filename inside the clipboard directory", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "edgeever-clipboard-"));
+    const directory = await mkdtemp(join(tmpdir(), "ponder-clipboard-"));
     const writes = [];
     try {
       const bytes = Uint8Array.from([1, 2, 3, 4]);
@@ -129,7 +129,7 @@ describe("writeFileClipboard", () => {
   });
 
   test("keeps only the latest copied file", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "edgeever-clipboard-"));
+    const directory = await mkdtemp(join(tmpdir(), "ponder-clipboard-"));
     const writes = [];
     try {
       await writeFileClipboard(clipboardWith(writes), TestClipboardItem, {
@@ -149,7 +149,7 @@ describe("writeFileClipboard", () => {
   });
 
   test("drops path segments and refuses an empty or oversized payload", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "edgeever-clipboard-"));
+    const directory = await mkdtemp(join(tmpdir(), "ponder-clipboard-"));
     const writes = [];
     try {
       await expect(writeFileClipboard(clipboardWith(writes), TestClipboardItem, {
@@ -173,7 +173,7 @@ describe("writeFileClipboard", () => {
   });
 
   test("removes the file when the clipboard does not keep it", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "edgeever-clipboard-"));
+    const directory = await mkdtemp(join(tmpdir(), "ponder-clipboard-"));
     const writes = [];
     try {
       await expect(writeFileClipboard(clipboardWith(writes, async () => false), TestClipboardItem, {

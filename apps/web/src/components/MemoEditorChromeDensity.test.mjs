@@ -26,7 +26,7 @@ describe("title row width", () => {
   test("keeps Smart Tag visible beside the compact tag selector", () => {
     const css = readFileSync(new URL("../styles/globals.css", import.meta.url), "utf8");
     const compactTags = css.slice(css.indexOf('[data-metadata-density="tags"]'), css.indexOf("/* On very narrow headers"));
-    expect(compactTags).not.toContain(".edgeever-editor-tag-ai");
+    expect(compactTags).not.toContain(".ponder-editor-tag-ai");
     expect(compactTags).toContain("min-width: 4rem");
     expect(compactTags).toContain("flex: 0 0 auto");
   });
@@ -43,15 +43,15 @@ describe("title row width", () => {
     expect(leading).toContain("min-w-0");
     expect(leading).toContain("sm:flex-1");
     const metadata = readFileSync(new URL("./MemoEditorMetadataRow.tsx", import.meta.url), "utf8");
-    expect(metadata).toContain("edgeever-editor-notebook-select");
-    expect(metadata).toContain("edgeever-editor-metadata-icon");
+    expect(metadata).toContain("ponder-editor-notebook-select");
+    expect(metadata).toContain("ponder-editor-metadata-icon");
     expect(metadata).toContain("[&>span]:truncate");
     expect(metadata).toContain('<SelectTrigger aria-label={t("editor.currentNotebookAria"');
     expect(metadata).toContain('<IconTooltip label={t("editor.currentNotebookAria"');
     expect(metadata).not.toContain("min-w-[9rem]");
     const tagPicker = readFileSync(new URL("./EditorTagPicker.tsx", import.meta.url), "utf8");
-    expect(tagPicker).toContain("edgeever-editor-tag-picker");
-    expect(tagPicker).toContain("edgeever-editor-tag-trigger");
+    expect(tagPicker).toContain("ponder-editor-tag-picker");
+    expect(tagPicker).toContain("ponder-editor-tag-trigger");
     expect(tagPicker).toContain('selectedTags.map((tag) => `#${tag}`).join(" · ")');
     const css = readFileSync(new URL("../styles/globals.css", import.meta.url), "utf8");
     expect(css).toContain('[data-metadata-density="tags"]');
@@ -59,8 +59,8 @@ describe("title row width", () => {
     expect(MEMO_EDITOR_METADATA_ROW_CLASS_NAME).toContain("sm:flex-nowrap");
     expect(css).not.toContain("calc(23vw + var(--memo-list-width)");
     expect(css).toContain('[data-metadata-density="compact"]');
-    expect(css).toContain(".edgeever-editor-notebook-select");
-    expect(css).toContain(".edgeever-editor-tag-picker");
+    expect(css).toContain(".ponder-editor-notebook-select");
+    expect(css).toContain(".ponder-editor-tag-picker");
     for (const file of ["EditorPane.tsx", "DiagramEditorPane.tsx", "InfographicEditorPane.tsx"]) {
       const source = readFileSync(new URL(`./${file}`, import.meta.url), "utf8");
       expect(source).toContain("rowClassName={MEMO_EDITOR_METADATA_ROW_CLASS_NAME}");

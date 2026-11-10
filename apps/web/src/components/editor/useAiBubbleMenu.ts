@@ -67,6 +67,7 @@ export const useAiBubbleMenu = () => {
   );
 
   return {
+    enabled,
     options: AI_BUBBLE_MENU_OPTIONS,
     shouldShow,
   };

@@ -16,6 +16,6 @@ const normalizeIpcBytes = (value) => {
 };
 
 // The print window exposes only PDF saving. It does not get the desktop bridge.
-contextBridge.exposeInMainWorld("edgeeverPrint", Object.freeze({
+contextBridge.exposeInMainWorld("ponderPrint", Object.freeze({
   savePdf: () => ipcRenderer.invoke("desktop:print-pdf").then(normalizeIpcBytes),
 }));

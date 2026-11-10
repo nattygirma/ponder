@@ -249,6 +249,6 @@ export const createSelfHostedStorageAdapter = (
   diagnostics: {
     database: "sqlite",
     resources: "filesystem",
-    migrationTable: "_edgeever_migrations",
+    migrationTable: "_ponder_migrations",
   },
 });

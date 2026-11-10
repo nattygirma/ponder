@@ -18,7 +18,7 @@ import { assertMacIcnsComplete } from "./desktop-icns.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL(".", import.meta.url)), "..");
 const sourcePng = join(projectRoot, "apps/web/public/pwa-512x512.png");
-const brandMarkPath = join(projectRoot, "assets/brand/edgeever-mark.svg");
+const brandMarkPath = join(projectRoot, "assets/brand/ponder-mark.svg");
 const assetsDir = join(projectRoot, "apps/desktop/assets");
 
 /** iconutil expects these exact basenames inside a .iconset directory. */
@@ -72,7 +72,7 @@ export const TRAY_TEMPLATE_SIZE_2X = 44;
 export const buildMacTrayTemplateSvg = (markSvg) => {
   const pathMatch = markSvg.match(/<path\b[^>]*\sd="([^"]+)"/);
   if (!pathMatch) throw new Error("Brand mark is missing a path");
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="EdgeEver">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Ponder">
   <g transform="translate(512 512) scale(${TRAY_MARK_SCALE}) translate(-${TRAY_MARK_CENTER.x} -${TRAY_MARK_CENTER.y})">
     <path fill="#000000" stroke="#000000" stroke-width="${TRAY_MARK_STROKE_WIDTH}" stroke-linejoin="round" paint-order="stroke fill" fill-rule="evenodd" d="${pathMatch[1]}" />
   </g>
@@ -136,8 +136,8 @@ export const prepareDesktopIcons = async ({
     return { icnsPath: join(assetsDirectory, "icon.icns"), pngPath: join(assetsDirectory, "icon.png") };
   }
 
-  const workRoot = await mkdtemp(join(tmpdir(), "edgeever-desktop-icon-"));
-  const iconsetDir = join(workRoot, "EdgeEver.iconset");
+  const workRoot = await mkdtemp(join(tmpdir(), "ponder-desktop-icon-"));
+  const iconsetDir = join(workRoot, "Ponder.iconset");
   await mkdir(iconsetDir, { recursive: true });
 
   try {

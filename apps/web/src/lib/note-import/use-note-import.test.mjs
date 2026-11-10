@@ -22,7 +22,7 @@ test("display labels update without replacing a task; account and instance chang
     await act(async () => root.render(createElement(Probe, { id: "account-b", label: "New name" })));
     expect(controller).not.toBe(first);
     const second = controller;
-    window.edgeeverDesktop = { isAvailable: true, apiBaseUrl: "http://other-instance.test" };
+    window.ponderDesktop = { isAvailable: true, apiBaseUrl: "http://other-instance.test" };
     await act(async () => root.render(createElement(Probe, { id: "account-b", label: "New name" })));
     expect(controller).not.toBe(second);
   } finally {

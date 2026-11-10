@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { createPosterDocument, parsePosterDocument, serializePosterDocument } from "@edgeever/shared";
+import { createPosterDocument, parsePosterDocument, serializePosterDocument } from "@ponder/shared";
 import { posterImageReplacementTarget, replacePosterImage } from "./poster-image-replacement";
 
 const placeholder = { id: "design_1", name: "Photo", type: "rect", x: 500, y: 60, width: 320, height: 320, fill: "#16a06e", rotation: 0, opacity: 1, imagePlaceholder: true };

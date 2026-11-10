@@ -30,7 +30,7 @@
     "backupError": "backup_source_changed"
   },
   "successfulImport": {
-    "text": "导入备份私有临时文件清理失败。请检查应用数据目录权限并重启。EdgeEver ZIP 导入完成。",
+    "text": "导入备份私有临时文件清理失败。请检查应用数据目录权限并重启。Ponder ZIP 导入完成。",
     "backupError": "backup_source_changed",
     "backupWarning": "backup_cleanup_failed",
     "backupText": "自动备份将已同步的笔记和附件备份到本地文件夹。备份目录/test/Backups/fixture-backup-set选择…备份频率每天每周每两周每月保留份数3 份5 份10 份20 份密码加密保存立即备份一次打开文件夹上次本地备份：2026&#x2F;10&#x2F;25 11:00:00备份期间数据发生变化，请在停止编辑后重试。本地备份已完成，但部分旧备份清理失败。"

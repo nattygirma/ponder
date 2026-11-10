@@ -41,8 +41,8 @@ export const AI_GENERATION_MAX_OUTPUT_TOKENS = 4096;
 export const createAiGenerationResultBoundary = (): AiGenerationResultBoundary => {
   const token = crypto.randomUUID().replaceAll("-", "");
   return {
-    start: `<edgeever-result-${token}>`,
-    end: `</edgeever-result-${token}>`,
+    start: `<ponder-result-${token}>`,
+    end: `</ponder-result-${token}>`,
   };
 };
 

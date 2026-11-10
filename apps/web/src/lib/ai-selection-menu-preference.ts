@@ -1,6 +1,6 @@
-export const AI_SELECTION_MENU_STORAGE_KEY = "edgeever.editor.aiSelectionMenuEnabled";
+export const AI_SELECTION_MENU_STORAGE_KEY = "ponder.editor.aiSelectionMenuEnabled";
 
-export const AI_SELECTION_MENU_CHANGED_EVENT = "edgeever:ai-selection-menu-changed";
+export const AI_SELECTION_MENU_CHANGED_EVENT = "ponder:ai-selection-menu-changed";
 
 export const resolveStoredAiSelectionMenuPreference = (stored: string | null): boolean =>
   stored !== "false";

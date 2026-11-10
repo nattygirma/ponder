@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { PathUtilities } from "../../node_modules/expo-file-system/src/pathUtilities";
-import { buildImageExportBasename } from "@edgeever/shared/note-image-card";
+import { buildImageExportBasename } from "@ponder/shared/note-image-card";
 import { encodeMobileNoteImageFileUri, planMobileNoteImageRender } from "./mobile-note-image-export";
 
 describe("mobile note image file URI", () => {

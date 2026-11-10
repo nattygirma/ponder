@@ -12,8 +12,8 @@ export type DeploymentMetadata = {
 };
 
 type DeploymentBuildEnvironment = Partial<Record<
-  | "EDGE_EVER_DEPLOYMENT_TRIGGER"
-  | "EDGE_EVER_DEPLOYMENT_METHOD"
+  | "PONDER_DEPLOYMENT_TRIGGER"
+  | "PONDER_DEPLOYMENT_METHOD"
   | "WORKERS_CI_COMMIT_SHA"
   | "GITHUB_ACTIONS"
   | "GITHUB_EVENT_NAME"
@@ -48,11 +48,11 @@ export const resolveDeploymentBuildMetadata = (
 
   return {
     trigger: resolveDeploymentTrigger(
-      environment.EDGE_EVER_DEPLOYMENT_TRIGGER
+      environment.PONDER_DEPLOYMENT_TRIGGER
         ?? (environment.WORKERS_CI_COMMIT_SHA ? "main_push" : inferredGitHubTrigger),
     ),
     method: resolveDeploymentMethod(
-      environment.EDGE_EVER_DEPLOYMENT_METHOD
+      environment.PONDER_DEPLOYMENT_METHOD
         ?? (environment.WORKERS_CI_COMMIT_SHA
           ? "cloudflare_workers_builds"
           : environment.GITHUB_ACTIONS

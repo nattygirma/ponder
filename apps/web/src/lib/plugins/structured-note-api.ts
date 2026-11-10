@@ -5,12 +5,12 @@ import {
   posterCapabilities, parsePosterDocument, parseInfographicDocument, applyPosterEdits, applyInfographicOperations, serializePosterDocument, serializeInfographicDocument,
   parseDiagramDocument, parseTableDocument, serializeTableDocument, tableFallbackMarkdown, markdownToDoc,
   StructuredNoteError, type MemoDetail,
-} from "@edgeever/shared";
-import type { PluginApiErrorCode, PluginNoteKind, PluginStructuredEditInput } from "@edgeever/plugin-api";
+} from "@ponder/shared";
+import type { PluginApiErrorCode, PluginNoteKind, PluginStructuredEditInput } from "@ponder/plugin-api";
 
 export const pluginNoteKind = (note: { diagramKind?: string | null; structuredTable?: boolean; poster?: boolean; infographic?: boolean; videoNote?: boolean; contentMarkdown?: string }): PluginNoteKind => {
   const markdown = note.contentMarkdown;
-  const marker = markdown?.match(/<!--\s*edgeever-(diagram|table|poster|infographic)-v1\s*:/)?.[1];
+  const marker = markdown?.match(/<!--\s*ponder-(diagram|table|poster|infographic)-v1\s*:/)?.[1];
   if (note.diagramKind || marker === "diagram" || hasDiagramDocumentMarker(markdown)) return parseDiagramDocument(markdown)?.kind ?? (note.diagramKind as PluginNoteKind | undefined) ?? "mind-map";
   if (note.structuredTable || marker === "table" || hasTableDocumentMarker(markdown)) return "table";
   if (note.poster || marker === "poster" || hasPosterDocumentMarker(markdown)) return "poster";

@@ -1,4 +1,4 @@
-import type { CompanionAnswer, CompanionQuestion } from "@edgeever/shared";
+import type { CompanionAnswer, CompanionQuestion } from "@ponder/shared";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";

@@ -38,6 +38,7 @@ const createSyncIntegrationFixture = () => {
       is_deleted INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
     );
     CREATE TABLE memos (
+      database_id TEXT,
       id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, notebook_id TEXT NOT NULL, title TEXT,
       excerpt TEXT NOT NULL DEFAULT '', tags_json TEXT NOT NULL DEFAULT '[]',
       is_pinned INTEGER NOT NULL DEFAULT 0, is_archived INTEGER NOT NULL DEFAULT 0,
@@ -70,7 +71,7 @@ const createSyncIntegrationFixture = () => {
       ('ws_1', 'memo', 'memo_trashed', 'upsert'),
       ('ws_1', 'notebook', 'nb_child', 'upsert');
   `);
-  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-sync-route-test-unused");
+  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-sync-route-test-unused");
   const app = new Hono();
   app.use("/api/v1/*", async (context, next) => {
     context.set("auth", agentAuth);
@@ -147,7 +148,8 @@ describe("sync route contracts", () => {
         is_deleted INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL, updated_at TEXT NOT NULL
       );
       CREATE TABLE memos (
-        id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, notebook_id TEXT NOT NULL, title TEXT,
+        database_id TEXT,
+      id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, notebook_id TEXT NOT NULL, title TEXT,
         excerpt TEXT NOT NULL DEFAULT '', tags_json TEXT NOT NULL DEFAULT '[]',
         is_pinned INTEGER NOT NULL DEFAULT 0, is_archived INTEGER NOT NULL DEFAULT 0,
         is_deleted INTEGER NOT NULL DEFAULT 0, source_memo_ids TEXT NOT NULL DEFAULT '[]',
@@ -173,7 +175,7 @@ describe("sync route contracts", () => {
       );
       INSERT INTO memo_contents VALUES ('memo_trashed', 1, '{"type":"doc"}', '', '', 'hash');
     `);
-    const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-sync-renamed-inbox-unused");
+    const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-sync-renamed-inbox-unused");
     const app = new Hono();
     app.use("/api/v1/*", async (context, next) => {
       context.set("auth", agentAuth);

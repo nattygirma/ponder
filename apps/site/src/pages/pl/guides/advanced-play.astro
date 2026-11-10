@@ -2,27 +2,27 @@
 import Container from "@/components/container.astro";
 import Layout from "@/layouts/Layout.astro";
 
-const title = "Zaawansowana praca z agentami AI w EdgeEver";
-const description = "Użyj EdgeEver MCP, aby na podstawie prawdziwych notatek stworzyć profil osobowy, mapę wiedzy i bardziej uporządkowany system tagów.";
+const title = "Zaawansowana praca z agentami AI w Ponder";
+const description = "Użyj Ponder MCP, aby na podstawie prawdziwych notatek stworzyć profil osobowy, mapę wiedzy i bardziej uporządkowany system tagów.";
 
 const prompts = [
   {
     title: "Profil osobowy",
     summary: "Wyodrębnij z notatek długoterminowe tematy, preferencje w pracy, sygnały kompetencji, powracające problemy i ostatni kierunek.",
     prompt:
-      "Use EdgeEver MCP to read my notes and create a persona profile based on the real note content. Judge only from evidence in the notes, do not make psychological diagnoses, and do not exaggerate traits. Include long-term themes, work preferences, capability signals, recurring problems, recent direction, and list related note titles or memo ids after each conclusion.",
+      "Use Ponder MCP to read my notes and create a persona profile based on the real note content. Judge only from evidence in the notes, do not make psychological diagnoses, and do not exaggerate traits. Include long-term themes, work preferences, capability signals, recurring problems, recent direction, and list related note titles or memo ids after each conclusion.",
   },
   {
     title: "Mapa wiedzy",
     summary: "Uporządkuj notatki w obszary wiedzy, kluczowe pojęcia, powiązane materiały, to, co już rozumiesz, i luki do uzupełnienia.",
     prompt:
-      "Use EdgeEver MCP to read my notes and organize a knowledge map. Identify the main knowledge areas, key concepts in each area, related notes, what I already understand, and the gaps I still need to fill. Structure the output so it is useful for continued learning and writing.",
+      "Use Ponder MCP to read my notes and organize a knowledge map. Identify the main knowledge areas, key concepts in each area, related notes, what I already understand, and the gaps I still need to fill. Structure the output so it is useful for continued learning and writing.",
   },
   {
     title: "Propozycje tagów",
     summary: "Przejrzyj istniejące notatki i tagi, wskaż duplikaty oraz tagi zbyt wąskie, zbyt szerokie lub niespójnie nazwane, a dopiero potem wprowadź zmiany.",
     prompt:
-      "Use EdgeEver MCP to read my notes and existing tags, then design a clearer tag system. Point out duplicate, overly narrow, overly broad, or inconsistently named tags, and suggest merges, renames, and new tags. Do not modify notes yet. Wait for my confirmation before applying changes.",
+      "Use Ponder MCP to read my notes and existing tags, then design a clearer tag system. Point out duplicate, overly narrow, overly broad, or inconsistently named tags, and suggest merges, renames, and new tags. Do not modify notes yet. Wait for my confirmation before applying changes.",
   },
 ];
 
@@ -36,7 +36,7 @@ const jsonLd = {
   inLanguage: "pl",
   publisher: {
     "@type": "Organization",
-    name: "EdgeEver",
+    name: "Ponder",
   },
 };
 ---

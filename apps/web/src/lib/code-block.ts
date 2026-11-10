@@ -4,7 +4,7 @@ import type { Editor } from "@tiptap/core";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { MermaidCodeBlock } from "@/components/MermaidCodeBlock";
 import { NoteProperties } from "@/components/editor/NoteProperties";
-import { FRONT_MATTER_LANGUAGE } from "@edgeever/shared";
+import { FRONT_MATTER_LANGUAGE } from "@ponder/shared";
 import { createElement } from "react";
 
 export const codeBlockLowlight = createCodeBlockLowlight();
@@ -24,7 +24,7 @@ export const selectCurrentCodeBlockContent = (editor: Editor) => {
   return editor.commands.setTextSelection({ from: blockFrom, to: blockTo });
 };
 
-export const EdgeEverCodeBlock = CodeBlockLowlight.extend({
+export const PonderCodeBlock = CodeBlockLowlight.extend({
   addKeyboardShortcuts() {
     return {
       ...this.parent?.(),

@@ -1,5 +1,5 @@
-import type { CompanionAction } from "@edgeever/shared";
-import { getMemoDisplayTitle } from "@edgeever/shared";
+import type { CompanionAction } from "@ponder/shared";
+import { getMemoDisplayTitle } from "@ponder/shared";
 import { ArrowUpRight, Check, FileText, GitMerge } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";

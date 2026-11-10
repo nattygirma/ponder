@@ -37,7 +37,7 @@ afterEach(async () => {
 
 describe("web repository offline boundaries", () => {
   test("keeps remote continuation tokens opaque when skipping later-page counts", async () => {
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const original = api.listMemos;
     let received;
     api.listMemos = async (params) => { received = params; return { memos: [], nextCursor: null }; };
@@ -51,7 +51,7 @@ describe("web repository offline boundaries", () => {
 
   test("empty trash records the removed memo ids for conflict cleanup after sync", async () => {
     const restoreWindow = installTestWindow();
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const trashed = await createLocalMemo(scope, { notebookId: "nb-1" });
     const active = await createLocalMemo(scope, { notebookId: "nb-1" });
     await putLocalMemo(scope, { ...trashed, isDeleted: true });
@@ -71,7 +71,7 @@ describe("web repository offline boundaries", () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
     const restoreWindow = installTestWindow();
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const template = (id, name, updatedAt) => ({
       id,
       name,
@@ -121,15 +121,15 @@ describe("web repository offline boundaries", () => {
     const restoreWindow = installTestWindow();
     let immediateEvents = 0;
     let deferredEvents = 0;
-    window.addEventListener("edgeever:sync-queue-changed", () => {
+    window.addEventListener("ponder:sync-queue-changed", () => {
       immediateEvents += 1;
     });
-    window.addEventListener("edgeever:sync-queue-deferred", () => {
+    window.addEventListener("ponder:sync-queue-deferred", () => {
       deferredEvents += 1;
     });
 
     try {
-      const scope = "https://demo.edgeever.org|user-1";
+      const scope = "https://appkeep.io|user-1";
       const memo = await createLocalMemo(scope, { notebookId: "nb-1" });
       const repository = createWebRepository(scope);
       const contentJson = {
@@ -157,7 +157,7 @@ describe("web repository offline boundaries", () => {
 
   test("rolls back the local memo when queuing its sync update fails", async () => {
     const restoreWindow = installTestWindow();
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const memo = await createLocalMemo(scope, { notebookId: "nb-1", contentMarkdown: "Original" });
     const failQueueWrite = () => { throw new Error("queue unavailable"); };
     localDb.syncQueue.hook("creating", failQueueWrite);
@@ -186,7 +186,7 @@ describe("web repository offline boundaries", () => {
   test("uses the remote detail when the local database is blocked and navigator falsely reports offline", async () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: false });
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const remoteMemo = {
       id: "memo-blocked",
       notebookId: "nb-1",
@@ -230,7 +230,7 @@ describe("web repository offline boundaries", () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
     const restoreWindow = installTestWindow();
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const localMemo = {
       id: "memo-1",
       notebookId: "nb-1",
@@ -277,11 +277,11 @@ describe("web repository offline boundaries", () => {
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
     const restoreWindow = installTestWindow();
     let refreshEvents = 0;
-    window.addEventListener("edgeever:memo-detail-refreshed", () => {
+    window.addEventListener("ponder:memo-detail-refreshed", () => {
       refreshEvents += 1;
     });
 
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const localMemo = {
       id: "memo-stale-remote",
       notebookId: "nb-1",
@@ -361,7 +361,7 @@ describe("web repository offline boundaries", () => {
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
     const restoreWindow = installTestWindow();
 
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const localMemo = {
       id: "memo-race",
       notebookId: "nb-1",
@@ -419,8 +419,8 @@ describe("web repository offline boundaries", () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: false });
     // Non-loopback host so navigator.onLine=false is treated as offline.
-    const restoreWindow = installTestWindow({ hostname: "demo.edgeever.org" });
-    const scope = "https://demo.edgeever.org|user-1";
+    const restoreWindow = installTestWindow({ hostname: "appkeep.io" });
+    const scope = "https://appkeep.io|user-1";
     await localDb.syncMeta.put({ scope, key: "identity", value: "sync-1", updatedAt: new Date().toISOString() });
     const original = {
       listTags: api.listTags,
@@ -492,7 +492,7 @@ describe("note duplication in the Web repository", () => {
     const restoreWindow = installTestWindow();
     const duplicate = api.duplicateMemo;
     const calls = [];
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     const copy = { ...(await createLocalMemo(scope, { notebookId: "nb-1" })), id: "memo_copy", title: "Plan (copy)" };
     api.duplicateMemo = async (memoId, input) => {
       calls.push({ memoId, input });
@@ -519,7 +519,7 @@ describe("note duplication in the Web repository", () => {
       calls.push(memoId);
       return { memo: { id: "memo_copy" } };
     };
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     try {
       await localDb.syncQueue.put({
         id: "memo.update:memo_conflicted",
@@ -552,7 +552,7 @@ describe("note duplication in the Web repository", () => {
       calls.push(memoId);
       return { memo: { id: "memo_copy" } };
     };
-    const scope = "https://demo.edgeever.org|user-1";
+    const scope = "https://appkeep.io|user-1";
     try {
       const memo = await createLocalMemo(scope, { notebookId: "nb-1" });
       const repository = createWebRepository(scope);
@@ -574,7 +574,7 @@ describe("note duplication in the Web repository", () => {
   });
 });
 
-const SCOPE = "https://demo.edgeever.org|user-1";
+const SCOPE = "https://appkeep.io|user-1";
 
 const stubApi = (overrides) => {
   const original = {};
@@ -589,7 +589,7 @@ const stubApi = (overrides) => {
 const installNetwork = ({ online }) => {
   const previousOnline = globalThis.navigator?.onLine;
   if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: online });
-  const restoreWindow = installTestWindow({ hostname: online ? "localhost" : "demo.edgeever.org" });
+  const restoreWindow = installTestWindow({ hostname: online ? "localhost" : "appkeep.io" });
   return () => {
     restoreWindow();
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: previousOnline });
@@ -747,7 +747,7 @@ describe("web repository notebooks", () => {
   test("queues notebook creation under its temporary id and announces the queue change", async () => {
     const restoreNetwork = installNetwork({ online: true });
     let events = 0;
-    window.addEventListener("edgeever:sync-queue-changed", () => { events += 1; });
+    window.addEventListener("ponder:sync-queue-changed", () => { events += 1; });
     try {
       const { notebook } = await createWebRepository(SCOPE).createNotebook({ name: "  Projects  ", parentId: null });
       expect(notebook.id.startsWith("local_")).toBe(true);
@@ -1270,7 +1270,7 @@ describe("web repository note reads and writes", () => {
     const restoreNetwork = installNetwork({ online: true });
     let events = 0;
     window.setTimeout = globalThis.setTimeout.bind(globalThis);
-    window.addEventListener("edgeever:sync-queue-changed", () => { events += 1; });
+    window.addEventListener("ponder:sync-queue-changed", () => { events += 1; });
     try {
       const { memo } = await createWebRepository(SCOPE).createMemo({ notebookId: "nb-1", contentMarkdown: "New" });
       expect((await localDb.syncQueue.get(`memo.create:${memo.id}`))?.payload).toMatchObject({ temporaryId: memo.id, notebookId: "nb-1", title: "", tags: [] });
@@ -1387,14 +1387,14 @@ describe("repository selection", () => {
     const restoreNetwork = installNetwork({ online: false });
     const requests = [];
     try {
-      window.edgeeverDesktop = {
+      window.ponderDesktop = {
         isAvailable: true,
         sidecarRequest: async (method) => { requests.push(method); return { notebooks: [notebookFixture("nb-desktop")] }; },
       };
       expect((await createRepository(SCOPE).listNotebooks()).notebooks.map((notebook) => notebook.id)).toEqual(["nb-desktop"]);
       expect(requests).toEqual(["notebook.list"]);
 
-      window.edgeeverDesktop = undefined;
+      window.ponderDesktop = undefined;
       await localDb.notebooks.put({ ...notebookFixture("nb-web"), scope: SCOPE });
       expect((await createRepository(SCOPE).listNotebooks()).notebooks.map((notebook) => notebook.id)).toEqual(["nb-web"]);
       expect(requests).toEqual(["notebook.list"]);

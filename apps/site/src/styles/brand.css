@@ -1,49 +1,49 @@
 :root {
-  --edgeever-celadon-50: #f5fbf8;
-  --edgeever-celadon-100: #e8f6f1;
-  --edgeever-celadon-200: #d4efe7;
-  --edgeever-celadon-300: #a8dcd1;
-  --edgeever-celadon-400: #70c9b7;
-  --edgeever-celadon-500: #3fb2a1;
-  --edgeever-celadon-600: #2b968b;
-  --edgeever-celadon-700: #237a73;
-  --edgeever-celadon-800: #1e625d;
-  --edgeever-celadon-900: #184f4c;
-  --edgeever-celadon-600-rgb: 43 150 139;
-  --edgeever-celadon-700-rgb: 35 122 115;
+  --ponder-celadon-50: #f5fbf8;
+  --ponder-celadon-100: #e8f6f1;
+  --ponder-celadon-200: #d4efe7;
+  --ponder-celadon-300: #a8dcd1;
+  --ponder-celadon-400: #70c9b7;
+  --ponder-celadon-500: #3fb2a1;
+  --ponder-celadon-600: #2b968b;
+  --ponder-celadon-700: #237a73;
+  --ponder-celadon-800: #1e625d;
+  --ponder-celadon-900: #184f4c;
+  --ponder-celadon-600-rgb: 43 150 139;
+  --ponder-celadon-700-rgb: 35 122 115;
 
-  --edgeever-brand: var(--edgeever-celadon-600);
-  --edgeever-brand-hover: var(--edgeever-celadon-700);
-  --edgeever-brand-muted: var(--edgeever-celadon-100);
-  --edgeever-brand-soft: var(--edgeever-celadon-50);
-  --edgeever-brand-border: var(--edgeever-celadon-300);
-  --edgeever-brand-text: var(--edgeever-celadon-800);
-  --edgeever-brand-rgb: var(--edgeever-celadon-600-rgb);
-  --edgeever-brand-hover-rgb: var(--edgeever-celadon-700-rgb);
-  --edgeever-brand-logo-bg: var(--edgeever-celadon-200);
-  --edgeever-brand-logo-mark: var(--edgeever-celadon-700);
-  --edgeever-brand-logo-accent: var(--edgeever-celadon-400);
-  --edgeever-brand-surface: #f8fafc;
+  --ponder-brand: var(--ponder-celadon-600);
+  --ponder-brand-hover: var(--ponder-celadon-700);
+  --ponder-brand-muted: var(--ponder-celadon-100);
+  --ponder-brand-soft: var(--ponder-celadon-50);
+  --ponder-brand-border: var(--ponder-celadon-300);
+  --ponder-brand-text: var(--ponder-celadon-800);
+  --ponder-brand-rgb: var(--ponder-celadon-600-rgb);
+  --ponder-brand-hover-rgb: var(--ponder-celadon-700-rgb);
+  --ponder-brand-logo-bg: var(--ponder-celadon-200);
+  --ponder-brand-logo-mark: var(--ponder-celadon-700);
+  --ponder-brand-logo-accent: var(--ponder-celadon-400);
+  --ponder-brand-surface: #f8fafc;
 
   /* Decorative color only. Buttons, links, and the logo keep the hex brand tokens. */
-  --edgeever-decor-from: var(--edgeever-celadon-800);
-  --edgeever-decor-to: var(--edgeever-celadon-600);
-  --edgeever-decor-gradient: linear-gradient(135deg, var(--edgeever-decor-from) 0%, var(--edgeever-decor-to) 100%);
-  --edgeever-decor-beam-from: var(--edgeever-celadon-400);
-  --edgeever-decor-beam-to: var(--edgeever-celadon-500);
-  --edgeever-decor-glow: rgb(var(--edgeever-brand-rgb) / 0.25);
-  --edgeever-decor-shadow: rgb(var(--edgeever-brand-rgb) / 0.15);
+  --ponder-decor-from: var(--ponder-celadon-800);
+  --ponder-decor-to: var(--ponder-celadon-600);
+  --ponder-decor-gradient: linear-gradient(135deg, var(--ponder-decor-from) 0%, var(--ponder-decor-to) 100%);
+  --ponder-decor-beam-from: var(--ponder-celadon-400);
+  --ponder-decor-beam-to: var(--ponder-celadon-500);
+  --ponder-decor-glow: rgb(var(--ponder-brand-rgb) / 0.25);
+  --ponder-decor-shadow: rgb(var(--ponder-brand-rgb) / 0.15);
 }
 
 @media (color-gamut: p3) {
   :root {
     /* Same lightness and hue as the celadon hex stops, with chroma past sRGB. */
-    --edgeever-decor-from: oklch(0.453 0.096 188.1);
-    --edgeever-decor-to: oklch(0.611 0.129 185);
-    --edgeever-decor-gradient: linear-gradient(in oklch 135deg, var(--edgeever-decor-from) 0%, var(--edgeever-decor-to) 100%);
-    --edgeever-decor-beam-from: oklch(0.775 0.169 179.2);
-    --edgeever-decor-beam-to: oklch(0.695 0.149 181.5);
-    --edgeever-decor-glow: oklch(0.611 0.129 185 / 0.25);
-    --edgeever-decor-shadow: oklch(0.611 0.129 185 / 0.15);
+    --ponder-decor-from: oklch(0.453 0.096 188.1);
+    --ponder-decor-to: oklch(0.611 0.129 185);
+    --ponder-decor-gradient: linear-gradient(in oklch 135deg, var(--ponder-decor-from) 0%, var(--ponder-decor-to) 100%);
+    --ponder-decor-beam-from: oklch(0.775 0.169 179.2);
+    --ponder-decor-beam-to: oklch(0.695 0.149 181.5);
+    --ponder-decor-glow: oklch(0.611 0.129 185 / 0.25);
+    --ponder-decor-shadow: oklch(0.611 0.129 185 / 0.15);
   }
 }

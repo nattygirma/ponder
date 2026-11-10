@@ -111,16 +111,16 @@
   <body>
     <main>
       <h1>IME Test</h1>
-      <p>这是一个不加载 React、不加载编辑器的原生输入测试页。依次点下面三个输入区，用豆包输入法按键，然后点“复制日志”。</p>
+      <p>This native input test page loads neither React nor the editor. Tap each of the three inputs below in turn, type with your input method, then tap "Copy log".</p>
 
       <label>
         Input
-        <input id="plain-input" autocomplete="on" autocorrect="on" inputmode="text" placeholder="点这里输入" />
+        <input id="plain-input" autocomplete="on" autocorrect="on" inputmode="text" placeholder="Tap here to type" />
       </label>
 
       <label>
         Textarea
-        <textarea id="plain-textarea" autocomplete="on" autocorrect="on" inputmode="text" placeholder="点这里输入"></textarea>
+        <textarea id="plain-textarea" autocomplete="on" autocorrect="on" inputmode="text" placeholder="Tap here to type"></textarea>
       </label>
 
       <label>
@@ -129,13 +129,13 @@
       </label>
 
       <div class="buttons">
-        <button class="primary" id="focus-input" type="button">聚焦 Input</button>
-        <button class="primary" id="focus-textarea" type="button">聚焦 Textarea</button>
-        <button class="primary" id="focus-contenteditable" type="button">聚焦 Contenteditable</button>
+        <button class="primary" id="focus-input" type="button">Focus Input</button>
+        <button class="primary" id="focus-textarea" type="button">Focus Textarea</button>
+        <button class="primary" id="focus-contenteditable" type="button">Focus Contenteditable</button>
         <button id="prompt-input" type="button">Prompt</button>
-        <button id="read-clipboard" type="button">读剪贴板</button>
-        <button id="copy-log" type="button">复制日志</button>
-        <button id="clear-log" type="button">清空日志</button>
+        <button id="read-clipboard" type="button">Read clipboard</button>
+        <button id="copy-log" type="button">Copy log</button>
+        <button id="clear-log" type="button">Clear log</button>
       </div>
 
       <pre id="log"></pre>

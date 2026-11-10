@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { Copy, KeyRound, Plus, ShieldCheck, Trash2 } from "lucide-react";
-import type { ApiToken } from "@edgeever/shared";
+import type { ApiToken } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -23,7 +23,7 @@ import {
   copyTextToClipboard,
   createDefaultTokenName,
   DEFAULT_TOKEN_ACCESS_LEVEL,
-  getEdgeEverBaseUrl,
+  getPonderBaseUrl,
   getStoredTokenAccessLevel,
   getTokenScopesForAccessLevel,
   getTokenScopeLabel,
@@ -32,12 +32,12 @@ import {
 
 const McpExampleDialog = () => {
   const { t } = useTranslation();
-  const baseUrl = getEdgeEverBaseUrl();
+  const baseUrl = getPonderBaseUrl();
   const [copied, setCopied] = useState(false);
   const remoteExample = JSON.stringify(
     {
       mcpServers: {
-        edgeever: {
+        ponder: {
           url: `${baseUrl}/mcp`,
           headers: {
             Authorization: t("mcp.bearerPlaceholder"),
@@ -204,7 +204,7 @@ const TokenList = ({ tokens, availableScopes, newlyCreatedTokenId, isLoading, is
             className={cn(
               "flex flex-col gap-3 p-3.5 sm:flex-row sm:items-center sm:justify-between transition-colors sm:p-4",
               token.isRevoked ? "bg-slate-50/50 opacity-60" : "hover:bg-slate-50/40",
-              token.id === newlyCreatedTokenId && "edgeever-token-created",
+              token.id === newlyCreatedTokenId && "ponder-token-created",
             )}
           >
             <div className="min-w-0 flex-1">

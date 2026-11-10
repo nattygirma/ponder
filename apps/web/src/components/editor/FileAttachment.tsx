@@ -4,7 +4,7 @@ import {
   getAttachmentFilenameFromLabel,
   resolveAttachmentKind,
   resolveFileDisplayMode,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { useContext, useState } from "react";
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import { ChevronDown, ChevronUp, Download, ExternalLink } from "lucide-react";
@@ -69,13 +69,13 @@ const FileAttachmentNodeView = ({ node, updateAttributes }: NodeViewProps) => {
   return (
     <NodeViewWrapper
       as="span"
-      className="edgeever-file-attachment-node"
+      className="ponder-file-attachment-node"
       data-file-name={filename || label}
       data-file-url={url}
       contentEditable={false}
     >
-      <span ref={setViewerElement} className={cn("edgeever-file-viewer flex min-h-12 flex-col overflow-hidden rounded-xl border border-slate-200 bg-card shadow-sm", COMPACT_ATTACHMENT_WIDTH_CLASS)}>
-        <span data-edgeever-resource-toolbar className="flex min-h-12 items-center gap-2 px-3">
+      <span ref={setViewerElement} className={cn("ponder-file-viewer flex min-h-12 flex-col overflow-hidden rounded-xl border border-slate-200 bg-card shadow-sm", COMPACT_ATTACHMENT_WIDTH_CLASS)}>
+        <span data-ponder-resource-toolbar className="flex min-h-12 items-center gap-2 px-3">
           {expandable ? (
             <button
               type="button"

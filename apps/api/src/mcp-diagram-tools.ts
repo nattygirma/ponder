@@ -2,10 +2,10 @@ import {
   applyDiagramOperations as apply,
   parseDiagramMemoIr as parse,
   StructuredNoteError,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { AppError } from "./app-error";
 
-export { diagramSemanticGraph, memoWithoutDiagramPayload } from "@edgeever/shared";
+export { diagramSemanticGraph, memoWithoutDiagramPayload } from "@ponder/shared";
 
 const translate = (error: unknown): never => {
   if (error instanceof StructuredNoteError) throw new AppError(error.code, error.message, error.status);

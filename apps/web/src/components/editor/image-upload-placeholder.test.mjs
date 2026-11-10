@@ -86,12 +86,12 @@ describe("resource upload placeholder", () => {
     globalThis.document = { createElement: makeElement, createElementNS: (_, tagName) => makeElement(tagName) };
     try {
       editor.view.dom = widget.type.toDOM();
-      expect(editor.view.dom.className).toBe("edgeever-file-upload-placeholder");
-      expect(editor.view.dom.querySelector(".edgeever-file-upload-placeholder__filename")?.textContent)
+      expect(editor.view.dom.className).toBe("ponder-file-upload-placeholder");
+      expect(editor.view.dom.querySelector(".ponder-file-upload-placeholder__filename")?.textContent)
         .toBe("estimate.pdf");
       expect(editor.view.dom.attributes["aria-label"]).toBe("Waiting to upload: estimate.pdf");
       updateImageUploadPlaceholder(editor, pending, "Uploading");
-      expect(editor.view.dom.querySelector(".edgeever-upload-placeholder__label")?.textContent)
+      expect(editor.view.dom.querySelector(".ponder-upload-placeholder__label")?.textContent)
         .toBe("Uploading");
       expect(editor.view.dom.attributes["aria-label"]).toBe("Uploading: estimate.pdf");
     } finally {

@@ -8,7 +8,7 @@ import { Writable } from "node:stream";
 import { createGzip, gunzipSync } from "node:zlib";
 
 const require = createRequire(new URL("../packages/wrangler/bin/wrangler.js", import.meta.url));
-const packageRoot = dirname(require.resolve("edgeever-wrangler-cli/package.json"));
+const packageRoot = dirname(require.resolve("ponder-wrangler-cli/package.json"));
 // Exercise the installed artifact that Wrangler actually loads, without
 // sharing a mocked global fetch with other tests or starting a real service.
 const source = readFileSync(join(packageRoot, "wrangler-dist/ProxyWorker.js"), "utf8")

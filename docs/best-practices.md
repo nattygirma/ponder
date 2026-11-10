@@ -1,6 +1,6 @@
-# EdgeEver Showcase & Workflows
+# Ponder Showcase & Workflows
 
-A practical guide to core workflows, key features, and real-world usage scenarios with EdgeEver.
+A practical guide to core workflows, key features, and real-world usage scenarios with Ponder.
 
 ## Table of Contents
 
@@ -39,14 +39,14 @@ A practical guide to core workflows, key features, and real-world usage scenario
 
 ### 1. Classic Three-Pane Workspace & Distraction-Free Editing
 
-EdgeEver features a classic three-pane structure (Notebook Tree · Note Stream · Editor Canvas):
+Ponder features a classic three-pane structure (Notebook Tree · Note Stream · Editor Canvas):
 
 - **Focus Mode**: Resizable and collapsible sidebars allow instant toggling into full-screen writing mode.
 - **Hybrid Editing**: The main editor supports both WYSIWYG rich text and Markdown syntax.
 
 | Three-Pane Workspace Layout |
 :---:
-| ![EdgeEver classic three-pane workspace with rich editor](assets/best-practices/original-image/class-three-pane/image.png) |
+| ![Ponder classic three-pane workspace with rich editor](assets/best-practices/original-image/class-three-pane/image.png) |
 
 ---
 
@@ -54,49 +54,49 @@ EdgeEver features a classic three-pane structure (Notebook Tree · Note Stream �
 
 ### 2. WeChat Chat History Archiving
 
-Select messages in WeChat, tap "Combine and Forward" (合并转发), and choose **EdgeEver** under "Forward to Other Apps" to convert conversations into structured notes.
+Select messages in WeChat, tap "Combine and Forward", and choose **Ponder** under "Forward to Other Apps" to convert conversations into structured notes.
 
 - **Format Parsing**: Parses senders, timestamps, emojis, and links into clean layouts.
 - **Media Preservation**: Images are embedded inline; documents and media files (`.xlsx`, `.pdf`, `.mp4`) are saved as attachments with full-text search support.
 
-| 1. Forward to EdgeEver | 2. Structured Note Preview |
+| 1. Forward to Ponder | 2. Structured Note Preview |
 | :---: | :---: |
-| ![WeChat share to EdgeEver](assets/best-practices/original-image/wechat-chat-message-import/select-export.png) | ![WeChat chat history imported into EdgeEver note](assets/best-practices/original-image/wechat-chat-message-import/import-as-note.png) |
+| ![WeChat share to Ponder](assets/best-practices/original-image/wechat-chat-message-import/select-export.png) | ![WeChat chat history imported into Ponder note](assets/best-practices/original-image/wechat-chat-message-import/import-as-note.png) |
 
 ---
 
 ### 3. WeChat Article Clipping on Mobile
 
-When reading WeChat Official Account articles on mobile, select **"Open in EdgeEver"** (用 EdgeEver 打开) from the top-right menu.
+When reading WeChat Official Account articles on mobile, select **"Open in Ponder"** from the top-right menu.
 
 - Automatically extracts the title, body structure, and embedded images into clean Markdown.
 
-| 1. Select "Open in EdgeEver" | 2. Extracting Content | 3. Generated Markdown Note |
+| 1. Select "Open in Ponder" | 2. Extracting Content | 3. Generated Markdown Note |
 | :---: | :---: | :---: |
-| ![WeChat article share menu select open in EdgeEver](assets/best-practices/original-image/app-share/wechat-article/share-enter.jpg) | ![EdgeEver clipping modal extracting article](assets/best-practices/original-image/app-share/wechat-article/sharing.jpg) | ![WeChat article clipped into neat note](assets/best-practices/original-image/app-share/wechat-article/in-note.jpg) |
+| ![WeChat article share menu select open in Ponder](assets/best-practices/original-image/app-share/wechat-article/share-enter.jpg) | ![Ponder clipping modal extracting article](assets/best-practices/original-image/app-share/wechat-article/sharing.jpg) | ![WeChat article clipped into neat note](assets/best-practices/original-image/app-share/wechat-article/in-note.jpg) |
 
 ---
 
 ### 4. Mobile Image Sharing to Notes
 
-Select **EdgeEver** in the mobile system share sheet from any app to upload images and create notes titled "Shared Image" in the background.
+Select **Ponder** in the mobile system share sheet from any app to upload images and create notes titled "Shared Image" in the background.
 
-| 1. Share Image | 2. Choose EdgeEver | 3. Generated Image Note |
+| 1. Share Image | 2. Choose Ponder | 3. Generated Image Note |
 | :---: | :---: | :---: |
-| ![Mobile app tap image share](assets/best-practices/original-image/app-share/socia-image/share-enter.jpg) | ![System share sheet choose EdgeEver](assets/best-practices/original-image/app-share/socia-image/sharing.jpg) | ![Auto-created note with uploaded image](assets/best-practices/original-image/app-share/socia-image/share-in-note.jpg) |
+| ![Mobile app tap image share](assets/best-practices/original-image/app-share/socia-image/share-enter.jpg) | ![System share sheet choose Ponder](assets/best-practices/original-image/app-share/socia-image/sharing.jpg) | ![Auto-created note with uploaded image](assets/best-practices/original-image/app-share/socia-image/share-in-note.jpg) |
 
 ---
 
 ### 5. Xiaohongshu (RED) Note Clipping
 
-Right-click any note page and select **"Save Note to EdgeEver"** using the EdgeEver Web Clipper extension.
+Right-click any note page and select **"Save Note to Ponder"** using the Ponder Web Clipper extension.
 
 - Captures title, topic tags, body text, publish timestamp, and source URL.
 - Automatically formats multi-image sets into multi-column gallery layouts.
 
 | 1. Right-Click Clipper Menu |
 | :---: |
-| ![Right-click save Xiaohongshu note to EdgeEver](assets/best-practices/original-image/web-clipper/xiaohongshu/xiaohongshu.png) |
+| ![Right-click save Xiaohongshu note to Ponder](assets/best-practices/original-image/web-clipper/xiaohongshu/xiaohongshu.png) |
 
 | 2. Multi-Column Gallery Note |
 | :---: |
@@ -106,83 +106,83 @@ Right-click any note page and select **"Save Note to EdgeEver"** using the EdgeE
 
 ### 6. X (Twitter) Post & Quote Clipping
 
-Right-click any post and select **"Save Tweet to EdgeEver"** with the EdgeEver Web Clipper extension.
+Right-click any post and select **"Save Tweet to Ponder"** with the Ponder Web Clipper extension.
 
 - Extracts author info, tweet content, external links, quote tweets, and multi-image attachments.
 - Formats content into a multi-column gallery layout.
 
 | 1. Right-Click Save Tweet |
 | :---: |
-| ![Right-click save tweet to EdgeEver](assets/best-practices/original-image/web-clipper/twitter/twitter.png) |
+| ![Right-click save tweet to Ponder](assets/best-practices/original-image/web-clipper/twitter/twitter.png) |
 
 | 2. Note with Quotes & Gallery |
 | :---: |
-| ![X tweet clipped into EdgeEver note with quote](assets/best-practices/original-image/web-clipper/twitter/twitter-in-note.png) |
+| ![X tweet clipped into Ponder note with quote](assets/best-practices/original-image/web-clipper/twitter/twitter-in-note.png) |
 
 ---
 
 ### 7. Zhihu Answer & Column Article Clipping
 
-Right-click any specific answer or article and select **"Save Answer/Article to EdgeEver"**.
+Right-click any specific answer or article and select **"Save Answer/Article to Ponder"**.
 
 - Parses question title, author, body, timestamp, and permalink into a structured Q&A note.
 
 | 1. Right-Click Save Answer/Article |
 | :---: |
-| ![Right-click save Zhihu answer to EdgeEver](assets/best-practices/original-image/web-clipper/zhihu/zhihu.png) |
+| ![Right-click save Zhihu answer to Ponder](assets/best-practices/original-image/web-clipper/zhihu/zhihu.png) |
 
 | 2. Structured Q&A Note Preview |
 | :---: |
-| ![Zhihu answer clipped into EdgeEver note](assets/best-practices/original-image/web-clipper/zhihu/zhihu-in-note.png) |
+| ![Zhihu answer clipped into Ponder note](assets/best-practices/original-image/web-clipper/zhihu/zhihu-in-note.png) |
 
 ---
 
 ### 8. Reddit Discussion Post Clipping
 
-Right-click on the post title or body and select **"Save Selection to EdgeEver"**.
+Right-click on the post title or body and select **"Save Selection to Ponder"**.
 
 - Captures thread title, subreddit (e.g. `r/AskReddit`), author handle, timestamp, and permalink to preserve community metadata.
 
 | 1. Right-Click Save Post |
 | :---: |
-| ![Right-click save Reddit post to EdgeEver](assets/best-practices/original-image/web-clipper/reddit/reddit.png) |
+| ![Right-click save Reddit post to Ponder](assets/best-practices/original-image/web-clipper/reddit/reddit.png) |
 
 | 2. Note with Community Metadata |
 | :---: |
-| ![Reddit post clipped into EdgeEver note](assets/best-practices/original-image/web-clipper/reddit/reddit-in-note.png) |
+| ![Reddit post clipped into Ponder note](assets/best-practices/original-image/web-clipper/reddit/reddit-in-note.png) |
 
 ---
 
 ### 9. Instagram Post & Carousel Clipping
 
-Right-click any Instagram post or carousel and select **"Save Post to EdgeEver"** using the EdgeEver Web Clipper extension.
+Right-click any Instagram post or carousel and select **"Save Post to Ponder"** using the Ponder Web Clipper extension.
 
 - Extracts author handle, full caption text, publish timestamp, topic tags, and source URL.
 - Fully extracts multi-image carousel sets and video covers, automatically formatted into a multi-column gallery layout.
 
 | 1. Right-Click Save Instagram Post |
 | :---: |
-| ![Right-click save Instagram post to EdgeEver](assets/best-practices/original-image/web-clipper/instgram/ins.png) |
+| ![Right-click save Instagram post to Ponder](assets/best-practices/original-image/web-clipper/instgram/ins.png) |
 
 | 2. Note with Metadata & Multi-Image Gallery |
 | :---: |
-| ![EdgeEver clipped Instagram post note effect](assets/best-practices/original-image/web-clipper/instgram/ins-in-note.png) |
+| ![Ponder clipped Instagram post note effect](assets/best-practices/original-image/web-clipper/instgram/ins-in-note.png) |
 
 ---
 
 ### 10. GitHub Repository Metadata Clipping
 
-Right-click anywhere on the GitHub repository page and select **"Save Repository Info to EdgeEver"** using EdgeEver Web Clipper.
+Right-click anywhere on the GitHub repository page and select **"Save Repository Info to Ponder"** using Ponder Web Clipper.
 
 - Extracts repository name (`Owner/Repo`), description, homepage URL, primary language, license, and topic tags into a structured technical card.
 
 | 1. Right-Click Save Repository Info |
 | :---: |
-| ![Right-click save GitHub repo info to EdgeEver](assets/best-practices/original-image/web-clipper/github/github.png) |
+| ![Right-click save GitHub repo info to Ponder](assets/best-practices/original-image/web-clipper/github/github.png) |
 
 | 2. Structured Repository Card Note |
 | :---: |
-| ![EdgeEver clipped GitHub repository card note effect](assets/best-practices/original-image/web-clipper/github/github-in-note.png) |
+| ![Ponder clipped GitHub repository card note effect](assets/best-practices/original-image/web-clipper/github/github-in-note.png) |
 
 ---
 
@@ -257,7 +257,7 @@ Click **"Form Collection"** at the top of any database table to generate a publi
 
 ### 15. Connecting Local Agents via ACP for Note Interaction
 
-EdgeEver natively supports **ACP (Agent Client Protocol)**, allowing desktop clients to connect with local AI agent environments (such as Codex, Claude Code, DeepSeek Harness, Antigravity, etc.).
+Ponder natively supports **ACP (Agent Client Protocol)**, allowing desktop clients to connect with local AI agent environments (such as Codex, Claude Code, DeepSeek Harness, Antigravity, etc.).
 
 - **Local Authorization**: Grants local agents secure read/write access to user notes.
 - **In-Editor Chat**: Converse directly with local agents from the note sidebar for code reasoning, document synthesis, and knowledge retrieval.
@@ -279,7 +279,7 @@ Use the "Share as Image" feature to render notes into high-resolution long image
 
 | 1. Card Theme Previews (e.g. Transparent) | 2. Font & Layout Customization |
 | :---: | :---: |
-| ![EdgeEver share as image transparent theme preview](assets/best-practices/original-image/note-export-image/clear-theme.png) | ![EdgeEver share as image font and typography settings](assets/best-practices/original-image/note-export-image/code-theme.png) |
+| ![Ponder share as image transparent theme preview](assets/best-practices/original-image/note-export-image/clear-theme.png) | ![Ponder share as image font and typography settings](assets/best-practices/original-image/note-export-image/code-theme.png) |
 
 ---
 
@@ -292,19 +292,19 @@ Click **"Create Poster"** in any note's action menu (or via "New → Poster") to
 
 | Poster Design Studio & Templates |
 :---:
-| ![EdgeEver poster studio with rich design templates](assets/best-practices/original-image/poster/ai-generate-poster.png) |
+| ![Ponder poster studio with rich design templates](assets/best-practices/original-image/poster/ai-generate-poster.png) |
 
 ---
 
 ### 18. Copying Notes to WeChat Official Account & Blogs
 
-Select **"Copy to Official Account / Blog"** (复制到公众号 / 博客) from the note menu to convert notes into rich text with inline CSS.
+Select **"Copy to Official Account / Blog"** from the note menu to convert notes into rich text with inline CSS.
 
 - Paste directly into the WeChat Official Account editor while preserving tables, callouts, code blocks, lists, and typography styles.
 
 | 1. Copy to Official Account / Blog |
 | :---: |
-| ![EdgeEver note menu copy to WeChat MP](assets/best-practices/original-image/wechat-article-copy-to/right-menu.png) |
+| ![Ponder note menu copy to WeChat MP](assets/best-practices/original-image/wechat-article-copy-to/right-menu.png) |
 
 | 2. WeChat Official Account Editor Layout |
 | :---: |
@@ -316,18 +316,18 @@ Select **"Copy to Official Account / Blog"** (复制到公众号 / 博客) from 
 
 ### 19. Open Plugin API & Custom Plugin Development
 
-EdgeEver features an extension manager supporting one-click installation via GitHub repository URLs or Manifest links, with cross-device workspace synchronization between Web and Desktop.
+Ponder features an extension manager supporting one-click installation via GitHub repository URLs or Manifest links, with cross-device workspace synchronization between Web and Desktop.
 
 - **Core API Capabilities**: Bidirectional note read/write, custom DOM panels/embed blocks, unified settings, isolated storage, and direct invocation of workspace-configured AI models.
 - **Official Open-Source Reference Implementations**:
-  - **Task Aggregation ([EdgeEver Tasks](https://github.com/tianma-if/edgeever-tasks))**: Aggregates Markdown todo items across all notes with status filtering and two-way navigation.
-  - **AI RSS Feed Assistant ([EdgeEver AI RSS](https://github.com/tianma-if/edgeever-ai-rss))**: Automatically captures RSS/Atom feeds and uses AI to generate structured daily digest notes.
-- For complete API documentation and development workflows, refer to the [EdgeEver Plugin Development Guide](plugin-development.md).
+  - **Task Aggregation ([Ponder Tasks](https://github.com/tianma-if/edgeever-tasks))**: Aggregates Markdown todo items across all notes with status filtering and two-way navigation.
+  - **AI RSS Feed Assistant ([Ponder AI RSS](https://github.com/tianma-if/edgeever-ai-rss))**: Automatically captures RSS/Atom feeds and uses AI to generate structured daily digest notes.
+- For complete API documentation and development workflows, refer to the [Ponder Plugin Development Guide](plugin-development.md).
 
 | 1. Extension & Plugin Management Center |
 | :---: |
-| ![EdgeEver plugin marketplace and official extension management](assets/best-practices/original-image/plugin/official-in.png) |
+| ![Ponder plugin marketplace and official extension management](assets/best-practices/original-image/plugin/official-in.png) |
 
 | 2. Plugin API Namespaces & Documentation |
 | :---: |
-| ![EdgeEver plugin development API reference and documentation](assets/best-practices/original-image/plugin/plugin-api.png) |
+| ![Ponder plugin development API reference and documentation](assets/best-practices/original-image/plugin/plugin-api.png) |

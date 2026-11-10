@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type Dispatch, type MutableRefObject, type SetStateAction } from "react";
 import type { QueryClient } from "@tanstack/react-query";
-import type { MemoDetail, MemoTemplate, Notebook, Resource } from "@edgeever/shared";
+import type { MemoDetail, MemoTemplate, Notebook, Resource } from "@ponder/shared";
 import { isBrowserOffline } from "@/lib/network-status";
 import { emptySyncQueueSummary, type SyncQueueSummary } from "@/lib/sync-queue";
 import { MEMO_ID_REMAPPED_EVENT, NOTEBOOK_ID_REMAPPED_EVENT, notifyMemoIdRemapped, notifyMemoSyncAcknowledged, notifyNotebookIdRemapped } from "@/lib/sync-events";
@@ -110,11 +110,11 @@ export const useWorkspaceQueuedSync = ({
     }
     setIsSyncingQueuedChanges(true);
     try {
-      if (window.edgeeverDesktop?.isAvailable) {
+      if (window.ponderDesktop?.isAvailable) {
         const { getDesktopSyncSummary, syncDesktopData } = await import("@/lib/desktop-sync");
         const result = await syncDesktopData();
         applyMemoIdMappings(result.memoIdMappings);
-        window.dispatchEvent(new CustomEvent("edgeever:sync-completed", { detail: result }));
+        window.dispatchEvent(new CustomEvent("ponder:sync-completed", { detail: result }));
         setSyncSummary(await getDesktopSyncSummary());
         await invalidateSyncQueries();
         return;
@@ -182,7 +182,7 @@ export const useWorkspaceQueuedSync = ({
           await invalidateSyncQueries();
         },
       });
-      window.dispatchEvent(new CustomEvent("edgeever:sync-completed", { detail: result }));
+      window.dispatchEvent(new CustomEvent("ponder:sync-completed", { detail: result }));
       if (result.failed > 0) await invalidateSyncQueries();
     } finally {
       setIsSyncingQueuedChanges(false);
@@ -193,7 +193,7 @@ export const useWorkspaceQueuedSync = ({
     if (!isOnline) return;
     setIsSyncingQueuedChanges(true);
     try {
-      if (window.edgeeverDesktop?.isAvailable) {
+      if (window.ponderDesktop?.isAvailable) {
         const { discardDesktopConflicts, getDesktopSyncSummary } = await import("@/lib/desktop-sync");
         await discardDesktopConflicts();
         setSyncSummary(await getDesktopSyncSummary());

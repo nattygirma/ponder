@@ -43,7 +43,7 @@ export function Popup() {
   return <main className="w-80 p-5">
     <header className="flex items-center gap-2.5">
       <img src="/icons/icon-32.png" width={32} height={32} alt="" className="rounded-lg" />
-      <div><h1 className="text-lg font-semibold leading-tight">EdgeEver</h1><p className="text-xs text-muted-foreground">{t("webClipper")}</p></div>
+      <div><h1 className="text-lg font-semibold leading-tight">Ponder</h1><p className="text-xs text-muted-foreground">{t("webClipper")}</p></div>
       <div id="capture-context" data-kind={access || (adapted ? "adapted" : "generic")} aria-live="polite" aria-label={mode?.platform ? `${mode.platform} · ${label}` : undefined} className="ms-auto flex max-w-28 items-center gap-1 rounded-md bg-neutral-100 px-2 py-1 text-[11px] text-neutral-600">
         {access ? <LockKeyhole aria-hidden="true" className="size-3 shrink-0 text-amber-600" /> : adapted && <Check aria-hidden="true" className="size-3 shrink-0" />}<span id="capture-mode">{label}</span>
       </div>

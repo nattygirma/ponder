@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { isNotebookColor } from "@edgeever/shared";
+import { isNotebookColor } from "@ponder/shared";
 import { cn } from "@/lib/utils";
 
-const PALETTE_KEY = "edgeever.notebook-color-palette";
+const PALETTE_KEY = "ponder.notebook-color-palette";
 const DEFAULT_PALETTE = ["#2563eb", "#16a34a", "#ca8a04", "#dc2626", "#7c3aed"];
 
 const readPalette = (): string[] => {

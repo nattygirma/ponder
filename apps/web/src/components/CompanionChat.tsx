@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next";
 import { FileText, Folder, Loader2, MessageCircle, Tag, X } from "lucide-react";
 import type {
   CompanionAction, CompanionAnswer, CompanionDiscoverySettings, CompanionEvent, CompanionMention, CompanionTurn, CompanionTurnInput,
-} from "@edgeever/shared";
-import { companionFailureDiagnostics, parseCompanionMentionQuery, getMemoDisplayTitle } from "@edgeever/shared";
+} from "@ponder/shared";
+import { companionFailureDiagnostics, parseCompanionMentionQuery, getMemoDisplayTitle } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { api, ApiRequestError } from "@/lib/api";
 import { companionLocale } from "@/lib/companion-locale";

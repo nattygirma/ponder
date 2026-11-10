@@ -1,10 +1,12 @@
 {
-  "name": "@edgeever/shared",
+  "name": "@ponder/shared",
   "version": "0.1.3",
   "private": true,
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./page-color": "./src/page-color.ts",
+    "./connected-links": "./src/connected-links.ts",
     "./diagram-canvas": "./src/diagram-canvas.ts",
     "./public-demo": "./src/public-demo.ts",
     "./memo-title": "./src/memo-title.ts",
@@ -20,7 +22,6 @@
     "./i18n": "./src/i18n/index.ts",
     "./i18n/error-screens-en-US": "./src/i18n/error-screens-en-US.ts",
     "./i18n/en-US": "./src/i18n/en-US.ts",
-    "./i18n/zh-CN": "./src/i18n/zh-CN.ts",
     "./i18n/ja": "./src/i18n/ja.ts",
     "./i18n/pl": "./src/i18n/pl.ts",
     "./i18n/ru": "./src/i18n/ru.ts",

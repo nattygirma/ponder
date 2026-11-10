@@ -83,7 +83,7 @@ describe("zhihu addresses", () => {
 
 describe("zhihu note content", () => {
   test("browser bundle converts HTML without a document in the background", async () => {
-    const outdir = mkdtempSync(join(tmpdir(), "edgeever-zhihu-worker-"));
+    const outdir = mkdtempSync(join(tmpdir(), "ponder-zhihu-worker-"));
     try {
       const result = await Bun.build({
         entrypoints: [fileURLToPath(new URL("./src/zhihu-clip.ts", import.meta.url))],

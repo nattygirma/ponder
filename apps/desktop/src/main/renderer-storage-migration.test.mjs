@@ -16,14 +16,14 @@ import {
 describe("renderer storage origin migration", () => {
   test("covers every persistent IndexedDB database", () => {
     expect(rendererStorageMigrationDatabaseNames()).toEqual([
-      "edgeever-local",
-      "edgeever-plugin-packages-v1",
-      "edgeever-plugin-secrets-v1",
+      "ponder-local",
+      "ponder-plugin-packages-v1",
+      "ponder-plugin-secrets-v1",
     ]);
   });
 
   test("writes the marker only after export and import both succeed", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "edgeever-origin-migration-"));
+    const directory = await mkdtemp(join(tmpdir(), "ponder-origin-migration-"));
     const markerPath = join(directory, RENDERER_STORAGE_MIGRATION_MARKER);
     const loadedUrls = [];
     const destroyed = [];
@@ -47,13 +47,13 @@ describe("renderer storage origin migration", () => {
       const result = await migrateRendererStorageOrigin({
         createWindow,
         legacyBridgeUrl: "file:///bundle/desktop-storage-bridge.html",
-        targetBridgeUrl: "edgeever-app://app/desktop-storage-bridge.html",
+        targetBridgeUrl: "ponder-app://app/desktop-storage-bridge.html",
         markerPath,
       });
       expect(result.state).toBe("migrated");
       expect(loadedUrls).toEqual([
         "file:///bundle/desktop-storage-bridge.html",
-        "edgeever-app://app/desktop-storage-bridge.html",
+        "ponder-app://app/desktop-storage-bridge.html",
       ]);
       expect(destroyed).toEqual([0]);
       expect(JSON.parse(await readFile(markerPath, "utf8"))).toMatchObject({
@@ -64,7 +64,7 @@ describe("renderer storage origin migration", () => {
       const second = await migrateRendererStorageOrigin({
         createWindow: () => { throw new Error("should not create a window"); },
         legacyBridgeUrl: "file:///ignored",
-        targetBridgeUrl: "edgeever-app://app/ignored",
+        targetBridgeUrl: "ponder-app://app/ignored",
         markerPath,
       });
       expect(second.state).toBe("already-migrated");
@@ -74,7 +74,7 @@ describe("renderer storage origin migration", () => {
   });
 
   test("does not mark a failed import as migrated", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "edgeever-origin-migration-failure-"));
+    const directory = await mkdtemp(join(tmpdir(), "ponder-origin-migration-failure-"));
     const markerPath = join(directory, RENDERER_STORAGE_MIGRATION_MARKER);
     let executionIndex = 0;
     try {
@@ -94,7 +94,7 @@ describe("renderer storage origin migration", () => {
           };
         },
         legacyBridgeUrl: "file:///bundle/desktop-storage-bridge.html",
-        targetBridgeUrl: "edgeever-app://app/desktop-storage-bridge.html",
+        targetBridgeUrl: "ponder-app://app/desktop-storage-bridge.html",
         markerPath,
       })).rejects.toThrow("import failed");
       expect(await Bun.file(markerPath).exists()).toBe(false);
@@ -170,7 +170,7 @@ const readStore = async (factory, databaseName, storeName) => {
 };
 
 const seedLegacyNotes = async (factory) => {
-  const database = await openDatabase(factory, "edgeever-local", 60, (db) => {
+  const database = await openDatabase(factory, "ponder-local", 60, (db) => {
     const memos = db.createObjectStore("memos", { keyPath: ["scope", "id"] });
     memos.createIndex("notebookId", "notebookId");
     memos.createIndex("tags", "tags", { multiEntry: true });
@@ -191,7 +191,7 @@ const seedLegacyNotes = async (factory) => {
 };
 
 const seedLegacyPackages = async (factory) => {
-  const database = await openDatabase(factory, "edgeever-plugin-packages-v1", 2, (db) => {
+  const database = await openDatabase(factory, "ponder-plugin-packages-v1", 2, (db) => {
     const store = db.createObjectStore("packageVersions", { keyPath: ["pluginId", "version"] });
     store.createIndex("pluginId", "pluginId");
   });
@@ -203,7 +203,7 @@ const seedLegacyPackages = async (factory) => {
 
 const seedLegacySecrets = async (factory, secrets, { withKey = true } = {}) => {
   const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
-  const database = await openDatabase(factory, "edgeever-plugin-secrets-v1", 1, (db) => {
+  const database = await openDatabase(factory, "ponder-plugin-secrets-v1", 1, (db) => {
     db.createObjectStore("keys");
     db.createObjectStore("secrets", { keyPath: "id" });
   });
@@ -220,7 +220,7 @@ const seedLegacySecrets = async (factory, secrets, { withKey = true } = {}) => {
 };
 
 const readPluginSecrets = async (factory) => {
-  const database = await openDatabase(factory, "edgeever-plugin-secrets-v1");
+  const database = await openDatabase(factory, "ponder-plugin-secrets-v1");
   try {
     const transaction = database.transaction(["keys", "secrets"], "readonly");
     const key = await requestDone(transaction.objectStore("keys").get("device-master-key"));
@@ -239,7 +239,7 @@ const readPluginSecrets = async (factory) => {
 const databaseNames = async (factory) => (await factory.databases()).map((entry) => entry.name).sort();
 
 const seedFullLegacyOrigin = async () => {
-  const legacy = createOrigin([["theme", "dark"], ["edgeever:session", "{\"user\":\"u1\"}"]]);
+  const legacy = createOrigin([["theme", "dark"], ["ponder:session", "{\"user\":\"u1\"}"]]);
   await seedLegacyNotes(legacy.indexedDB);
   await seedLegacyPackages(legacy.indexedDB);
   await seedLegacySecrets(legacy.indexedDB, [["com.example.alpha:token", "alpha-secret"], ["com.example.beta:token", "beta-secret"]]);
@@ -271,8 +271,8 @@ describe("exportLegacyRendererStorage", () => {
     const snapshot = await exportLegacyRendererStorage();
 
     expect(snapshot.version).toBe(1);
-    expect(snapshot.localStorageEntries).toEqual([["theme", "dark"], ["edgeever:session", "{\"user\":\"u1\"}"]]);
-    expect(snapshot.databases.map((database) => database.name)).toEqual(["edgeever-local", "edgeever-plugin-packages-v1"]);
+    expect(snapshot.localStorageEntries).toEqual([["theme", "dark"], ["ponder:session", "{\"user\":\"u1\"}"]]);
+    expect(snapshot.databases.map((database) => database.name)).toEqual(["ponder-local", "ponder-plugin-packages-v1"]);
     const notes = snapshot.databases[0];
     expect(notes.version).toBe(60);
     const memos = notes.stores.find((store) => store.name === "memos");
@@ -303,11 +303,11 @@ describe("exportLegacyRendererStorage", () => {
     await exportLegacyRendererStorage();
 
     expect(await databaseNames(legacy.indexedDB)).toEqual([
-      "edgeever-local",
-      "edgeever-plugin-packages-v1",
-      "edgeever-plugin-secrets-v1",
+      "ponder-local",
+      "ponder-plugin-packages-v1",
+      "ponder-plugin-secrets-v1",
     ]);
-    expect(await readStore(legacy.indexedDB, "edgeever-local", "memos")).toHaveLength(2);
+    expect(await readStore(legacy.indexedDB, "ponder-local", "memos")).toHaveLength(2);
     expect((await readPluginSecrets(legacy.indexedDB)).values["com.example.alpha:token"]).toBe("alpha-secret");
     expect(legacy.localStorage.entries()).toHaveLength(2);
   });
@@ -323,7 +323,7 @@ describe("exportLegacyRendererStorage", () => {
   test("fails when a stored secret cannot be decrypted", async () => {
     const legacy = createOrigin();
     await seedLegacySecrets(legacy.indexedDB, [["com.example.alpha:token", "alpha-secret"]]);
-    const database = await openDatabase(legacy.indexedDB, "edgeever-plugin-secrets-v1");
+    const database = await openDatabase(legacy.indexedDB, "ponder-plugin-secrets-v1");
     const transaction = database.transaction("secrets", "readwrite");
     transaction.objectStore("secrets").put({ id: "com.example.alpha:token", iv: new Uint8Array(12), ciphertext: new Uint8Array(32).buffer });
     await transactionComplete(transaction);
@@ -340,7 +340,7 @@ describe("exportLegacyRendererStorage", () => {
     expect((await exportLegacyRendererStorage()).pluginSecrets).toEqual([]);
 
     const withoutStores = createOrigin();
-    await openDatabase(withoutStores.indexedDB, "edgeever-plugin-secrets-v1", 1).then((db) => db.close());
+    await openDatabase(withoutStores.indexedDB, "ponder-plugin-secrets-v1", 1).then((db) => db.close());
     activateOrigin(withoutStores);
     expect((await exportLegacyRendererStorage()).pluginSecrets).toEqual([]);
   });
@@ -368,14 +368,14 @@ describe("importRendererStorage", () => {
     const counts = await importRendererStorage(snapshot);
 
     expect(counts).toEqual({ localStorageEntries: 2, databases: 2, pluginSecrets: 2 });
-    expect(target.localStorage.entries()).toEqual([["theme", "dark"], ["edgeever:session", "{\"user\":\"u1\"}"]]);
-    expect(await readStore(target.indexedDB, "edgeever-local", "memos")).toEqual(await readStore(legacy.indexedDB, "edgeever-local", "memos"));
-    expect(await readStore(target.indexedDB, "edgeever-local", "syncQueue")).toEqual(await readStore(legacy.indexedDB, "edgeever-local", "syncQueue"));
-    expect(await readStore(target.indexedDB, "edgeever-local", "counters")).toEqual(await readStore(legacy.indexedDB, "edgeever-local", "counters"));
-    expect(await readStore(target.indexedDB, "edgeever-local", "outOfLine")).toEqual([{ key: "custom-key", value: { note: "out of line" } }]);
-    expect(await readStore(target.indexedDB, "edgeever-plugin-packages-v1", "packageVersions")).toHaveLength(1);
+    expect(target.localStorage.entries()).toEqual([["theme", "dark"], ["ponder:session", "{\"user\":\"u1\"}"]]);
+    expect(await readStore(target.indexedDB, "ponder-local", "memos")).toEqual(await readStore(legacy.indexedDB, "ponder-local", "memos"));
+    expect(await readStore(target.indexedDB, "ponder-local", "syncQueue")).toEqual(await readStore(legacy.indexedDB, "ponder-local", "syncQueue"));
+    expect(await readStore(target.indexedDB, "ponder-local", "counters")).toEqual(await readStore(legacy.indexedDB, "ponder-local", "counters"));
+    expect(await readStore(target.indexedDB, "ponder-local", "outOfLine")).toEqual([{ key: "custom-key", value: { note: "out of line" } }]);
+    expect(await readStore(target.indexedDB, "ponder-plugin-packages-v1", "packageVersions")).toHaveLength(1);
 
-    const database = await openDatabase(target.indexedDB, "edgeever-local");
+    const database = await openDatabase(target.indexedDB, "ponder-local");
     try {
       expect(database.version).toBe(60);
       const transaction = database.transaction(["memos", "syncQueue", "counters"], "readwrite");
@@ -411,8 +411,8 @@ describe("importRendererStorage", () => {
     await importRendererStorage(snapshot);
     await importRendererStorage(snapshot);
 
-    expect(await readStore(target.indexedDB, "edgeever-local", "memos")).toHaveLength(2);
-    expect(await readStore(target.indexedDB, "edgeever-local", "counters")).toEqual([
+    expect(await readStore(target.indexedDB, "ponder-local", "memos")).toHaveLength(2);
+    expect(await readStore(target.indexedDB, "ponder-local", "counters")).toEqual([
       { key: 1, value: { value: 1 } },
       { key: 2, value: { value: 2 } },
     ]);
@@ -430,13 +430,13 @@ describe("importRendererStorage", () => {
       version: 1,
       localStorageEntries: [["valid", "yes"], ["number", 1], [2, "key"], ["null", null]],
       databases: [{
-        name: "edgeever-local",
+        name: "ponder-local",
         version: 60,
         stores: [{ name: "memos", keyPath: ["scope", "id"], autoIncrement: false, indexes: [], records: [
           { key: ["local", "memo-9"], value: { scope: "local", id: "memo-9" } },
         ] }],
       }, {
-        name: "edgeever-plugin-packages-v1",
+        name: "ponder-plugin-packages-v1",
         version: 2,
         stores: [],
       }],
@@ -445,17 +445,17 @@ describe("importRendererStorage", () => {
 
     expect(counts).toEqual({ localStorageEntries: 4, databases: 2, pluginSecrets: 0 });
     expect(target.localStorage.entries()).toEqual([["valid", "yes"]]);
-    expect(await readStore(target.indexedDB, "edgeever-local", "memos")).toEqual([
+    expect(await readStore(target.indexedDB, "ponder-local", "memos")).toEqual([
       { key: ["local", "memo-9"], value: { scope: "local", id: "memo-9" } },
     ]);
-    const database = await openDatabase(target.indexedDB, "edgeever-local");
+    const database = await openDatabase(target.indexedDB, "ponder-local");
     expect(Array.from(database.objectStoreNames)).toEqual(["memos"]);
     database.close();
-    const packages = await openDatabase(target.indexedDB, "edgeever-plugin-packages-v1");
+    const packages = await openDatabase(target.indexedDB, "ponder-plugin-packages-v1");
     expect(packages.version).toBe(2);
     expect(Array.from(packages.objectStoreNames)).toEqual([]);
     packages.close();
-    expect(await databaseNames(target.indexedDB)).toEqual(["edgeever-local", "edgeever-plugin-packages-v1"]);
+    expect(await databaseNames(target.indexedDB)).toEqual(["ponder-local", "ponder-plugin-packages-v1"]);
   });
 
   test("rejects when an open connection blocks the reset and succeeds once it is released", async () => {
@@ -465,14 +465,14 @@ describe("importRendererStorage", () => {
 
     const target = createOrigin();
     await seedLegacyNotes(target.indexedDB);
-    const blocker = await openDatabase(target.indexedDB, "edgeever-local");
+    const blocker = await openDatabase(target.indexedDB, "ponder-local");
     activateOrigin(target);
 
-    await expect(importRendererStorage(snapshot)).rejects.toThrow("Reset of edgeever-local was blocked");
+    await expect(importRendererStorage(snapshot)).rejects.toThrow("Reset of ponder-local was blocked");
     blocker.close();
 
     expect(await importRendererStorage(snapshot)).toEqual({ localStorageEntries: 2, databases: 2, pluginSecrets: 2 });
-    expect(await readStore(target.indexedDB, "edgeever-local", "memos")).toEqual(await readStore(legacy.indexedDB, "edgeever-local", "memos"));
+    expect(await readStore(target.indexedDB, "ponder-local", "memos")).toEqual(await readStore(legacy.indexedDB, "ponder-local", "memos"));
     expect(Object.keys((await readPluginSecrets(target.indexedDB)).values)).toHaveLength(2);
   });
 });
@@ -501,10 +501,10 @@ describe("migrateRendererStorageOrigin end to end", () => {
   let directory;
   let markerPath;
   const legacyBridgeUrl = "file:///bundle/desktop-storage-bridge.html";
-  const targetBridgeUrl = "edgeever-app://app/desktop-storage-bridge.html";
+  const targetBridgeUrl = "ponder-app://app/desktop-storage-bridge.html";
 
   beforeEach(async () => {
-    directory = await mkdtemp(join(tmpdir(), "edgeever-origin-migration-e2e-"));
+    directory = await mkdtemp(join(tmpdir(), "ponder-origin-migration-e2e-"));
     markerPath = join(directory, RENDERER_STORAGE_MIGRATION_MARKER);
   });
 
@@ -537,8 +537,8 @@ describe("migrateRendererStorageOrigin end to end", () => {
     expect(importCode).not.toContain("</script>");
     expect(log.filter(([kind]) => kind === "execute").every(([, , userGesture]) => userGesture === true)).toBe(true);
 
-    expect(await readStore(target.indexedDB, "edgeever-local", "memos")).toEqual(await readStore(legacy.indexedDB, "edgeever-local", "memos"));
-    expect((await readStore(target.indexedDB, "edgeever-local", "memos"))[1].value.title).toBe("Second </script>");
+    expect(await readStore(target.indexedDB, "ponder-local", "memos")).toEqual(await readStore(legacy.indexedDB, "ponder-local", "memos"));
+    expect((await readStore(target.indexedDB, "ponder-local", "memos"))[1].value.title).toBe("Second </script>");
     expect((await readPluginSecrets(target.indexedDB)).values["com.example.beta:token"]).toBe("beta-secret");
     expect(target.localStorage.entries()).toEqual(legacy.localStorage.entries());
     expect(await databaseNames(legacy.indexedDB)).toHaveLength(3);
@@ -577,7 +577,7 @@ describe("migrateRendererStorageOrigin end to end", () => {
     expect(await databaseNames(target.indexedDB)).toEqual([]);
     expect(target.localStorage.entries()).toEqual([["target-only", "kept"]]);
 
-    const database = await openDatabase(legacy.indexedDB, "edgeever-plugin-secrets-v1");
+    const database = await openDatabase(legacy.indexedDB, "ponder-plugin-secrets-v1");
     const transaction = database.transaction("secrets", "readwrite");
     transaction.objectStore("secrets").clear();
     await transactionComplete(transaction);
@@ -590,7 +590,7 @@ describe("migrateRendererStorageOrigin end to end", () => {
       markerPath,
     });
     expect(retry.state).toBe("migrated");
-    expect(await readStore(target.indexedDB, "edgeever-local", "memos")).toHaveLength(2);
+    expect(await readStore(target.indexedDB, "ponder-local", "memos")).toHaveLength(2);
     expect(await Bun.file(markerPath).exists()).toBe(true);
   });
 
@@ -598,7 +598,7 @@ describe("migrateRendererStorageOrigin end to end", () => {
     const legacy = await seedFullLegacyOrigin();
     const target = createOrigin();
     await seedLegacyNotes(target.indexedDB);
-    const blocker = await openDatabase(target.indexedDB, "edgeever-local");
+    const blocker = await openDatabase(target.indexedDB, "ponder-local");
     const origins = { [legacyBridgeUrl]: legacy, [targetBridgeUrl]: target };
 
     await expect(migrateRendererStorageOrigin({
@@ -616,8 +616,8 @@ describe("migrateRendererStorageOrigin end to end", () => {
       targetBridgeUrl,
       markerPath,
     })).state).toBe("migrated");
-    expect(await readStore(target.indexedDB, "edgeever-local", "memos")).toHaveLength(2);
-    expect(await readStore(target.indexedDB, "edgeever-local", "counters")).toHaveLength(2);
+    expect(await readStore(target.indexedDB, "ponder-local", "memos")).toHaveLength(2);
+    expect(await readStore(target.indexedDB, "ponder-local", "counters")).toHaveLength(2);
     expect(Object.keys((await readPluginSecrets(target.indexedDB)).values)).toHaveLength(2);
   });
 

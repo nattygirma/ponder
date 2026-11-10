@@ -26,20 +26,20 @@ for (const { kind, zoom, direction } of cases) {
 
     try {
       await page.goto("/");
-      await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-      await page.getByPlaceholder("搜索笔记").fill(title);
+      await page.getByRole("button", { name: "All notes", exact: true }).click();
+      await page.getByPlaceholder("Search notes").fill(title);
       await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
       const renderedNode = page.locator(`.x6-node[data-cell-id="${node.id}"]`);
       await expect(renderedNode).toBeVisible();
       await page.clock.pauseAt(await page.evaluate(() => Date.now()) + 1000);
       await page.clock.runFor(500);
 
-      const zoomInput = page.getByRole("textbox", { name: "缩放百分比" });
+      const zoomInput = page.getByRole("textbox", { name: "Zoom percent" });
       await zoomInput.fill(String(zoom));
       await zoomInput.press("Enter");
       await page.clock.runFor(500);
-      const paper = await page.locator(".edgeever-diagram-canvas").boundingBox();
-      const viewport = await page.locator(".edgeever-diagram-scroller").boundingBox();
+      const paper = await page.locator(".ponder-diagram-canvas").boundingBox();
+      const viewport = await page.locator(".ponder-diagram-scroller").boundingBox();
       const start = await renderedNode.boundingBox();
       expect(paper).not.toBeNull();
       expect(viewport).not.toBeNull();

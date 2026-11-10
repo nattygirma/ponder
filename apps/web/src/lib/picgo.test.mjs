@@ -12,16 +12,16 @@ const setup = (upload) => {
   const storage = new Map();
   globalThis.window = {
     localStorage: { getItem: (key) => storage.get(key) ?? null, setItem: (key, value) => storage.set(key, value) },
-    edgeeverDesktop: upload ? { uploadPicGoImage: upload, testPicGoConnection: async () => true } : undefined,
+    ponderDesktop: upload ? { uploadPicGoImage: upload, testPicGoConnection: async () => true } : undefined,
   };
   return storage;
 };
-const copy = { title: "Failed", message: "Retry?", retry: "Retry", fallback: "EdgeEver", cancel: "Cancel" };
+const copy = { title: "Failed", message: "Retry?", retry: "Retry", fallback: "Ponder", cancel: "Cancel" };
 const file = () => new File([new Uint8Array([137, 80, 78, 71])], "image.png", { type: "image/png" });
 
 test("default, corrupt settings and ordinary Web runtime retain attachment uploads", async () => {
   const storage = setup();
-  expect(readPicGoPreference()).toEqual({ provider: "edgeever", endpoint: DEFAULT_PICGO_ENDPOINT, serverKey: "", imgbed: noImgBed });
+  expect(readPicGoPreference()).toEqual({ provider: "ponder", endpoint: DEFAULT_PICGO_ENDPOINT, serverKey: "", imgbed: noImgBed });
   storage.set(PICGO_STORAGE_KEY, "corrupt");
   expect(shouldUploadWithPicGo()).toBe(false);
   writePicGoPreference({ provider: "picgo", endpoint: DEFAULT_PICGO_ENDPOINT, serverKey: "" });
@@ -31,7 +31,7 @@ test("default, corrupt settings and ordinary Web runtime retain attachment uploa
 
 test("configured but disabled PicGo never sends an image", async () => {
   setup(() => { throw new Error("Should not upload"); });
-  writePicGoPreference({ provider: "edgeever", endpoint: DEFAULT_PICGO_ENDPOINT, serverKey: "" });
+  writePicGoPreference({ provider: "ponder", endpoint: DEFAULT_PICGO_ENDPOINT, serverKey: "" });
   expect(shouldUploadWithPicGo()).toBe(false);
   expect(await uploadImageWithPicGo(file(), copy)).toBeNull();
 });
@@ -55,7 +55,7 @@ test("only explicit fallback returns to attachment storage; cancellation stays a
   setup(async () => ({ fallback: true }));
   writePicGoPreference({ provider: "picgo", endpoint: DEFAULT_PICGO_ENDPOINT, serverKey: "" });
   expect(await uploadImageWithPicGo(file(), copy)).toBeNull();
-  window.edgeeverDesktop.uploadPicGoImage = async () => { throw new Error("Cancelled"); };
+  window.ponderDesktop.uploadPicGoImage = async () => { throw new Error("Cancelled"); };
   await expect(uploadImageWithPicGo(file(), copy)).rejects.toThrow("Cancelled");
 });
 
@@ -84,7 +84,7 @@ test("ImgBed expands the folder for the target note and needs its own desktop br
   expect(readPicGoPreference().imgbed).toEqual({ ...imgbed, nameType: "default", uploadChannel: "telegram", serverCompress: true });
   expect(activeExternalImageHost()).toBeNull();
 
-  globalThis.window.edgeeverDesktop = {
+  globalThis.window.ponderDesktop = {
     uploadPicGoImage: () => { throw new Error("Should not use PicGo"); },
     testPicGoConnection: async () => true,
     testImgBedConnection: async () => true,

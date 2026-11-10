@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { MemoDetail, Notebook, Resource } from "@edgeever/shared";
+import type { MemoDetail, Notebook, Resource } from "@ponder/shared";
 import { strFromU8, unzipSync } from "fflate";
 import {
   buildMarkdownFrontMatter,

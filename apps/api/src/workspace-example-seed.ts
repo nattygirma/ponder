@@ -3,42 +3,169 @@ import {
   docToText,
   markdownToDoc,
   normalizeTags,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import {
-  WELCOME_MEMO_REPAIRED_CONTENT_HASH,
   WELCOME_MEMO_SEED_CONTENT_HASH,
   WELCOME_MEMO_TRANSLATIONS,
   buildWelcomeMemoContent,
-} from "@edgeever/shared/default-workspace-seeds";
-import { supportedLocales, type SupportedLocale } from "@edgeever/shared/i18n/locales";
+} from "@ponder/shared/default-workspace-seeds";
+import { supportedLocales, type SupportedLocale } from "@ponder/shared/i18n/locales";
+import { DEFAULT_MEMO_TEMPLATE_SEEDS, defaultMemoTemplateId } from "@ponder/shared/memo-template-seeds";
+import type { DatabasePropertyValue, DatabaseSchema, DatabaseViewConfig, DatabaseViewType } from "@ponder/shared";
 import type { Bindings } from "./api-context";
-import {
-  decodeDemoAttachment,
-  DEMO_SEED_ATTACHMENT_RESOURCES,
-  DEMO_SEED_MEMOS,
-  DEMO_SEED_REVISIONS,
-} from "./demo-seed-data";
 import { isDemoModeEnabled } from "./demo-mode";
 import { isoNow } from "./entity-utils";
-import { sha256, sha256Bytes } from "./hash-utils";
+import { sha256 } from "./hash-utils";
 import { upsertMemoSearchDocumentStatement } from "./memo-search-index";
 import type { DatabaseAdapter, PreparedStatementAdapter } from "./storage-contract";
 
-const EXAMPLE_NOTEBOOKS = [
-  { id: "nb_demo_features", slug: "demo-features", name: "功能演示", sortOrder: 21 },
-  { id: "nb_demo_features_en", slug: "feature-demos", name: "Feature Demos", sortOrder: 22 },
-] as const;
-
 const WELCOME_MEMO_ID = "memo_welcome";
-const DEFAULT_WORKSPACE_ID = "ws_default";
-const DEFAULT_BUCKET_NAME = "edgeever-resources";
+const POSITION_GAP = 1024;
 
-// The public demo tells visitors to reset the shared workspace. A personal
-// instance has no such action, so that tip is left out of the copied notes.
-export const omitInstanceUnavailableExampleTips = (markdown: string) => markdown
-  .split("\n")
-  .filter((line) => !line.includes("恢复 Demo 数据") && !line.includes("Reset Demo Data"))
-  .join("\n");
+// Folders the installation creates. A new account starts with pages rather than these.
+const UNUSED_DEFAULT_NOTEBOOK_SLUGS = ["work-projects", "learning-resources", "creative-ideas", "personal-life"];
+
+type StarterRow = { key: string; title: string; properties: Record<string, DatabasePropertyValue>; markdown?: string };
+type StarterPage = {
+  key: string;
+  title: string;
+  icon: string;
+  markdown?: (link: (key: string, title: string) => string) => string;
+  database?: {
+    schema: DatabaseSchema;
+    views: Array<{ name: string; type: DatabaseViewType; config: DatabaseViewConfig }>;
+    rows: StarterRow[];
+  };
+};
+
+const STATUS = "status";
+const statusProperty = (options: [string, string, string]) => ({
+  id: STATUS,
+  name: "Status",
+  type: "status" as const,
+  options: [
+    { id: "todo", name: options[0], color: "gray" as const, group: "todo" as const },
+    { id: "doing", name: options[1], color: "blue" as const, group: "in_progress" as const },
+    { id: "done", name: options[2], color: "green" as const, group: "done" as const },
+  ],
+});
+
+const starterPages = (today: string): StarterPage[] => [
+  {
+    key: "getting_started",
+    title: "Getting Started",
+    icon: "👋",
+    markdown: () => [
+      "Welcome! This page is yours to change or delete.",
+      "## Try these first",
+      [
+        "- [ ] Click below this list and start typing",
+        "- [ ] Type / to add a heading, a list, a table or a database",
+        "- [ ] Select some text to format it or leave a comment",
+        "- [ ] Hover over a line and drag its handle to move it",
+        "- [ ] Press Cmd or Ctrl + K to find any page",
+      ].join("\n"),
+      "## Coming from Notion?",
+      "Export your workspace as Markdown & CSV, then choose **Import from Notion** on Home. Your pages, nesting and databases come across.",
+    ].join("\n\n"),
+  },
+  {
+    key: "reading_list",
+    title: "Reading List",
+    icon: "📚",
+    database: {
+      schema: {
+        properties: [
+          { id: "title", name: "Name", type: "title" },
+          statusProperty(["To read", "Reading", "Finished"]),
+          {
+            id: "kind",
+            name: "Type",
+            type: "select",
+            options: [
+              { id: "book", name: "Book", color: "orange" },
+              { id: "article", name: "Article", color: "blue" },
+              { id: "video", name: "Video", color: "red" },
+              { id: "podcast", name: "Podcast", color: "purple" },
+            ],
+          },
+          { id: "link", name: "Link", type: "url" },
+        ],
+      },
+      views: [{ name: "Table", type: "table", config: {} }],
+      rows: [
+        { key: "first", title: "A book you keep meaning to read", properties: { [STATUS]: "todo", kind: "book" } },
+        { key: "second", title: "An article you saved for later", properties: { [STATUS]: "doing", kind: "article" } },
+      ],
+    },
+  },
+  {
+    key: "task_list",
+    title: "Task List",
+    icon: "✅",
+    database: {
+      schema: {
+        properties: [
+          { id: "title", name: "Name", type: "title" },
+          statusProperty(["To do", "In progress", "Done"]),
+          { id: "due", name: "Due", type: "date" },
+        ],
+      },
+      views: [
+        { name: "Board", type: "board", config: { groupByPropertyId: STATUS } },
+        { name: "Table", type: "table", config: {} },
+      ],
+      rows: [
+        { key: "first", title: "Import your pages", properties: { [STATUS]: "todo" } },
+        { key: "second", title: "Add your first real task", properties: { [STATUS]: "doing" } },
+        { key: "third", title: "Open this workspace", properties: { [STATUS]: "done", due: { start: today } } },
+      ],
+    },
+  },
+  {
+    key: "journal",
+    title: "Journal",
+    icon: "📓",
+    database: {
+      schema: {
+        properties: [
+          { id: "title", name: "Name", type: "title" },
+          { id: "date", name: "Date", type: "date" },
+        ],
+      },
+      views: [{ name: "Entries", type: "table", config: { sorts: [{ propertyId: "date", direction: "desc" }] } }],
+      rows: [{
+        key: "first",
+        title: "First entry",
+        properties: { date: { start: today } },
+        markdown: "What happened today, and what do you want to remember about it?",
+      }],
+    },
+  },
+  {
+    key: "quick_note",
+    title: "Quick Note",
+    icon: "📝",
+    markdown: () => "Somewhere to get a thought down fast. Sort it out later.",
+  },
+  {
+    key: "personal_home",
+    title: "Personal Home",
+    icon: "🏠",
+    markdown: (link) => [
+      "The things you come back to most.",
+      "## Shortcuts",
+      [
+        `- ${link("task_list", "Task List")}`,
+        `- ${link("reading_list", "Reading List")}`,
+        `- ${link("journal", "Journal")}`,
+        `- ${link("quick_note", "Quick Note")}`,
+      ].join("\n"),
+      "## This week",
+      "- [ ] Pick one thing to finish",
+    ].join("\n\n"),
+  },
+];
 
 export const markWorkspaceExampleSeedPendingStatement = (
   db: DatabaseAdapter,
@@ -51,8 +178,7 @@ export const markWorkspaceExampleSeedPendingStatement = (
 const knownWelcomeContentHashes = async () => {
   const hashes = new Set<string>([
     WELCOME_MEMO_SEED_CONTENT_HASH,
-    WELCOME_MEMO_REPAIRED_CONTENT_HASH,
-  ]);
+    ]);
   for (const locale of supportedLocales) {
     const welcome = buildWelcomeMemoContent(locale);
     hashes.add(await sha256(welcome.contentMarkdown + welcome.contentJson));
@@ -109,22 +235,6 @@ const idsAreFree = async (db: DatabaseAdapter, table: string, ids: string[]) => 
   return !row;
 };
 
-const applyImageWidths = (nodes: Array<{ type?: string; attrs?: Record<string, unknown>; content?: unknown[] }>) => {
-  for (const node of nodes) {
-    if (node.type === "image") {
-      node.attrs = { ...node.attrs, width: 35 };
-    }
-    if (Array.isArray(node.content)) {
-      applyImageWidths(node.content as Array<{ type?: string; attrs?: Record<string, unknown>; content?: unknown[] }>);
-    }
-  }
-};
-
-const resourceBytes = (resource: (typeof DEMO_SEED_ATTACHMENT_RESOURCES)[number]) => {
-  if ("svg" in resource) return new TextEncoder().encode(resource.svg);
-  return decodeDemoAttachment(resource);
-};
-
 export const ensureWorkspaceExampleSeed = async (env: Bindings, workspaceId: string) => {
   const db = env.storage.db;
   const pending = await db.prepare(
@@ -132,152 +242,135 @@ export const ensureWorkspaceExampleSeed = async (env: Bindings, workspaceId: str
   ).bind(workspaceId).first<{ workspace_id: string }>();
   if (!pending) return;
 
-  const demoOwnsTheCatalog = isDemoModeEnabled(env.EDGE_EVER_DEMO_MODE)
-    || isDemoModeEnabled(env.EDGE_EVER_LOCAL_DEMO_SEED);
+  const demoOwnsTheCatalog = isDemoModeEnabled(env.PONDER_DEMO_MODE)
+    || isDemoModeEnabled(env.PONDER_LOCAL_DEMO_SEED);
   if (demoOwnsTheCatalog || !await workspaceStillWantsExamples(db, workspaceId)) {
     await clearPending(db, workspaceId);
     return;
   }
 
-  if (typeof env.storage.resources?.put !== "function") return;
-
-  const projects = await db.prepare(
+  const inbox = await db.prepare(
     `SELECT id FROM notebooks
      WHERE workspace_id = ? AND is_deleted = 0 AND parent_id IS NULL
-       AND (slug = 'work-projects' OR id = 'nb_projects' OR id = ?)
+       AND (slug = 'inbox' OR id = 'nb_inbox' OR id = ?)
      LIMIT 1`,
-  ).bind(workspaceId, `${workspaceId}_projects`).first<{ id: string }>();
-  if (!projects) {
+  ).bind(workspaceId, `${workspaceId}_inbox`).first<{ id: string }>();
+  if (!inbox) {
     await clearPending(db, workspaceId);
     return;
   }
 
-  const canonicalNotebookIds = EXAMPLE_NOTEBOOKS.map((notebook) => notebook.id);
-  const canonicalMemoIds = DEMO_SEED_MEMOS.map((memo) => memo.id);
-  const canonicalRevisionIds = DEMO_SEED_REVISIONS.map((revision) => revision.id);
-  const canonicalResourceIds = DEMO_SEED_ATTACHMENT_RESOURCES.map((resource) => resource.id);
-  // The installation workspace keeps the ids the clients already open. Every
-  // later workspace gets its own ids so the two copies can exist together.
-  const useCanonicalIds = workspaceId === DEFAULT_WORKSPACE_ID
-    && await idsAreFree(db, "notebooks", canonicalNotebookIds)
-    && await idsAreFree(db, "memos", canonicalMemoIds)
-    && await idsAreFree(db, "memo_revisions", canonicalRevisionIds)
-    && await idsAreFree(db, "resources", canonicalResourceIds);
-  const mapId = (id: string) => useCanonicalIds ? id : `${workspaceId}_${id}`;
-  const rewriteResourceLinks = (markdown: string) => {
-    if (useCanonicalIds) return markdown;
-    return canonicalResourceIds.reduce(
-      (current, id) => current.replaceAll(`/api/v1/resources/${id}/`, `/api/v1/resources/${mapId(id)}/`),
-      markdown,
+  const welcome = await db.prepare(
+    `SELECT id FROM memos WHERE workspace_id = ? AND id = ? AND is_deleted = 0`,
+  ).bind(workspaceId, WELCOME_MEMO_ID).first<{ id: string }>();
+
+  const now = isoNow();
+  const today = now.slice(0, 10);
+  const pageId = (key: string) => (key === "getting_started" && welcome ? welcome.id : `${workspaceId}_starter_${key}`);
+  const statements: PreparedStatementAdapter[] = [];
+
+  const addContent = async (
+    id: string,
+    title: string,
+    markdown: string,
+    placement: { parentId: string | null; position: number; icon: string | null; databaseId: string | null; properties: string },
+  ) => {
+    const contentJson = markdownToDoc(markdown);
+    const contentText = docToText(contentJson);
+    const contentHash = await sha256(markdown + JSON.stringify(contentJson));
+    const isWelcome = id === welcome?.id;
+    statements.push(
+      isWelcome
+        // The untouched welcome note becomes Getting Started, so a new account has one first page, not two.
+        ? db.prepare(
+          `UPDATE memos SET notebook_id = ?, title = ?, excerpt = ?, page_position = ?, page_icon = ?, updated_at = ?
+           WHERE workspace_id = ? AND id = ?`,
+        ).bind(inbox.id, title, createExcerpt(contentText), placement.position, placement.icon, now, workspaceId, id)
+        : db.prepare(
+          `INSERT OR IGNORE INTO memos (
+             id, workspace_id, notebook_id, title, excerpt, tags_json, is_pinned, is_archived, is_deleted,
+             created_by, updated_by, created_at, updated_at, deleted_at,
+             parent_memo_id, page_position, page_icon, database_id, properties_json
+           ) VALUES (?, ?, ?, ?, ?, '[]', 0, 0, 0, 'system', 'system', ?, ?, NULL, ?, ?, ?, ?, ?)`,
+        ).bind(
+          id, workspaceId, inbox.id, title, createExcerpt(contentText), now, now,
+          placement.parentId, placement.position, placement.icon, placement.databaseId, placement.properties,
+        ),
+      isWelcome
+        ? db.prepare(
+          `UPDATE memo_contents SET content_json = ?, content_markdown = ?, content_text = ?, content_hash = ?, updated_at = ?
+           WHERE memo_id = ?`,
+        ).bind(JSON.stringify(contentJson), markdown, contentText, contentHash, now, id)
+        : db.prepare(
+          `INSERT OR IGNORE INTO memo_contents (
+             memo_id, content_json, content_markdown, content_text, content_hash, revision, created_at, updated_at
+           ) VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
+        ).bind(id, JSON.stringify(contentJson), markdown, contentText, contentHash, now, now),
+      upsertMemoSearchDocumentStatement(db, id, title, contentText, ""),
     );
   };
 
-  const now = isoNow();
-  const statements: PreparedStatementAdapter[] = [];
-  for (const notebook of EXAMPLE_NOTEBOOKS) {
-    statements.push(db.prepare(
-      `INSERT OR IGNORE INTO notebooks (
-         id, workspace_id, parent_id, name, slug, icon, color, sort_order, is_deleted, created_at, updated_at, deleted_at
-       ) VALUES (?, ?, ?, ?, ?, 'notebook', NULL, ?, 0, ?, ?, NULL)`,
-    ).bind(mapId(notebook.id), workspaceId, projects.id, notebook.name, notebook.slug, notebook.sortOrder, now, now));
-  }
-
-  for (const memo of DEMO_SEED_MEMOS) {
-    const markdown = rewriteResourceLinks(omitInstanceUnavailableExampleTips(memo.markdown));
-    const contentJson = markdownToDoc(markdown);
-    if (Array.isArray(contentJson.content)) applyImageWidths(contentJson.content);
-    const contentText = docToText(contentJson);
-    const contentHash = await sha256(markdown + JSON.stringify(contentJson));
-    const tags = normalizeTags(memo.tags);
-    statements.push(
-      db.prepare(
-        `INSERT OR IGNORE INTO memos (
-           id, workspace_id, notebook_id, title, excerpt, tags_json, is_pinned,
-           is_archived, is_deleted, created_by, updated_by, created_at, updated_at, deleted_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0, 'system', 'system', ?, ?, NULL)`,
-      ).bind(
-        mapId(memo.id),
-        workspaceId,
-        mapId(memo.notebookId),
-        memo.title,
-        createExcerpt(contentText),
-        JSON.stringify(tags),
-        memo.isPinned ? 1 : 0,
-        now,
-        now,
-      ),
-      db.prepare(
-        `INSERT OR IGNORE INTO memo_contents (
-           memo_id, content_json, content_markdown, content_text, content_hash, revision, created_at, updated_at
-         ) VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
-      ).bind(mapId(memo.id), JSON.stringify(contentJson), markdown, contentText, contentHash, now, now),
-      upsertMemoSearchDocumentStatement(db, mapId(memo.id), memo.title, contentText, tags.join(" ")),
-    );
-  }
-
-  for (const revision of DEMO_SEED_REVISIONS) {
-    const markdown = rewriteResourceLinks(omitInstanceUnavailableExampleTips(revision.markdown));
-    const contentJson = markdownToDoc(markdown);
-    const contentHash = await sha256(markdown + JSON.stringify(contentJson));
-    statements.push(db.prepare(
-      `INSERT OR IGNORE INTO memo_revisions (
-         id, memo_id, revision, title, content_json, content_markdown, content_hash, created_by, created_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, 'system', ?)`,
-    ).bind(
-      mapId(revision.id),
-      mapId(revision.memoId),
-      revision.revision,
-      revision.title,
-      JSON.stringify(contentJson),
-      markdown,
-      contentHash,
-      now,
-    ));
-  }
-
-  const bucketName = env.EDGE_EVER_R2_BUCKET_NAME?.trim() || DEFAULT_BUCKET_NAME;
-  for (const resource of DEMO_SEED_ATTACHMENT_RESOURCES) {
-    const bytes = resourceBytes(resource);
-    const extension = "svg" in resource ? "svg" : resource.filename.split(".").pop() || "bin";
-    const resourceId = mapId(resource.id);
-    const objectKey = `examples/${workspaceId}/${resourceId}.${extension}`;
-    await env.storage.resources.put(objectKey, bytes, {
-      httpMetadata: {
-        contentType: resource.mimeType,
-        cacheControl: "private, max-age=3600",
-      },
-      customMetadata: {
-        memoId: mapId(resource.memoId),
-        resourceId,
-        filename: resource.filename,
-        instanceExample: "true",
-      },
+  const pages = starterPages(today);
+  for (const [index, page] of pages.entries()) {
+    const id = pageId(page.key);
+    const linked: string[] = [];
+    const link = (key: string, title: string) => {
+      linked.push(pageId(key));
+      return `[${title}](#memo=${pageId(key)})`;
+    };
+    await addContent(id, page.title, page.markdown?.(link) ?? "", {
+      parentId: null,
+      position: (index + 1) * POSITION_GAP,
+      icon: page.icon,
+      databaseId: null,
+      properties: "{}",
     });
+    for (const target of linked) {
+      statements.push(db.prepare(
+        `INSERT OR IGNORE INTO memo_links (workspace_id, source_memo_id, target_memo_id) VALUES (?, ?, ?)`,
+      ).bind(workspaceId, id, target));
+    }
+
+    if (!page.database) continue;
+    const databaseId = `${workspaceId}_db_${page.key}`;
     statements.push(db.prepare(
-      `INSERT OR IGNORE INTO resources (
-         id, memo_id, bucket_name, object_key, storage_config_id, kind, mime_type, filename,
-         byte_size, sha256, width, height, metadata_json, is_deleted, created_at, updated_at, deleted_at
-       ) VALUES (?, ?, ?, ?, 'builtin', ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, NULL)`,
-    ).bind(
-      resourceId,
-      mapId(resource.memoId),
-      bucketName,
-      objectKey,
-      "svg" in resource ? "image" : "attachment",
-      resource.mimeType,
-      resource.filename,
-      bytes.byteLength,
-      await sha256Bytes(bytes),
-      "svg" in resource ? resource.width : null,
-      "svg" in resource ? resource.height : null,
-      JSON.stringify({ source: "instance-example" }),
-      now,
-      now,
-    ));
+      `INSERT OR IGNORE INTO databases (id, workspace_id, page_memo_id, schema_json, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    ).bind(databaseId, workspaceId, id, JSON.stringify(page.database.schema), now, now));
+    page.database.views.forEach((view, viewIndex) => {
+      statements.push(db.prepare(
+        `INSERT OR IGNORE INTO database_views (id, database_id, workspace_id, name, type, config_json, position, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).bind(
+        `${databaseId}_view_${viewIndex}`, databaseId, workspaceId, view.name, view.type,
+        JSON.stringify(view.config), (viewIndex + 1) * POSITION_GAP, now, now,
+      ));
+    });
+    for (const [rowIndex, row] of page.database.rows.entries()) {
+      await addContent(`${workspaceId}_starter_${page.key}_${row.key}`, row.title, row.markdown ?? "", {
+        parentId: id,
+        position: (rowIndex + 1) * POSITION_GAP,
+        icon: null,
+        databaseId,
+        properties: JSON.stringify(row.properties),
+      });
+    }
   }
 
-  statements.push(db.prepare(
-    `DELETE FROM workspace_example_seeds WHERE workspace_id = ?`,
-  ).bind(workspaceId));
+  statements.push(
+    db.prepare(
+      `DELETE FROM notebooks
+       WHERE workspace_id = ? AND parent_id IS NULL
+         AND slug IN (${UNUSED_DEFAULT_NOTEBOOK_SLUGS.map(() => "?").join(", ")})
+         AND NOT EXISTS (SELECT 1 FROM memos m WHERE m.notebook_id = notebooks.id)
+         AND NOT EXISTS (SELECT 1 FROM notebooks child WHERE child.parent_id = notebooks.id)`,
+    ).bind(workspaceId, ...UNUSED_DEFAULT_NOTEBOOK_SLUGS),
+    // New accounts start without a template catalog. Anything a person made has a different id.
+    db.prepare(
+      `DELETE FROM memo_templates
+       WHERE workspace_id = ? AND id IN (${DEFAULT_MEMO_TEMPLATE_SEEDS.map(() => "?").join(", ")})`,
+    ).bind(workspaceId, ...DEFAULT_MEMO_TEMPLATE_SEEDS.map((seed) => defaultMemoTemplateId(workspaceId, seed.key))),
+    db.prepare(`DELETE FROM workspace_example_seeds WHERE workspace_id = ?`).bind(workspaceId),
+  );
   await db.batch(statements);
 };

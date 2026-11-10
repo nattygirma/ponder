@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { TableField, TableFormFieldSetting, TableFormSettings, TableFormUpdateInput } from "@edgeever/shared";
+import type { TableField, TableFormFieldSetting, TableFormSettings, TableFormUpdateInput } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ const formUrl = (token: string) => {
   return `${baseUrl.replace(/\/$/, "")}/form/${encodeURIComponent(token)}`;
 };
 
-const passwordKey = (memoId: string) => `edgeever.tableFormPassword.${memoId}`;
+const passwordKey = (memoId: string) => `ponder.tableFormPassword.${memoId}`;
 
 const readPassword = (memoId: string, token: string) => {
   try {

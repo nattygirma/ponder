@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import type { MemoTemplate } from "@edgeever/shared";
+import type { MemoTemplate } from "@ponder/shared";
 
 export const TemplatesDialog = ({
   canCreateMemo,

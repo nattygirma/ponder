@@ -1,4 +1,4 @@
-import { PluginAiGenerateSchema, PluginPublicFetchSchema, type PluginAiGenerateRequest, type PluginAiStatus } from '@edgeever/shared';
+import { PluginAiGenerateSchema, PluginPublicFetchSchema, type PluginAiGenerateRequest, type PluginAiStatus } from '@ponder/shared';
 import { zValidator } from '@hono/zod-validator';
 import { bodyLimit } from 'hono/body-limit';
 import type { Hono } from 'hono';
@@ -57,15 +57,15 @@ export function registerPluginCapabilityRoutes(app: Hono<AppEnv>, dependencies: 
     if (!c.env.publicNetworkFetch) return apiError(c, 'plugin_network_unavailable', 'This runtime has no public network transport.', 503);
     try {
       const signal = AbortSignal.any([c.req.raw.signal, AbortSignal.timeout(PUBLIC_NETWORK_TIMEOUT_MS)]);
-      const response = await c.env.publicNetworkFetch(url.href, { method: input.method, headers: { ...headers, 'User-Agent': 'EdgeEver-Plugins/1.0' }, redirect: 'manual', credentials: 'omit', signal });
+      const response = await c.env.publicNetworkFetch(url.href, { method: input.method, headers: { ...headers, 'User-Agent': 'Ponder-Plugins/1.0' }, redirect: 'manual', credentials: 'omit', signal });
       const bytes = await readPublicBody(response, signal);
       const outputHeaders = new Headers({
         'Cache-Control': 'no-store',
         'Content-Type': 'application/octet-stream',
-        'X-EdgeEver-Upstream-Status': String(response.status),
-        'X-EdgeEver-Upstream-Status-Text': encodeURIComponent(response.statusText),
+        'X-Ponder-Upstream-Status': String(response.status),
+        'X-Ponder-Upstream-Status-Text': encodeURIComponent(response.statusText),
       });
-      for (const [name, value] of Object.entries(publicResponseHeaders(response.headers))) outputHeaders.set(`X-EdgeEver-Upstream-Header-${name}`, value);
+      for (const [name, value] of Object.entries(publicResponseHeaders(response.headers))) outputHeaders.set(`X-Ponder-Upstream-Header-${name}`, value);
       const body = bytes.buffer instanceof ArrayBuffer
         ? bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
         : new Uint8Array(bytes).buffer;

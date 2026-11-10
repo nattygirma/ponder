@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { MemoryImportIndex } from "@edgeever/shared/note-import";
+import { MemoryImportIndex } from "@ponder/shared/note-import";
 import { BrowserImportReader } from "./browser-reader";
 
 test("worker failure rejects pending work and still permits task cleanup", async () => {

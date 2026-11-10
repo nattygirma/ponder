@@ -5,7 +5,7 @@ import { isSafeResourceId } from "./resource-url.mjs";
 
 export const uploadedResourceIdFromUrl = (value) => {
   try {
-    const url = new URL(value, "https://edgeever.invalid");
+    const url = new URL(value, "https://ponder.invalid");
     const match = /^\/api\/v1\/resources\/([^/]+)\/blob$/.exec(url.pathname);
     const id = match ? decodeURIComponent(match[1]) : null;
     return isSafeResourceId(id) ? id : null;

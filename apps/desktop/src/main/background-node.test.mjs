@@ -8,15 +8,15 @@ import { once } from "node:events";
 import { backgroundNodeExecutable } from "./background-node.mjs";
 
 test("keeps Windows, Linux and standalone Node runtimes unchanged", () => {
-  for (const [executable, platform] of [["C:\\EdgeEver\\EdgeEver.exe", "win32"], ["/opt/EdgeEver/edgeever", "linux"], ["/usr/bin/node", "darwin"]]) {
+  for (const [executable, platform] of [["C:\\Ponder\\Ponder.exe", "win32"], ["/opt/Ponder/ponder", "linux"], ["/usr/bin/node", "darwin"]]) {
     expect(backgroundNodeExecutable(executable, platform)).toBe(executable);
   }
 });
 
 test("selects the bundled background Helper and rejects a broken app bundle", async () => {
-  const root = await mkdtemp(path.join(tmpdir(), "edgeever-background-node-"));
-  const executable = path.join(root, "Edge Ever.app/Contents/MacOS/Edge Ever");
-  const helper = path.join(root, "Edge Ever.app/Contents/Frameworks/Edge Ever Helper.app/Contents/MacOS/Edge Ever Helper");
+  const root = await mkdtemp(path.join(tmpdir(), "ponder-background-node-"));
+  const executable = path.join(root, "Ponder.app/Contents/MacOS/Ponder");
+  const helper = path.join(root, "Ponder.app/Contents/Frameworks/Ponder Helper.app/Contents/MacOS/Ponder Helper");
   try {
     expect(() => backgroundNodeExecutable(executable, "darwin")).toThrow();
     await mkdir(path.dirname(helper), { recursive: true });
@@ -29,15 +29,15 @@ test.skipIf(process.platform !== "darwin")("real Electron Helper runs npm and st
   const require = createRequire(import.meta.url);
   const helper = backgroundNodeExecutable(require("electron"));
   const npm = path.join(path.dirname(require.resolve("npm")), "bin/npm-cli.js");
-  const root = await mkdtemp(path.join(tmpdir(), "edgeever-background-npm-"));
+  const root = await mkdtemp(path.join(tmpdir(), "ponder-background-npm-"));
   let child;
   try {
     const fixture = path.join(root, "fixture");
     await mkdir(fixture);
-    await writeFile(path.join(fixture, "package.json"), JSON.stringify({ name: "edgeever-background-fixture", version: "1.0.0" }));
+    await writeFile(path.join(fixture, "package.json"), JSON.stringify({ name: "ponder-background-fixture", version: "1.0.0" }));
     const env = { ...process.env, ELECTRON_RUN_AS_NODE: "1" };
     execFileSync(helper, [npm, "install", "--prefix", path.join(root, "installed"), "--offline", "--ignore-scripts", "--no-audit", "--no-fund", fixture], { env, timeout: 30_000, stdio: "pipe" });
-    child = spawn(helper, ["-e", "process.title = 'edgeever-background-fixture'; console.log('ready'); setInterval(() => {}, 1000)"], { env, stdio: ["ignore", "pipe", "pipe"] });
+    child = spawn(helper, ["-e", "process.title = 'ponder-background-fixture'; console.log('ready'); setInterval(() => {}, 1000)"], { env, stdio: ["ignore", "pipe", "pipe"] });
     await once(child.stdout, "data");
     // Query only this test process; never enumerate app names or command lines.
     const policy = execFileSync("/usr/bin/osascript", ["-l", "JavaScript", "-e", `ObjC.import('AppKit'); var app = $.NSRunningApplication.runningApplicationWithProcessIdentifier(${child.pid}); app.isNil() ? -1 : Number(app.activationPolicy);`], { encoding: "utf8", timeout: 5_000 }).trim();

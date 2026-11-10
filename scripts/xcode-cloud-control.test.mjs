@@ -28,7 +28,7 @@ describe("Xcode Cloud control", () => {
     expect(script).toContain('emit("build_number"');
     expect(script).not.toContain("APP_STORE_BUILD_NUMBER: \"49\"");
 
-    expect(workflow).toContain(".edgeever-ci/scripts/xcode-cloud-control.py");
+    expect(workflow).toContain(".ponder-ci/scripts/xcode-cloud-control.py");
     expect(workflow).toContain("--wait-valid");
     expect(workflow).toContain("git show \"$source_sha:apps/ios/Config/Version.xcconfig\"");
 
@@ -48,7 +48,7 @@ describe("Xcode Cloud control", () => {
       "utf8",
     );
     const pbxproj = readFileSync(
-      new URL("../apps/ios/EdgeEver.xcodeproj/project.pbxproj", import.meta.url),
+      new URL("../apps/ios/Ponder.xcodeproj/project.pbxproj", import.meta.url),
       "utf8",
     );
     const xcconfig = readFileSync(

@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { enUS } from "../packages/shared/src/i18n/en-US";
-import { zhCN } from "../packages/shared/src/i18n/zh-CN";
 
 const readSource = (path: string) => readFileSync(new URL(path, import.meta.url), "utf8");
 
@@ -17,7 +16,7 @@ describe("note sharing menu", () => {
     expect(editorActionsSource).not.toContain("if (!effectiveReadOnly) setShareOpen(true)");
     expect(editorSource).toContain("canShareMemo: Boolean(memo && !readOnly)");
     expect(editorSource).toContain("{!readOnly && (\n                  <DropdownMenuItem");
-    expect(editorSource).toContain('{!readOnly && (!mobileEditingActive || isMemoShared) && (');
+    expect(editorSource).toContain('{!readOnly && !pageMode && (!mobileEditingActive || isMemoShared) && (');
     expect(editorSource).toContain("isMemoShared ? <Globe");
     expect(editorSource).toContain("aria-pressed={isMemoShared}");
     expect(editorSource).toContain('aria-label={t(isLocalMemoId(memo.id) ? "sharing.afterSync" : isMemoShared ? "sharing.manage" : "sharing.action")}');
@@ -26,19 +25,19 @@ describe("note sharing menu", () => {
   test("shows a toast after copying the note for other platforms", () => {
     expect(editorSource).toContain('wechatCopyState === "copied" || wechatCopyState === "error"');
     expect(editorSource).toContain('t(wechatCopyState === "copied" ? "editor.copiedToWeChat" : "editor.copyToWeChatFailed")');
-    expect(zhCN.editor.copiedToWeChat).toBe("已复制");
+    expect(enUS.editor.copiedToWeChat).toBe("Copied");
     expect(enUS.editor.copiedToWeChat).toBe("Copied");
   });
 
   test("explains why sharing a newly created local note is disabled", () => {
-    expect(zhCN.sharing.afterSync).toBe("同步后可分享笔记");
+    expect(enUS.sharing.afterSync).toBe("Share note after sync");
     expect(enUS.sharing.afterSync).toBe("Share note after sync");
     expect(editorSource).toContain('isLocalMemoId(memo.id) ? "sharing.afterSync"');
     expect(memoListSource).toContain('isLocalMemoId(memoContextMenu.memo.id) ? "sharing.afterSync"');
   });
 
   test("share dialog can enable an auto-generated access password", () => {
-    expect(zhCN.sharing.passwordToggle).toBe("访问密码");
+    expect(enUS.sharing.passwordToggle).toBe("Access password");
     expect(enUS.sharing.passwordToggle).toBe("Access password");
     expect(shareDialogSource).toContain('t("sharing.passwordToggle")');
     expect(shareDialogSource).toContain("api.updateMemoShare(memoId, { passwordProtected, ...(password ? { password } : {}) })");

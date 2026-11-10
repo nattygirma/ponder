@@ -250,7 +250,7 @@ jobs:
           ISSUE_NUMBER: ${{ inputs.issue_number }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: |
-          marker="<!-- edgeever-release-build-timings:${RELEASE_TAG} -->"
+          marker="<!-- ponder-release-build-timings:${RELEASE_TAG} -->"
           comment_file="$RUNNER_TEMP/release-build-timings-comment.md"
           printf '%s\n\n' "$marker" > "$comment_file"
           cat "$RUNNER_TEMP/release-build-timings.md" >> "$comment_file"
@@ -272,7 +272,7 @@ jobs:
       - name: Upload machine-readable Release timing report
         uses: actions/upload-artifact@v7
         with:
-          name: edgeever-${{ inputs.release_tag }}-build-timings
+          name: ponder-${{ inputs.release_tag }}-build-timings
           path: ${{ runner.temp }}/release-build-timings.json
           if-no-files-found: error
           retention-days: 90

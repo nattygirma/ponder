@@ -1,6 +1,6 @@
 import { join, win32 } from "node:path";
 
-// Inspect existing EdgeEver pins; never create, repin, or overwrite user shortcuts.
+// Inspect existing Ponder pins; never create, repin, or overwrite user shortcuts.
 export const inspectWindowsTaskbarShortcuts = async ({
   platform, packaged, appData, executable, readdir, readShortcutLink, existsSync,
 }) => {
@@ -12,7 +12,7 @@ export const inspectWindowsTaskbarShortcuts = async ({
     return { executable, state: error.code === "ENOENT" ? "no-pins-directory" : "unavailable", code: error.code || null, shortcuts: [] };
   }
   const shortcuts = [];
-  for (const filename of filenames.filter((name) => /^edgeever\.lnk$/i.test(name))) {
+  for (const filename of filenames.filter((name) => /^ponder\.lnk$/i.test(name))) {
     try {
       const shortcut = readShortcutLink(join(directory, filename));
       shortcuts.push({

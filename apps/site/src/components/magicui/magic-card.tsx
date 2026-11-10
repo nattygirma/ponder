@@ -12,7 +12,7 @@ export function MagicCard({
   children,
   className,
   gradientSize = 200,
-  gradientColor = "var(--edgeever-decor-beam-to)",
+  gradientColor = "var(--ponder-decor-beam-to)",
   gradientOpacity = 0.8,
 }: MagicCardProps) {
   const mouseX = useMotionValue(-gradientSize);

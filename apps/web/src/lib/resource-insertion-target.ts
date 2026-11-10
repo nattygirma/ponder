@@ -2,7 +2,7 @@ import type { Editor } from "@tiptap/core";
 import { GapCursor } from "@tiptap/pm/gapcursor";
 import type { Selection } from "@tiptap/pm/state";
 import { NodeSelection, Selection as ProseMirrorSelection } from "@tiptap/pm/state";
-import { IMAGE_GALLERY_NODE_TYPE } from "@edgeever/shared";
+import { IMAGE_GALLERY_NODE_TYPE } from "@ponder/shared";
 
 export type ResourceInsertionTarget = number | { from: number; to: number };
 

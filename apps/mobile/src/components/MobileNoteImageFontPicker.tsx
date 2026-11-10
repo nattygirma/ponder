@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { DOMProps } from "expo/dom";
-import { isRemoteNoteImageFont, shouldLoadFontPreview } from "@edgeever/shared/font-catalog";
-import { resolveNoteImageTypography, type NoteImageFontStyle, type NoteImageTheme } from "@edgeever/shared/note-image-card";
-import { prepareNoteImageAssets } from "@edgeever/shared/note-image-fonts";
+import { isRemoteNoteImageFont, shouldLoadFontPreview } from "@ponder/shared/font-catalog";
+import { resolveNoteImageTypography, type NoteImageFontStyle, type NoteImageTheme } from "@ponder/shared/note-image-card";
+import { prepareNoteImageAssets } from "@ponder/shared/note-image-fonts";
 import { getMobileNoteImageFontLabel, MOBILE_FONT_OPTIONS, type NoteImageFontLabels } from "../lib/note-image-font-options";
 import { noteImageAssetUrls } from "./note-image-asset-urls";
 
@@ -31,7 +31,7 @@ export default function MobileNoteImageFontPicker({ selected, theme, chinese, co
   const listRef = useRef<HTMLDivElement>(null);
   const selectingRef = useRef(false);
   const [previews, setPreviews] = useState<Record<string, "ready" | "error">>({});
-  const sampleFor = (id: string) => chinese && !LATIN_FONTS.has(id) ? "记录此刻的灵感" : "Capture a little inspiration";
+  const sampleFor = (id: string) => chinese && !LATIN_FONTS.has(id) ? "Capture this moment's idea" : "Capture a little inspiration";
 
   useEffect(() => {
     const list = listRef.current;
@@ -45,7 +45,7 @@ export default function MobileNoteImageFontPicker({ selected, theme, chinese, co
         observer.unobserve(entry.target);
         const id = entry.target.getAttribute("data-font") as NoteImageFontStyle;
         if (!shouldLoadFontPreview(id, id === selected)) continue;
-        const text = chinese && !LATIN_FONTS.has(id) ? "记录此刻的灵感" : "Capture a little inspiration";
+        const text = chinese && !LATIN_FONTS.has(id) ? "Capture this moment's idea" : "Capture a little inspiration";
         void prepareNoteImageAssets({ theme, fontStyle: id, text, urls: noteImageAssetUrls, embed: false })
           .then(() => { if (active) setPreviews(previous => ({ ...previous, [id]: "ready" })); })
           .catch(() => { if (active) setPreviews(previous => ({ ...previous, [id]: "error" })); });

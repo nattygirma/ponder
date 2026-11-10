@@ -1,7 +1,5 @@
 # Keyboard shortcuts to focus the note title and body
 
-[简体中文](2026-11-02-focus-title-body-shortcuts.zh-CN.md)
-
 Related Issue: #759
 
 ## Problem and outcome
@@ -10,7 +8,7 @@ After switching notes or searching, moving the caret to the title or the body of
 
 ## Behavior
 
-1. Defaults: `⌘⌥T` (macOS), `Ctrl+Alt+T` (Windows) and `Ctrl+Alt+Shift+T` (Linux and ChromeOS, where `Ctrl+Alt+T` opens a terminal) for the title; `⌘⌥B` / `Ctrl+Alt+B` for the body. The platform default comes from `getDefaultShortcutSettings`, which also backs **Restore defaults**. They do not overlap the existing EdgeEver defaults or the Tiptap/CodeMirror keymaps (`Mod-Shift-B` blockquote, `Mod-Alt-1…6` headings, `Mod-Alt-C` code block).
+1. Defaults: `⌘⌥T` (macOS), `Ctrl+Alt+T` (Windows) and `Ctrl+Alt+Shift+T` (Linux and ChromeOS, where `Ctrl+Alt+T` opens a terminal) for the title; `⌘⌥B` / `Ctrl+Alt+B` for the body. The platform default comes from `getDefaultShortcutSettings`, which also backs **Restore defaults**. They do not overlap the existing Ponder defaults or the Tiptap/CodeMirror keymaps (`Mod-Shift-B` blockquote, `Mod-Alt-1…6` headings, `Mod-Alt-C` code block).
 2. Both actions work from anywhere in the workspace while a text note is open, including the search field and the note list. The title action places the caret at the end of the title. The body action focuses the rich-text editor (Tiptap restores the previous caret) or the Markdown source editor, depending on the current mode; the mobile plain-text editor is handled the same way.
 3. Nothing happens for read-only notes (trash, reading protection), while a dialog that blocks editor shortcuts is open, or when no note is selected. Table, diagram, poster and infographic notes ignore the actions.
 4. The standalone desktop note window handles the same actions.
@@ -18,7 +16,7 @@ After switching notes or searching, moving the caret to the title or the body of
 
 ## Boundaries, risks and recovery
 
-The change is client-only: shortcut settings stay in the existing `edgeever.shortcutSettings` local preference, and older stored settings receive the new defaults through the existing fill-in path. There is no server, database, migration, sync, installer or update change.
+The change is client-only: shortcut settings stay in the existing `ponder.shortcutSettings` local preference, and older stored settings receive the new defaults through the existing fill-in path. There is no server, database, migration, sync, installer or update change.
 
 Risks: a browser or OS may still claim one of the combinations; users can rebind them in Settings. A user who already recorded one of these combinations for another action keeps that action, because earlier actions match first. Roll back by reverting the change; older versions ignore the extra stored keys.
 

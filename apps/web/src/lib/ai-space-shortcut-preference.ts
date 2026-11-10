@@ -1,6 +1,6 @@
-export const AI_SPACE_SHORTCUT_STORAGE_KEY = "edgeever.editor.aiSpaceShortcutEnabled";
+export const AI_SPACE_SHORTCUT_STORAGE_KEY = "ponder.editor.aiSpaceShortcutEnabled";
 
-export const AI_SPACE_SHORTCUT_CHANGED_EVENT = "edgeever:ai-space-shortcut-changed";
+export const AI_SPACE_SHORTCUT_CHANGED_EVENT = "ponder:ai-space-shortcut-changed";
 
 export const resolveStoredAiSpaceShortcutPreference = (stored: string | null): boolean =>
   stored !== "false";

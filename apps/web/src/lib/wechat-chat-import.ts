@@ -3,10 +3,10 @@ import {
   groupConsecutiveImagesIntoGalleries,
   markdownToDoc,
   type TiptapDoc,
-} from "@edgeever/shared";
-import { IMAGE_WIDTH_PRESETS } from "@edgeever/shared/image-display";
+} from "@ponder/shared";
+import { IMAGE_WIDTH_PRESETS } from "@ponder/shared/image-display";
 
-export const WECHAT_MEDIA_URL_PREFIX = "edgeever-wechat-media://";
+export const WECHAT_MEDIA_URL_PREFIX = "ponder-wechat-media://";
 const WECHAT_IMAGE_WIDTH = IMAGE_WIDTH_PRESETS.find((preset) => preset.id === "small")!.width;
 
 type WeChatMedia = {

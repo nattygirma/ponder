@@ -25,12 +25,12 @@ const flush = async () => { for (let i = 0; i < 40; i++) await Promise.resolve()
 // authenticated loopback proxy. The native Squirrel API and installer process
 // are simulated; these tests do not claim OS signing or installation coverage.
 const harness = async (platform) => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-desktop-update-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-desktop-update-"));
   cleanup.push(() => rm(directory, { recursive: true, force: true }));
   const releases = new Map();
   for (const version of ["2.17.0", "2.18.0", "2.19.0"]) {
     const bytes = Buffer.from(`package ${version}`);
-    const name = platform === "darwin" ? `EdgeEver-${version}-mac-arm64.zip` : `EdgeEver-${version}-linux-x64.AppImage`;
+    const name = platform === "darwin" ? `Ponder-${version}-mac-arm64.zip` : `Ponder-${version}-linux-x64.AppImage`;
     const path = join(directory, name);
     await writeFile(path, bytes);
     releases.set(version, { path, bytes, info: { version, files: [{ url: name, size: bytes.length,
@@ -259,7 +259,7 @@ describe("macOS native installation", () => {
     expect(h.errors[0].stage).toBe("install");
     h.nativeError = null;
     h.latest = "2.19.0";
-    await expect(h.controller.check("interval")).rejects.toThrow("Restart EdgeEver");
+    await expect(h.controller.check("interval")).rejects.toThrow("Restart Ponder");
     h.native.emit("update-downloaded"); // Late completion cannot authorize another target.
     expect(h.installs).toEqual([]);
     expect(h.downloads).toEqual(["2.17.0"]);

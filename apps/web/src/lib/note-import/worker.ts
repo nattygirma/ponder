@@ -1,5 +1,5 @@
-import { NoteImportSession } from "@edgeever/shared/note-import";
-import type { ImportFile, ImportFormat, ImportNote, ImportResource } from "@edgeever/shared/note-import/types";
+import { NoteImportSession } from "@ponder/shared/note-import";
+import type { ImportFile, ImportFormat, ImportNote, ImportResource } from "@ponder/shared/note-import/types";
 import { BrowserImportIndex } from "./browser-index";
 
 const scope = globalThis as unknown as { onmessage: ((event: MessageEvent) => void) | null; postMessage: (value: unknown, transfer?: Transferable[]) => void };

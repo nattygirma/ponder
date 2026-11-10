@@ -1,5 +1,5 @@
-import type { ImportMemosInput, ImportMemosResponse } from "@edgeever/shared/note-import/types";
-import type { NotebookUpdateInput } from "@edgeever/shared";
+import type { ImportMemosInput, ImportMemosResponse } from "@ponder/shared/note-import/types";
+import type { LinkPreviewData, NotebookUpdateInput } from "@ponder/shared";
 import {
   parsePreparedAiGeneration,
   streamDirectAiGeneration,
@@ -29,6 +29,24 @@ import type {
   JsonBackupAiPrompt,
   JsonBackupRevision,
   MemoDetail,
+  AppNotification,
+  InvitationPreview,
+  MemoComment,
+  PageAccess,
+  PageShare,
+  TeamRole,
+  WorkspaceInvitation,
+  WorkspaceSummary,
+  WorkspaceMember,
+  PageBacklink,
+  PageNode,
+  DatabaseDetail,
+  DatabasePropertyValue,
+  DatabaseRow,
+  DatabaseSchema,
+  DatabaseView,
+  DatabaseViewConfig,
+  DatabaseViewType,
   MemoEditSession,
   MemoRevision,
   MemoSummary,
@@ -79,16 +97,16 @@ import type {
   PluginAiGenerateRequest,
   PluginPublicFetchRequest,
   PluginPublicFetchResponse,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 export const MAX_SINGLE_REQUEST_UPLOAD_BYTES = 5 * 1024 * 1024;
 
-export type EdgeEverClientRequestContext = {
+export type PonderClientRequestContext = {
   path: string;
   token?: string;
 };
 
-export type EdgeEverClientOptions = {
+export type PonderClientOptions = {
   baseUrl?: string | (() => string);
   token?: string | null | (() => string | null | undefined);
   fetch?: typeof fetch;
@@ -100,9 +118,9 @@ export type EdgeEverClientOptions = {
   allowAiServerFallback?: boolean;
   /** Used only for the model provider request; defaults to `fetch`. */
   providerFetch?: typeof fetch;
-  beforeRequest?: (context: EdgeEverClientRequestContext) => void | Promise<void>;
+  beforeRequest?: (context: PonderClientRequestContext) => void | Promise<void>;
   shouldAttachToken?: (path: string) => boolean;
-  onUnauthorized?: (context: EdgeEverClientRequestContext) => void | Promise<void>;
+  onUnauthorized?: (context: PonderClientRequestContext) => void | Promise<void>;
 };
 
 export type MultipartResourceUploadSource = {
@@ -356,13 +374,13 @@ export class ApiRequestError extends Error {
 
 export type ApiResponseDiagnostics = {
   cloudflareMitigated: boolean;
-  isEdgeEverApiError: boolean;
+  isPonderApiError: boolean;
   rayId?: string;
 };
 
 export type { SyncBootstrapResponse, SyncChangesResponse };
 
-export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
+export const createPonderClient = (options: PonderClientOptions = {}) => {
   const getFetch = () => options.fetch ?? globalThis.fetch;
   const providerFetch = (): typeof fetch => async (url, init) => {
     const directFetch = options.providerFetch ?? getFetch();
@@ -373,9 +391,9 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
         method: "POST",
         headers: {
           "Content-Type": "application/octet-stream",
-          "x-edgeever-ai-target": target.url,
-          "x-edgeever-ai-method": target.method,
-          "x-edgeever-ai-headers": JSON.stringify(Object.fromEntries(target.headers)),
+          "x-ponder-ai-target": target.url,
+          "x-ponder-ai-method": target.method,
+          "x-ponder-ai-headers": JSON.stringify(Object.fromEntries(target.headers)),
         },
         body: target.method === "GET" ? undefined : await target.arrayBuffer(),
         signal: target.signal,
@@ -397,7 +415,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
     requestOptions?: { attachToken?: boolean; setJsonContentType?: boolean },
   ) => {
     const token = getToken();
-    const context: EdgeEverClientRequestContext = { path, ...(token ? { token } : {}) };
+    const context: PonderClientRequestContext = { path, ...(token ? { token } : {}) };
     await options.beforeRequest?.(context);
 
     const headers = new Headers(init?.headers);
@@ -428,7 +446,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
   };
 
   const throwRequestError = async (
-    context: EdgeEverClientRequestContext,
+    context: PonderClientRequestContext,
     response: Response,
     fallbackMessage = "Request failed",
   ): Promise<never> => {
@@ -440,7 +458,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
         : undefined;
     const responseDiagnostics: ApiResponseDiagnostics = {
       cloudflareMitigated: response.headers.get("cf-mitigated") === "challenge",
-      isEdgeEverApiError: Boolean(error && typeof error === "object"),
+      isPonderApiError: Boolean(error && typeof error === "object"),
       ...(rayId ? { rayId } : {}),
     };
 
@@ -473,19 +491,19 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
       body: JSON.stringify(input),
       signal,
     });
-    const upstreamStatus = response.headers.get("x-edgeever-upstream-status");
+    const upstreamStatus = response.headers.get("x-ponder-upstream-status");
     if (!response.ok || !upstreamStatus) await throwRequestError(context, response, "Public network request failed");
     const status = Number(upstreamStatus);
     if (!Number.isInteger(status) || status < 100 || status > 599) throw new Error("Invalid public network response status");
     const headers: Record<string, string> = {};
     for (const [key, value] of response.headers) {
-      const prefix = "x-edgeever-upstream-header-";
+      const prefix = "x-ponder-upstream-header-";
       if (key.startsWith(prefix)) headers[key.slice(prefix.length)] = value;
     }
     return {
       url: input.url,
       status,
-      statusText: decodeURIComponent(response.headers.get("x-edgeever-upstream-status-text") ?? ""),
+      statusText: decodeURIComponent(response.headers.get("x-ponder-upstream-status-text") ?? ""),
       headers,
       body: await response.arrayBuffer(),
     };
@@ -670,7 +688,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
   };
 
   const runPreparedCompanion = async (
-    prepared: import("@edgeever/shared").CompanionPreparedTurn,
+    prepared: import("@ponder/shared").CompanionPreparedTurn,
     streamOptions: { signal?: AbortSignal; onEvent: (event: CompanionEvent) => void },
   ) => {
     const { streamDirectCompanion } = await import("./companion-direct-stream");
@@ -956,7 +974,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
       }),
 
     testAiProvider: async (providerConfigId: string, payload: { modelId: string; provider?: AiProvider; baseUrl?: string; apiKey?: string }) => {
-      const prepared = await request<import("@edgeever/shared").AiPreparedTextGeneration>(`/api/v1/ai/providers/${encodeURIComponent(providerConfigId)}/direct-credential`, { method: "POST", body: JSON.stringify(payload) });
+      const prepared = await request<import("@ponder/shared").AiPreparedTextGeneration>(`/api/v1/ai/providers/${encodeURIComponent(providerConfigId)}/direct-credential`, { method: "POST", body: JSON.stringify(payload) });
       const { generateDirectAiText } = await import("./ai-direct-generate");
       const text = await generateDirectAiText({ ...prepared, system: "Follow the user instruction exactly.", prompt: "Reply with only: OK", maxOutputTokens: 16 }, { fetch: providerFetch(), signal: AbortSignal.timeout(20_000) });
       return { ok: true, response: text.trim() };
@@ -1103,7 +1121,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
     },
 
     streamInfographicAgent: async (payload: InfographicAgentRequest, streamOptions: { signal?: AbortSignal; onEvent: (event: InfographicAgentEvent) => void }) => {
-      const prepared = await request<import("@edgeever/shared").AiPreparedTextGeneration>("/api/v1/ai/infographic-agent/prepare", {
+      const prepared = await request<import("@ponder/shared").AiPreparedTextGeneration>("/api/v1/ai/infographic-agent/prepare", {
         method: "POST", body: JSON.stringify(payload), signal: streamOptions.signal,
       });
       const { runInfographicAgent } = await import("./infographic-direct");
@@ -1147,6 +1165,169 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
       }),
 
     listNotebooks: () => request<ListNotebooksResponse>("/api/v1/notebooks"),
+
+    getPageTree: () => request<{ pages: PageNode[]; truncated: boolean }>("/api/v1/pages/tree"),
+
+    createPage: (payload: { notebookId?: string; parentId?: string | null; title?: string; icon?: string | null }) =>
+      request<{ memo: MemoDetail; page: PageNode }>("/api/v1/pages", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+
+    movePage: (id: string, payload: { notebookId?: string; parentId?: string | null; beforeId?: string | null; afterId?: string | null }) =>
+      request<{ page: PageNode }>(`/api/v1/pages/${encodeURIComponent(id)}/move`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+
+    collabLeave: (memoId: string, payload: { clientId: string; generation: number; update?: string }, keepalive = false) =>
+      request<{ ok: boolean }>(`/api/v1/pages/${encodeURIComponent(memoId)}/collab/leave`, { method: "POST", body: JSON.stringify(payload), keepalive }),
+
+    updatePageFields: (id: string, payload: { title?: string; tags?: string[]; contentJson?: TiptapDoc; contentMarkdown?: string }) =>
+      request<{ page: PageNode }>(`/api/v1/pages/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    updatePage: (id: string, payload: { icon?: string | null; cover?: string | null }) =>
+      request<{ page: PageNode }>(`/api/v1/pages/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
+
+    createDatabase: (payload: { notebookId?: string; parentId?: string | null; title?: string }) =>
+      request<{ database: DatabaseDetail }>("/api/v1/databases", { method: "POST", body: JSON.stringify(payload) }),
+
+    getDatabase: (id: string) => request<{ database: DatabaseDetail }>(`/api/v1/databases/${encodeURIComponent(id)}`),
+
+    updateDatabase: (id: string, payload: { schema?: DatabaseSchema; title?: string }) =>
+      request<{ database: DatabaseDetail }>(`/api/v1/databases/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    listDatabaseRows: (id: string, params?: { cursor?: string | null; limit?: number }) => {
+      const search = new URLSearchParams();
+      if (params?.cursor) search.set("cursor", params.cursor);
+      if (params?.limit) search.set("limit", String(params.limit));
+      const query = search.toString();
+      return request<{ rows: DatabaseRow[]; nextCursor: string | null }>(`/api/v1/databases/${encodeURIComponent(id)}/rows${query ? `?${query}` : ""}`);
+    },
+
+    createDatabaseRow: (id: string, payload: { title?: string; properties?: Record<string, DatabasePropertyValue> }) =>
+      request<{ row: DatabaseRow }>(`/api/v1/databases/${encodeURIComponent(id)}/rows`, { method: "POST", body: JSON.stringify(payload) }),
+
+    updateDatabaseRow: (id: string, rowId: string, payload: { title?: string; properties?: Record<string, DatabasePropertyValue>; beforeId?: string | null; afterId?: string | null }) =>
+      request<{ row: DatabaseRow }>(`/api/v1/databases/${encodeURIComponent(id)}/rows/${encodeURIComponent(rowId)}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    createDatabaseView: (id: string, payload: { name: string; type: DatabaseViewType; config?: DatabaseViewConfig }) =>
+      request<{ view: DatabaseView }>(`/api/v1/databases/${encodeURIComponent(id)}/views`, { method: "POST", body: JSON.stringify(payload) }),
+
+    updateDatabaseView: (id: string, viewId: string, payload: { name?: string; type?: DatabaseViewType; config?: DatabaseViewConfig; position?: number }) =>
+      request<{ view: DatabaseView }>(`/api/v1/databases/${encodeURIComponent(id)}/views/${encodeURIComponent(viewId)}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    deleteDatabaseView: (id: string, viewId: string) =>
+      request<{ ok: true }>(`/api/v1/databases/${encodeURIComponent(id)}/views/${encodeURIComponent(viewId)}`, { method: "DELETE" }),
+
+    getDatabaseRowContext: (memoId: string) =>
+      request<{ context: { database: DatabaseDetail; row: DatabaseRow } | null }>(`/api/v1/memos/${encodeURIComponent(memoId)}/database-row`),
+
+    getWorkspaces: () => request<{ workspaces: WorkspaceSummary[] }>("/api/v1/workspaces"),
+
+    createWorkspace: (name: string) =>
+      request<{ id: string }>("/api/v1/workspaces", { method: "POST", body: JSON.stringify({ name }) }),
+
+    switchWorkspace: (id: string) =>
+      request<{ ok: true }>(`/api/v1/workspaces/${encodeURIComponent(id)}/switch`, { method: "POST" }),
+
+    renameWorkspace: (name: string) =>
+      request<{ ok: true }>("/api/v1/workspace", { method: "PATCH", body: JSON.stringify({ name }) }),
+
+    updateWorkspaceMember: (userId: string, role: TeamRole) =>
+      request<{ ok: true }>(`/api/v1/workspace/members/${encodeURIComponent(userId)}`, { method: "PATCH", body: JSON.stringify({ role }) }),
+
+    removeWorkspaceMember: (userId: string) =>
+      request<{ ok: true }>(`/api/v1/workspace/members/${encodeURIComponent(userId)}`, { method: "DELETE" }),
+
+    getWorkspaceInvitations: () => request<{ invitations: WorkspaceInvitation[] }>("/api/v1/workspace/invitations"),
+
+    createWorkspaceInvitation: (payload: { email: string; role: "member" | "viewer" }) =>
+      request<{ invitation: WorkspaceInvitation; emailed: boolean }>("/api/v1/workspace/invitations", { method: "POST", body: JSON.stringify(payload) }),
+
+    revokeWorkspaceInvitation: (id: string) =>
+      request<{ ok: true }>(`/api/v1/workspace/invitations/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+    previewInvitation: (token: string) => request<{ invitation: InvitationPreview }>(`/api/public/invitations/${encodeURIComponent(token)}`),
+
+    signUpFromInvitation: (token: string, payload: { username: string; password: string; displayName?: string }) =>
+      request<{ workspaceId: string }>(`/api/public/invitations/${encodeURIComponent(token)}/signup`, { method: "POST", body: JSON.stringify(payload) }),
+
+    acceptInvitation: (token: string) =>
+      request<{ workspaceId: string }>(`/api/v1/invitations/${encodeURIComponent(token)}/accept`, { method: "POST" }),
+
+    getPageAccess: (id: string) => request<{ access: PageAccess }>(`/api/v1/pages/${encodeURIComponent(id)}/access`),
+
+    setPageAccess: (id: string, payload: { restricted: boolean; shares: PageShare[] }) =>
+      request<{ access: PageAccess }>(`/api/v1/pages/${encodeURIComponent(id)}/access`, { method: "PUT", body: JSON.stringify(payload) }),
+
+    collabJoin: (memoId: string) =>
+      request<{ state: string; cursor: number; generation: number; canEdit: boolean }>(`/api/v1/pages/${encodeURIComponent(memoId)}/collab/join`, { method: "POST" }),
+
+    collabSync: (memoId: string, payload: { clientId: string; cursor: number; generation: number; update?: string; awareness?: string }) =>
+      request<{ updates: string[]; awareness: string[]; cursor: number; peers: number; title: string | null; state?: string; reset?: boolean }>(
+        `/api/v1/pages/${encodeURIComponent(memoId)}/collab/sync`, { method: "POST", body: JSON.stringify(payload) },
+      ),
+
+    getConnections: () =>
+      request<{
+        available: boolean;
+        canManage: boolean;
+        accounts: { id: string; provider: string; name: string; status: "active" | "expired"; connectedAt: string }[];
+      }>("/api/v1/connections"),
+
+    disconnectConnection: (id: string) =>
+      request<{ ok: true }>(`/api/v1/connections/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+    getLinkPreview: (url: string) =>
+      request<{ preview: LinkPreviewData | null }>("/api/v1/connections/preview", {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }),
+
+    searchConnectedApps: (q: string) =>
+      request<{ results: { provider: "github"; title: string; subtitle: string; url: string }[] }>(`/api/v1/connections/search?${new URLSearchParams({ q })}`),
+
+    savePageToDrive: (page: { title: string; html: string }) =>
+      request<{ url: string }>("/api/v1/connections/drive/pages", {
+        method: "POST",
+        body: JSON.stringify(page),
+      }),
+
+    getCalendar: () =>
+      request<{
+        feeds: { id: string; label: string; lastError: string | null; connected: boolean }[];
+        events: { id: string; title: string; start: string; end: string | null; allDay: boolean; location: string | null }[];
+      }>("/api/v1/calendar"),
+
+    connectCalendar: (url: string) =>
+      request<{ feed: { id: string; label: string; lastError: string | null } }>("/api/v1/calendar/feeds", { method: "POST", body: JSON.stringify({ url }) }),
+
+    disconnectCalendar: (id: string) =>
+      request<{ ok: true }>(`/api/v1/calendar/feeds/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+    getWorkspaceMembers: () => request<{ members: WorkspaceMember[] }>("/api/v1/workspace/members"),
+
+    getMemoComments: (memoId: string) => request<{ comments: MemoComment[] }>(`/api/v1/memos/${encodeURIComponent(memoId)}/comments`),
+
+    createMemoComment: (memoId: string, payload: { body: string; threadId?: string; quote?: string; quoteOccurrence?: number; mentions?: string[] }) =>
+      request<{ comment: MemoComment }>(`/api/v1/memos/${encodeURIComponent(memoId)}/comments`, { method: "POST", body: JSON.stringify(payload) }),
+
+    updateMemoComment: (id: string, payload: { body?: string; resolved?: boolean }) =>
+      request<{ comment: MemoComment }>(`/api/v1/comments/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    deleteMemoComment: (id: string) => request<{ ok: true }>(`/api/v1/comments/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+    getNotifications: () => request<{ notifications: AppNotification[]; unread: number }>("/api/v1/notifications"),
+
+    markNotificationsRead: (payload: { ids?: string[]; all?: boolean }) =>
+      request<{ ok: true }>("/api/v1/notifications/read", { method: "POST", body: JSON.stringify(payload) }),
+
+    getPageBacklinks: (id: string) =>
+      request<{ backlinks: PageBacklink[] }>(`/api/v1/pages/${encodeURIComponent(id)}/backlinks`),
 
     syncBootstrap: (params?: { afterId?: string | null; limit?: number }) => {
       const search = new URLSearchParams();
@@ -1660,7 +1841,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
       if (!response.ok) await throwRequestError(context, response, "Community registry request failed");
       return {
         bytes: await response.arrayBuffer(),
-        signatureBase64: response.headers.get("x-edgeever-community-registry-signature") ?? "",
+        signatureBase64: response.headers.get("x-ponder-community-registry-signature") ?? "",
       };
     },
 
@@ -1703,7 +1884,7 @@ export const createEdgeEverClient = (options: EdgeEverClientOptions = {}) => {
     },
 
     claimPosterRender: () => request<{ job: null | { id: string; memoId: string; expectedRevision: number; templateId: string | null; claimToken: string; expiresAt: string } }>("/api/v1/poster-render/claim", { method: "POST", body: "{}" }),
-    completePosterRender: (id: string, input: { claimToken: string; document?: import("@edgeever/shared").PosterDocument; errorCode?: "render_failed" | "revision_conflict" | "client_timeout" }) => request<{ job: { status: string } }>(`/api/v1/poster-render/${encodeURIComponent(id)}/complete`, { method: "POST", body: JSON.stringify(input) }),
+    completePosterRender: (id: string, input: { claimToken: string; document?: import("@ponder/shared").PosterDocument; errorCode?: "render_failed" | "revision_conflict" | "client_timeout" }) => request<{ job: { status: string } }>(`/api/v1/poster-render/${encodeURIComponent(id)}/complete`, { method: "POST", body: JSON.stringify(input) }),
     uploadMemoResourceParts,
 
     updateMemo: (

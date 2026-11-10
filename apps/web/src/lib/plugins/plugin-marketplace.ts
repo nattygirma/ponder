@@ -1,4 +1,4 @@
-import { parseMarketplaceRegistry, type MarketplaceEntry, type MarketplaceRegistry } from "@edgeever/plugin-api";
+import { parseMarketplaceRegistry, type MarketplaceEntry, type MarketplaceRegistry } from "@ponder/plugin-api";
 import {
   downloadGithubExtension,
   loadGithubInstallableManifest,

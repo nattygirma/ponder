@@ -3,8 +3,8 @@ import { z } from "zod";
 
 export const INFOGRAPHIC_SCHEMA_VERSION = 1 as const;
 export const INFOGRAPHIC_AGENT_SOURCE_MAX_LENGTH = 100_000;
-const MARKER = "edgeever-infographic-v1";
-const COMMENT = /<!--\s*edgeever-infographic-v1:([A-Za-z0-9_-]+)\s*-->/;
+const MARKER = "ponder-infographic-v1";
+const COMMENT = /<!--\s*ponder-infographic-v1:([A-Za-z0-9_-]+)\s*-->/;
 const SESSION_ID = /^[A-Za-z0-9_-]{1,80}$/;
 
 export type InfographicDocument = {
@@ -73,7 +73,7 @@ export const hasInfographicDocumentMarker = (markdown: string | null | undefined
   Boolean(markdown?.includes(`<!-- ${MARKER}:`));
 
 export const stripInfographicDocumentMarker = (markdown: string) =>
-  markdown.replace(/<!--\s*edgeever-infographic-v1:[\s\S]*?-->/g, "").trim();
+  markdown.replace(/<!--\s*ponder-infographic-v1:[\s\S]*?-->/g, "").trim();
 
 export const parseInfographicDocument = (markdown: string | null | undefined): InfographicDocument | null => {
   const encoded = markdown?.match(COMMENT)?.[1];

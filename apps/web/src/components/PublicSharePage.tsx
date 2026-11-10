@@ -11,25 +11,25 @@ import { cn } from "@/lib/utils";
 import { ApiRequestError, api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EdgeEverCodeBlock, codeBlockLowlight } from "@/lib/code-block";
+import { PonderCodeBlock, codeBlockLowlight } from "@/lib/code-block";
 import { withEnvironmentTitlePrefix } from "@/lib/environment-title";
 import { resolvePublicShareBody } from "@/lib/public-share-body";
 import { sanitizeAndScopeCss } from "@/lib/css-sandbox";
 import {
   parseImageWidth,
   getImageReferrerPolicy,
-  createEdgeEverDocumentExtensions,
+  createPonderDocumentExtensions,
   noteProseCssVariables,
   parsePublishedNoteBodyFont,
   resolveNoteProse,
   type PublicMemoShare,
   type ShareBodyAccess,
   getMemoDisplayTitle,
-} from "@edgeever/shared";
-import { resolveSupportedLocale } from "@edgeever/shared/i18n/locales";
+} from "@ponder/shared";
+import { resolveSupportedLocale } from "@ponder/shared/i18n/locales";
 import { activateHeadingAnchorClick } from "@/lib/editor-heading-anchor";
 import { applyEditorBodyFontPreference } from "@/lib/editor-body-font";
-import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
+import { createPonderMathematics } from "@ponder/shared/mathematics";
 import { PdfAttachment } from "@/components/editor/PdfAttachment";
 import { FileAttachment } from "@/components/editor/FileAttachment";
 import { NotebookSiteCodeBlock } from "./NotebookSiteCodeBlock";
@@ -68,7 +68,7 @@ const SharedImage = Image.extend({
 });
 
 const SharedThemeBlock = Node.create({
-  name: "edgeeverThemeBlock",
+  name: "ponderThemeBlock",
   group: "block",
   content: "block+",
   defining: true,
@@ -86,26 +86,26 @@ const SharedThemeBlock = Node.create({
     return [{ tag: "section[data-theme-block-kind]" }];
   },
   renderHTML({ HTMLAttributes }) {
-    return ["section", mergeAttributes(HTMLAttributes, { "data-edgeever-theme-block": "true" }), 0];
+    return ["section", mergeAttributes(HTMLAttributes, { "data-ponder-theme-block": "true" }), 0];
   },
 });
 
-const SiteCodeBlock = EdgeEverCodeBlock.extend({ addNodeView() { return ReactNodeViewRenderer(NotebookSiteCodeBlock); } });
+const SiteCodeBlock = PonderCodeBlock.extend({ addNodeView() { return ReactNodeViewRenderer(NotebookSiteCodeBlock); } });
 const SharedRichText = ({ content, site = false }: { content: PublicMemoShare["contentJson"]; site?: boolean }) => {
   const { t } = useTranslation();
   const [imagePreview, setImagePreview] = useState<{ alt: string; url: string } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const editor = useEditor({
     extensions: [
-      ...createEdgeEverDocumentExtensions({
-        mathematics: createEdgeEverMathematics(),
+      ...createPonderDocumentExtensions({
+        mathematics: createPonderMathematics(),
         starterKit: { codeBlock: false, link: { openOnClick: true } },
         image: SharedImage.configure({ allowBase64: false, inline: false }),
         pdf: PdfAttachment,
         file: FileAttachment,
         table: { table: { renderWrapper: true } },
       }),
-      (site ? SiteCodeBlock : EdgeEverCodeBlock).configure({ lowlight: codeBlockLowlight, defaultLanguage: "plaintext" }),
+      (site ? SiteCodeBlock : PonderCodeBlock).configure({ lowlight: codeBlockLowlight, defaultLanguage: "plaintext" }),
       SharedThemeBlock,
     ],
     content,
@@ -168,7 +168,7 @@ const SharedDocument = ({
   access,
   site = false,
 }: {
-  locale: "zh-CN" | "en-US" | "ja" | "pl" | "ru";
+  locale: "en-US" | "ja" | "pl" | "ru";
   share: PublicMemoShare;
   token: string;
   access?: ShareBodyAccess;
@@ -276,13 +276,13 @@ export const PublicSharePage = () => {
     document.head.appendChild(robots);
     if (share) {
       document.title = withEnvironmentTitlePrefix(
-        `${getMemoDisplayTitle(share.title, t("common.untitledMemo"))} · EdgeEver`,
-        { development: import.meta.env.DEV, profile: __EDGEEVER_DEVELOPMENT_PROFILE__ },
+        `${getMemoDisplayTitle(share.title, t("common.untitledMemo"))} · Ponder`,
+        { development: import.meta.env.DEV, profile: __PONDER_DEVELOPMENT_PROFILE__ },
       );
     } else if (passwordRequired) {
       document.title = withEnvironmentTitlePrefix(t("sharing.passwordRequiredTitle"), {
         development: import.meta.env.DEV,
-        profile: __EDGEEVER_DEVELOPMENT_PROFILE__,
+        profile: __PONDER_DEVELOPMENT_PROFILE__,
       });
     }
     return () => {
@@ -356,7 +356,7 @@ export const PublicShareArticle = ({
     <div
       ref={containerRef}
       className={cn(
-        "edgeever-public-share",
+        "ponder-public-share",
         layout === "site" ? "py-6 sm:py-8 xl:pr-56" : "px-4 py-6 sm:px-8 sm:py-10",
       )}
     >
@@ -422,7 +422,7 @@ export const PublicShareArticle = ({
         </header>
         <div
           className={cn(
-            "edgeever-editor",
+            "ponder-editor",
             layout === "site" ? "py-4 sm:py-5" : "px-1 py-4 sm:px-4 sm:py-7",
           )}
           data-editor-theme="default"
@@ -447,7 +447,7 @@ export const PublicShareArticle = ({
         {showBranding ? (
           <footer className="px-5 pb-6 pt-2 text-center text-xs text-slate-500 sm:px-10 sm:pb-8">
             <a
-              href="https://edgeever.org/"
+              href="https://appkeep.io/"
               target="_blank"
               rel="noopener noreferrer"
               className="rounded-sm transition-colors hover:text-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"

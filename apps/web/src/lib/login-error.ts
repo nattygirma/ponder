@@ -10,7 +10,7 @@ type LoginProblemDetails = {
 export type LoginProblem = LoginProblemDetails & (
   | { kind: "invalidInstanceUrl"; diagnosticCode: "instance_url_invalid" }
   | { kind: "instanceUnreachable"; diagnosticCode: "network_unreachable" }
-  | { kind: "instanceApiNotFound"; diagnosticCode: "edgeever_api_not_found" }
+  | { kind: "instanceApiNotFound"; diagnosticCode: "ponder_api_not_found" }
   | { kind: "invalidCredentials"; diagnosticCode: "invalid_credentials" }
   | { kind: "sessionExpired"; diagnosticCode: "session_expired" }
   | { kind: "loginRateLimited"; diagnosticCode: "login_rate_limited" }
@@ -103,11 +103,11 @@ export const classifyLoginError = (error: unknown, phase: LoginErrorPhase): Logi
         : { kind: "sessionExpired", diagnosticCode: "session_expired" }, error);
     }
     if (error.status === 404) {
-      return withRayId({ kind: "instanceApiNotFound", diagnosticCode: "edgeever_api_not_found" }, error);
+      return withRayId({ kind: "instanceApiNotFound", diagnosticCode: "ponder_api_not_found" }, error);
     }
     if (error.status === 403) {
       return withRayId(
-        error.responseDiagnostics?.isEdgeEverApiError
+        error.responseDiagnostics?.isPonderApiError
           ? { kind: "requestForbidden", diagnosticCode: error.code || "http_403" }
           : { kind: "securityPolicyBlocked", diagnosticCode: "security_policy_blocked" },
         error,

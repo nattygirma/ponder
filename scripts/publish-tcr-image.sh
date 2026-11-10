@@ -3,7 +3,7 @@
 set -Eeuo pipefail
 
 readonly TCR_REGISTRY="ccr.ccs.tencentyun.com"
-readonly TCR_IMAGE="${TCR_REGISTRY}/edgeever/edgeever"
+readonly TCR_IMAGE="${TCR_REGISTRY}/ponder/ponder"
 
 require_value() {
   local name="$1"
@@ -103,7 +103,7 @@ if [[ "${CNB_EVENT}" == "push" ]] && [[ -n "${TENCENTCLOUD_SECRET_ID:-}" ]] && [
     --env TENCENTCLOUD_SECRET_ID \
     --env TENCENTCLOUD_SECRET_KEY \
     --env TENCENTCLOUD_REGION="${TENCENTCLOUD_REGION:-ap-guangzhou}" \
-    --env TCR_REPOSITORY=edgeever/edgeever \
+    --env TCR_REPOSITORY=ponder/ponder \
     --env TCR_SHA_TAGS_TO_KEEP=20 \
     --volume "${PWD}:/workspace" \
     --workdir /workspace \

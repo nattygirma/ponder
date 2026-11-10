@@ -21,7 +21,7 @@ const platforms = [
   { name: "jike-grid", url: "https://m.okjike.com/originalPosts/6715e824d9dc81724c2ec74d", title: "又凑了九张赤坎游客照📷", text: "九张赤坎游客照", excluded: "热门评论", imageCount: 9 },
   { name: "jike-long", url: "https://m.okjike.com/originalPosts/64c9dd9a2edae6abdc610605", title: "我在即刻写东西的核心原则是，怕什么真理无穷，进一步有一步的欢喜。当我每次取得一点点微小的进步，我都会快速地将自己的方法、启发和心得分享出来。这才是即刻涨粉的正道，既有利于你的成长，又有利于平台的发展，互利共赢。希望能激励到更多人分享自己的所", text: "《世界尽头的咖啡馆》和《斯坦福大学人生设计课》", excluded: "热门评论", imageCount: 1 },
   { name: "sspai", url: "https://sspai.com/post/92653", title: "已经能测夜间体征的 Apple Watch，为什么要再做一个睡眠呼吸暂停提醒", text: "手腕上的「心率检测」靠谱吗", excluded: "作者提示", imageCount: 9 },
-  { name: "juejin", url: "https://juejin.cn/post/6972051526416072717", title: "JavaScript异步发展历史", text: "let readFile", excluded: "复制代码", imageCount: 2 },
+  { name: "juejin", url: "https://juejin.cn/post/6972051526416072717", title: "JavaScript异步发展历史", text: "let readFile", excluded: "Copy code", imageCount: 2 },
   { name: "douban-book", url: "https://book.douban.com/review/16093028/", title: "行走在文字间，是我与这个世界达成的和解", text: "直到精疲力尽", excluded: "有关键情节透露", imageCount: 6 },
   { name: "douban-movie", url: "https://movie.douban.com/review/17798662/", title: "假如没有越狱成功，安迪也仍是自由的", text: "To be honest", excluded: "有关键情节透露", imageCount: 2 },
   { name: "douban-music", url: "https://music.douban.com/review/17855287/", title: "回来击穿他的肚脐眼", text: "Ink乐评", excluded: "有关键情节透露", imageCount: 3 },
@@ -49,13 +49,13 @@ const platforms = [
 test("platform clips persist through the extension and local API; archived images survive source blocking", async ({ baseURL }) => {
   test.setTimeout(180_000);
   execFileSync("bun", ["run", "build:extension"], { cwd: repositoryRoot, stdio: "pipe" });
-  const directory = mkdtempSync(join(tmpdir(), "edgeever-platform-extension-"));
-  const profile = mkdtempSync(join(tmpdir(), "edgeever-platform-browser-"));
+  const directory = mkdtempSync(join(tmpdir(), "ponder-platform-extension-"));
+  const profile = mkdtempSync(join(tmpdir(), "ponder-platform-browser-"));
   cpSync(join(repositoryRoot, "apps/extension/dist"), directory, { recursive: true });
   const backgroundPath=join(directory,"assets/background.js");
   // Expose only the registered menu callback in this temporary test build.
   // Pointer, capture and persistence still use the production bundle.
-  writeFileSync(backgroundPath,`const menuListener=chrome.contextMenus.onClicked.addListener.bind(chrome.contextMenus.onClicked);chrome.contextMenus.onClicked.addListener=(listener)=>{globalThis.__edgeeverTestMenuClick=listener;menuListener(listener);};\n${readFileSync(backgroundPath,"utf8")}`);
+  writeFileSync(backgroundPath,`const menuListener=chrome.contextMenus.onClicked.addListener.bind(chrome.contextMenus.onClicked);chrome.contextMenus.onClicked.addListener=(listener)=>{globalThis.__ponderTestMenuClick=listener;menuListener(listener);};\n${readFileSync(backgroundPath,"utf8")}`);
   const manifestPath = join(directory, "manifest.json");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   // The test cannot grant activeTab by clicking browser chrome. Give only this
@@ -69,7 +69,7 @@ test("platform clips persist through the extension and local API; archived image
   const imageOrigin=`http://127.0.0.1:${(imageServer.address() as AddressInfo).port}`;
   // The internal workerd URL serves both the built Web app and its API. Use
   // that same origin for the editor, avoiding a request-forwarding test proxy.
-  const builtInstanceUrl = process.env.EDGE_EVER_CLIPPER_TEST_INSTANCE_URL;
+  const builtInstanceUrl = process.env.PONDER_CLIPPER_TEST_INSTANCE_URL;
   const instanceUrl = builtInstanceUrl || baseURL;
   const request = await playwrightRequest.newContext({baseURL:instanceUrl,storageState:E2E_STORAGE_STATE_PATH,timeout:15_000});
   let context: BrowserContext | undefined;
@@ -144,7 +144,7 @@ test("platform clips persist through the extension and local API; archived image
         await expect(sender.locator('#status')).toContainText('请在网站登录并刷新');
         await expect(sender.locator('#capture-context .lucide-check')).toHaveCount(0);
         await expect(sender.locator('#save')).toBeEnabled();
-        await sender.screenshot({path:'/tmp/edgeever-p2-boss-login-popup.png'});
+        await sender.screenshot({path:'/tmp/ponder-p2-boss-login-popup.png'});
       }
     };
     for (const platform of platforms) {
@@ -158,11 +158,11 @@ test("platform clips persist through the extension and local API; archived image
       if(platform.targetUrl) {
         if(platform.name === "xueqiu-feed") await article.locator('a[class*="date-and-source_"][href="/2754211668/411841572"]').dispatchEvent("contextmenu");
         else await article.locator(".post-item-li").nth(1).locator(".text").dispatchEvent("contextmenu");
-        await expect(article.locator("[data-edgeever-social-target]")).toHaveAttribute("data-edgeever-social-target",platform.targetUrl);
+        await expect(article.locator("[data-ponder-social-target]")).toHaveAttribute("data-ponder-social-target",platform.targetUrl);
         expect((await save(platform.url)).ok).toBe(false);
         await worker.evaluate(async ({url,menu})=>{
           const [tab]=await chrome.tabs.query({url});
-          (globalThis as any).__edgeeverTestMenuClick({menuItemId:menu,pageUrl:url,frameId:0},tab);
+          (globalThis as any).__ponderTestMenuClick({menuItemId:menu,pageUrl:url,frameId:0},tab);
         },{url:platform.url,menu:platform.name === "xueqiu-feed" ? "save-xueqiu" : "save-jike"});
         await expect.poll(async()=> (await (await request.get("/api/v1/memos?limit=100")).json()).memos.filter((memo:any)=>!oldIds.has(memo.id)).length).toBe(1);
         // Image rewriting happens after creation; wait for its resource URL.
@@ -237,7 +237,7 @@ test("platform clips persist through the extension and local API; archived image
         expect(resources, `${platform.name}: ${memo.contentMarkdown}`).toHaveLength(platform.imageCount);
         await article.goto("about:blank"); sourceBlocked = true;
         // With the source page gone and every external source host blocked,
-        // reopen the saved note's image from the EdgeEver resource endpoint.
+        // reopen the saved note's image from the Ponder resource endpoint.
         for (const resource of resources) {
           const blob = await request.get(`/api/v1/resources/${resource[1]}/blob`);
           expect(blob.ok()).toBe(true);
@@ -256,8 +256,8 @@ test("platform clips persist through the extension and local API; archived image
         // A configured built instance must register its actual Service Worker.
         await expect.poll(()=>preview.evaluate(()=>!!navigator.serviceWorker.controller)).toBe(true);
       }
-      await preview.getByRole("button", { name: "全部笔记", exact: true }).click();
-      await preview.getByPlaceholder("搜索笔记").fill(platform.title);
+      await preview.getByRole("button", { name: "All notes", exact: true }).click();
+      await preview.getByPlaceholder("Search notes").fill(platform.title);
       await preview.locator(`[data-memo-id="${note!.id}"]`).locator("button").first().click();
       const editor = preview.locator(".ProseMirror");
       await expect(editor).toContainText(platform.text);
@@ -287,11 +287,11 @@ test("platform clips persist through the extension and local API; archived image
         await expect(editor.locator("h2").filter({hasText:"什么是Deepseek V3"})).toHaveCount(1);
         await expect(editor.locator("h3").filter({hasText:"第一步：注册华为云账号"})).toHaveCount(1);
       }
-      // Code-copy buttons are added by EdgeEver's editor after loading. They
+      // Code-copy buttons are added by Ponder's editor after loading. They
       // are not part of the archived article or its source-site controls.
       const articleText = await editor.evaluate(element => {
         const copy = element.cloneNode(true) as Element;
-        copy.querySelectorAll(".edgeever-code-copy-button").forEach(button => button.remove());
+        copy.querySelectorAll(".ponder-code-copy-button").forEach(button => button.remove());
         return copy.textContent || "";
       });
       expect(articleText).not.toContain(platform.excluded);
@@ -314,18 +314,18 @@ test("platform clips persist through the extension and local API; archived image
       if(verifyWarmOffline) {
         const paths=[...memo.contentMarkdown.matchAll(/!\[[^\]]*\]\((\/api\/v1\/resources\/[^/)]+\/blob)\)/g)].map((match:any)=>match[1]);
         await expect.poll(()=>preview.evaluate(async paths=>{
-          const cache=await caches.open("edgeever-resource-blobs");
+          const cache=await caches.open("ponder-resource-blobs");
           return Promise.all(paths.map(path=>cache.match(path).then(Boolean)));
         },paths)).toEqual(paths.map(()=>true));
         const mirrored=await preview.evaluate(id=>new Promise<boolean>((resolve,reject)=>{
-          const open=indexedDB.open("edgeever-local");open.onerror=()=>reject(open.error);
+          const open=indexedDB.open("ponder-local");open.onerror=()=>reject(open.error);
           open.onsuccess=()=>{const db=open.result,get=db.transaction("memos").objectStore("memos").getAll();
             get.onsuccess=()=>{resolve(get.result.some((memo:any)=>memo.id===id));db.close();};get.onerror=()=>reject(get.error);};
         }),note!.id);
         expect(mirrored).toBe(true);
         // Prepare the cached all-notes list online; searching is a separate
         // query lifecycle, while this case verifies reopening a cached note.
-        await preview.getByPlaceholder("搜索笔记").fill("");
+        await preview.getByPlaceholder("Search notes").fill("");
         // The current note list virtualizes rows; verify the two rows needed
         // for switching away and back rather than counting the whole dataset.
         await expect(preview.locator(`[data-memo-id="${note!.id}"]`)).toHaveCount(1);
@@ -340,7 +340,7 @@ test("platform clips persist through the extension and local API; archived image
           await expect(editor).toContainText(platform.text);
           const images=editor.locator("img:not(.ProseMirror-separator)");await expect(images).toHaveCount(platform.imageCount);
           await expect.poll(()=>images.first().evaluate(img=>(img as HTMLImageElement).naturalWidth > 0)).toBe(true);
-          await preview.getByPlaceholder("搜索笔记").fill('6ace942f756bbb66581c3f96');
+          await preview.getByPlaceholder("Search notes").fill('6ace942f756bbb66581c3f96');
           await expect(preview.locator('[data-memo-id]')).toHaveCount(1);
           await preview.locator(`[data-memo-id="${note!.id}"]`).locator("button").first().click();
           await expect(editor).toContainText(platform.text);
@@ -355,8 +355,8 @@ test("platform clips persist through the extension and local API; archived image
       if (platform.name === 'boss') await checkBossPopup(platform.url, true);
       if(platform.name === "xueqiu-feed") {
         await article.locator('a[class*="date-and-source_"][href="/2754211668/411841572"]').dispatchEvent("contextmenu");
-        await worker.evaluate(async url=>{const [tab]=await chrome.tabs.query({url});(globalThis as any).__edgeeverTestMenuClick({menuItemId:"save-xueqiu",pageUrl:url,frameId:0},tab);},platform.url);
-        await expect(article.locator('#edgeever-clipper-toast [data-sonner-toast][data-type="error"]')).toBeVisible();
+        await worker.evaluate(async url=>{const [tab]=await chrome.tabs.query({url});(globalThis as any).__ponderTestMenuClick({menuItemId:"save-xueqiu",pageUrl:url,frameId:0},tab);},platform.url);
+        await expect(article.locator('#ponder-clipper-toast [data-sonner-toast][data-type="error"]')).toBeVisible();
         await expect(article.locator('iframe[sandbox="allow-same-origin"]')).toHaveCount(0);
       } else expect((await save(platform.url)).ok).toBe(false);
       const unchanged = (await (await request.get("/api/v1/memos?limit=100")).json()).memos as Array<{ id: string }>;
@@ -370,7 +370,7 @@ test("platform clips persist through the extension and local API; archived image
     await expect(sender.locator('#capture-mode')).toHaveText('内容受限');
     await expect(sender.locator('#capture-context')).toHaveAttribute('data-kind','content-restricted');
     await expect(sender.locator('#status')).toContainText('受限预览');
-    await sender.screenshot({path:'/tmp/edgeever-p2-substack-restricted-popup.png'});
+    await sender.screenshot({path:'/tmp/ponder-p2-substack-restricted-popup.png'});
     expect((await save(currentPlatform.url)).ok).toBe(false);
     expect((await (await request.get("/api/v1/memos?limit=100")).json()).memos.map((memo:any)=>memo.id)).toEqual(beforePaywall);
     expect(sourceRequests.some((url) => /\.(mp3|m4a|mp4)(\?|$)/.test(url))).toBe(false);

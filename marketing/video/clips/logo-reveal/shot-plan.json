@@ -8,7 +8,7 @@
   "font": "Inter",
   "export": "mp4",
   "asset_needs": [
-    { "role": "brand-mark", "kind": "svg", "source": "assets/edgeever-mark.svg", "treatment": "none" }
+    { "role": "brand-mark", "kind": "svg", "source": "assets/ponder-mark.svg", "treatment": "none" }
   ],
   "block": "logo-outro",
   "customize": {
@@ -22,7 +22,7 @@
     "final_handle_s": [5, 6],
     "exit": "none"
   },
-  "content": { "logo": "assets/edgeever-mark.svg", "wordmark": "EdgeEver", "tagline": "", "url": "" },
+  "content": { "logo": "assets/ponder-mark.svg", "wordmark": "Ponder", "tagline": "", "url": "" },
   "proof_times_s": [0.5, 1.4, 1.9, 2.5, 5.5],
   "shot_brief": "One second of clean white precedes a restrained logo settle and delayed name reveal. The completed lockup holds through the final frame for use in an editing application. Silent, opaque white MP4 intent; no transparent-output claim."
 }

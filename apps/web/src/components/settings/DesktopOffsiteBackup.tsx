@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronRight, CloudUpload, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { DesktopBackupStatus, DesktopOffsiteConfig } from "@edgeever/shared";
+import type { DesktopBackupStatus, DesktopOffsiteConfig } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { describeDesktopBackupError } from "@/lib/desktop-backup";
 import { formatBytes } from "@/lib/format-bytes";
 
-const DEFAULT_FOLDER = "/EdgeEver/backups";
+const DEFAULT_FOLDER = "/Ponder/backups";
 const emptyConfig: DesktopOffsiteConfig = { enabled: false, url: "", username: "", folder: DEFAULT_FOLDER };
 
 /** Status lines for the WebDAV copy, shown inside the backup status box. */
@@ -35,7 +35,7 @@ export const DesktopOffsiteStatusLines = ({ status, disabled, onUpload }: {
 /** Collapsible WebDAV settings. Saved explicitly because the fields only make sense together. */
 export const DesktopOffsiteSettings = ({ status, disabled }: { status: DesktopBackupStatus; disabled: boolean }) => {
   const { t } = useTranslation();
-  const bridge = window.edgeeverDesktop;
+  const bridge = window.ponderDesktop;
   const saved = status.offsite?.config ?? emptyConfig;
   const savedKey = JSON.stringify(saved);
   const [config, setConfig] = useState<DesktopOffsiteConfig>(saved);

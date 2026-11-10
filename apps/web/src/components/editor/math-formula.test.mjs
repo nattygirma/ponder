@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Editor } from "@tiptap/core";
-import { createEdgeEverDocumentExtensions, createEdgeEverMarkdownManager } from "@edgeever/shared";
-import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
+import { createPonderDocumentExtensions, createPonderMarkdownManager } from "@ponder/shared";
+import { createPonderMathematics } from "@ponder/shared/mathematics";
 import { ensureTestWindowDom } from "../../lib/restore-test-global.mjs";
 import {
   applyMathFormula,
@@ -13,8 +13,8 @@ import {
 const createEditor = (content) => {
   ensureTestWindowDom();
   return new Editor({
-    extensions: createEdgeEverDocumentExtensions({
-      mathematics: createEdgeEverMathematics(),
+    extensions: createPonderDocumentExtensions({
+      mathematics: createPonderMathematics(),
     }),
     content,
   });
@@ -22,7 +22,7 @@ const createEditor = (content) => {
 
 describe("math formula commands", () => {
   test("browser Markdown schema imports math fences as rendered formula nodes", () => {
-    const manager = createEdgeEverMarkdownManager({ mathematics: createEdgeEverMathematics() });
+    const manager = createPonderMarkdownManager({ mathematics: createPonderMathematics() });
     const content = manager.parse("```math\n\\Gamma(z) = \\int_0^\\infty t^{z-1}e^{-t}dt\\,.\n```");
     const editor = createEditor(content);
     expect(editor.getJSON().content[0].type).toBe("blockMath");

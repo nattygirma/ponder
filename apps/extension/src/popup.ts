@@ -8,7 +8,7 @@ export async function captureCurrentPage(settings: ExtensionSettings): Promise<s
   await requestInstancePermission(settings.instanceUrl);
   const response = await chrome.runtime.sendMessage({ type: "captureCurrentPage" });
   if (!response?.ok) throw new Error(response?.message || t("saveFailed"));
-  return typeof response.message === "string" && response.message ? response.message : t("savedToEdgeEver");
+  return typeof response.message === "string" && response.message ? response.message : t("savedToPonder");
 }
 
 export async function startRegionClip(settings: ExtensionSettings): Promise<void> {

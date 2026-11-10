@@ -1,4 +1,4 @@
-import { PosterElementSchema, type PosterDocument, type PosterElement } from "@edgeever/shared";
+import { PosterElementSchema, type PosterDocument, type PosterElement } from "@ponder/shared";
 export type ImageSlot = { x: number; y: number; width: number; height: number };
 export function matchesImageSlot(element: PosterElement, slot?: ImageSlot) {
   return element.type === "rect" && Boolean(slot) && element.id.startsWith("design_") && Math.abs(element.rotation) < 0.01

@@ -7,7 +7,7 @@ import {
   serializeDiagramDocument,
   serializeTableDocument,
   tableFallbackMarkdown,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { resolvePublicShareBody } from "./public-share-body";
 
 const shareOf = (contentMarkdown, contentJson = markdownToDoc(contentMarkdown)) => ({
@@ -45,27 +45,27 @@ describe("public share body", () => {
     const body = resolvePublicShareBody(shareOf(serializeTableDocument(document)), "share-token");
     expect(body.type).toBe("rich-text");
     if (body.type === "rich-text") {
-      expect(JSON.stringify(body.content)).not.toContain("edgeever-table-v1");
+      expect(JSON.stringify(body.content)).not.toContain("ponder-table-v1");
       expect(body.content.content?.some((node) => node.type === "table")).toBe(true);
     }
   });
 
   test("falls back to the readable table when the structured-table envelope cannot be parsed", () => {
-    const markdown = `${tableFallbackMarkdown(createDefaultTableDocument())}\n\n<!-- edgeever-table-v1:not-json -->`;
+    const markdown = `${tableFallbackMarkdown(createDefaultTableDocument())}\n\n<!-- ponder-table-v1:not-json -->`;
     const body = resolvePublicShareBody(shareOf(markdown), "share-token");
     expect(body.type).toBe("rich-text");
     if (body.type === "rich-text") {
-      expect(JSON.stringify(body.content)).not.toContain("edgeever-table-v1");
+      expect(JSON.stringify(body.content)).not.toContain("ponder-table-v1");
       expect(body.content.content?.some((node) => node.type === "table")).toBe(true);
     }
   });
 
   test("falls back to the Mermaid fence when the visual-diagram IR cannot be parsed", () => {
-    const markdown = `${diagramFallbackMarkdown(createDefaultDiagramDocument("mind-map"))}\n\n<!-- edgeever-diagram-v1:not-json -->`;
+    const markdown = `${diagramFallbackMarkdown(createDefaultDiagramDocument("mind-map"))}\n\n<!-- ponder-diagram-v1:not-json -->`;
     const body = resolvePublicShareBody(shareOf(markdown), "share-token");
     expect(body.type).toBe("rich-text");
     if (body.type === "rich-text") {
-      expect(JSON.stringify(body.content)).not.toContain("edgeever-diagram-v1");
+      expect(JSON.stringify(body.content)).not.toContain("ponder-diagram-v1");
       expect(body.content.content?.some((node) => node.type === "codeBlock" && node.attrs?.language === "mermaid")).toBe(true);
     }
   });

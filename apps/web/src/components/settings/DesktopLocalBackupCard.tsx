@@ -19,7 +19,7 @@ export const DesktopLocalBackupCard = () => {
   const [selectedPath, setSelectedPath] = useState("");
   const [state, setState] = useState<OperationState>("idle");
   const [message, setMessage] = useState<string | null>(null);
-  const bridge = window.edgeeverDesktop;
+  const bridge = window.ponderDesktop;
 
   const refresh = useCallback(async () => {
     if (!bridge?.isAvailable) return;

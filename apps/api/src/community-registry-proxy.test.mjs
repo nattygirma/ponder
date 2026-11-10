@@ -20,7 +20,7 @@ describe("community registry proxy", () => {
     const app = new Hono();
     registerPluginDistributionRoutes(app);
     const response = await app.request("/api/v1/plugins/community-registry?url=https://evil.example/community-registry.json", {}, {
-      EDGE_EVER_COMMUNITY_REGISTRY_URL: "https://plugins.example/community-registry.json",
+      PONDER_COMMUNITY_REGISTRY_URL: "https://plugins.example/community-registry.json",
       publicNetworkFetch: async (url) => {
         calls.push(String(url));
         if (String(url).endsWith(".json.sig")) return new Response(signature);
@@ -30,7 +30,7 @@ describe("community registry proxy", () => {
 
     expect(response.status).toBe(200);
     expect(await response.text()).toBe(registryText);
-    expect(response.headers.get("x-edgeever-community-registry-signature")).toBe(signature);
+    expect(response.headers.get("x-ponder-community-registry-signature")).toBe(signature);
     expect(response.headers.get("cache-control")).toContain("max-age=60");
     expect(calls).toEqual([
       "https://plugins.example/community-registry.json",

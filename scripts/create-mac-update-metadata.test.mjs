@@ -6,9 +6,9 @@ import { buildMacUpdateMetadata } from "./create-mac-update-metadata.mjs";
 
 describe("macOS update metadata", () => {
   test("lists architecture-specific ZIPs so the updater can select the matching Mac", () => {
-    const outputDirectory = mkdtempSync(join(tmpdir(), "edgeever-update-metadata-"));
-    writeFileSync(join(outputDirectory, "EdgeEver-1.7.0-mac-arm64.zip"), "arm");
-    writeFileSync(join(outputDirectory, "EdgeEver-1.7.0-mac-x64.zip"), "intel");
+    const outputDirectory = mkdtempSync(join(tmpdir(), "ponder-update-metadata-"));
+    writeFileSync(join(outputDirectory, "Ponder-1.7.0-mac-arm64.zip"), "arm");
+    writeFileSync(join(outputDirectory, "Ponder-1.7.0-mac-x64.zip"), "intel");
 
     const metadata = buildMacUpdateMetadata({
       version: "1.7.0",
@@ -16,8 +16,8 @@ describe("macOS update metadata", () => {
       releaseDate: "2026-07-30T00:00:00.000Z",
     });
 
-    expect(metadata).toContain("EdgeEver-1.7.0-mac-arm64.zip");
-    expect(metadata).toContain("EdgeEver-1.7.0-mac-x64.zip");
+    expect(metadata).toContain("Ponder-1.7.0-mac-arm64.zip");
+    expect(metadata).toContain("Ponder-1.7.0-mac-x64.zip");
     expect(metadata).toContain("releaseDate: '2026-07-30T00:00:00.000Z'");
     expect(metadata.match(/sha512:/g)).toHaveLength(3);
   });

@@ -1,4 +1,4 @@
-import type { GooglePlayUpdateResult, GooglePlayUpdateState } from "../../modules/edgeever-app-store";
+import type { GooglePlayUpdateResult, GooglePlayUpdateState } from "../../modules/ponder-app-store";
 
 type PlayUpdateApi = {
   check: () => Promise<GooglePlayUpdateState>;

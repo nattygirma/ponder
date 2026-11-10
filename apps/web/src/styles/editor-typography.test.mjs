@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, test } from "bun:test";
-import { MEMO_CONTENT_STYLE } from "@edgeever/shared";
+import { MEMO_CONTENT_STYLE } from "@ponder/shared";
 
 const PRESET_THEME_FILES = [
   "minimal-emerald.css",
@@ -66,7 +66,7 @@ describe("editor typography contract", () => {
     const globals = readStyle("./globals.css");
     const placeholderRules = declarationsForSelector(
       globals,
-      ".ProseMirror.edgeever-note-rich-editor p.is-empty::before",
+      ".ProseMirror.ponder-note-rich-editor p.is-empty::before",
     );
 
     expect(placeholderRules).toMatch(/font-size\s*:\s*inherit/);
@@ -112,11 +112,11 @@ describe("editor typography contract", () => {
     const defaultItalicRules = declarationsForSelector(globals, ".ProseMirror em");
     const mobileBoldRules = declarationsForSelector(
       mobileEditor,
-      ".edgeever-mobile-tiptap-content strong",
+      ".ponder-mobile-tiptap-content strong",
     );
     const mobileItalicRules = declarationsForSelector(
       mobileEditor,
-      ".edgeever-mobile-tiptap-content em",
+      ".ponder-mobile-tiptap-content em",
     );
 
     expect(defaultBoldRules).toMatch(/font-synthesis\s*:\s*weight style/);
@@ -162,7 +162,7 @@ describe("editor typography contract", () => {
       '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, ui-sans-serif, system-ui, sans-serif';
     const regionFaces = ["PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC"];
     const fontSans = globals.match(/--font-sans:\s*([^;]+);/)?.[1];
-    const systemFamily = globals.match(/--edgeever-system-font-family:\s*([^;]+);/)?.[1];
+    const systemFamily = globals.match(/--ponder-system-font-family:\s*([^;]+);/)?.[1];
 
     expect(fontSans).toBe(systemStack);
     expect(systemFamily).toBe(systemStack);
@@ -170,8 +170,8 @@ describe("editor typography contract", () => {
       expect(fontSans).not.toContain(face);
     }
 
-    const mobileDiagramText = declarationsForSelector(mobileEditor, ".edgeever-mermaid-svg text");
-    expect(mobileDiagramText).toContain("var(--edgeever-system-font-family,");
+    const mobileDiagramText = declarationsForSelector(mobileEditor, ".ponder-mermaid-svg text");
+    expect(mobileDiagramText).toContain("var(--ponder-system-font-family,");
     for (const face of regionFaces) {
       expect(mobileDiagramText).not.toContain(face);
     }

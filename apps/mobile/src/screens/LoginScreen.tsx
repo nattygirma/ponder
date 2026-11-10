@@ -7,16 +7,16 @@ import {
   StyleSheet,
   View,
 } from "react-native";
-import { PUBLIC_DEMO_INSTANCE_URL } from "@edgeever/shared";
+import { PUBLIC_DEMO_INSTANCE_URL } from "@ponder/shared";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator, GitHub, LockKeyhole } from "../components/icons";
+import { ActivityIndicator, ExternalLink, LockKeyhole } from "../components/icons";
 import { Pressable, Text, TextInput } from "../components/LocalizedText";
 import { formatMobileLoginError } from "../lib/login-error";
 import { useMobileLocale } from "../lib/mobile-locale";
 import { resolveMobileThemeStyles, useMobileTheme, type MobileResolvedTheme } from "../lib/mobile-theme";
 import { useSession } from "../lib/session";
 
-const GITHUB_REPOSITORY_URL = "https://github.com/tianma-if/edgeever";
+const WEBSITE_URL = "https://appkeep.io";
 
 export const LoginScreen = () => {
   const { resolvedTheme } = useMobileTheme();
@@ -50,8 +50,8 @@ export const LoginScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Pressable accessibilityLabel="GitHub 仓库" accessibilityRole="link" onPress={() => Linking.openURL(GITHUB_REPOSITORY_URL)} style={styles.githubButton}>
-        <GitHub color="#475569" size={20} />
+      <Pressable accessibilityLabel="AppKeep" accessibilityRole="link" onPress={() => Linking.openURL(WEBSITE_URL)} style={styles.websiteButton}>
+        <ExternalLink color="#475569" size={20} />
       </Pressable>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboard}>
         <ScrollView
@@ -65,12 +65,12 @@ export const LoginScreen = () => {
                 <LockKeyhole color="#ffffff" size={22} />
               </View>
               <View style={styles.headerText}>
-                <Text style={styles.title}>EdgeEver</Text>
-                <Text style={styles.subtitle}>连接你的自托管笔记空间</Text>
+                <Text style={styles.title}>Ponder</Text>
+                <Text style={styles.subtitle}>Connect to your self-hosted notes</Text>
               </View>
             </View>
             <View style={styles.field}>
-              <Text style={styles.label}>实例地址</Text>
+              <Text style={styles.label}>Instance URL</Text>
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -84,7 +84,7 @@ export const LoginScreen = () => {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>用户名</Text>
+              <Text style={styles.label}>Username</Text>
               <TextInput
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -95,10 +95,10 @@ export const LoginScreen = () => {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>密码</Text>
+              <Text style={styles.label}>Password</Text>
               <TextInput
                 onChangeText={setPassword}
-                placeholder="首次登录密码"
+                placeholder="Password for first sign-in"
                 placeholderTextColor="#94a3b8"
                 secureTextEntry
                 style={styles.input}
@@ -118,7 +118,7 @@ export const LoginScreen = () => {
                 pressed && canSubmit ? styles.buttonPressed : null,
               ]}
             >
-              {submitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>登录</Text>}
+              {submitting ? <ActivityIndicator color="#ffffff" /> : <Text style={styles.buttonText}>Sign in</Text>}
             </Pressable>
           </View>
         </ScrollView>
@@ -132,7 +132,7 @@ const baseLoginStyles = StyleSheet.create({
     backgroundColor: "#ecfdf5",
     flex: 1,
   },
-  githubButton: {
+  websiteButton: {
     alignItems: "center",
     backgroundColor: "#ffffff",
     borderColor: "#e2e8f0",

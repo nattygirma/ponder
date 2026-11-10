@@ -14,12 +14,12 @@ const Preview = memo(function Preview({
   onSelect: () => void;
   disabled: boolean;
 }) {
-  const url = zh ? template.thumbnails.zh : template.thumbnails.en;
+  const url = template.thumbnails.en;
   return (
     <button
       disabled={disabled}
       data-poster-template={template.id}
-      aria-label={zh ? template.zh : template.en}
+      aria-label={template.en}
       aria-pressed={selected}
       onClick={onSelect}
       className={`group overflow-hidden rounded-lg border p-1.5 text-left transition disabled:opacity-50 ${selected ? "border-emerald-500 bg-emerald-50/50 ring-1 ring-emerald-500" : "border-slate-200/80 bg-card hover:border-emerald-400"}`}
@@ -27,7 +27,7 @@ const Preview = memo(function Preview({
       <div className="relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded bg-slate-100">
         <img
           src={url}
-          alt={zh ? template.zh : template.en}
+          alt={template.en}
           width={480}
           height={640}
           loading="lazy"
@@ -36,7 +36,7 @@ const Preview = memo(function Preview({
         />
       </div>
       <div className="mt-2 truncate px-1 text-[11px] font-medium">
-        {zh ? template.zh : template.en}
+        {template.en}
       </div>
     </button>
   );
@@ -60,7 +60,7 @@ export function PosterTemplatePanel({
   const templates = (
     recommended ? posterGalleryTemplatesFor(platformId) : POSTER_GALLERY_TEMPLATES
   ).filter((template) =>
-    `${template.zh} ${template.en} ${template.zhUse} ${template.enUse}`
+    `${template.en} ${template.enUse}`
       .toLowerCase()
       .includes(search.toLowerCase()),
   );

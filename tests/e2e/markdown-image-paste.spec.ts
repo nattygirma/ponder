@@ -54,8 +54,8 @@ test("converts a pasted Markdown image line in the main Web editor", async ({ pa
 
   try {
     await page.goto("/");
-    await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-    await page.getByPlaceholder("搜索笔记").fill(title);
+    await page.getByRole("button", { name: "All notes", exact: true }).click();
+    await page.getByPlaceholder("Search notes").fill(title);
     await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
 
     const editor = page.locator(".ProseMirror[contenteditable='true']");
@@ -64,15 +64,15 @@ test("converts a pasted Markdown image line in the main Web editor", async ({ pa
 
     const image = editor.locator(`img[src="${source}"]`);
     await expect(image).toHaveCount(1);
-    await expect(image).toHaveAttribute("alt", "图片");
+    await expect(image).toHaveAttribute("alt", "Image");
     // Filenames/titles stay in the document model, not native hover tooltips.
     await expect(image).not.toHaveAttribute("title");
     await expect(editor).not.toContainText(markdown);
 
-    const imageNode = editor.locator(".edgeever-image-node");
+    const imageNode = editor.locator(".ponder-image-node");
     await image.click();
     await expect(imageNode).toHaveClass(/(?:is-selected|ProseMirror-selectednode)/);
-    await imageNode.getByRole("button", { name: "较小" }).click();
+    await imageNode.getByRole("button", { name: "Small" }).click();
 
     const editorBox = await editor.boundingBox();
     const imageBox = await imageNode.boundingBox();
@@ -112,7 +112,7 @@ test("converts a pasted Markdown image line in the standalone mobile Web editor"
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/mobile-edit.html#memoId=${encodeURIComponent(memo.id)}&returnTo=%2F`);
 
-    const editor = page.locator(".edgeever-mobile-tiptap-content[contenteditable='true']");
+    const editor = page.locator(".ponder-mobile-tiptap-content[contenteditable='true']");
     await expect(editor).toBeEditable();
     await dispatchPlainTextPaste(editor, markdown);
 
@@ -144,15 +144,15 @@ test("shows a stable local preview while a pasted image is uploading", async ({ 
       await route.continue();
     });
     await page.goto("/");
-    await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-    await page.getByPlaceholder("搜索笔记").fill(title);
+    await page.getByRole("button", { name: "All notes", exact: true }).click();
+    await page.getByPlaceholder("Search notes").fill(title);
     await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
 
     const editor = page.locator(".ProseMirror[contenteditable='true']");
     await expect(editor).toBeEditable();
     await dispatchPngFilePaste(editor);
 
-    const placeholder = editor.locator(".edgeever-image-upload-placeholder");
+    const placeholder = editor.locator(".ponder-image-upload-placeholder");
     await expect(placeholder).toBeVisible();
     await expect(placeholder).toHaveClass(/is-preview-ready/);
     expect((await placeholder.boundingBox())?.height ?? 0).toBeGreaterThan(150);
@@ -160,7 +160,7 @@ test("shows a stable local preview while a pasted image is uploading", async ({ 
     await expect(placeholder).toBeVisible();
 
     releaseUpload();
-    const finalImage = editor.locator(".edgeever-image-node img");
+    const finalImage = editor.locator(".ponder-image-node img");
     await expect(finalImage).toBeVisible();
     await expect(placeholder).toHaveCount(0);
     expect((await finalImage.boundingBox())?.height ?? 0).toBeGreaterThan(1);
@@ -178,7 +178,7 @@ for (const mimeType of ["image/svg+xml", "application/octet-stream"]) {
     try {
       await page.goto("/");
       await expect(page.locator(".ProseMirror[contenteditable='true']")).toBeEditable();
-      await page.getByRole("button", { name: "全部笔记", exact: true }).click();
+      await page.getByRole("button", { name: "All notes", exact: true }).click();
       await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
       const editor = page.locator(".ProseMirror[contenteditable='true']");
       await expect(editor).toBeEditable();
@@ -205,7 +205,7 @@ for (const mimeType of ["image/svg+xml", "application/octet-stream"]) {
       }).toContain(resource.url);
       await page.reload();
       await expect(page.locator(".ProseMirror[contenteditable='true']")).toBeEditable();
-      await page.getByRole("button", { name: "全部笔记", exact: true }).click();
+      await page.getByRole("button", { name: "All notes", exact: true }).click();
       await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
       await expect(page.locator(`.ProseMirror img[src="${resource.url}"]`)).toBeVisible();
       // Opening the original as a document must not execute embedded scripts.

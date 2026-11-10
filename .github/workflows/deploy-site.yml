@@ -1,4 +1,4 @@
-name: Deploy EdgeEver Site
+name: Deploy Ponder Site
 
 on:
   push:
@@ -18,7 +18,7 @@ permissions:
   deployments: write
 
 concurrency:
-  group: edgeever-site-production
+  group: ponder-site-production
   cancel-in-progress: true
 
 jobs:
@@ -56,5 +56,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy apps/site/dist --project-name=edgeever-official
+          command: pages deploy apps/site/dist --project-name=ponder-official
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

@@ -44,7 +44,7 @@ export interface PluginManifest {
   name: string;
   version: string;
   apiVersion: typeof PLUGIN_API_VERSION;
-  /** Plugins must delegate ordinary persistent configuration to EdgeEver. */
+  /** Plugins must delegate ordinary persistent configuration to Ponder. */
   settingsUi: "host";
   description?: string;
   /** Localized marketplace and manager copy keyed by a BCP 47 language tag. */
@@ -69,7 +69,7 @@ export interface PluginSettingList {
 }
 
 /**
- * Declarative setting metadata. EdgeEver owns the layout, controls, validation,
+ * Declarative setting metadata. Ponder owns the layout, controls, validation,
  * state feedback, and responsive behavior; plugins cannot supply presentation code or styles.
  */
 interface PluginSettingBase {
@@ -433,7 +433,7 @@ export interface PluginPanelEmptyState {
 }
 
 /**
- * Host-rendered panel chrome. Plugins describe intent; EdgeEver owns layout and controls.
+ * Host-rendered panel chrome. Plugins describe intent; Ponder owns layout and controls.
  * Callbacks stay in-memory and are not serialized with panel open state.
  */
 export interface PluginPanelChrome {
@@ -617,12 +617,12 @@ export interface PluginContext {
   };
 }
 
-export interface EdgeEverPlugin {
+export interface PonderPlugin {
   activate(context: PluginContext): void | (() => void) | Promise<void | (() => void)>;
   deactivate?(): void | Promise<void>;
 }
 
-export const definePlugin = <T extends EdgeEverPlugin>(plugin: T): T => plugin;
+export const definePlugin = <T extends PonderPlugin>(plugin: T): T => plugin;
 export const defineTheme = <T extends ThemeManifest>(theme: T): T => theme;
 
 const ID_PATTERN = /^[a-z0-9]+(?:[._-][a-z0-9]+)+$/;

@@ -143,7 +143,7 @@ describe("release automation", () => {
 
   test("restores an exact Draft checkpoint without exposing it in Issue text", () => {
     const checkpoint = { releaseSha: "abc", desktopRunId: 123 };
-    const body = `<!-- edgeever-release-checkpoint:v1.42.0\n${JSON.stringify(checkpoint)}\n-->`;
+    const body = `<!-- ponder-release-checkpoint:v1.42.0\n${JSON.stringify(checkpoint)}\n-->`;
     expect(parseReleaseCheckpoint(body, "v1.42.0")).toEqual(checkpoint);
     expect(parseReleaseCheckpoint(body, "v1.42.1")).toBeNull();
     expect(parseReleaseCheckpoint("malformed", "v1.42.0")).toBeNull();
@@ -303,8 +303,6 @@ describe("release automation", () => {
         "enhancement",
         "--change-en",
         "Run checks in parallel.",
-        "--change-zh",
-        "并行运行检查。",
         "--change-locale",
         "ja-JP:チェックを並列実行します。",
         "--change-commit",
@@ -316,7 +314,6 @@ describe("release automation", () => {
       bump: "minor",
       labels: ["enhancement"],
       changesEn: ["Run checks in parallel."],
-      changesZh: ["并行运行检查。"],
       localizedChanges: { "ja-JP": ["チェックを並列実行します。"] },
       changeCommits: ["abc1234"],
     });
@@ -328,7 +325,6 @@ describe("release automation", () => {
       "--bump", "patch",
       "--label", "maintenance",
       "--change-en", "Update the release flow.",
-      "--change-zh", "更新发布流程。",
       "--change-locale", "ja:リリースフローを更新します。",
       "--change-commit", "abc1234",
       "--change-issue", "none",
@@ -338,7 +334,6 @@ describe("release automation", () => {
       "--bump", "patch",
       "--label", "maintenance",
       "--change-en", "Update the release flow.",
-      "--change-zh", "更新发布流程。",
       "--change-locale", "ja:リリースフローを更新します。",
       "--change-commit", "abc1234",
       "--change-issue", "none",
@@ -352,7 +347,6 @@ describe("release automation", () => {
       "--bump", "patch",
       "--label", "maintenance",
       "--change-en", "Update the release flow.",
-      "--change-zh", "更新发布流程。",
       "--change-locale", "ja:リリースフローを更新します。",
       "--change-commit", "abc1234",
       "--change-issue", "none",
@@ -383,28 +377,11 @@ describe("release automation", () => {
         "bug",
         "--change-en",
         "Fix a bug.",
-        "--change-zh",
-        "修复问题。",
         "--change-commit",
         "abc1234",
         "--change-issue", "none",
       ]),
     ).toThrow("--change-locale ja is required");
-  });
-
-  test("rejects mismatched bilingual changes", () => {
-    expect(() =>
-      parseReleaseArgs([
-        "--issue-title",
-        "Broken input",
-        "--bump",
-        "patch",
-        "--label",
-        "bug",
-        "--change-en",
-        "Only English.",
-      ])
-    ).toThrow("--change-en and --change-zh");
   });
 
   test("increments stable semantic versions", () => {
@@ -506,8 +483,6 @@ describe("release automation", () => {
         "bug",
         "--change-en",
         "Fix a bug.",
-        "--change-zh",
-        "修复问题。",
         "--change-commit",
         "abc1234",
         "--change-issue", "none",
@@ -518,22 +493,13 @@ describe("release automation", () => {
   test("builds concise user-facing bilingual release notes", () => {
     const notes = buildReleaseNotes({
       changesEn: ["Improve the release flow."],
-      changesZh: ["优化发布流程。"],
       issueNumber: 126,
     });
-    expect(notes).toContain("## 主要更新");
     expect(notes).toContain("## Key Changes");
     expect(notes).toContain("Related Issue: #126");
-    expect(notes).toContain("关联 Issue：#126");
-    expect(notes).not.toContain("中文说明");
     expect(notes).not.toContain("Chinese Changelog");
-    expect(notes.indexOf("## 主要更新"))
-      .toBeLessThan(notes.indexOf("## Key Changes"));
-    expect(notes.indexOf("优化发布流程。"))
-      .toBeLessThan(notes.indexOf("Improve the release flow."));
     expect(notes).not.toContain("## Verification");
     expect(notes).not.toContain("Contributors");
-    expect(notes).not.toContain("## 验证");
     expect(notes).not.toContain("bun run");
     expect(notes).not.toContain("Version bump");
     expect(notes).not.toContain("release plan");
@@ -543,7 +509,6 @@ describe("release automation", () => {
   test("appends manually selected contributors after unchanged bilingual notes", () => {
     const options = {
       changesEn: ["Improve the release flow."],
-      changesZh: ["优化发布流程。"],
       issueNumber: 126,
     };
     const original = buildReleaseNotes(options);
@@ -551,7 +516,7 @@ describe("release automation", () => {
     expect(buildReleaseNotes({
       ...options,
       contributors: ["@Alice", "alice", "bob-smith"],
-    })).toBe(`${original}\n贡献者 / Contributors：@Alice @bob-smith\n`);
+    })).toBe(`${original}\nContributors: @Alice @bob-smith\n`);
     expect(() => buildReleaseNotes({ ...options, contributors: ["alice\n@bob"] }))
       .toThrow("Invalid --contributor GitHub username");
   });
@@ -560,13 +525,11 @@ describe("release automation", () => {
     expect(buildReleaseSummary({
       version: "1.6.55",
       changesEn: ["Improve the release flow."],
-      changesZh: ["优化发布流程。"],
       localizedChanges: { "ja-JP": ["リリースフローを改善します。"] },
     })).toEqual({
       version: "1.6.55",
       changes: {
         "en-US": ["Improve the release flow."],
-        "zh-CN": ["优化发布流程。"],
         "ja-JP": ["リリースフローを改善します。"],
       },
     });
@@ -588,7 +551,6 @@ describe("release automation", () => {
   test("builds a bilingual umbrella Issue", () => {
     const body = buildIssueBody({
       changesEn: ["Parallel checks."],
-      changesZh: ["并行检查。"],
       commitCoverageAudit: {
         mappings: [{
           changeIndex: 0,
@@ -602,8 +564,6 @@ describe("release automation", () => {
     });
     expect(body).toContain("## Summary");
     expect(body).toContain("- Parallel checks.");
-    expect(body).toContain("## 中文说明");
-    expect(body).toContain("- 并行检查。");
     expect(body).toContain("## Commit coverage audit");
     expect(body).toContain("Play-signed Android arm64 APK");
     expect(body).toContain("unsigned Windows x64 Preview");
@@ -623,8 +583,6 @@ describe("release automation", () => {
         "bug",
         "--change-en",
         "Fix a bug.",
-        "--change-zh",
-        "修复问题。",
       ])
     ).toThrow("--change-commit");
   });
@@ -699,12 +657,12 @@ describe("release automation", () => {
   test("selects the DMG matching the current Mac architecture", () => {
     const assets = [
       {
-        name: "EdgeEver-1.6.51-mac-arm64.dmg",
+        name: "Ponder-1.6.51-mac-arm64.dmg",
         size: 10,
         digest: "sha256:abc",
       },
       {
-        name: "EdgeEver-1.6.51-mac-x64.dmg",
+        name: "Ponder-1.6.51-mac-x64.dmg",
         size: 11,
         digest: "sha256:def",
       },
@@ -712,11 +670,11 @@ describe("release automation", () => {
     expect(
       selectPublishedDmg(assets, "arm64"),
     ).toMatchObject({
-      asset: { name: "EdgeEver-1.6.51-mac-arm64.dmg" },
+      asset: { name: "Ponder-1.6.51-mac-arm64.dmg" },
       version: "1.6.51",
     });
     expect(selectPublishedDmg(assets, "x64")).toMatchObject({
-      asset: { name: "EdgeEver-1.6.51-mac-x64.dmg" },
+      asset: { name: "Ponder-1.6.51-mac-x64.dmg" },
       version: "1.6.51",
     });
   });

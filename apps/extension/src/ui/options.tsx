@@ -120,7 +120,7 @@ export function Options() {
       </details>
     </section>
     <footer className="mt-5 flex flex-wrap gap-1.5 text-xs text-neutral-600">
-      {[["projectAndSource", "https://github.com/tianma-if/edgeever"], ["reportIssue", "https://github.com/tianma-if/edgeever/issues"], ["privacyPolicy", "https://edgeever.org/privacy"]].map(([label, url], index) => <span key={label} className="flex gap-1.5">{index > 0 && <span aria-hidden="true">·</span>}<a href={url} target="_blank" rel="noopener noreferrer" className="underline hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2">{t(label)}</a></span>)}
+      {[["projectAndSource", "https://appkeep.io"], ["reportIssue", "https://appkeep.io"], ["privacyPolicy", "https://appkeep.io/privacy"]].map(([label, url], index) => <span key={label} className="flex gap-1.5">{index > 0 && <span aria-hidden="true">·</span>}<a href={url} target="_blank" rel="noopener noreferrer" className="underline hover:text-neutral-900 focus-visible:outline-2 focus-visible:outline-offset-2">{t(label)}</a></span>)}
     </footer>
   </main>;
 }

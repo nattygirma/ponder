@@ -1,6 +1,6 @@
 # Clip WeChat picture posts
 
-[简体中文](2026-11-02-wechat-picture-clipping.zh-CN.md) · [Issue #756](https://github.com/tianma-if/edgeever/issues/756)
+[Issue #756](https://github.com/tianma-if/edgeever/issues/756)
 
 ## Problem and outcome
 

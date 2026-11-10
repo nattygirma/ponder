@@ -11,11 +11,11 @@ if (!executablePath || !existsSync(executablePath) || !statSync(executablePath).
   throw new Error(`Packaged desktop executable is missing: ${executablePath || "<not provided>"}`);
 }
 
-const fixtureBytes = Buffer.from("EdgeEver private protocol E2E fixture.\n", "utf8");
+const fixtureBytes = Buffer.from("Ponder private protocol E2E fixture.\n", "utf8");
 const fixtureText = fixtureBytes.toString("utf8");
 const cachedResourceId = "protocol-e2e-resource";
-const downloadFilename = "edgeever-protocol-e2e.txt";
-const testDirectory = await mkdtemp(join(tmpdir(), "edgeever-protocol-e2e-"));
+const downloadFilename = "ponder-protocol-e2e.txt";
+const testDirectory = await mkdtemp(join(tmpdir(), "ponder-protocol-e2e-"));
 const userDataDirectory = join(testDirectory, "profile");
 const resourceCacheDirectory = join(userDataDirectory, "resource-cache");
 const inputFixturePath = join(testDirectory, downloadFilename);
@@ -55,7 +55,7 @@ const stopProcess = async (processToStop) => {
 };
 
 const findRendererTarget = async (port) => {
-  const deadline = Date.now() + (Number(process.env.EDGE_EVER_DESKTOP_E2E_TIMEOUT_MS) || 45_000);
+  const deadline = Date.now() + (Number(process.env.PONDER_DESKTOP_E2E_TIMEOUT_MS) || 45_000);
   let lastError = null;
   while (Date.now() < deadline) {
     if (child?.exitCode !== null) break;
@@ -64,7 +64,7 @@ const findRendererTarget = async (port) => {
       if (!response.ok) throw new Error(`DevTools target request failed (${response.status})`);
       const targets = await response.json();
       const target = targets.find((candidate) =>
-        candidate.type === "page" && String(candidate.url || "").startsWith("edgeever-app://app/index.html"));
+        candidate.type === "page" && String(candidate.url || "").startsWith("ponder-app://app/index.html"));
       if (target?.webSocketDebuggerUrl) return target;
     } catch (error) {
       lastError = error;
@@ -72,7 +72,7 @@ const findRendererTarget = async (port) => {
     await wait(200);
   }
   throw new Error([
-    "Could not find the packaged edgeever-app renderer target.",
+    "Could not find the packaged ponder-app renderer target.",
     lastError instanceof Error && lastError.message,
     processOutput.length > 0 && `Process output:\n${processOutput.join("")}`,
   ].filter(Boolean).join("\n\n"));
@@ -135,7 +135,7 @@ const waitForDownloadedFile = async () => {
 
 const waitForRendererBootstrap = async () => {
   const diagnosticLogPath = join(userDataDirectory, "logs", "desktop.log");
-  const deadline = Date.now() + (Number(process.env.EDGE_EVER_DESKTOP_E2E_TIMEOUT_MS) || 45_000);
+  const deadline = Date.now() + (Number(process.env.PONDER_DESKTOP_E2E_TIMEOUT_MS) || 45_000);
   while (Date.now() < deadline) {
     if (existsSync(diagnosticLogPath)) {
       const log = await readFile(diagnosticLogPath, "utf8");
@@ -154,10 +154,10 @@ const attachFileToInput = async (filePath) => {
     try {
       const created = await cdp.send("Runtime.evaluate", {
         expression: `(() => {
-          let input = document.querySelector("#edgeever-protocol-file-input");
+          let input = document.querySelector("#ponder-protocol-file-input");
           if (!input) {
             input = document.createElement("input");
-            input.id = "edgeever-protocol-file-input";
+            input.id = "ponder-protocol-file-input";
             input.type = "file";
             document.body.append(input);
           }
@@ -168,7 +168,7 @@ const attachFileToInput = async (filePath) => {
       if (!objectId) throw new Error("File input object is missing");
       await cdp.send("DOM.setFileInputFiles", { objectId, files: [filePath] });
       const hasFile = await evaluate(
-        `document.querySelector("#edgeever-protocol-file-input")?.files?.length === 1`,
+        `document.querySelector("#ponder-protocol-file-input")?.files?.length === 1`,
       );
       if (hasFile) return;
       lastError = new Error("File input did not retain the attached file");
@@ -194,7 +194,7 @@ try {
     `--remote-debugging-port=${port}`,
     "--remote-allow-origins=*",
   ], {
-    env: { ...process.env, EDGE_EVER_DISABLE_AUTO_UPDATE: "1" },
+    env: { ...process.env, PONDER_DISABLE_AUTO_UPDATE: "1" },
     stdio: ["ignore", "pipe", "pipe"],
     windowsHide: true,
   });
@@ -217,10 +217,10 @@ try {
       status: response.status,
       contentType: response.headers.get("content-type"),
       hasEntries: Array.isArray(registry.entries),
-      desktopBridge: Boolean(window.edgeeverDesktop?.isAvailable),
+      desktopBridge: Boolean(window.ponderDesktop?.isAvailable),
     };
   })()`);
-  if (appProtocol.origin !== "edgeever-app://app") throw new Error(`Unexpected app origin: ${appProtocol.origin}`);
+  if (appProtocol.origin !== "ponder-app://app") throw new Error(`Unexpected app origin: ${appProtocol.origin}`);
   if (!appProtocol.secureContext) throw new Error("The private app origin is not a secure context");
   if (!appProtocol.desktopBridge) throw new Error("The packaged desktop bridge is unavailable");
   if (appProtocol.status !== 200 || !appProtocol.contentType?.includes("application/json") || !appProtocol.hasEntries) {
@@ -230,19 +230,19 @@ try {
   await attachFileToInput(inputFixturePath);
 
   const staged = await evaluate(`(async () => {
-    const input = document.querySelector("#edgeever-protocol-file-input");
+    const input = document.querySelector("#ponder-protocol-file-input");
     const file = input?.files?.[0];
-    if (!file || !window.edgeeverDesktop) throw new Error("File input or desktop bridge is unavailable");
-    const pending = await window.edgeeverDesktop.beginStagedResource({
+    if (!file || !window.ponderDesktop) throw new Error("File input or desktop bridge is unavailable");
+    const pending = await window.ponderDesktop.beginStagedResource({
       memoId: "protocol-e2e-memo",
       name: file.name,
       type: file.type,
       size: file.size,
     });
-    await window.edgeeverDesktop.appendStagedResource(pending.id, await file.arrayBuffer());
-    await window.edgeeverDesktop.completeStagedResource(pending.id);
-    const response = await fetch("edgeever-staged://" + pending.id);
-    const bridged = await window.edgeeverDesktop.readStagedResource(pending.id);
+    await window.ponderDesktop.appendStagedResource(pending.id, await file.arrayBuffer());
+    await window.ponderDesktop.completeStagedResource(pending.id);
+    const response = await fetch("ponder-staged://" + pending.id);
+    const bridged = await window.ponderDesktop.readStagedResource(pending.id);
     return {
       id: pending.id,
       filename: file.name,
@@ -263,7 +263,7 @@ try {
   }
 
   const cachedResource = await evaluate(`(async () => {
-    const url = "edgeever-resource://resource/${cachedResourceId}";
+    const url = "ponder-resource://resource/${cachedResourceId}";
     const full = await fetch(url);
     const range = await fetch(url, { headers: { Range: "bytes=9-15" } });
     return {
@@ -285,13 +285,13 @@ try {
   }
 
   const aliasedResource = await evaluate(`(async () => {
-    const bridge = window.edgeeverDesktop;
+    const bridge = window.ponderDesktop;
     await bridge.recordStagedResourceAlias(${JSON.stringify(staged.id)}, "/api/v1/resources/${cachedResourceId}/blob");
     await bridge.removeStagedResource(${JSON.stringify(staged.id)});
     const [pending, aliases, response, bridged] = await Promise.all([
       bridge.listStagedResources(),
       bridge.listStagedResourceAliases("protocol-e2e-memo"),
-      fetch("edgeever-staged://${staged.id}"),
+      fetch("ponder-staged://${staged.id}"),
       bridge.readStagedResource(${JSON.stringify(staged.id)}),
     ]);
     return {
@@ -318,7 +318,7 @@ try {
     eventsEnabled: true,
   });
   await evaluate(`(() => {
-    const url = new URL("edgeever-resource://resource/${cachedResourceId}");
+    const url = new URL("ponder-resource://resource/${cachedResourceId}");
     url.searchParams.set("download", "${downloadFilename}");
     const anchor = document.createElement("a");
     anchor.href = url.href;

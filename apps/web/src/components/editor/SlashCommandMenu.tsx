@@ -10,6 +10,11 @@ import {
   CalendarClock,
   CalendarDays,
   ChevronsDownUp,
+  Columns2,
+  Columns3,
+  Database,
+  FileText,
+  Lightbulb,
   Clock3,
   FileUp,
   Heading1,
@@ -27,6 +32,7 @@ import {
   Sigma,
   Table,
 } from "lucide-react";
+import { CALLOUT_NODE_TYPE, COLUMNS_NODE_TYPE, createColumnsContent } from "@ponder/shared";
 import {
   Command,
   CommandEmpty,
@@ -61,7 +67,12 @@ export type SlashCommandId =
   | "current-date-time"
   | "attachment"
   | "note-link"
-  | "external-link";
+  | "external-link"
+  | "sub-page"
+  | "callout"
+  | "columns-2"
+  | "columns-3"
+  | "database";
 
 type SlashCommandGroup = "suggested" | "basic" | "insert";
 type SlashCommandIcon = ComponentType<{ className?: string }>;
@@ -80,6 +91,9 @@ export type SlashCommandActions = {
   openExternalLinkPicker: () => void;
   openNoteLinkPicker: () => void;
   openMathFormula: (kind: "inline" | "block", range?: { from: number; to: number }) => void;
+  pagesAvailable: () => boolean;
+  createSubPage: () => void;
+  createDatabase: () => void;
 };
 
 export type SlashCommandItem = {
@@ -91,7 +105,7 @@ export type SlashCommandItem = {
   label: string;
 };
 
-const slashCommandPluginKey = new PluginKey("edgeever-slash-command");
+const slashCommandPluginKey = new PluginKey("ponder-slash-command");
 
 const padDatePart = (value: number) => String(value).padStart(2, "0");
 
@@ -105,31 +119,38 @@ export const formatCurrentDateTime = (date: Date) =>
   `${formatCurrentDate(date)} ${formatCurrentTime(date)}`;
 
 export const createSlashCommandItems = (labels: SlashCommandLabels): SlashCommandItem[] => [
-  { id: "ai", command: "ai", group: "suggested", icon: Bot, label: labels.items.ai, keywords: ["assistant", "人工智能", "智能", "写作"] },
-  { id: "paragraph", command: "text", group: "basic", icon: Pilcrow, label: labels.items.paragraph, keywords: ["paragraph", "正文", "文本"] },
-  { id: "heading-1", command: "h1", group: "basic", icon: Heading1, label: labels.items["heading-1"], keywords: ["heading", "标题"] },
-  { id: "heading-2", command: "h2", group: "basic", icon: Heading2, label: labels.items["heading-2"], keywords: ["heading", "标题"] },
-  { id: "heading-3", command: "h3", group: "basic", icon: Heading3, label: labels.items["heading-3"], keywords: ["heading", "标题"] },
-  { id: "heading-4", command: "h4", group: "basic", icon: Heading4, label: labels.items["heading-4"], keywords: ["heading", "标题"] },
-  { id: "heading-5", command: "h5", group: "basic", icon: Heading5, label: labels.items["heading-5"], keywords: ["heading", "标题"] },
-  { id: "heading-6", command: "h6", group: "basic", icon: Heading6, label: labels.items["heading-6"], keywords: ["heading", "标题"] },
-  { id: "current-date", command: "date", group: "basic", icon: CalendarDays, label: labels.items["current-date"], keywords: ["today", "日期", "今天"] },
-  { id: "current-time", command: "time", group: "basic", icon: Clock3, label: labels.items["current-time"], keywords: ["now", "时间", "现在"] },
-  { id: "current-date-time", command: "datetime", group: "basic", icon: CalendarClock, label: labels.items["current-date-time"], keywords: ["timestamp", "日期时间", "时间戳"] },
-  { id: "bullet-list", command: "bullet", group: "basic", icon: List, label: labels.items["bullet-list"], keywords: ["list", "无序", "列表"] },
-  { id: "ordered-list", command: "numbered", group: "basic", icon: ListOrdered, label: labels.items["ordered-list"], keywords: ["ordered", "list", "有序", "编号"] },
-  { id: "task-list", command: "task", group: "basic", icon: ListTodo, label: labels.items["task-list"], keywords: ["todo", "check", "任务", "待办"] },
-  { id: "blockquote", command: "quote", group: "basic", icon: Quote, label: labels.items.blockquote, keywords: ["引用"] },
-  { id: "code-block", command: "code", group: "basic", icon: Braces, label: labels.items["code-block"], keywords: ["代码"] },
-  { id: "divider", command: "divider", group: "insert", icon: BetweenHorizontalStart, label: labels.items.divider, keywords: ["rule", "分割", "分隔"] },
-  { id: "fold", command: "fold", group: "insert", icon: ChevronsDownUp, label: labels.items.fold, keywords: ["collapse", "spoiler", "折叠", "折りたたみ"] },
-  { id: "table", command: "table", group: "insert", icon: Table, label: labels.items.table, keywords: ["表格"] },
-  { id: "inline-math", command: "math", group: "insert", icon: Sigma, label: labels.items["inline-math"], keywords: ["latex", "formula", "katex", "公式", "数学", "数式"] },
-  { id: "block-math", command: "equation", group: "insert", icon: Sigma, label: labels.items["block-math"], keywords: ["latex", "formula", "display", "katex", "块级公式", "独立公式", "数式"] },
-  { id: "attachment", command: "upload", group: "insert", icon: FileUp, label: labels.items.attachment, keywords: ["file", "attachment", "文件", "上传", "附件"] },
-  { id: "note-link", command: "note", group: "insert", icon: Link, label: labels.items["note-link"], keywords: ["link", "memo", "笔记", "引用"] },
-  { id: "external-link", command: "link", group: "insert", icon: Link, label: labels.items["external-link"], keywords: ["url", "web", "链接", "网址"] },
+  { id: "ai", command: "ai", group: "suggested", icon: Bot, label: labels.items.ai, keywords: ["assistant"] },
+  { id: "paragraph", command: "text", group: "basic", icon: Pilcrow, label: labels.items.paragraph, keywords: ["paragraph"] },
+  { id: "heading-1", command: "h1", group: "basic", icon: Heading1, label: labels.items["heading-1"], keywords: ["heading"] },
+  { id: "heading-2", command: "h2", group: "basic", icon: Heading2, label: labels.items["heading-2"], keywords: ["heading"] },
+  { id: "heading-3", command: "h3", group: "basic", icon: Heading3, label: labels.items["heading-3"], keywords: ["heading"] },
+  { id: "heading-4", command: "h4", group: "basic", icon: Heading4, label: labels.items["heading-4"], keywords: ["heading"] },
+  { id: "heading-5", command: "h5", group: "basic", icon: Heading5, label: labels.items["heading-5"], keywords: ["heading"] },
+  { id: "heading-6", command: "h6", group: "basic", icon: Heading6, label: labels.items["heading-6"], keywords: ["heading"] },
+  { id: "current-date", command: "date", group: "basic", icon: CalendarDays, label: labels.items["current-date"], keywords: ["today"] },
+  { id: "current-time", command: "time", group: "basic", icon: Clock3, label: labels.items["current-time"], keywords: ["now"] },
+  { id: "current-date-time", command: "datetime", group: "basic", icon: CalendarClock, label: labels.items["current-date-time"], keywords: ["timestamp"] },
+  { id: "bullet-list", command: "bullet", group: "basic", icon: List, label: labels.items["bullet-list"], keywords: ["list"] },
+  { id: "ordered-list", command: "numbered", group: "basic", icon: ListOrdered, label: labels.items["ordered-list"], keywords: ["ordered", "list"] },
+  { id: "task-list", command: "task", group: "basic", icon: ListTodo, label: labels.items["task-list"], keywords: ["todo", "check"] },
+  { id: "blockquote", command: "quote", group: "basic", icon: Quote, label: labels.items.blockquote, keywords: [] },
+  { id: "code-block", command: "code", group: "basic", icon: Braces, label: labels.items["code-block"], keywords: [] },
+  { id: "divider", command: "divider", group: "insert", icon: BetweenHorizontalStart, label: labels.items.divider, keywords: ["rule"] },
+  { id: "fold", command: "fold", group: "insert", icon: ChevronsDownUp, label: labels.items.fold, keywords: ["collapse", "spoiler", "折りたたみ"] },
+  { id: "table", command: "table", group: "insert", icon: Table, label: labels.items.table, keywords: [] },
+  { id: "inline-math", command: "math", group: "insert", icon: Sigma, label: labels.items["inline-math"], keywords: ["latex", "formula", "katex", "数式"] },
+  { id: "block-math", command: "equation", group: "insert", icon: Sigma, label: labels.items["block-math"], keywords: ["latex", "formula", "display", "katex", "数式"] },
+  { id: "attachment", command: "upload", group: "insert", icon: FileUp, label: labels.items.attachment, keywords: ["file", "attachment"] },
+  { id: "note-link", command: "note", group: "insert", icon: Link, label: labels.items["note-link"], keywords: ["link", "memo"] },
+  { id: "external-link", command: "link", group: "insert", icon: Link, label: labels.items["external-link"], keywords: ["url", "web"] },
+  { id: "sub-page", command: "page", group: "insert", icon: FileText, label: labels.items["sub-page"], keywords: ["subpage", "child"] },
+  { id: "database", command: "database", group: "insert", icon: Database, label: labels.items.database, keywords: ["board", "calendar", "kanban"] },
+  { id: "callout", command: "callout", group: "basic", icon: Lightbulb, label: labels.items.callout, keywords: ["note", "tip", "warning"] },
+  { id: "columns-2", command: "columns", group: "insert", icon: Columns2, label: labels.items["columns-2"], keywords: ["layout", "side"] },
+  { id: "columns-3", command: "columns3", group: "insert", icon: Columns3, label: labels.items["columns-3"], keywords: ["layout", "side"] },
 ];
+
+const PAGE_LAYOUT_COMMANDS = new Set<SlashCommandId>(["sub-page", "database"]);
 
 export const filterSlashCommandItems = (items: SlashCommandItem[], query: string) => {
   const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -277,6 +298,28 @@ const runSlashCommand = ({
       chain.run();
       window.requestAnimationFrame(actions.openExternalLinkPicker);
       break;
+    case "sub-page":
+      chain.run();
+      actions.createSubPage();
+      break;
+    case "database":
+      chain.run();
+      actions.createDatabase();
+      break;
+    case "callout": chain.wrapIn(CALLOUT_NODE_TYPE).run(); break;
+    case "columns-2":
+    case "columns-3": {
+      chain.insertContent(createColumnsContent(item.id === "columns-2" ? 2 : 3)).run();
+      // Typing starts on the left, however the insert left the selection.
+      const { $from } = editor.state.selection;
+      for (let depth = $from.depth; depth > 0; depth -= 1) {
+        if ($from.node(depth).type.name === COLUMNS_NODE_TYPE) {
+          editor.commands.setTextSelection($from.before(depth) + 3);
+          break;
+        }
+      }
+      break;
+    }
   }
 };
 
@@ -287,9 +330,11 @@ export const createSlashCommandExtension = ({
   actions: SlashCommandActions;
   getLabels: () => SlashCommandLabels;
 }) => Extension.create({
-  name: "edgeeverSlashCommand",
+  name: "ponderSlashCommand",
   addProseMirrorPlugins() {
-    const initialItems = createSlashCommandItems(getLabels());
+    const availableItems = () => createSlashCommandItems(getLabels())
+      .filter((item) => actions.pagesAvailable() || !PAGE_LAYOUT_COMMANDS.has(item.id));
+    const initialItems = availableItems();
     return [Suggestion<SlashCommandItem, SlashCommandItem>({
       editor: this.editor,
       pluginKey: slashCommandPluginKey,
@@ -297,13 +342,13 @@ export const createSlashCommandExtension = ({
       allowedPrefixes: [" "],
       placement: "bottom-start",
       offset: { mainAxis: 6 },
-      decorationClass: "edgeever-slash-command-query",
+      decorationClass: "ponder-slash-command-query",
       initialItems,
       allow: ({ state, range }) => {
         const position = state.doc.resolve(range.from);
         return this.editor.isEditable && position.parent.type.name === "paragraph";
       },
-      items: ({ query }) => filterSlashCommandItems(createSlashCommandItems(getLabels()), query),
+      items: ({ query }) => filterSlashCommandItems(availableItems(), query),
       command: ({ editor, range, props }) => runSlashCommand({ actions, editor, item: props, range }),
       render: () => {
         let renderer: ReactRenderer<SlashCommandMenuHandle, SlashCommandMenuProps> | null = null;

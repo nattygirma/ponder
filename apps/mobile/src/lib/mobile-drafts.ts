@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const MOBILE_DRAFT_PREFIX = "edgeever.mobile.memoDraft:";
-const MOBILE_NEW_DRAFT_PREFIX = "edgeever.mobile.newMemoDraft:";
+const MOBILE_DRAFT_PREFIX = "ponder.mobile.memoDraft:";
+const MOBILE_NEW_DRAFT_PREFIX = "ponder.mobile.newMemoDraft:";
 
 export type MobileMemoDraft = {
   memoId: string;

@@ -2,26 +2,26 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
-  createEdgeEverDocumentExtensions,
+  createPonderDocumentExtensions,
   docToMarkdown,
   IMAGE_GALLERY_NODE_TYPE,
   markdownToDoc,
   MERGE_DIVIDER_MARKDOWN_MARKER,
   MERGE_DIVIDER_NODE_TYPE,
 } from "./index.ts";
-import { createEdgeEverMarkdownMathematics } from "./mathematics-markdown.ts";
+import { createPonderMarkdownMathematics } from "./mathematics-markdown.ts";
 
 const factorySource = readFileSync(resolve(import.meta.dir, "document-extensions.ts"), "utf8");
 
 describe("shared document extensions", () => {
   test("does not import the KaTeX mathematics entry", () => {
     expect(factorySource).not.toContain('from "./mathematics"');
-    expect(factorySource).not.toContain("createEdgeEverMathematics");
+    expect(factorySource).not.toContain("createPonderMathematics");
   });
 
   test("registers the same document nodes the Markdown codec uses", () => {
-    const names = createEdgeEverDocumentExtensions({
-      mathematics: createEdgeEverMarkdownMathematics(),
+    const names = createPonderDocumentExtensions({
+      mathematics: createPonderMarkdownMathematics(),
       markdown: true,
     }).map((extension) => extension.name);
 
@@ -31,13 +31,13 @@ describe("shared document extensions", () => {
     expect(names).toContain("tableKit");
     expect(names).toContain("image");
     expect(names).toContain(IMAGE_GALLERY_NODE_TYPE);
-    expect(names).toContain("edgeeverPdfAttachment");
-    expect(names).toContain("edgeeverFileAttachment");
+    expect(names).toContain("ponderPdfAttachment");
+    expect(names).toContain("ponderFileAttachment");
     expect(names).toContain(MERGE_DIVIDER_NODE_TYPE);
     expect(names).toContain("details");
     expect(names).toContain("detailsSummary");
     expect(names).toContain("detailsContent");
-    expect(names).toContain("edgeeverPluginEmbed");
+    expect(names).toContain("ponderPluginEmbed");
     expect(names).toContain("markdown");
   });
 

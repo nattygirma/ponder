@@ -12,7 +12,7 @@ const expectFit = async (gallery: Locator, fit: "width" | "height") => {
 };
 
 test("gallery height fit is per gallery, undoable, persistent and usable on narrow screens", async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("edgeever.locale.preference", "en-US"));
+  await page.addInitScript(() => localStorage.setItem("ponder.locale.preference", "en-US"));
   await page.context().route("https://example.test/gallery-*.png", (route) => {
     const portrait = route.request().url().includes("portrait");
     return route.fulfill({ contentType: "image/svg+xml", headers: { "Access-Control-Allow-Origin": "http://127.0.0.1:5173", "Access-Control-Allow-Credentials": "true" }, body: `<svg xmlns="http://www.w3.org/2000/svg" width="${portrait ? 300 : 800}" height="${portrait ? 800 : 300}"><rect width="100%" height="100%" fill="#dbeafe"/><rect width="100%" height="40" fill="#047857"/><rect y="${portrait ? 760 : 260}" width="100%" height="40" fill="#c2410c"/></svg>` });
@@ -31,7 +31,7 @@ test("gallery height fit is per gallery, undoable, persistent and usable on narr
     await page.getByRole("button", { name: "All notes", exact: true }).click();
     await page.getByPlaceholder("Search notes").fill(title);
     await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
-    const galleries = page.locator(".ProseMirror [data-edgeever-image-gallery]");
+    const galleries = page.locator(".ProseMirror [data-ponder-image-gallery]");
     const first = galleries.nth(0);
     const second = galleries.nth(1);
     await expect(galleries).toHaveCount(2);
@@ -50,7 +50,7 @@ test("gallery height fit is per gallery, undoable, persistent and usable on narr
     await expect.poll(async () => (await readMemo()).contentJson.content[0].attrs.fit).toBe("height");
 
     await page.keyboard.press("ControlOrMeta+/");
-    await expect(page.locator(".cm-content")).toContainText("edgeever:image-gallery fit=height layout=2");
+    await expect(page.locator(".cm-content")).toContainText("ponder:image-gallery fit=height layout=2");
     await page.keyboard.press("ControlOrMeta+End");
     await page.keyboard.insertText("\n\nSource edit keeps the fit setting.");
     await page.keyboard.press("ControlOrMeta+/");
@@ -76,13 +76,13 @@ test("gallery height fit is per gallery, undoable, persistent and usable on narr
     const exported = await page.context().newPage();
     try {
       await exported.setContent(html, { waitUntil: "domcontentloaded" });
-      const exportedGalleries = exported.locator("[data-edgeever-image-gallery]");
+      const exportedGalleries = exported.locator("[data-ponder-image-gallery]");
       await expectFit(exportedGalleries.nth(0), "height");
       await expectFit(exportedGalleries.nth(1), "width");
       await expect(exported.getByRole("img", { name: "Standalone", exact: true })).toHaveCSS("display", "block");
       await expect(exported.getByRole("img", { name: "Standalone", exact: true })).toHaveCSS("max-width", "100%");
       const galleryHtml = await exportedGalleries.evaluateAll((elements) => elements.map((element) => element.outerHTML).join(""));
-      await exported.setContent(`<article class="edgeever-print-content">${galleryHtml}</article>`);
+      await exported.setContent(`<article class="ponder-print-content">${galleryHtml}</article>`);
       await exported.addStyleTag({ content: await readFile("apps/web/src/styles/note-print.css", "utf8") });
       await expectFit(exportedGalleries.nth(0), "height");
       await expectFit(exportedGalleries.nth(1), "width");

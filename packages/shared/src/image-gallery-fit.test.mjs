@@ -12,7 +12,7 @@ import { parseHTML } from "linkedom";
 
 const schema = getSchema([StarterKit, Image, ImageGallery]);
 const image = (name) => ({ type: "image", attrs: { src: `https://example.test/${name}.png`, alt: name } });
-const gallery = (fit, layout = "2") => ({ type: "edgeeverImageGallery", attrs: { fit, layout }, content: [image("portrait"), image("landscape")] });
+const gallery = (fit, layout = "2") => ({ type: "ponderImageGallery", attrs: { fit, layout }, content: [image("portrait"), image("landscape")] });
 const doc = (node) => ({ type: "doc", content: [node] });
 
 describe("gallery image fitting", () => {
@@ -26,7 +26,7 @@ describe("gallery image fitting", () => {
     expect(typeof document).toBe("undefined");
     for (const layout of ["auto", "1", "2", "3"]) {
       const markdown = docToMarkdown(doc(gallery("height", layout)));
-      expect(markdown).toContain(`<!-- edgeever:image-gallery fit=height layout=${layout} -->`);
+      expect(markdown).toContain(`<!-- ponder:image-gallery fit=height layout=${layout} -->`);
       const restored = markdownToDoc(`${markdown}\n\nAn unrelated source edit.`);
       expect(restored.content[0]).toMatchObject(gallery("height", layout));
       expect(restored.content[1].content[0].text).toBe("An unrelated source edit.");
@@ -36,8 +36,8 @@ describe("gallery image fitting", () => {
 
   test("default width-fit Markdown stays ordinary portable images", () => {
     const markdown = docToMarkdown(doc(gallery("width")));
-    expect(markdown).not.toContain("edgeever:image-gallery");
-    expect(markdownToDoc(markdown).content[0].type).toBe("edgeeverImageGallery");
+    expect(markdown).not.toContain("ponder:image-gallery");
+    expect(markdownToDoc(markdown).content[0].type).toBe("ponderImageGallery");
   });
 
   test("HTML uses the saved fit for shared pages and reimport", () => {

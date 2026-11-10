@@ -1,7 +1,7 @@
 import { NodeSelection, Plugin, PluginKey, type EditorState } from "@tiptap/pm/state";
 import { closeHistory } from "@tiptap/pm/history";
 import type { EditorView } from "@tiptap/pm/view";
-import { IMAGE_GALLERY_NODE_TYPE } from "@edgeever/shared";
+import { IMAGE_GALLERY_NODE_TYPE } from "@ponder/shared";
 import { imageSelectionKey } from "./image-selection";
 
 export const imageDragKey = new PluginKey<number | null>("imageDrag");
@@ -33,7 +33,7 @@ export function moveImage(state: EditorState, from: number, target: number) {
 type DropTarget = { position: number; left: number; top: number; width: number; height: number };
 
 function imagePosition(view: EditorView, element: Element) {
-  const figure = element.closest(".edgeever-image-node");
+  const figure = element.closest(".ponder-image-node");
   if (!figure || !view.dom.contains(figure)) return null;
   const position = view.posAtDOM(figure, 0);
   return view.state.doc.nodeAt(position)?.type.name === "image" ? { figure, position } : null;
@@ -43,10 +43,10 @@ function dropTarget(view: EditorView, event: DragEvent): DropTarget | null {
   const element = event.target instanceof Element ? event.target : null;
   let hit = element && imagePosition(view, element);
   // Grid gaps belong to the nearest image, rather than the gallery container.
-  const galleryElement = element?.closest("[data-edgeever-image-gallery]");
+  const galleryElement = element?.closest("[data-ponder-image-gallery]");
   if (!hit && galleryElement && view.dom.contains(galleryElement)) {
     let distance = Infinity;
-    for (const figure of galleryElement.querySelectorAll(".edgeever-image-node")) {
+    for (const figure of galleryElement.querySelectorAll(".ponder-image-node")) {
       const rect = figure.getBoundingClientRect();
       const dx = Math.max(rect.left - event.clientX, 0, event.clientX - rect.right);
       const dy = Math.max(rect.top - event.clientY, 0, event.clientY - rect.bottom);
@@ -59,9 +59,9 @@ function dropTarget(view: EditorView, event: DragEvent): DropTarget | null {
   }
   if (hit) {
     const rect = hit.figure.getBoundingClientRect();
-    const gallery = hit.figure.closest("[data-edgeever-image-gallery]");
+    const gallery = hit.figure.closest("[data-ponder-image-gallery]");
     // A one-column gallery uses top/bottom edges; a grid uses left/right edges.
-    const horizontal = gallery && Array.from(gallery.querySelectorAll(".edgeever-image-node")).some((sibling) => {
+    const horizontal = gallery && Array.from(gallery.querySelectorAll(".ponder-image-node")).some((sibling) => {
       const other = sibling.getBoundingClientRect();
       return Math.abs(other.left - rect.left) > 1 && other.top < rect.bottom && other.bottom > rect.top;
     });
@@ -135,7 +135,7 @@ export function createImageDragPlugin() {
           event.preventDefault();
           if (!marker) {
             marker = view.dom.ownerDocument.createElement("div");
-            marker.className = "edgeever-image-drop-indicator";
+            marker.className = "ponder-image-drop-indicator";
             marker.setAttribute("aria-hidden", "true");
             view.dom.ownerDocument.body.appendChild(marker);
           }

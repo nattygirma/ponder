@@ -35,7 +35,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: edgeever-web-clipper-store
+  group: ponder-web-clipper-store
   cancel-in-progress: false
 
 jobs:
@@ -89,8 +89,8 @@ jobs:
           CHROME_WEB_STORE_REFRESH_TOKEN: ${{ secrets.CHROME_WEB_STORE_REFRESH_TOKEN }}
           AMO_JWT_ISSUER: ${{ secrets.AMO_JWT_ISSUER }}
           AMO_JWT_SECRET: ${{ secrets.AMO_JWT_SECRET }}
-          EDGE_EVER_REVIEW_INSTANCE_URL: ${{ secrets.EDGE_EVER_REVIEW_INSTANCE_URL }}
-          EDGE_EVER_REVIEW_API_TOKEN: ${{ secrets.EDGE_EVER_REVIEW_API_TOKEN }}
+          PONDER_REVIEW_INSTANCE_URL: ${{ secrets.PONDER_REVIEW_INSTANCE_URL }}
+          PONDER_REVIEW_API_TOKEN: ${{ secrets.PONDER_REVIEW_API_TOKEN }}
         run: |
           args=(--platform "$PLATFORM" --notes-file "$RUNNER_TEMP/web-clipper-release-notes.txt")
           if [[ "$DRY_RUN" == "true" ]]; then

@@ -103,7 +103,7 @@ test("an existing browser mirror catches up after an import larger than one sync
 
   try {
     await page.goto("/");
-    await expect(page.getByRole("button", { name: "正在同步笔记", exact: true })).toHaveCount(0, { timeout: 20_000 });
+    await expect(page.getByRole("button", { name: "Syncing your notes", exact: true })).toHaveCount(0, { timeout: 20_000 });
     await expect.poll(() => readLocalSyncCursor(page), { timeout: 20_000 }).not.toBeNull();
     const cursorBeforeImport = await readLocalSyncCursor(page);
     expect(cursorBeforeImport).not.toBeNull();
@@ -155,9 +155,9 @@ test("an existing browser mirror catches up after an import larger than one sync
       { timeout: 30_000 },
     ).toBe(importedMemoCount);
 
-    await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-    await page.getByPlaceholder("搜索笔记").fill(marker);
-    await expect(page.getByText(`${importedMemoCount} 条结果`, { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "All notes", exact: true }).click();
+    await page.getByPlaceholder("Search notes").fill(marker);
+    await expect(page.getByText(`Results: ${importedMemoCount}`, { exact: true })).toBeVisible();
   } finally {
     if (createdMemoIds.length === 0) {
       createdMemoIds = await listMemoIdsWithMarker(page.request, marker);

@@ -1,17 +1,17 @@
 import { describe, expect, test } from "bun:test";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
-import { FileAttachment, PdfAttachment } from "@edgeever/shared";
+import { FileAttachment, PdfAttachment } from "@ponder/shared";
 import { ensureTestWindowDom } from "../../lib/restore-test-global.mjs";
 import { findAttachmentRange, insertTranscriptAfterAttachment, removeAttachmentAt, renameAttachmentAt } from "./attachment-editor-range.ts";
 
-const videoUrl = "edgeever-resource://resource/res_video";
+const videoUrl = "ponder-resource://resource/res_video";
 const videoApiUrl = "/api/v1/resources/res_video/blob";
 const pdfUrl = "/api/v1/resources/res_pdf/blob";
 const otherUrl = "/api/v1/resources/res_other/blob";
 
 const fileNode = (url, filename, mimeType) => ({
-  type: "edgeeverFileAttachment",
+  type: "ponderFileAttachment",
   attrs: {
     url,
     label: `附件：${filename}`,
@@ -23,7 +23,7 @@ const fileNode = (url, filename, mimeType) => ({
 });
 
 const pdfNode = (url, filename) => ({
-  type: "edgeeverPdfAttachment",
+  type: "ponderPdfAttachment",
   attrs: {
     url,
     label: `附件：${filename}`,
@@ -93,7 +93,7 @@ describe("attachment editor range", () => {
       "附件：final.mp4",
     )).toBe(true);
     expect(editor.getJSON().content[0].content[0]).toMatchObject({
-      type: "edgeeverFileAttachment",
+      type: "ponderFileAttachment",
       attrs: {
         url: videoApiUrl,
         filename: "final.mp4",

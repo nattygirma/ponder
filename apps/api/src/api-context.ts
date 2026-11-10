@@ -2,43 +2,59 @@ import type { Context } from "hono";
 import type { CloudflareStorageBindings } from "./cloudflare-storage-adapter";
 import type { StorageAdapter } from "./storage-contract";
 
+export type HostConnection = {
+  id: string;
+  provider: string;
+  external_id: string;
+  name: string;
+  status: "active" | "expired";
+  scopes: string[];
+  connected_at: string;
+};
+
 export type Bindings = {
   /** Runtime driver for public-only egress; no platform-specific business logic. */
   publicNetworkFetch?: (input: string, init: RequestInit) => Promise<Response>;
+  /** Optional runtime driver for notification email; without it people get in-app notifications only. */
+  sendEmail?: (message: { to: string; subject: string; text: string }) => Promise<void>;
+  /** Accounts connected by login, on hosts that offer it (AppKeep). They belong to the deployment. */
+  listConnections?: (provider?: string) => Promise<HostConnection[]>;
+  disconnectConnection?: (connectionId: string) => Promise<boolean>;
   /** The only persistence dependency exposed to application code. */
   storage: StorageAdapter;
-  EDGE_EVER_AUTH_USERNAME?: string;
-  EDGE_EVER_RUNTIME?: string;
-  EDGE_EVER_CONTAINER_IMAGE?: string;
-  EDGE_EVER_DEPLOYMENT_TRIGGER?: string;
-  EDGE_EVER_DEPLOYMENT_METHOD?: string;
-  EDGE_EVER_BUILD_CREATED_AT?: string;
-  EDGE_EVER_BUILD_TRIGGER?: string;
-  EDGE_EVER_BUILD_METHOD?: string;
+  PONDER_AUTH_USERNAME?: string;
+  PONDER_RUNTIME?: string;
+  PONDER_CONTAINER_IMAGE?: string;
+  PONDER_DEPLOYMENT_TRIGGER?: string;
+  PONDER_DEPLOYMENT_METHOD?: string;
+  PONDER_BUILD_CREATED_AT?: string;
+  PONDER_BUILD_TRIGGER?: string;
+  PONDER_BUILD_METHOD?: string;
   /** Creation time of the active deployment version, supplied by a runtime adapter. */
   deploymentVersionCreatedAt?: string;
-  EDGE_EVER_AUTH_PASSWORD?: string;
-  EDGE_EVER_AUTH_PASSWORD_HASH?: string;
-  EDGE_EVER_AUTH_PASSWORD_FALLBACK?: string;
-  EDGE_EVER_SESSION_TTL_DAYS?: string;
-  EDGE_EVER_AUTH_LOGIN_WINDOW_SECONDS?: string;
-  EDGE_EVER_AUTH_LOGIN_USERNAME_MAX_ATTEMPTS?: string;
-  EDGE_EVER_AUTH_LOGIN_USERNAME_COOLDOWN_SECONDS?: string;
-  EDGE_EVER_AUTH_LOGIN_IP_MAX_ATTEMPTS?: string;
-  EDGE_EVER_AUTH_LOGIN_IP_COOLDOWN_SECONDS?: string;
-  EDGE_EVER_R2_BUCKET_NAME?: string;
+  PONDER_AUTH_PASSWORD?: string;
+  PONDER_APPKEEP?: string;
+  PONDER_AUTH_PASSWORD_HASH?: string;
+  PONDER_AUTH_PASSWORD_FALLBACK?: string;
+  PONDER_SESSION_TTL_DAYS?: string;
+  PONDER_AUTH_LOGIN_WINDOW_SECONDS?: string;
+  PONDER_AUTH_LOGIN_USERNAME_MAX_ATTEMPTS?: string;
+  PONDER_AUTH_LOGIN_USERNAME_COOLDOWN_SECONDS?: string;
+  PONDER_AUTH_LOGIN_IP_MAX_ATTEMPTS?: string;
+  PONDER_AUTH_LOGIN_IP_COOLDOWN_SECONDS?: string;
+  PONDER_R2_BUCKET_NAME?: string;
   /** Legacy decryption fallback; new credentials use auth-derived keys. */
-  EDGE_EVER_STORAGE_ENCRYPTION_KEY?: string;
-  EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY?: string;
-  EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS?: string;
-  EDGE_EVER_DEMO_MODE?: string;
-  EDGE_EVER_LOCAL_DEMO_SEED?: string;
-  EDGE_EVER_ALLOW_UNAUTHENTICATED?: string;
+  PONDER_STORAGE_ENCRYPTION_KEY?: string;
+  PONDER_CREDENTIALS_ENCRYPTION_KEY?: string;
+  PONDER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS?: string;
+  PONDER_DEMO_MODE?: string;
+  PONDER_LOCAL_DEMO_SEED?: string;
+  PONDER_ALLOW_UNAUTHENTICATED?: string;
   /** HTTPS URL of the signed community registry. Unset disables the catalog. */
-  EDGE_EVER_COMMUNITY_REGISTRY_URL?: string;
+  PONDER_COMMUNITY_REGISTRY_URL?: string;
 };
 
-export type WorkerBindings = Omit<Bindings, "storage" | "publicNetworkFetch" | "deploymentVersionCreatedAt"> & CloudflareStorageBindings & {
+export type WorkerBindings = Omit<Bindings, "storage" | "publicNetworkFetch" | "sendEmail" | "deploymentVersionCreatedAt"> & CloudflareStorageBindings & {
   ASSETS: Fetcher;
   CF_VERSION_METADATA?: { timestamp?: string };
 };
@@ -51,7 +67,10 @@ export type AuthContext = {
   displayName: string | null;
   scopes: string[];
   workspaceId: string;
+  /** Instance-level role. Being an owner of a shared workspace never changes it. */
   role: "owner" | "member";
+  /** Set only while a shared workspace is open; decides what the person may do there. */
+  teamRole?: "owner" | "member" | "viewer";
   sessionId?: string;
   tokenId?: string;
 };

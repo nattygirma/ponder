@@ -1,10 +1,12 @@
 export const SELECTION_AI_SEND_LIMIT = 2000;
 
-export const SELECTION_AI_LANGUAGES = ["zh-CN", "en", "ja", "pl"] as const;
+export const SELECTION_AI_LANGUAGES = ["en", "zh-CN", "ja", "pl"] as const;
 
 export type SelectionAiLanguage = (typeof SELECTION_AI_LANGUAGES)[number];
 
-export type SelectionAiKind = "explain" | "translate" | "ask";
+export type SelectionAiRewriteKind = "improve" | "proofread" | "reformat";
+
+export type SelectionAiKind = "explain" | "translate" | "ask" | SelectionAiRewriteKind;
 
 export type SelectionAiMode = "rich" | "markdown";
 

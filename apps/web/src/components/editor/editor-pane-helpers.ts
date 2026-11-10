@@ -1,6 +1,6 @@
 import { EditorState } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
-import type { MemoDetail, MemoEditSession, TiptapDoc } from "@edgeever/shared";
+import type { MemoDetail, MemoEditSession, TiptapDoc } from "@ponder/shared";
 import { releaseHtmlMediaSources } from "@/lib/editor-media-release";
 import { isDesktopResourceRuntime } from "@/lib/desktop-resources";
 import { isBrowserOffline } from "@/lib/network-status";
@@ -9,7 +9,7 @@ import type { MemoUpdateSyncPayload } from "@/lib/local-db";
 import { getAttachmentLinkFromEventTarget } from "./attachment-resource-menu";
 import type { NoteLinkHintPosition } from "./EditorPaneChrome";
 
-export { SUPPORTED_IMAGE_MIME_TYPES as SUPPORTED_PASTE_IMAGE_TYPES } from "@edgeever/shared";
+export { SUPPORTED_IMAGE_MIME_TYPES as SUPPORTED_PASTE_IMAGE_TYPES } from "@ponder/shared";
 export const MOBILE_EDITOR_QUERY = "(max-width: 639px)";
 export const MOBILE_DRAFT_PERSIST_DELAY_MS = 800;
 
@@ -46,7 +46,7 @@ export type AiInsertionTarget = {
 
 export const getNoteLinkFromEventTarget = (target: EventTarget | null) =>
   target instanceof Element
-    ? target.closest<HTMLAnchorElement>('a.edgeever-note-link, a[href^="#memo="]')
+    ? target.closest<HTMLAnchorElement>('a.ponder-note-link, a[href^="#memo="]')
     : null;
 
 /** Any navigable editor link (external or note). Attachment chips have their own menu. */

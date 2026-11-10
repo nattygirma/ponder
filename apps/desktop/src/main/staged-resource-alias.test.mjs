@@ -17,7 +17,7 @@ afterEach(async () => {
 });
 
 test("upgrades an old staged file to a durable resource alias before deleting its bytes", async () => {
-  const root = await mkdtemp(join(tmpdir(), "edgeever-stage-alias-"));
+  const root = await mkdtemp(join(tmpdir(), "ponder-stage-alias-"));
   roots.push(root);
   const oldMetadata = { id: "stage_123", memoId: "memo_1", name: "photo.jpg", type: "image/jpeg", size: 4 };
   await writeFile(join(root, "stage_123.json"), JSON.stringify(oldMetadata));
@@ -38,7 +38,7 @@ test("upgrades an old staged file to a durable resource alias before deleting it
 });
 
 test("rejects an invalid or conflicting uploaded resource mapping", async () => {
-  const root = await mkdtemp(join(tmpdir(), "edgeever-stage-alias-"));
+  const root = await mkdtemp(join(tmpdir(), "ponder-stage-alias-"));
   roots.push(root);
   await writeFile(join(root, "stage_123.json"), JSON.stringify({ id: "stage_123", memoId: "memo_1", name: "photo.jpg" }));
   expect(uploadedResourceIdFromUrl("https://example.com/api/v1/resources/res_1/blob")).toBe("res_1");

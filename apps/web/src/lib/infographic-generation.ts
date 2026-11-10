@@ -4,7 +4,7 @@ import {
   officialTemplateFamily,
   parseGeneratedOfficialData,
   type OfficialTemplateFamily,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 export { buildOfficialInfographicSyntax, officialTemplateFamily, parseGeneratedOfficialData };
 export type { OfficialTemplateFamily };
@@ -101,16 +101,16 @@ export const templateForRequest = (request: string): string | null => {
 export const sampleOfficialData = (template: string): Record<string, unknown> => {
   const family = officialTemplateFamily(template);
   const entry = (label: string, desc: string) => ({ label, desc });
-  if (family === "chart") return { title: "示例图表", values: [{ label: "项目 A", value: 40 }, { label: "项目 B", value: 30 }, { label: "项目 C", value: 20 }] };
-  if (family === "hierarchy") return { title: "示例层级", root: { label: "主题", children: [entry("分支 A", "说明"), entry("分支 B", "说明")] } };
-  if (family === "relation") return { title: "示例关系", nodes: [{ id: "a", label: "节点 A" }, { id: "b", label: "节点 B" }], relations: [{ from: "a", to: "b", direction: "forward" }] };
+  if (family === "chart") return { title: "Sample chart", values: [{ label: "Item A", value: 40 }, { label: "Item B", value: 30 }, { label: "Item C", value: 20 }] };
+  if (family === "hierarchy") return { title: "Sample hierarchy", root: { label: "Topic", children: [entry("Branch A", "Description"), entry("Branch B", "Description")] } };
+  if (family === "relation") return { title: "Sample relations", nodes: [{ id: "a", label: "Node A" }, { id: "b", label: "Node B" }], relations: [{ from: "a", to: "b", direction: "forward" }] };
   if (family === "comparison") {
-    const labels = template === "compare-swot" ? ["优势", "劣势", "机会", "威胁"] : ["方案 A", "方案 B"];
-    return { title: "示例对比", compares: labels.map((label) => ({ label, children: [entry("维度一", "简短说明"), entry("维度二", "简短说明")] })) };
+    const labels = template === "compare-swot" ? ["Strengths", "Weaknesses", "Opportunities", "Threats"] : ["Option A", "Option B"];
+    return { title: "Sample comparison", compares: labels.map((label) => ({ label, children: [entry("Dimension 1", "Short description"), entry("Dimension 2", "Short description")] })) };
   }
-  if (family === "quadrant") return { title: "示例四象限", compares: ["第一象限", "第二象限", "第三象限", "第四象限"].map((label) => entry(label, "简短说明")) };
-  if (family === "sequence") return { title: "示例流程", sequences: [entry("第一步", "简短说明"), entry("第二步", "简短说明"), entry("第三步", "简短说明")] };
-  return { title: "示例列表", lists: [entry("项目 A", "简短说明"), entry("项目 B", "简短说明"), entry("项目 C", "简短说明")] };
+  if (family === "quadrant") return { title: "Sample quadrant", compares: ["Quadrant 1", "Quadrant 2", "Quadrant 3", "Quadrant 4"].map((label) => entry(label, "Short description")) };
+  if (family === "sequence") return { title: "Sample process", sequences: [entry("Step 1", "Short description"), entry("Step 2", "Short description"), entry("Step 3", "Short description")] };
+  return { title: "Sample list", lists: [entry("Item A", "Short description"), entry("Item B", "Short description"), entry("Item C", "Short description")] };
 };
 
 export const parseGeneratedOfficialSelection = (output: string, templates: string[]) => {
@@ -349,7 +349,7 @@ export const parseGeneratedInfographicContent = (output: string, request: string
   return {
     kind,
     template,
-    title: stringValue(data.title) || (kind === "quadrant" ? "四象限图" : stringValue(request).slice(0, 60)),
+    title: stringValue(data.title) || (kind === "quadrant" ? "Quadrant chart" : stringValue(request).slice(0, 60)),
     description: stringValue(data.description ?? data.desc),
     items,
   };

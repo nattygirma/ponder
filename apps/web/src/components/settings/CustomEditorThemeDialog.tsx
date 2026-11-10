@@ -218,7 +218,7 @@ export const CustomEditorThemeDialog = ({
 
           {/* Preview Panel */}
           <div
-            className="edgeever-editor rounded-lg border transition-all"
+            className="ponder-editor rounded-lg border transition-all"
             style={{
               backgroundColor: activeColors.background,
               borderColor: activeColors.border,
@@ -259,7 +259,7 @@ export const CustomEditorThemeDialog = ({
                     marginBottom: 0,
                   }}
                 >
-                  <code style={{ background: "transparent", color: "inherit" }}>{'const message = "Hello, EdgeEver!";'}</code>
+                  <code style={{ background: "transparent", color: "inherit" }}>{'const message = "Hello, Ponder!";'}</code>
                 </pre>
               </blockquote>
             </div>

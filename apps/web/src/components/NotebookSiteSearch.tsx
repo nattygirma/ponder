@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { getMemoDisplayTitle, type PublicNotebookShare } from "@edgeever/shared";
+import { getMemoDisplayTitle, type PublicNotebookShare } from "@ponder/shared";
 import { createContext, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";

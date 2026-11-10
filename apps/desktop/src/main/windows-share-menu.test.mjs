@@ -10,16 +10,16 @@ import {
   windowsShareMenuLabel,
 } from "./windows-share-menu.mjs";
 
-const exePath = "C:\\Users\\Example\\AppData\\Local\\Programs\\EdgeEver\\EdgeEver.exe";
+const exePath = "C:\\Users\\Example\\AppData\\Local\\Programs\\Ponder\\Ponder.exe";
 
 describe("Windows share menu", () => {
   test("names the verb in the desktop locale", () => {
-    expect(windowsShareMenuLabel("zh-CN")).toBe("发送到 EdgeEver");
-    expect(windowsShareMenuLabel("zh-TW")).toBe("发送到 EdgeEver");
-    expect(windowsShareMenuLabel("ja-JP")).toBe("EdgeEver に送る");
-    expect(windowsShareMenuLabel("en-US")).toBe("Send to EdgeEver");
-    expect(windowsShareMenuLabel("pl-PL")).toBe("Wyślij do EdgeEver");
-    expect(windowsShareMenuLabel("ru-RU")).toBe("Отправить в EdgeEver");
+    expect(windowsShareMenuLabel("en-US")).toBe("Send to Ponder");
+    expect(windowsShareMenuLabel("zh-TW")).toBe("Send to Ponder");
+    expect(windowsShareMenuLabel("ja-JP")).toBe("Ponder に送る");
+    expect(windowsShareMenuLabel("en-US")).toBe("Send to Ponder");
+    expect(windowsShareMenuLabel("pl-PL")).toBe("Wyślij do Ponder");
+    expect(windowsShareMenuLabel("ru-RU")).toBe("Отправить в Ponder");
   });
 
   test("passes one quoted path to the installed executable", () => {
@@ -39,7 +39,7 @@ describe("Windows share menu", () => {
       platform: "win32",
       packaged: true,
       exePath,
-      locale: "zh-CN",
+      locale: "en-US",
       regPath: "C:\\Windows\\System32\\reg.exe",
       execFile: (command, args, _options, callback) => {
         calls.push({ command, args });
@@ -48,7 +48,7 @@ describe("Windows share menu", () => {
     });
     expect(result).toEqual({ registered: true });
     expect(calls.map((call) => call.command)).toEqual(Array(4).fill("C:\\Windows\\System32\\reg.exe"));
-    expect(calls.map((call) => call.args)).toEqual(windowsShareMenuCommands(exePath, "zh-CN"));
+    expect(calls.map((call) => call.args)).toEqual(windowsShareMenuCommands(exePath, "en-US"));
     expect(calls[2].args).toContain("Document");
     expect(calls[3].args.at(-2)).toBe(`"${exePath}" --share-file "%1"`);
   });
@@ -59,23 +59,23 @@ describe("Windows share menu", () => {
       platform: "darwin",
       packaged: true,
       exePath,
-      locale: "zh-CN",
+      locale: "en-US",
       execFile,
     })).toEqual({ registered: false });
     expect(await registerWindowsShareMenu({
       platform: "win32",
       packaged: false,
       exePath,
-      locale: "zh-CN",
+      locale: "en-US",
       execFile,
     })).toEqual({ registered: false });
   });
 
   test("installer adds the verb and uninstall removes it", () => {
     const installer = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "..", "nsis", "installer.nsh"), "utf8");
-    expect(installer).toContain("Software\\Classes\\*\\shell\\EdgeEver");
+    expect(installer).toContain("Software\\Classes\\*\\shell\\Ponder");
     expect(installer).toContain("--share-file");
     expect(installer).toContain("MultiSelectModel");
-    expect(installer).toContain("DeleteRegKey HKCU \"Software\\Classes\\*\\shell\\EdgeEver\"");
+    expect(installer).toContain("DeleteRegKey HKCU \"Software\\Classes\\*\\shell\\Ponder\"");
   });
 });

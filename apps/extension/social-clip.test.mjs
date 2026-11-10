@@ -42,7 +42,7 @@ test('the target script ignores hidden header permalinks when binding Facebook a
   runInContext(source,createContext({document:w.document,location:w.location,Element:w.Element,Node:w.Node,URL}));
   const event=w.document.createEvent('MouseEvents');event.initMouseEvent('contextmenu',true,true,w,0,0,0,0,0,false,false,false,false,2,null);
   card.querySelector(name==='facebook'?'[data-ad-preview="message"]':'[data-testid="postText"], [data-word-wrap="1"]').dispatchEvent(event);
-  expect(card.getAttribute('data-edgeever-social-target')).toBe(target.url);
+  expect(card.getAttribute('data-ponder-social-target')).toBe(target.url);
   const result=readSocial(w.document,target);expect(result.ok).toBe(true);expect(result.clip.url).toBe(target.url);expect(result.clip.markdown).toBe(before.clip.markdown);
  }
 });
@@ -197,7 +197,7 @@ test('LinkedIn JSON-LD identity rejects a stale post even when another card rema
 
 test('a reused feed card cannot satisfy its old right-click marker',()=>{
  const d=fixture('linkedin');const card=d.querySelector('[data-activity-urn]');const target=platformTarget(socialSamples.linkedin.url);
- card.setAttribute('data-edgeever-social-target',target.url);card.setAttribute('data-activity-urn','urn:li:activity:7497764718095323137');
+ card.setAttribute('data-ponder-social-target',target.url);card.setAttribute('data-activity-urn','urn:li:activity:7497764718095323137');
  expect(readSocial(d,target)).toEqual({ok:false,reason:'unreadable'});
 });
 test('Meta preload alone and hidden captions never count as readable content',()=>{
@@ -305,15 +305,15 @@ test('actual target script selects own header permalinks, ignoring body referenc
   else if(name!=='linkedin') e.appendChild(bogus);
   const c=createContext({document:w.document,location:{href:sample.url},Element:w.Element,Node:w.Node,URL});runInContext(source,c);
   const event=w.document.createEvent('MouseEvents');event.initMouseEvent('contextmenu',true,true,w,0,0,0,0,0,false,false,false,false,2,null);e.dispatchEvent(event);
-  const marked=w.document.querySelector('[data-edgeever-social-target]');expect(marked?.getAttribute('data-edgeever-social-target')).toBe(expected);
+  const marked=w.document.querySelector('[data-ponder-social-target]');expect(marked?.getAttribute('data-ponder-social-target')).toBe(expected);
   const outside=w.document.createEvent('MouseEvents');outside.initMouseEvent('contextmenu',true,true,w,0,0,0,0,0,false,false,false,false,2,null);w.document.body.dispatchEvent(outside);
-  expect(w.document.querySelector('[data-edgeever-social-target]') || null).toBeNull();
+  expect(w.document.querySelector('[data-ponder-social-target]') || null).toBeNull();
  }
  const w=createWindow(readFileSync(new URL('./fixtures/platforms/linkedin-ugc.html',import.meta.url),'utf8'),linkedinUgcUrl);
  const c=createContext({document:w.document,location:{href:linkedinUgcUrl},Element:w.Element,Node:w.Node,URL});runInContext(source,c);
  const event=w.document.createEvent('MouseEvents');event.initMouseEvent('contextmenu',true,true,w,0,0,0,0,0,false,false,false,false,2,null);
  w.document.querySelector('[data-testid="expandable-text-box"]').dispatchEvent(event);
- expect(w.document.querySelector('[data-edgeever-social-target]')?.getAttribute('data-edgeever-social-target')).toBe(platformTarget(linkedinUgcUrl).url);
+ expect(w.document.querySelector('[data-ponder-social-target]')?.getAttribute('data-ponder-social-target')).toBe(platformTarget(linkedinUgcUrl).url);
 });
 
 test('Meta hidden card roots cannot establish readable content',()=>{

@@ -1,15 +1,15 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const storageKey = "edgeever.memoSort";
+const storageKey = "ponder.memoSort";
 const modes = [
-  ["updated-desc", "最近更新"],
-  ["created-desc", "创建时间"],
-  ["title-asc", "标题 A-Z"],
-  ["title-desc", "标题 Z-A"],
+  ["updated-desc", "Recently updated"],
+  ["created-desc", "Creation time"],
+  ["title-asc", "Title A-Z"],
+  ["title-desc", "Title Z-A"],
 ] as const;
 
 const openSort = async (page: Page) => {
-  await page.getByRole("button", { name: "列表更多操作", exact: true }).click();
+  await page.getByRole("button", { name: "More list actions", exact: true }).click();
   return page.getByRole("menuitem", { name: /^排序：/ });
 };
 
@@ -32,7 +32,7 @@ for (const [mode, label] of modes) {
       }
     });
     await page.reload();
-    await expect(await openSort(page)).toHaveText(`排序：${label}`);
+    await expect(await openSort(page)).toHaveText(`Sort: ${label}`);
     // A populated local mirror can satisfy the list without an HTTP query.
     expect(requestedSorts.every(value => value === mode)).toBe(true);
   });
@@ -43,12 +43,12 @@ for (const stored of [null, "unknown-sort"]) {
     await page.addInitScript(({ key, value }) => {
       if (value === null) localStorage.removeItem(key);
       else localStorage.setItem(key, value);
-      localStorage.setItem("edgeever.notebookSort", "custom");
+      localStorage.setItem("ponder.notebookSort", "custom");
     }, { key: storageKey, value: stored });
     await page.goto("/");
     await expect(await openSort(page)).toHaveText("排序：最近更新");
     expect(await page.evaluate(key => localStorage.getItem(key), storageKey)).toBe(stored);
-    expect(await page.evaluate(() => localStorage.getItem("edgeever.notebookSort"))).toBe("custom");
+    expect(await page.evaluate(() => localStorage.getItem("ponder.notebookSort"))).toBe("custom");
   });
 }
 
@@ -66,7 +66,7 @@ test("keeps in-session sorting usable when preference storage is blocked", async
     };
   }, storageKey);
   await page.goto("/");
-  await chooseSort(page, "标题 A-Z");
+  await chooseSort(page, "Title A-Z");
   await expect(await openSort(page)).toHaveText("排序：标题 A-Z");
   await page.reload();
   await expect(await openSort(page)).toHaveText("排序：最近更新");

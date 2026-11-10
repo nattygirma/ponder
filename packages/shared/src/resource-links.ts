@@ -14,7 +14,7 @@ export const resourceLinkToMarkdown = (label: string, url: string): string => re
 });
 
 export const getResourceIdFromUrl = (href: string): string | null => {
-  if (href.startsWith("edgeever-resource://")) {
+  if (href.startsWith("ponder-resource://")) {
     try {
       const parsed = new URL(href);
       const resourceId = decodeURIComponent(parsed.pathname.replace(/^\//, ""));
@@ -25,7 +25,7 @@ export const getResourceIdFromUrl = (href: string): string | null => {
   }
 
   try {
-    const parsed = new URL(href, "http://edgeever.local");
+    const parsed = new URL(href, "http://ponder.local");
     const match = parsed.pathname.match(RESOURCE_PATH_PATTERN);
     return match?.[1] ? decodeURIComponent(match[1]) : null;
   } catch {

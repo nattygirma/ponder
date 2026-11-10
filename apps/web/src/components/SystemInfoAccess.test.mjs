@@ -22,8 +22,8 @@ describe("system information access", () => {
     expect(settingsPaneSource).toContain('item.key !== "shortcuts"');
     expect(settingsPaneSource).not.toContain('item.key !== "system"');
 
-    const desktopSettings = settingsPaneSource.match(/桌面端布局：双栏[\s\S]*?移动端布局/)?.[0] ?? "";
-    const mobileSettings = settingsPaneSource.match(/移动端布局[\s\S]*$/)?.[0] ?? "";
+    const desktopSettings = settingsPaneSource.match(/Desktop layout: two columns[\s\S]*?Mobile layout/)?.[0] ?? "";
+    const mobileSettings = settingsPaneSource.match(/Mobile layout[\s\S]*$/)?.[0] ?? "";
     expect(desktopSettings).toContain("tabItems.map");
     expect(mobileSettings).toContain("mobileTabItems.map");
     expect(desktopSettings).toContain('item.key === "system" && deployedUpdateUnseen');

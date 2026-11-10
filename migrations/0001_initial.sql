@@ -92,7 +92,7 @@ CREATE TABLE resources (
   id TEXT PRIMARY KEY,
   memo_id TEXT NOT NULL,
   original_memo_id TEXT,
-  bucket_name TEXT NOT NULL DEFAULT 'edgeever-resources',
+  bucket_name TEXT NOT NULL DEFAULT 'ponder-resources',
   object_key TEXT NOT NULL,
   kind TEXT NOT NULL CHECK (kind IN ('image', 'attachment')),
   mime_type TEXT,
@@ -187,9 +187,9 @@ INSERT INTO memos (
 VALUES (
   'memo_welcome',
   'nb_inbox',
-  '欢迎来到 EdgeEver',
-  '这是第一条 EdgeEver 笔记，三栏、边缘、Agent-ready。',
-  '["edgeever","welcome"]',
+  '欢迎来到 Ponder',
+  '这是第一条 Ponder 笔记，三栏、边缘、Agent-ready。',
+  '["ponder","welcome"]',
   'system',
   'system'
 );
@@ -204,9 +204,9 @@ INSERT INTO memo_contents (
 )
 VALUES (
   'memo_welcome',
-  '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"欢迎来到 EdgeEver"}]},{"type":"paragraph","content":[{"type":"text","text":"这是第一条 EdgeEver 笔记，三栏、边缘、Agent-ready。"}]},{"type":"paragraph","content":[{"type":"text","text":"接下来可以创建笔记本、写笔记、搜索内容，并把多条笔记合并成一条新的长期笔记。"}]}]}',
-  '## 欢迎来到 EdgeEver\n\n这是第一条 EdgeEver 笔记，三栏、边缘、Agent-ready。\n\n接下来可以创建笔记本、写笔记、搜索内容，并把多条笔记合并成一条新的长期笔记。',
-  '欢迎来到 EdgeEver 这是第一条 EdgeEver 笔记，三栏、边缘、Agent-ready。 接下来可以创建笔记本、写笔记、搜索内容，并把多条笔记合并成一条新的长期笔记。',
+  '{"type":"doc","content":[{"type":"heading","attrs":{"level":2},"content":[{"type":"text","text":"欢迎来到 Ponder"}]},{"type":"paragraph","content":[{"type":"text","text":"这是第一条 Ponder 笔记，三栏、边缘、Agent-ready。"}]},{"type":"paragraph","content":[{"type":"text","text":"接下来可以创建笔记本、写笔记、搜索内容，并把多条笔记合并成一条新的长期笔记。"}]}]}',
+  '## 欢迎来到 Ponder\n\n这是第一条 Ponder 笔记，三栏、边缘、Agent-ready。\n\n接下来可以创建笔记本、写笔记、搜索内容，并把多条笔记合并成一条新的长期笔记。',
+  '欢迎来到 Ponder 这是第一条 Ponder 笔记，三栏、边缘、Agent-ready。 接下来可以创建笔记本、写笔记、搜索内容，并把多条笔记合并成一条新的长期笔记。',
   'seed',
   0
 );
@@ -214,7 +214,7 @@ VALUES (
 INSERT INTO memos_fts (memo_id, title, content_text, tags)
 VALUES (
   'memo_welcome',
-  '欢迎来到 EdgeEver',
-  '欢迎来到 EdgeEver 这是第一条 EdgeEver 笔记，三栏、边缘、Agent-ready。 接下来可以创建笔记本、写笔记、搜索内容，并把多条笔记合并成一条新的长期笔记。',
-  'edgeever welcome'
+  '欢迎来到 Ponder',
+  '欢迎来到 Ponder 这是第一条 Ponder 笔记，三栏、边缘、Agent-ready。 接下来可以创建笔记本、写笔记、搜索内容，并把多条笔记合并成一条新的长期笔记。',
+  'ponder welcome'
 );

@@ -136,7 +136,7 @@ const CATEGORY_COLORS: Record<
 
 export function InfographicGallery({ onSelect, readOnly = false, className, isDialog = false }: Props) {
   const { t, i18n } = useTranslation();
-  const lang = i18n.resolvedLanguage ?? "zh-CN";
+  const lang = i18n.resolvedLanguage ?? "en-US";
   const [selectedCategory, setSelectedCategory] = useState<InfographicSampleCategory | "all">("all");
   const [searchQuery, setSearchQuery] = useState("");
 

@@ -22,15 +22,11 @@ const languagePatterns = [
 // Justified exceptions: `file`, a fragment of each matching line, and why.
 const allowed = [
   { file: "apps/desktop/src/main/desktop-copy.mjs", line: "if (language === ", reason: "locale resolver of the desktop main process, which cannot import the shared one" },
-  { file: "apps/web/src/lib/bilingual-content-locale.ts", line: 'matchSupportedLocale(locale) === "zh-CN" ? "zh-CN" : "en-US"', reason: "single helper for bundled content that exists only in Chinese and English" },
-  { file: "apps/web/src/lib/bilingual-content-locale.ts", line: 'bilingualContentLocale(locale) === "zh-CN";', reason: "same helper" },
   { file: "apps/web/src/lib/companion-locale.ts", line: 'locale === "ru" ? "en-US"', reason: "servers before Russian companion support reject \"ru\"" },
-  { file: "apps/web/src/components/settings/ai-provider-options.ts", line: 'startsWith("zh") || position', reason: "Chinese ordinal numerals have no Intl equivalent; other locales use digits" },
   { file: "apps/web/src/lib/infographic-samples.ts", line: "if (lang && lang.toLowerCase().startsWith(", reason: "sample titles and descriptions are authored only in Chinese, English and Japanese" },
   { file: "apps/extension/src/video/transcript.ts", line: "if (normalized.startsWith(", reason: "groups subtitle tracks by content language" },
   { file: "apps/extension/src/video/read-youtube-in-page.ts", line: "if (normalized.startsWith(", reason: "groups subtitle tracks by content language" },
   { file: "apps/extension/src/video/read-bilibili-in-page.ts", line: "if (normalized.startsWith(", reason: "groups subtitle tracks by content language" },
-  { file: "packages/shared/src/ai-tag-suggestions.ts", line: 'locale?.toLocaleLowerCase().startsWith("zh")', reason: "the default prompt exists only in Chinese and English; output follows the note's language" },
   { file: "packages/shared/src/companion.ts", line: 'fallbackLocale !== "pl"', reason: "tells English from Polish typed without diacritics" },
 ];
 

@@ -4,7 +4,7 @@ import {
   docToText,
   markdownToDoc,
   normalizeTags,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { Hono } from "hono";
 import { registerImportContextGuard, registerImportRoutes } from "./import-routes";
 import { cors } from "hono/cors";
@@ -14,15 +14,9 @@ import releaseSummary from "../../../release-summary.json";
 import {
   authenticateRequest,
   authenticateSession,
-  createSession,
   getBearerToken,
   getInstanceAuthMode,
-  getInstanceUser,
-  getLoginAttemptKeys,
   revokeSession,
-  setSessionCookie,
-  tooManyLoginAttempts,
-  verifyLogin,
 } from "./auth-service";
 import {
   isDatabaseNotReadyError,
@@ -47,7 +41,7 @@ import {
   restoreJsonNotebooks as restoreJsonNotebooksService,
 } from "./backup-service";
 import { sha256, sha256Bytes } from "./hash-utils";
-import { PUBLIC_PAGE_HEADERS } from "@edgeever/shared/public-page-headers";
+import { PUBLIC_PAGE_HEADERS } from "@ponder/shared/public-page-headers";
 import { INSTANCE_BUILD_ID } from "./instance-build";
 import { resolveDeploymentVersionCreatedAt, resolveImageBuildMetadata, resolveInstanceDeploymentMetadata } from "./instance-deployment";
 import type {
@@ -97,6 +91,13 @@ import { registerMemoRoutes } from "./memo-routes";
 import { registerScheduledTaskRoutes } from "./scheduled-task-routes";
 import { registerWorkspaceExtensionRoutes } from "./workspace-extension-routes";
 import { registerBackupRoutes } from "./backup-routes";
+import { registerPageRoutes } from "./page-routes";
+import { registerDatabaseRoutes } from "./database-routes";
+import { registerCommentRoutes } from "./comment-routes";
+import { registerCalendarRoutes } from "./calendar-routes";
+import { registerConnectionRoutes } from "./connection-routes";
+import { teamGuard } from "./team-guard";
+import { registerPublicInvitationRoutes, registerTeamRoutes } from "./team-routes";
 import { registerMcpRoutes } from "./mcp-routes";
 import { executeWorkspaceTool } from "./mcp-tool-executor";
 import {
@@ -150,22 +151,22 @@ type D1PreparedStatement = PreparedStatementAdapter;
 
 const DEMO_RESET_LEASE_MS = 5 * 60 * 1000;
 const DEMO_RESET_COOLDOWN_MS = 60 * 1000;
-const DEFAULT_R2_BUCKET_NAME = "edgeever-resources";
+const DEFAULT_R2_BUCKET_NAME = "ponder-resources";
 const app = new Hono<AppEnv>();
 
-// Packaged desktop uses edgeever-app://app; the previous file:// renderer sent Origin "null".
+// Packaged desktop uses ponder-app://app; the previous file:// renderer sent Origin "null".
 const API_CORS_ORIGINS = [
   "http://127.0.0.1:5173",
   "http://localhost:5173",
   "null",
-  "edgeever-app://app",
+  "ponder-app://app",
 ];
 
 app.use(
   "/api/*",
   cors({
     origin: API_CORS_ORIGINS,
-    allowHeaders: ["Content-Type", "Authorization", "x-edgeever-import-context"],
+    allowHeaders: ["Content-Type", "Authorization", "x-ponder-import-context"],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   })
@@ -192,6 +193,8 @@ app.use("/api/public/*", async (c, next) => {
 });
 
 app.get("/api/release", (c) => c.json(releaseSummary));
+
+registerPublicInvitationRoutes(app);
 
 const getAppliedMigration = async (env: Bindings) => {
   try {
@@ -234,15 +237,15 @@ app.get("/api/health", async (c) => {
     );
   }
 
-  const runtime = c.env.EDGE_EVER_RUNTIME ?? "cloudflare-workers";
+  const runtime = c.env.PONDER_RUNTIME ?? "cloudflare-workers";
 
   return c.json({
     ok: true,
-    name: "edgeever",
+    name: "ponder",
     runtime,
     ...(runtime === "self-hosted-bun"
       ? {
-          containerImageSource: resolveContainerImageSource(c.env.EDGE_EVER_CONTAINER_IMAGE),
+          containerImageSource: resolveContainerImageSource(c.env.PONDER_CONTAINER_IMAGE),
           ...resolveImageBuildMetadata(c.env),
         }
       : {}),
@@ -268,22 +271,13 @@ registerPublicTableFormRoutes(app);
 
 registerAuthRoutes(app, {
   authenticateRequest: (...args) => authenticateRequest(...args),
-  authenticateSession: (...args) => authenticateSession(...args),
-  createSession: (...args) => createSession(...args),
-  ensureUserWorkspace: (...args) => ensureUserWorkspace(...args),
   getBearerToken: (...args) => getBearerToken(...args),
   getInstanceAuthMode: (...args) => getInstanceAuthMode(...args),
-  getLoginAttemptKeys: (...args) => getLoginAttemptKeys(...args),
   isDemoEnvironment: (environment) => isDemoMode(environment) || isLocalDemoSeedEnabled(environment),
-  isDemoMode: (...args) => isDemoMode(...args),
   revokeSession: (...args) => revokeSession(...args),
-  setSessionCookie: (...args) => setSessionCookie(...args),
-  tooManyLoginAttempts: (...args) => tooManyLoginAttempts(...args),
-  verifyLogin: (...args) => verifyLogin(...args),
 });
 registerUserRoutes(app, {
   authenticateRequest: (...args) => authenticateRequest(...args),
-  getInstanceUser: (...args) => getInstanceUser(...args),
 });
 
 app.use("/api/v1/*", async (c, next) => {
@@ -310,7 +304,7 @@ app.use("/api/v1/*", async (c, next) => {
       role: "owner",
     });
     await ensureWorkspaceExampleSeed(c.env, DEFAULT_WORKSPACE_ID).catch((error) => {
-      console.error("EdgeEver example seed failed", error);
+      console.error("Ponder example seed failed", error);
     });
     await next();
     return;
@@ -325,6 +319,8 @@ app.use("/api/v1/*", async (c, next) => {
   c.set("auth", auth);
   await next();
 });
+
+app.use("/api/v1/*", teamGuard);
 
 registerImportContextGuard(app);
 
@@ -353,6 +349,12 @@ registerSyncRoutes(app, {
 });
 registerImportRoutes(app);
 registerTagRoutes(app);
+registerPageRoutes(app);
+registerDatabaseRoutes(app);
+registerCommentRoutes(app);
+registerCalendarRoutes(app);
+registerConnectionRoutes(app);
+registerTeamRoutes(app);
 registerPosterRenderRoutes(app);
 registerPluginDistributionRoutes(app);
 registerScheduledTaskRoutes(app);
@@ -447,11 +449,11 @@ app.post("/api/v1/demo/reset", async (c) => {
 });
 
 /**
- * Executes the platform-neutral EdgeEver application with an injected storage
+ * Executes the platform-neutral Ponder application with an injected storage
  * adapter. Runtime entrypoints must remain thin and call this function rather
  * than introducing platform-specific route or service implementations.
  */
-export const fetchEdgeEverApp = async (
+export const fetchPonderApp = async (
   request: Request,
   runtimeEnv: Bindings,
   ctx: ExecutionContext,
@@ -479,7 +481,7 @@ const worker = {
       }
       return env.ASSETS.fetch(request);
     }
-    return fetchEdgeEverApp(request, {
+    return fetchPonderApp(request, {
       ...env,
       storage: createCloudflareStorageAdapter(env),
       deploymentVersionCreatedAt: env.CF_VERSION_METADATA?.timestamp,
@@ -522,17 +524,17 @@ app.onError((error, c) => {
   if (requestError) return requestError;
 
   if (isDatabaseDailyQuotaError(error)) {
-    console.error("EdgeEver database daily quota exhausted", error);
+    console.error("Ponder database daily quota exhausted", error);
     return apiError(c, "database_daily_quota_exceeded",
       "The instance's Cloudflare D1 daily database quota is exhausted. Daily quotas reset at 00:00 UTC. The instance owner can also upgrade the Workers plan.", 503);
   }
 
   if (isDatabaseNotReadyError(error)) {
-    console.error("EdgeEver database readiness check failed", error);
+    console.error("Ponder database readiness check failed", error);
     return databaseNotReady(c);
   }
 
-  console.error("Unhandled EdgeEver API error", error);
+  console.error("Unhandled Ponder API error", error);
   return apiError(c, "internal_error", "An unexpected server error occurred.", 500);
 });
 
@@ -545,9 +547,9 @@ export const callMcpTool = (
   args: Record<string, unknown>,
 ) => executeWorkspaceTool(context, auth, name, args);
 
-const isDemoMode = (env: Bindings) => isDemoModeEnabled(env.EDGE_EVER_DEMO_MODE);
+const isDemoMode = (env: Bindings) => isDemoModeEnabled(env.PONDER_DEMO_MODE);
 const isLocalDemoSeedEnabled = (env: Bindings) =>
-  env.EDGE_EVER_LOCAL_DEMO_SEED?.trim().toLowerCase() === "true";
+  env.PONDER_LOCAL_DEMO_SEED?.trim().toLowerCase() === "true";
 
 const rotateWorkspaceSyncIdentity = (db: Bindings["storage"]["db"], at: string) =>
   db.prepare(`UPDATE workspaces SET created_at = ?`).bind(at).run();
@@ -571,7 +573,7 @@ const ensureLocalDemoSeed = (env: Bindings) => {
     // already caught up never sees those deletes. A new sync identity forces
     // that browser to rebuild from this snapshot instead of keeping the old notes.
     await rotateWorkspaceSyncIdentity(env.storage.db, isoNow());
-    await audit(env.storage.db, "system", null, "demo.local_seed", "demo", "edgeever-local", {
+    await audit(env.storage.db, "system", null, "demo.local_seed", "demo", "ponder-local", {
       seedMemoCount: DEMO_SEED_MEMOS.length,
       mode: "sync-seed",
     });
@@ -590,7 +592,7 @@ const ensureDemoSeed = async (
   const db = env.storage.db;
   const now = isoNow();
   const statements: D1PreparedStatement[] = [];
-  const bucketName = env.EDGE_EVER_R2_BUCKET_NAME?.trim() || DEFAULT_R2_BUCKET_NAME;
+  const bucketName = env.PONDER_R2_BUCKET_NAME?.trim() || DEFAULT_R2_BUCKET_NAME;
   const overwriteExisting = options.overwriteExisting === true;
   const existingNotebookIds = overwriteExisting
     ? new Set<string>()
@@ -939,10 +941,10 @@ const resetDemoData = async (
 
   const now = isoNow();
   try {
-    const demoUsername = env.EDGE_EVER_AUTH_USERNAME?.trim() || "admin";
+    const demoUsername = env.PONDER_AUTH_USERNAME?.trim() || "admin";
     const demoPasswordHash = await resolveDemoPasswordHash(
-      env.EDGE_EVER_AUTH_PASSWORD,
-      env.EDGE_EVER_AUTH_PASSWORD_HASH,
+      env.PONDER_AUTH_PASSWORD,
+      env.PONDER_AUTH_PASSWORD_HASH,
       hashPassword,
     );
     const resourceRows = await db.prepare(`SELECT object_key, storage_config_id FROM resources`).all<{ object_key: string; storage_config_id: string }>();
@@ -977,7 +979,7 @@ const resetDemoData = async (
 
     await ensureDemoSeed(env, { overwriteExisting: true, refreshResources: true });
     await rotateWorkspaceSyncIdentity(db, isoNow());
-    await audit(db, "system", null, "demo.reset", "demo", "edgeever-demo", {
+    await audit(db, "system", null, "demo.reset", "demo", "ponder-demo", {
       scheduledTime: new Date(scheduledTime).toISOString(),
       seedMemoCount: DEMO_SEED_MEMOS.length,
     });

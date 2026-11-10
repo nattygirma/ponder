@@ -37,7 +37,7 @@ import {
   type TableFilter,
   type TableFilterOperator,
   type TableRecord,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { AiSidebar, readAiSidebarOpen, writeAiSidebarOpen } from "@/components/ai-sidebar/AiSidebar";
 import { AiSidebarErrorBoundary } from "@/components/ai-sidebar/AiSidebarErrorBoundary";
 import { IconTooltip } from "@/components/editor/EditorPaneChrome";
@@ -60,13 +60,13 @@ import { EDITOR_LOCAL_SAVE_DELAY_MS, formatShortcutBinding, getNotebookMoveOptio
 import { createLocalEditSession } from "@/components/editor/editor-pane-helpers";
 import { isLocalMemoId } from "@/lib/local-mirror";
 import { isBrowserOffline } from "@/lib/network-status";
-import type { EdgeEverRepository } from "@/lib/repository";
-import type { MemoEditSession } from "@edgeever/shared";
+import type { PonderRepository } from "@/lib/repository";
+import type { MemoEditSession } from "@ponder/shared";
 
 type TableEditorPaneProps = {
   memo: MemoDetail;
   notebooks: Notebook[];
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
   readOnly: boolean;
   onBackToList: () => void;
   onSaved: (memo: MemoDetail) => Promise<void>;
@@ -196,7 +196,7 @@ const AttachmentCell = ({
   record: TableRecord;
   memoId: string;
   readOnly: boolean;
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
   onAdd: (attachment: TableAttachment) => boolean;
   onRemove: (resourceId: string) => void;
   onUploaded: (resourceId: string) => void;
@@ -385,7 +385,7 @@ const RecordCell = ({
   readOnly: boolean;
   onEdit: (cell: EditingCell | null) => void;
   memoId: string;
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
   onCommit: (value: string) => void;
   onDraft: (value: string) => void;
   onChange: (document: TableDocument) => void;
@@ -554,7 +554,7 @@ export const TableEditorPane = ({
     setSaveError(null);
     setSaveFailed(false);
     if (readOnly || !parsed) return;
-    if (isLocalMemoId(memo.id) || isBrowserOffline() || window.edgeeverDesktop?.isAvailable) {
+    if (isLocalMemoId(memo.id) || isBrowserOffline() || window.ponderDesktop?.isAvailable) {
       editSessionRef.current = createLocalEditSession(memo);
       setEditSessionReady(true);
       return;

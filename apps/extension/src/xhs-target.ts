@@ -3,9 +3,9 @@
 // scripts are classic scripts, and this file is also injected again after the
 // user grants access.
 (() => {
-  const root = globalThis as typeof globalThis & { __edgeeverXhsTarget?: boolean };
-  if (root.__edgeeverXhsTarget) return;
-  root.__edgeeverXhsTarget = true;
+  const root = globalThis as typeof globalThis & { __ponderXhsTarget?: boolean };
+  if (root.__ponderXhsTarget) return;
+  root.__ponderXhsTarget = true;
 
   // Keep identical to noteIdFromPath in xhs-clip.ts.
   const noteIdFromPath = (pathname: string) => {
@@ -32,17 +32,17 @@
         ? rawTarget.parentElement
         : null;
     if (!element) return;
-    for (const node of document.querySelectorAll("[data-edgeever-xhs-target]")) {
-      node.removeAttribute("data-edgeever-xhs-target");
-      node.removeAttribute("data-edgeever-xhs-note-id");
+    for (const node of document.querySelectorAll("[data-ponder-xhs-target]")) {
+      node.removeAttribute("data-ponder-xhs-target");
+      node.removeAttribute("data-ponder-xhs-note-id");
     }
     const detail = element.closest("#noteContainer");
     const card = detail ? null : element.closest("section.note-item, .note-item");
     const target = detail || card;
     if (!target) return;
-    target.setAttribute("data-edgeever-xhs-target", "1");
+    target.setAttribute("data-ponder-xhs-target", "1");
     const href = target.querySelector("a[href]")?.getAttribute("href") || "";
     const noteId = noteIdFromHref(href) || noteIdFromPath(location.pathname);
-    if (noteId) target.setAttribute("data-edgeever-xhs-note-id", noteId);
+    if (noteId) target.setAttribute("data-ponder-xhs-note-id", noteId);
   }, true);
 })();

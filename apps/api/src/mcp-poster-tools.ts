@@ -1,6 +1,6 @@
-import { compilePosterMemo as compile, applyPosterEdits as apply, StructuredNoteError } from "@edgeever/shared";
+import { compilePosterMemo as compile, applyPosterEdits as apply, StructuredNoteError } from "@ponder/shared";
 import { AppError } from "./app-error";
-export { posterPatchSchema, posterCapabilities } from "@edgeever/shared";
+export { posterPatchSchema, posterCapabilities } from "@ponder/shared";
 const translate = (error: unknown): never => {
   if (error instanceof StructuredNoteError) throw new AppError(error.code, error.message, error.status);
   throw error;

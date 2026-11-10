@@ -43,7 +43,7 @@ export const renderPagedPreviewPdf = async (root: Pick<ParentNode, "querySelecto
     const pageLabel = pageElement.querySelector(".pagedjs_margin-bottom-center .pagedjs_margin-content");
     const previousLabel = pageLabel?.textContent ?? "";
     pageElement.style.boxShadow = "none";
-    pageElement.classList.add("edgeever-print-pdf-capturing");
+    pageElement.classList.add("ponder-print-pdf-capturing");
     if (pageLabel) pageLabel.textContent = `${index + 1} / ${pageElements.length}`;
     try {
       const rect = pageElement.getBoundingClientRect();
@@ -60,7 +60,7 @@ export const renderPagedPreviewPdf = async (root: Pick<ParentNode, "querySelecto
       page.drawImage(image, { x: 0, y: 0, width, height });
     } finally {
       pageElement.style.boxShadow = previousShadow;
-      pageElement.classList.remove("edgeever-print-pdf-capturing");
+      pageElement.classList.remove("ponder-print-pdf-capturing");
       if (pageLabel) pageLabel.textContent = previousLabel;
     }
   }
@@ -74,7 +74,7 @@ type PrintBridge = {
 };
 
 export const downloadNotePrintPdf = async (root: Pick<ParentNode, "querySelectorAll">, title: string, fallback: string) => {
-  const bridge = (window as Window & { edgeeverPrint?: PrintBridge }).edgeeverPrint;
+  const bridge = (window as Window & { ponderPrint?: PrintBridge }).ponderPrint;
   const bytes = bridge?.savePdf ? await bridge.savePdf() : await renderPagedPreviewPdf(root);
   if (bytes.byteLength === 0) throw new Error("PDF export returned an empty file");
   downloadPdfBytes(bytes, buildPdfFilename(title, fallback));

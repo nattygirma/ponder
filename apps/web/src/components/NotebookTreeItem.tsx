@@ -14,7 +14,7 @@ import {
 } from "@/lib/app-helpers";
 import { NotebookAppearanceContent, notebookRowStyle } from "./NotebookAppearanceContent";
 import { cn } from "@/lib/utils";
-import { formatNotebookMemoCount, type Notebook } from "@edgeever/shared";
+import { formatNotebookMemoCount, type Notebook } from "@ponder/shared";
 import {
   ContextMenu,
   ContextMenuContent,
@@ -24,6 +24,8 @@ import {
 } from "@/components/ui/context-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { contentEnterMotion, treeEnterMotion } from "@/lib/motion";
+import { usePages } from "./pages/PagesProvider";
+import { isPageDrag, PAGE_DRAG_MIME, PageTreeBranch } from "./pages/PageTree";
 
 const ShareNotebookDialog = lazy(() => import("./dialogs/ShareNotebookDialog").then(module => ({ default: module.ShareNotebookDialog })));
 
@@ -74,7 +76,9 @@ export const NotebookTreeItem = ({
   const publicNotebook = inheritedPublic || directlyShared;
   const shareActionLabel = t("sharing.notebookTitle");
   const open = !collapsedNotebookIds.has(node.id);
-  const hasChildren = node.children.length > 0;
+  const pages = usePages();
+  const rootPages = pages?.enabled ? pages.rootsOf(node.id) : [];
+  const hasChildren = node.children.length > 0 || rootPages.length > 0;
   const showsSplitCount = !showDescendantNotes && hasChildren;
   const selected = node.id === selectedNotebookId;
   const isInbox = node.slug === "inbox";
@@ -136,6 +140,15 @@ export const NotebookTreeItem = ({
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
     onDragScroll(event);
 
+    if (pages?.enabled && isPageDrag(event.dataTransfer)) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.dataTransfer.dropEffect = "move";
+      setDropPosition("inside");
+      scheduleDragExpand("inside");
+      return;
+    }
+
     if (hasMemoDragData(event.dataTransfer)) {
       event.preventDefault();
       event.stopPropagation();
@@ -160,6 +173,14 @@ export const NotebookTreeItem = ({
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
+    const pageId = pages?.enabled ? event.dataTransfer.getData(PAGE_DRAG_MIME) : "";
+    if (pageId && pages) {
+      setDropPosition(null);
+      clearExpandTimer();
+      void pages.movePage(pageId, { notebookId: node.id, parentId: null });
+      onOpenChange(node.id, true);
+      return;
+    }
     const memoIds = getMemoDragIds(event.dataTransfer);
     const notebookId = event.dataTransfer.getData(NOTEBOOK_DRAG_MIME);
     const position = getNotebookDropPosition(event);
@@ -192,7 +213,7 @@ export const NotebookTreeItem = ({
               node.rowInverted
                 ? cn("notebook-inverted-row text-white", selected && "notebook-inverted-row-selected")
                 : selected
-                ? "edgeever-workspace-selection font-medium text-slate-950"
+                ? "ponder-workspace-selection font-medium text-slate-950"
                 : "text-slate-700 hover:bg-slate-50",
               dropPosition === "inside" && "ring-2 ring-slate-300",
               dropPosition === "inside" && hasChildren && !open && "bg-slate-100"
@@ -302,11 +323,25 @@ export const NotebookTreeItem = ({
                   {formatNotebookMemoCount({ directCount: node.directMemoCount, totalCount: node.memoCount, hasChildren }, showDescendantNotes)}
                 </span>
               </button>
+            {pages?.enabled ? (
+              <button
+                className="ponder-reveal-on-touch hidden h-6 w-6 shrink-0 items-center justify-center rounded-md transition-colors duration-150 hover:bg-slate-100 group-focus-within:flex group-hover:flex"
+                type="button"
+                aria-label={t("pages.addTo", { name: node.name })}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpenChange(node.id, true);
+                  void pages.createPage({ notebookId: node.id });
+                }}
+              >
+                <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+              </button>
+            ) : null}
             <div ref={actionsRef} className="relative shrink-0">
                 <TooltipProvider><Tooltip><TooltipTrigger asChild>
                   <button
                     className={cn(
-                      "edgeever-reveal-on-touch h-6 w-6 items-center justify-center rounded-md transition-colors duration-150",
+                      "ponder-reveal-on-touch h-6 w-6 items-center justify-center rounded-md transition-colors duration-150",
                       directlyShared ? "flex" : "hidden group-focus-within:flex group-hover:flex",
                       selected ? "hover:bg-slate-200" : "hover:bg-slate-100"
                     )}
@@ -488,6 +523,7 @@ export const NotebookTreeItem = ({
               showDescendantNotes={showDescendantNotes}
             />
           ))}
+          {rootPages.length > 0 ? <PageTreeBranch pages={rootPages} depth={depth + 1} /> : null}
         </m.div>
       ) : null}
     </div>

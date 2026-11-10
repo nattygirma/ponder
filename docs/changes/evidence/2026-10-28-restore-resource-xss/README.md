@@ -1,8 +1,6 @@
 # Resource MIME browser acceptance
 
-[简体中文](README.zh-CN.md)
-
-[`browser-results.json`](browser-results.json) records Chromium checks through the real EdgeEver API, using isolated SQLite/filesystem storage on loopback. The content was synthetic and contained no scripts or credentials.
+[`browser-results.json`](browser-results.json) records Chromium checks through the real Ponder API, using isolated SQLite/filesystem storage on loopback. The content was synthetic and contained no scripts or credentials.
 
 - Historical image, audio and video records with multiple declared MIME types produced `application/octet-stream` attachment responses. Chromium emitted successful download events for all three rather than parsing their HTML bodies as pages.
 - A quoted UTF-16LE SVG retained its charset and quoted comma/semicolon parameter, remained `image/svg+xml` with sandbox CSP, and exposed the expected `旧备份` text in the SVG document.

@@ -1,6 +1,6 @@
 import type { FontLoadStatus } from "./font-load-state";
-import { prepareNoteImageAssets } from "@edgeever/shared/note-image-fonts";
-import { noteImageAssetUrls } from "@edgeever/shared/note-image-assets";
+import { prepareNoteImageAssets } from "@ponder/shared/note-image-fonts";
+import { noteImageAssetUrls } from "@ponder/shared/note-image-assets";
 import { toCanvas } from "html-to-image";
 import type { HtmlImageEmbedResult, NoteHtmlExportMeta } from "@/lib/note-html-export";
 import { prepareNoteBodyHtmlForExport } from "@/lib/note-html-export";
@@ -26,7 +26,7 @@ import {
   estimateReadingStats,
   generateCardCss,
   prepareNoteImageContent,
-} from "@edgeever/shared/note-image-card";
+} from "@ponder/shared/note-image-card";
 
 export {
   type NoteImageFormat,

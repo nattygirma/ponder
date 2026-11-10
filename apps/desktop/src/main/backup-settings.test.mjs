@@ -12,8 +12,8 @@ test("calendar schedules clamp month end and preserve successful history when fr
 });
 
 test("accepts the specified defaults and choices, rejects invalid configuration", () => {
-  const defaults = normalizeBackupConfig(undefined, "/Documents/EdgeEver Backups");
-  expect(defaults).toEqual({ enabled: false, interval: "weekly", retention: 1, directory: "/Documents/EdgeEver Backups", encrypted: false });
+  const defaults = normalizeBackupConfig(undefined, "/Documents/Ponder Backups");
+  expect(defaults).toEqual({ enabled: false, interval: "weekly", retention: 1, directory: "/Documents/Ponder Backups", encrypted: false });
   for (const retention of [1, 3, 5, 10, 20]) {
     expect(normalizeBackupConfig({ ...defaults, retention }, defaults.directory).retention).toBe(retention);
   }

@@ -189,11 +189,11 @@ for (const classic of [false, true]) test(`Xueqiu ${classic ? 'classic signed-in
   const body = cards[0].querySelector('[class*="timeline__item__content_"]');
   body.innerHTML += `<a href="${xueqiuUrl}">Referenced article</a>`;
   body.lastChild.dispatchEvent(new window.Event("contextmenu", { bubbles: true }));
-  expect(cards[0].getAttribute("data-edgeever-social-target")).toBe(target.url);
+  expect(cards[0].getAttribute("data-ponder-social-target")).toBe(target.url);
   expect(readXueqiu(window.document, target, "https://www.xueqiu.com/")).toEqual({ ok: false, reason: "not-target" });
   cards[1].querySelector('[class*="timeline__item__content_"]').dispatchEvent(new window.Event("contextmenu", { bubbles: true }));
-  expect(cards[0].hasAttribute("data-edgeever-social-target")).toBe(false);
-  expect(cards[1].hasAttribute("data-edgeever-social-target")).toBe(true);
+  expect(cards[0].hasAttribute("data-ponder-social-target")).toBe(false);
+  expect(cards[1].hasAttribute("data-ponder-social-target")).toBe(true);
 });
 
 test("Xiaoyuzhou rejects a hidden Show Notes body even with complete loaded state", () => {

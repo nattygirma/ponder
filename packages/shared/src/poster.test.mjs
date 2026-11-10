@@ -10,12 +10,12 @@ describe("poster source compatibility", () => {
     expect(parsePosterDocument(markdown)).toEqual(document);
     expect(posterFallbackMarkdown(document)).toContain("/api/v1/resources/res_preview/blob");
     expect(posterFallbackMarkdown(document)).toContain("/api/v1/resources/res_image/blob");
-    expect(posterFallbackMarkdown(document)).not.toContain("edgeever-poster-v1");
+    expect(posterFallbackMarkdown(document)).not.toContain("ponder-poster-v1");
   });
   test("rejects corrupt, unsupported and unsafe sources without executing arbitrary Fabric JSON", () => {
     for (const value of [null, { ...createPosterDocument(), schemaVersion: 2 }, { ...createPosterDocument(), width: Infinity }, { ...createPosterDocument(), elements: [{ type: "image", src: "https://example.com/tracker" }] }]) {
       const encoded = Base64.encodeURI(JSON.stringify(value));
-      expect(parsePosterDocument(`<!-- edgeever-poster-v1:${encoded} -->`)).toBeNull();
+      expect(parsePosterDocument(`<!-- ponder-poster-v1:${encoded} -->`)).toBeNull();
     }
     expect(parsePosterDocument("ordinary note")).toBeNull();
     expect(PosterDocumentSchema.safeParse({ ...createPosterDocument(), elements: [createPosterDocument().elements[0], createPosterDocument().elements[0]] }).success).toBe(false);

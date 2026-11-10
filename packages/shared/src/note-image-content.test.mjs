@@ -3,14 +3,14 @@ import { parseHTML } from "linkedom";
 import { prepareNoteImageContent } from "./note-image-content";
 
 test("removes the whole unified image panel from exports without removing the image", () => {
-  const { document } = parseHTML('<div id="source"><figure class="edgeever-image-node"><img src="photo.png"><div class="edgeever-image-panel"><div class="edgeever-image-controls"><button>Small</button></div><div class="edgeever-image-resource-actions"><div data-edgeever-resource-menu><button>Download</button></div></div></div></figure></div>');
+  const { document } = parseHTML('<div id="source"><figure class="ponder-image-node"><img src="photo.png"><div class="ponder-image-panel"><div class="ponder-image-controls"><button>Small</button></div><div class="ponder-image-resource-actions"><div data-ponder-resource-menu><button>Download</button></div></div></div></figure></div>');
   const source = document.querySelector("#source");
   const clone = source.cloneNode(true);
   prepareNoteImageContent(clone);
-  expect(clone.querySelector(".edgeever-image-panel")).toBeNull();
-  expect(clone.querySelector("[data-edgeever-resource-menu]")).toBeNull();
+  expect(clone.querySelector(".ponder-image-panel")).toBeNull();
+  expect(clone.querySelector("[data-ponder-resource-menu]")).toBeNull();
   expect(clone.querySelector("img").getAttribute("src")).toBe("photo.png");
-  expect(source.querySelector(".edgeever-image-panel")).not.toBeNull();
+  expect(source.querySelector(".ponder-image-panel")).not.toBeNull();
 });
 
 test("reflows wide labelled tables without dropping values or changing the source", () => {
@@ -20,11 +20,11 @@ test("reflows wide labelled tables without dropping values or changing the sourc
   const clone = source.cloneNode(true);
   prepareNoteImageContent(clone);
   expect(source.innerHTML).toBe(original);
-  expect(clone.querySelector("table").getAttribute("data-edgeever-export-table")).toBe("stacked");
-  expect(clone.querySelectorAll(".edgeever-table-label").length).toBe(6);
+  expect(clone.querySelector("table").getAttribute("data-ponder-export-table")).toBe("stacked");
+  expect(clone.querySelectorAll(".ponder-table-label").length).toBe(6);
   for (let n = 1; n <= 6; n++) {
-    expect(clone.querySelectorAll(".edgeever-table-label")[n-1].textContent).toBe(`Field ${n}`);
-    expect(clone.querySelectorAll(".edgeever-table-value strong")[n-1].textContent).toBe(`Value ${n}`);
+    expect(clone.querySelectorAll(".ponder-table-label")[n-1].textContent).toBe(`Field ${n}`);
+    expect(clone.querySelectorAll(".ponder-table-value strong")[n-1].textContent).toBe(`Value ${n}`);
   }
   expect(clone.querySelector("colgroup")).toBeNull();
   expect(clone.querySelector(".tableWrapper").style.width).toBeFalsy();
@@ -42,18 +42,18 @@ test("keeps merged cells, unlabelled tables and nested table boundaries intact",
     const { document } = parseHTML(`<div>${html}</div>`);
     const root = document.querySelector("div");
     prepareNoteImageContent(root);
-    expect(root.querySelector("[data-edgeever-export-table]")).toBeNull();
+    expect(root.querySelector("[data-ponder-export-table]")).toBeNull();
     expect(root.innerHTML).toBe(html);
   }
 });
 
 test("releases gallery cropping and unwraps native controls without losing images", () => {
-  const { document } = parseHTML('<div id="root"><div data-edgeever-image-gallery="true"><div class="edgeever-native-gallery-toolbar"><button>Layout</button></div><div class="edgeever-native-gallery-content"><div class="edgeever-image-node" style="height:120px;overflow:hidden"><img src="portrait.png" width="320" height="1200" style="width:50%;height:120px;object-fit:cover"></div><img src="landscape.png"></div></div><pre><code>unchanged\tcode\nEND</code></pre></div>');
+  const { document } = parseHTML('<div id="root"><div data-ponder-image-gallery="true"><div class="ponder-native-gallery-toolbar"><button>Layout</button></div><div class="ponder-native-gallery-content"><div class="ponder-image-node" style="height:120px;overflow:hidden"><img src="portrait.png" width="320" height="1200" style="width:50%;height:120px;object-fit:cover"></div><img src="landscape.png"></div></div><pre><code>unchanged\tcode\nEND</code></pre></div>');
   const root = document.querySelector("#root");
   prepareNoteImageContent(root);
   expect(root.querySelectorAll("img").length).toBe(2);
-  expect(root.querySelector(".edgeever-native-gallery-toolbar")).toBeNull();
-  expect(root.querySelector(".edgeever-native-gallery-content")).toBeNull();
+  expect(root.querySelector(".ponder-native-gallery-toolbar")).toBeNull();
+  expect(root.querySelector(".ponder-native-gallery-content")).toBeNull();
   expect(root.querySelector("img").style.maxWidth).toBe("50%");
   expect(root.querySelector("img").hasAttribute("height")).toBe(false);
   expect(root.querySelector("pre").textContent).toBe("unchanged\tcode\nEND");
@@ -63,7 +63,7 @@ test("releases gallery cropping and unwraps native controls without losing image
 });
 
 test("keeps a note's chosen image percentage while releasing fixed crop dimensions", () => {
-  const { document } = parseHTML('<div id="root"><figure class="edgeever-image-node" data-width="35" style="width:35%;height:160px;overflow:hidden"><img src="photo.png" style="width:100%;height:160px"></figure></div>');
+  const { document } = parseHTML('<div id="root"><figure class="ponder-image-node" data-width="35" style="width:35%;height:160px;overflow:hidden"><img src="photo.png" style="width:100%;height:160px"></figure></div>');
   const root = document.querySelector("#root");
   prepareNoteImageContent(root);
   expect(root.querySelector("figure").style.width).toBe("35%");

@@ -19,7 +19,7 @@ export const verifyLinuxUpdateRelease = ({ directory, expectedVersion }) => {
     throw new Error(`Linux update version ${version} does not match ${expectedVersion}`);
   }
 
-  const appImageName = `EdgeEver-${version}-linux-x64.AppImage`;
+  const appImageName = `Ponder-${version}-linux-x64.AppImage`;
   const appImagePath = join(directory, appImageName);
   const stats = statSync(appImagePath);
   if (!stats.isFile() || stats.size <= 0) {

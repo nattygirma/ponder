@@ -65,7 +65,7 @@ const StartupPlaceholder = ({ showBrand = false }: { showBrand?: boolean }) => {
   const themedStyles = resolveMobileThemeStyles(styles, resolvedTheme);
   return (
     <View style={themedStyles.loading}>
-      {showBrand ? <Text style={themedStyles.brand}>EdgeEver</Text> : null}
+      {showBrand ? <Text style={themedStyles.brand}>Ponder</Text> : null}
       <ActivityIndicator color="#15803d" />
     </View>
   );

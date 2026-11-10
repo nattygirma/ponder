@@ -1,6 +1,6 @@
-# EdgeEver video clip library
+# Ponder video clip library
 
-[简体中文](README.zh-CN.md)
+
 
 This is an editable source library for individual promotional clips, not an automatically assembled film. Export the clips you need and assemble them in your editing software. Sound, pacing and final transitions belong to the edit.
 
@@ -35,7 +35,7 @@ For every clip, record dimensions, fps, duration, audio, background/alpha, timin
 
 Commit HTML/CSS/JS, plans, metadata, pinned commands and small necessary licensed assets. Keep raw recordings, rendered videos, snapshots, caches and editing-software projects outside Git; `raw/`, `renders/` and generated tool directories are ignored. Large shared source media should live in external storage, with a stable location and license recorded here. Do not commit private screens, credentials or restricted third-party media.
 
-The first clip freezes a small copy of `assets/brand/edgeever-mark.svg` into its local assets so it remains independently renderable. Refresh that copy deliberately when the brand changes; do not edit the product logo through this project. Future shared media can be catalogued under this library, but copy only the required assets into each clip's render root.
+The first clip freezes a small copy of `assets/brand/ponder-mark.svg` into its local assets so it remains independently renderable. Refresh that copy deliberately when the brand changes; do not edit the product logo through this project. Future shared media can be catalogued under this library, but copy only the required assets into each clip's render root.
 
 ## Self-hosting boundary
 

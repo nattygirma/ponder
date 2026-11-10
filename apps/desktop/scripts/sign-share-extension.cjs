@@ -25,7 +25,7 @@ const signingIdentity = (identity) => {
 // and hardened before notarization. The outer app is sealed again afterwards.
 module.exports = async function signMacApp(opts) {
   await signApp(opts);
-  const appexPath = join(opts.app, "Contents", "PlugIns", "EdgeEverShare.appex");
+  const appexPath = join(opts.app, "Contents", "PlugIns", "PonderShare.appex");
   if (!existsSync(appexPath)) {
     throw new Error(`macOS share extension is missing from the app bundle: ${appexPath}`);
   }
@@ -33,7 +33,7 @@ module.exports = async function signMacApp(opts) {
   if (!identity) {
     throw new Error("macOS share extension cannot be signed without a Developer ID identity");
   }
-  const entitlements = join(__dirname, "..", "share-extension", "EdgeEverShare.entitlements");
+  const entitlements = join(__dirname, "..", "share-extension", "PonderShare.entitlements");
   const shared = ["--force", "--sign", identity, "--timestamp"];
   if (opts.keychain) shared.push("--keychain", opts.keychain);
   codesign([

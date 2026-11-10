@@ -18,7 +18,7 @@ for (const { platform, modifier } of [
       test(`round-trips with ${modifier}+${key} without editing the note`, async ({ page }) => {
         if (key !== "/") {
           await page.addInitScript((value) => {
-            localStorage.setItem("edgeever.shortcutSettings", JSON.stringify({
+            localStorage.setItem("ponder.shortcutSettings", JSON.stringify({
               toggleEditorMode: { key: value, ctrlOrMeta: true, shift: false, alt: false },
             }));
           }, key);
@@ -42,8 +42,8 @@ for (const { platform, modifier } of [
 
         try {
           await page.goto("/");
-          await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-          await page.getByPlaceholder("搜索笔记").fill(title);
+          await page.getByRole("button", { name: "All notes", exact: true }).click();
+          await page.getByPlaceholder("Search notes").fill(title);
           await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
           const rich = page.locator(".ProseMirror[contenteditable='true']");
           const source = page.locator(".cm-content");

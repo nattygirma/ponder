@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { DesktopBackupStatus, DesktopBackupError, DesktopBackupConfig, DesktopOffsiteConfig } from "@edgeever/shared";
+import type { DesktopBackupStatus, DesktopBackupError, DesktopBackupConfig, DesktopOffsiteConfig } from "@ponder/shared";
 import type { TFunction } from "i18next";
 
 const createDevMockBackupState = (): DesktopBackupStatus => {
@@ -12,11 +12,11 @@ const createDevMockBackupState = (): DesktopBackupStatus => {
       enabled: true,
       interval: "weekly",
       retention: 5,
-      directory: "~/Documents/EdgeEver Backups",
+      directory: "~/Documents/Ponder Backups",
       encrypted: false,
     },
     backupSetId: "dev_workspace_preview",
-    actualDirectory: "~/Documents/EdgeEver Backups/dev_workspace_preview",
+    actualDirectory: "~/Documents/Ponder Backups/dev_workspace_preview",
     passwordSet: false,
     secureStorageAvailable: true,
     lastCheck: { at: oneHourAgo, result: "success" },
@@ -32,15 +32,15 @@ const createDevMockBackupState = (): DesktopBackupStatus => {
     importWarning: null,
     history: [
       {
-        name: "EdgeEver-2026-11-02_130344.zip",
-        directory: "~/Documents/EdgeEver Backups/dev_workspace_preview",
+        name: "Ponder-2026-11-02_130344.zip",
+        directory: "~/Documents/Ponder Backups/dev_workspace_preview",
         completedAt: oneHourAgo,
         size: 134680210,
         encrypted: false,
       },
       {
-        name: "EdgeEver-2026-10-26_091211.zip",
-        directory: "~/Documents/EdgeEver Backups/dev_workspace_preview",
+        name: "Ponder-2026-10-26_091211.zip",
+        directory: "~/Documents/Ponder Backups/dev_workspace_preview",
         completedAt: new Date(now.getTime() - 86400000 * 7).toISOString(),
         size: 125120890,
         encrypted: false,
@@ -48,7 +48,7 @@ const createDevMockBackupState = (): DesktopBackupStatus => {
     ],
     task: null,
     offsite: {
-      config: { enabled: false, url: "", username: "", folder: "/EdgeEver/backups" },
+      config: { enabled: false, url: "", username: "", folder: "/Ponder/backups" },
       passwordSet: false,
       secureStorageAvailable: true,
       lastAttemptAt: null,
@@ -61,14 +61,14 @@ const createDevMockBackupState = (): DesktopBackupStatus => {
   };
 };
 
-if (import.meta.env.DEV && typeof window !== "undefined" && !window.edgeeverDesktop?.backup) {
+if (import.meta.env.DEV && typeof window !== "undefined" && !window.ponderDesktop?.backup) {
   let devStatus = createDevMockBackupState();
   const listeners = new Set<(status: DesktopBackupStatus) => void>();
   const broadcast = () => {
     listeners.forEach((listener) => listener(devStatus));
   };
 
-  const devBridge: Pick<EdgeEverDesktopBridge, "backup" | "onBackupStatus"> = {
+  const devBridge: Pick<PonderDesktopBridge, "backup" | "onBackupStatus"> = {
     onBackupStatus(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
@@ -88,12 +88,12 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !window.edgeeverDesk
           return devStatus as any;
         }
         case "choose-directory":
-          return "~/Documents/EdgeEver Backups" as any;
+          return "~/Documents/Ponder Backups" as any;
         case "open-folder":
-          console.info("[Dev Preview] 打开备份目录:", devStatus.actualDirectory);
+          console.info("[Dev Preview] Opening backup folder:", devStatus.actualDirectory);
           return true as any;
         case "run": {
-          const newName = `EdgeEver-${new Date().toISOString().slice(0, 10)}_${Date.now().toString().slice(-6)}.zip`;
+          const newName = `Ponder-${new Date().toISOString().slice(0, 10)}_${Date.now().toString().slice(-6)}.zip`;
           devStatus = {
             ...devStatus,
             lastSuccessAt: new Date().toISOString(),
@@ -146,15 +146,15 @@ if (import.meta.env.DEV && typeof window !== "undefined" && !window.edgeeverDesk
     },
   };
 
-  window.edgeeverDesktop = {
-    ...(window.edgeeverDesktop ?? ({} as any)),
+  window.ponderDesktop = {
+    ...(window.ponderDesktop ?? ({} as any)),
     ...devBridge,
   };
 }
 
 export const useDesktopBackup = () => {
   const [status, setStatus] = useState<DesktopBackupStatus | null>(null);
-  const bridge = window.edgeeverDesktop;
+  const bridge = window.ponderDesktop;
   useEffect(() => {
     if (!bridge?.backup) return;
     let active = true;

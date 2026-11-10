@@ -9,16 +9,16 @@
     system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
 
-  --color-brand: var(--edgeever-brand);
-  --color-brand-hover: var(--edgeever-brand-hover);
-  --color-brand-muted: var(--edgeever-brand-muted);
-  --color-brand-soft: var(--edgeever-brand-soft);
-  --color-brand-border: var(--edgeever-brand-border);
-  --color-brand-text: var(--edgeever-brand-text);
+  --color-brand: var(--ponder-brand);
+  --color-brand-hover: var(--ponder-brand-hover);
+  --color-brand-muted: var(--ponder-brand-muted);
+  --color-brand-soft: var(--ponder-brand-soft);
+  --color-brand-border: var(--ponder-brand-border);
+  --color-brand-text: var(--ponder-brand-text);
 }
 
 @utility glow-brand {
-  box-shadow: 0 0 50px -12px var(--edgeever-decor-glow);
+  box-shadow: 0 0 50px -12px var(--ponder-decor-glow);
 }
 
 @utility glow-card {
@@ -32,7 +32,7 @@
   transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
   &:hover {
     transform: translateY(-6px);
-    box-shadow: 0 20px 40px -15px var(--edgeever-decor-shadow);
+    box-shadow: 0 20px 40px -15px var(--ponder-decor-shadow);
     border-color: var(--color-brand-border);
   }
 }
@@ -48,7 +48,7 @@
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-image: var(--edgeever-decor-gradient);
+  background-image: var(--ponder-decor-gradient);
 }
 
 @utility animate-slow-spin {

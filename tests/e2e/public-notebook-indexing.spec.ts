@@ -64,12 +64,12 @@ for (const excluded of [false, true]) {
       });
       await page.goto(path);
       await expect(page.locator("header").getByText(site.slug, { exact: true })).toBeVisible();
-      await expect(page.getByLabel("正在加载分享笔记")).toBeVisible();
+      await expect(page.getByLabel("Loading shared note")).toBeVisible();
       await expect(robots(page)).toHaveCount(1);
       await expectRobots(page, PUBLIC_PAGE_ROBOTS);
       release();
       if (excluded) {
-        await expect(page.getByRole("heading", { name: "这篇分享笔记不可用", exact: true })).toBeVisible();
+        await expect(page.getByRole("heading", { name: "This shared note is unavailable", exact: true })).toBeVisible();
       } else {
         await expect(page.getByText("Visible article body.", { exact: true })).toBeVisible();
       }

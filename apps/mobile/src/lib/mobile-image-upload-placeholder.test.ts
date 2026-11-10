@@ -8,8 +8,8 @@ test("cleans up empty or singleton galleries after removing failed upload placeh
   const pending = { type: "image", attrs: { src: createMobileImageUploadPlaceholderSource("batch") } };
   const saved = { type: "image", attrs: { src: "/api/v1/resources/done/blob" } };
   expect(stripMobileImageUploadPlaceholders({ type: "doc", content: [
-    { type: "edgeeverImageGallery", content: [pending] },
-    { type: "edgeeverImageGallery", content: [pending, saved] },
+    { type: "ponderImageGallery", content: [pending] },
+    { type: "ponderImageGallery", content: [pending, saved] },
   ] }).content).toEqual([saved]);
 });
 

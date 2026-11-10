@@ -1,3 +1,4 @@
+import { deniedPagesCondition } from "./team-service";
 import {
   createExcerpt,
   DEFAULT_MEMO_TITLE,
@@ -8,12 +9,13 @@ import {
   getPosterSummary,
   getTableSummary,
   type MemoSummary,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { clampNumber, parseJsonArray } from "./entity-utils";
 import type { DatabaseAdapter } from "./storage-contract";
 
 export type MemoSummaryRow = {
   id: string;
+  created_by?: string | null;
   notebook_id: string;
   title: string | null;
   excerpt: string;
@@ -45,6 +47,8 @@ type MemoListCursor = {
 
 export type ListMemosInput = {
   workspaceId: string;
+  /** Hide pages this user has no access to in a shared workspace. */
+  restrictedFor?: string;
   includeTotal?: boolean;
   notebookId?: string;
   includeNotebookDescendants?: boolean;
@@ -70,6 +74,7 @@ export const mapMemoSummary = (row: MemoSummaryRow): MemoSummary => ({
   id: row.id,
   notebookId: row.notebook_id,
   title: row.title,
+  ...(row.created_by ? { createdBy: row.created_by } : {}),
   excerpt:
     row.excerpt ||
     createExcerpt(row.content_text ?? "") ||
@@ -170,7 +175,19 @@ export const listMemos = async (
   const deletedClause = includeTrash ? "m.is_deleted = 1" : "m.is_deleted = 0";
   const titleSortExpression = `LOWER(COALESCE(NULLIF(m.title, ''), '${DEFAULT_MEMO_TITLE}'))`;
   const baseConditions = ["m.workspace_id = ?", deletedClause];
+  // Database rows live in their database; only a search or the trash should surface them next to ordinary notes.
+  // A row trashed along with its whole database comes back with the database, so it stays out of the trash list.
+  if (includeTrash) {
+    baseConditions.push("(m.database_id IS NULL OR NOT EXISTS (SELECT 1 FROM memos p WHERE p.id = m.parent_memo_id AND p.is_deleted = 1))");
+  } else if (!query) {
+    baseConditions.push("m.database_id IS NULL");
+  }
   const baseBinds: unknown[] = [input.workspaceId];
+  if (input.restrictedFor) {
+    const denied = deniedPagesCondition("m.id", input.workspaceId, input.restrictedFor);
+    baseConditions.push(denied.sql);
+    baseBinds.push(...denied.binds);
+  }
 
   if (notebookId) {
     if (input.includeNotebookDescendants) {
@@ -278,7 +295,7 @@ export const listMemos = async (
              FROM raw_matches
              GROUP BY memo_id
            )
-           SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned,
+           SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned, m.created_by,
                   m.is_archived, m.is_deleted, m.created_at, m.updated_at, m.deleted_at, mc.revision,
                   mc.content_text, mc.content_markdown
            FROM search_matches s
@@ -324,7 +341,7 @@ export const listMemos = async (
     const searchCursorBinds = [...cursorBinds, likeQuery, likeQuery, likeQuery];
     const [rows, totalRow] = await Promise.all([
       database.prepare(
-        `SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned,
+        `SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned, m.created_by,
                 m.is_archived, m.is_deleted, m.created_at, m.updated_at, m.deleted_at, mc.revision,
                 mc.content_text, mc.content_markdown
          FROM memos m
@@ -345,7 +362,7 @@ export const listMemos = async (
 
   const [rows, totalRow] = await Promise.all([
     database.prepare(
-      `SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned,
+      `SELECT m.id, m.notebook_id, m.title, m.excerpt, m.tags_json, m.is_pinned, m.created_by,
               m.is_archived, m.is_deleted, m.created_at, m.updated_at, m.deleted_at, mc.revision,
               mc.content_text, mc.content_markdown
        FROM memos m

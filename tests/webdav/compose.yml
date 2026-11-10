@@ -1,4 +1,4 @@
-name: edgeever-webdav-test
+name: ponder-webdav-test
 services:
   webdav:
     image: rclone/rclone:1.69

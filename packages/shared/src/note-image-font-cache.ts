@@ -11,7 +11,7 @@ const database = () => opening ??= new Promise<IDBDatabase | undefined>(resolve 
   };
   const timer = setTimeout(() => finish(), 1_500);
   try {
-    const request = indexedDB.open("edgeever-share-font-cache", 1);
+    const request = indexedDB.open("ponder-share-font-cache", 1);
     request.onupgradeneeded = () => request.result.createObjectStore("resources");
     request.onsuccess = () => {
       const db = request.result;

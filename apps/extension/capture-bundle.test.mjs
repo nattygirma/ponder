@@ -26,7 +26,7 @@ test('whole-page and selection captures share table conversion and preserve code
     const holder=createDocument(content).body;
     if(name!=='generic') {const container=w.document.querySelector(name==='medium-article'?'article':'.body.markup');while(holder.firstChild)container.appendChild(w.document.importNode(holder.removeChild(holder.firstChild),true));}
     w.getSelection=()=>selection?{rangeCount:1,toString:()=> 'Selected content',getRangeAt:()=>({cloneContents:()=>{const f=w.document.createDocumentFragment(),temp=createDocument(content).body;while(temp.firstChild)f.appendChild(w.document.importNode(temp.removeChild(temp.firstChild),true));return f;}})}:null;
-    const context=createContext({...browserTimers,window:w,document:w.document,location:w.location,URL,chrome:{i18n:{getMessage:key=>key},runtime:{sendMessage:message=>{page=message.page;}}},...(selection?{__edgeeverPageClipPayload:{mode:'selection'}}:{})});
+    const context=createContext({...browserTimers,window:w,document:w.document,location:w.location,URL,chrome:{i18n:{getMessage:key=>key},runtime:{sendMessage:message=>{page=message.page;}}},...(selection?{__ponderPageClipPayload:{mode:'selection'}}:{})});
     runInContext(source,context);
     const parsed=markdownToDoc(page.markdown),blocks=[];const walk=node=>{blocks.push(node);(node.content || []).forEach(walk);};walk(parsed);
     expect(blocks.find(node=>node.type==='codeBlock')?.content.map(node=>node.text).join(''),`${name}, selection=${selection}: ${page.markdown}`).toBe(code);
@@ -112,7 +112,7 @@ test('Substack article capture retains sections and images on custom domains wit
 });
 
 test("the injected page capture is a standalone classic script", async () => {
-  const outDir = await mkdtemp(join(tmpdir(), "edgeever-capture-"));
+  const outDir = await mkdtemp(join(tmpdir(), "ponder-capture-"));
   try {
     await execFileAsync(process.execPath, [
       fileURLToPath(new URL("../../node_modules/vite/bin/vite.js", import.meta.url)),

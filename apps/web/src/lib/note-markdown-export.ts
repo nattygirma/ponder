@@ -1,4 +1,4 @@
-import { mergeMarkdownFrontMatter, splitMarkdownFrontMatter } from "@edgeever/shared";
+import { mergeMarkdownFrontMatter, splitMarkdownFrontMatter } from "@ponder/shared";
 
 /** Single-note exports retain existing properties without adding application metadata. */
 export const buildSingleNoteMarkdown = (markdown: string, title: string, tags: string[]) => {

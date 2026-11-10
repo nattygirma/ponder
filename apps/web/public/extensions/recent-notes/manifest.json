@@ -8,11 +8,11 @@
   "description": "Demonstrates note queries, editor selections, commands, notices, and a custom panel.",
   "locales": {
     "zh-CN": {
-      "name": "最近笔记示例",
-      "description": "演示笔记查询、编辑器选区、命令、通知和自定义面板。"
+      "name": "Recent notes example",
+      "description": "Demonstrates note queries, editor selection, commands, notifications, and custom panels."
     }
   },
-  "author": "EdgeEver",
+  "author": "Ponder",
   "entry": "./main.js",
   "platforms": ["web", "desktop"],
   "permissions": ["notes:read", "editor:read", "editor:write", "ui:commands", "ui:notices", "ui:panels"]

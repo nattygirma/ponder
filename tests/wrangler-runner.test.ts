@@ -70,10 +70,10 @@ describe("cross-platform Wrangler runner", () => {
 
     expect(LOCAL_DEV_CREDENTIALS_ENCRYPTION_KEY.length).toBeGreaterThanOrEqual(32);
     expect(envFile).toContain(
-      `EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY=${LOCAL_DEV_CREDENTIALS_ENCRYPTION_KEY}`,
+      `PONDER_CREDENTIALS_ENCRYPTION_KEY=${LOCAL_DEV_CREDENTIALS_ENCRYPTION_KEY}`,
     );
-    expect(envFile).not.toContain("EDGE_EVER_AUTH_PASSWORD=");
-    expect(envFile).not.toContain("EDGE_EVER_AUTH_PASSWORD_HASH=");
+    expect(envFile).not.toContain("PONDER_AUTH_PASSWORD=");
+    expect(envFile).not.toContain("PONDER_AUTH_PASSWORD_HASH=");
   });
 
   test("resolves the configured assets directory so local dev can create it", () => {
@@ -84,7 +84,7 @@ describe("cross-platform Wrangler runner", () => {
   });
 
   test("prepares missing dev assets before Wrangler starts and preserves existing files", () => {
-    const workingDirectory = mkdtempSync(resolve(tmpdir(), "edgeever-dev-assets-"));
+    const workingDirectory = mkdtempSync(resolve(tmpdir(), "ponder-dev-assets-"));
     const assetsDirectory = resolve(workingDirectory, "custom-assets", "dist");
     const configPath = resolve(workingDirectory, "custom.toml");
     const cliDirectory = resolve(workingDirectory, "node_modules", "wrangler", "bin");
@@ -135,21 +135,21 @@ describe("cross-platform Wrangler runner", () => {
   test("resolves an exact D1 database name from Wrangler JSON", () => {
     const databases = JSON.stringify([
       { uuid: "11111111-1111-1111-1111-111111111111", name: "another-database" },
-      { uuid: "22222222-2222-2222-2222-222222222222", name: "edgeever" },
+      { uuid: "22222222-2222-2222-2222-222222222222", name: "ponder" },
     ]);
 
-    expect(findD1DatabaseIdByName(databases, "edgeever")).toBe(
+    expect(findD1DatabaseIdByName(databases, "ponder")).toBe(
       "22222222-2222-2222-2222-222222222222",
     );
-    expect(findD1DatabaseIdByName(databases, "EdgeEver")).toBeUndefined();
-    expect(findD1DatabaseIdByName("[]", "edgeever")).toBeUndefined();
+    expect(findD1DatabaseIdByName(databases, "Ponder")).toBeUndefined();
+    expect(findD1DatabaseIdByName("[]", "ponder")).toBeUndefined();
   });
 
   test("rejects malformed D1 database list output", () => {
-    expect(() => findD1DatabaseIdByName("not-json", "edgeever")).toThrow(
+    expect(() => findD1DatabaseIdByName("not-json", "ponder")).toThrow(
       "Wrangler returned invalid JSON",
     );
-    expect(() => findD1DatabaseIdByName("{}", "edgeever")).toThrow(
+    expect(() => findD1DatabaseIdByName("{}", "ponder")).toThrow(
       "Wrangler returned an unexpected response",
     );
   });
@@ -166,12 +166,12 @@ describe("cross-platform Wrangler runner", () => {
     expect(deployedWorkerSettings(JSON.stringify({
       resources: {
         bindings: [
-          { name: "RESOURCES", type: "r2_bucket", bucket_name: "my-old-edgeever-bucket" },
-          { name: "EDGE_EVER_AUTH_USERNAME", type: "plain_text", text: "owner" },
+          { name: "RESOURCES", type: "r2_bucket", bucket_name: "my-old-ponder-bucket" },
+          { name: "PONDER_AUTH_USERNAME", type: "plain_text", text: "owner" },
         ],
       },
     }))).toEqual({
-      r2BucketName: "my-old-edgeever-bucket",
+      r2BucketName: "my-old-ponder-bucket",
       authUsername: "owner",
     });
   });

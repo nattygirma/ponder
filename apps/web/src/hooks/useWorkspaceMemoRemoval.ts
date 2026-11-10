@@ -1,9 +1,9 @@
 import { useMutation, type QueryClient } from "@tanstack/react-query";
 import type { Dispatch, SetStateAction } from "react";
 import type { TFunction } from "i18next";
-import type { MemoSummary } from "@edgeever/shared";
+import type { MemoSummary } from "@ponder/shared";
 import type { AppNoticeDialogState, Pane } from "@/lib/app-helpers";
-import type { EdgeEverRepository } from "@/lib/repository";
+import type { PonderRepository } from "@/lib/repository";
 import {
   applyMemoRemovalToCache,
   clearTrashMemoLists,
@@ -31,7 +31,7 @@ type UseWorkspaceMemoRemovalOptions = {
   clearMemoSelection: () => void;
   memos: MemoSummary[];
   queryClient: QueryClient;
-  repository: Pick<EdgeEverRepository, "deleteMemos" | "deleteMemo" | "emptyTrash">;
+  repository: Pick<PonderRepository, "deleteMemos" | "deleteMemo" | "emptyTrash">;
   selectedMemoId: string | null;
   setActivePane: Dispatch<SetStateAction<Pane>>;
   setAppNoticeDialog: Dispatch<SetStateAction<AppNoticeDialogState | null>>;

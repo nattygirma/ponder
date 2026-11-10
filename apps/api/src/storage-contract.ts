@@ -82,7 +82,7 @@ export type StorageAdapter = {
   diagnostics: {
     database: "d1" | "sqlite";
     resources: "r2" | "filesystem" | "s3";
-    migrationTable: "d1_migrations" | "_edgeever_migrations";
+    migrationTable: "d1_migrations" | "_ponder_migrations";
   };
 };
 

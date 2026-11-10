@@ -1,7 +1,5 @@
 # Region clipping verification
 
-[简体中文](README.zh-CN.md)
-
 ## Browser interaction and content
 
 The actual built popup and `region-clip.js` were exercised in Ego Lite Chromium on an isolated page. `serve-ui.mjs` supplies the browser-extension message boundary and records save payloads; it does not use a real instance or installed extension. Run `bun run build:extension`, then `bun docs/changes/evidence/2026-10-29-region-clip/serve-ui.mjs` and visit `http://127.0.0.1:18703/` to reproduce the UI fixture.

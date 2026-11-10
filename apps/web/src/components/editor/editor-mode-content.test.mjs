@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { docToMarkdown, markdownToDoc } from "@edgeever/shared";
+import { docToMarkdown, markdownToDoc } from "@ponder/shared";
 import {
   analyzeMarkdownModeContent,
   createMarkdownModeSnapshot,

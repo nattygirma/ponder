@@ -62,6 +62,36 @@ export const MemoUpdateSchema = z.object({
   allowDestructiveOverwrite: z.boolean().optional(),
 });
 
+export const PageCreateSchema = z.object({
+  notebookId: z.string().trim().min(1).optional(),
+  parentId: z.string().trim().min(1).nullable().optional(),
+  title: z.string().trim().max(160).optional(),
+  icon: z.string().trim().max(64).nullable().optional(),
+}).refine((input) => input.notebookId || input.parentId, {
+  message: "notebookId or parentId is required",
+});
+
+export const PageMoveSchema = z.object({
+  notebookId: z.string().trim().min(1).optional(),
+  parentId: z.string().trim().min(1).nullable().optional(),
+  beforeId: z.string().trim().min(1).nullable().optional(),
+  afterId: z.string().trim().min(1).nullable().optional(),
+});
+
+export const PageUpdateSchema = z.object({
+  icon: z.string().trim().max(64).nullable().optional(),
+  cover: z.string().trim().max(2048).nullable().optional(),
+  style: z.object({
+    font: z.enum(["default", "serif", "mono"]).optional(),
+    small: z.boolean().optional(),
+    wide: z.boolean().optional(),
+  }).strict().nullable().optional(),
+  title: z.string().trim().max(160).optional(),
+  tags: z.array(z.string()).optional(),
+  contentJson: z.record(z.string(), z.unknown()).optional(),
+  contentMarkdown: z.string().optional(),
+});
+
 export const TemplateCreateSchema = z.object({
   name: z.string().trim().min(1).max(160),
   description: z.string().trim().max(500).optional(),

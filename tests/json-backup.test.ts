@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
-import type { AiPromptTemplate, JsonBackupMemo, JsonBackupNotebook, MemoDetail, Notebook, Resource } from "@edgeever/shared";
-import { splitMarkdownFrontMatter } from "@edgeever/shared";
+import type { AiPromptTemplate, JsonBackupMemo, JsonBackupNotebook, MemoDetail, Notebook, Resource } from "@ponder/shared";
+import { splitMarkdownFrontMatter } from "@ponder/shared";
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import {
-  createEdgeEverZip,
-  parseEdgeEverZip,
-  restoreEdgeEverZip,
-  restoreEdgeEverZipAndRefresh,
+  createPonderZip,
+  parsePonderZip,
+  restorePonderZip,
+  restorePonderZipAndRefresh,
 } from "../apps/web/src/lib/json-backup";
 
 const notebook = (id: string, name: string, parentId: string | null = null): Notebook => ({
@@ -83,10 +83,10 @@ const prompt: AiPromptTemplate = {
   updatedAt: memo.updatedAt,
 };
 
-describe("EdgeEver ZIP", () => {
+describe("Ponder ZIP", () => {
   test("passes server-provided continuation cursors to later ZIP pages", async () => {
     const cursors: (string | undefined)[] = [];
-    const blob = await createEdgeEverZip({
+    const blob = await createPonderZip({
       listNotebooks: async () => ({ notebooks: [notebook("nb_child", "Child")] }),
       listPrompts: async () => ({ prompts: [] }),
       getPage: async (offset, _limit, cursor) => {
@@ -95,22 +95,22 @@ describe("EdgeEver ZIP", () => {
           ...(offset === 0 ? { totalCount: 2 } : {}), nextOffset: offset === 0 ? 1 : null, nextCursor: offset === 0 ? "next-page" : null };
       },
       getResourceResponse: async () => new Response(),
-    }, { edgeeverVersion: "2.16.1", buildId: "cursor" });
+    }, { ponderVersion: "2.16.1", buildId: "cursor" });
     expect(cursors).toEqual([undefined, "next-page"]);
-    expect((await parseEdgeEverZip(blob)).manifest.counts.memos).toBe(2);
+    expect((await parsePonderZip(blob)).manifest.counts.memos).toBe(2);
   });
 
   test("reports actionable archive validation errors", async () => {
-    await expect(parseEdgeEverZip(new Blob(["not a zip"]))).rejects.toEqual(
+    await expect(parsePonderZip(new Blob(["not a zip"]))).rejects.toEqual(
       expect.objectContaining({ code: "invalidZip" })
     );
     const localHeaderOnly = new Uint8Array(64);
     localHeaderOnly.set([0x50, 0x4b, 0x03, 0x04]);
-    await expect(parseEdgeEverZip(new Blob([localHeaderOnly]))).rejects.toEqual(
+    await expect(parsePonderZip(new Blob([localHeaderOnly]))).rejects.toEqual(
       expect.objectContaining({ code: "invalidZip" })
     );
 
-    await expect(parseEdgeEverZip(new Blob([zipSync({ "notebooks.json": strToU8("[]") })]))).rejects.toEqual(
+    await expect(parsePonderZip(new Blob([zipSync({ "notebooks.json": strToU8("[]") })]))).rejects.toEqual(
       expect.objectContaining({ code: "missingManifest" })
     );
 
@@ -118,24 +118,24 @@ describe("EdgeEver ZIP", () => {
       format: "another-app",
       formatVersion: 1,
       schemaVersion: 1,
-      edgeeverVersion: "0.1.13",
+      ponderVersion: "0.1.13",
       buildId: "test-build",
       exportedAt: "2026-07-14T00:00:00.000Z",
       includesTrash: false,
       counts: { notebooks: 0, memos: 0, revisions: 0, resources: 0 },
     };
-    await expect(parseEdgeEverZip(new Blob([zipSync({
+    await expect(parsePonderZip(new Blob([zipSync({
       "manifest.json": strToU8(JSON.stringify(manifest)),
     })]))).rejects.toEqual(expect.objectContaining({ code: "unsupportedFormat" }));
 
-    await expect(parseEdgeEverZip(new Blob([zipSync({
-      "manifest.json": strToU8(JSON.stringify({ ...manifest, format: "edgeever-zip", formatVersion: 99 })),
+    await expect(parsePonderZip(new Blob([zipSync({
+      "manifest.json": strToU8(JSON.stringify({ ...manifest, format: "ponder-zip", formatVersion: 99 })),
     })]))).rejects.toEqual(expect.objectContaining({ code: "unsupportedVersion" }));
   });
 
   test("keeps archive counts and progress when later pages omit totals", async () => {
     const progress: { completed: number; total: number }[] = [];
-    const blob = await createEdgeEverZip({
+    const blob = await createPonderZip({
       listNotebooks: async () => ({ notebooks: [notebook("nb_child", "Child")] }),
       listPrompts: async () => ({ prompts: [] }),
       getPage: async (offset) => ({
@@ -144,8 +144,8 @@ describe("EdgeEver ZIP", () => {
         ...(offset === 0 ? { totalCount: 2 } : {}), nextOffset: offset === 0 ? 1 : null,
       }),
       getResourceResponse: async () => new Response(),
-    }, { edgeeverVersion: "2.16.0", buildId: "pagination" }, (value) => progress.push(value));
-    const parsed = await parseEdgeEverZip(blob);
+    }, { ponderVersion: "2.16.0", buildId: "pagination" }, (value) => progress.push(value));
+    const parsed = await parsePonderZip(blob);
     expect(parsed.manifest.counts.memos).toBe(2);
     expect(progress.every((value) => value.total === 2)).toBe(true);
     expect(progress.at(-1)?.completed).toBe(2);
@@ -153,7 +153,7 @@ describe("EdgeEver ZIP", () => {
 
   test("combines readable Markdown with versioned recovery data", async () => {
     const resourceChunks: number[] = [];
-    const blob = await createEdgeEverZip(
+    const blob = await createPonderZip(
       {
         listNotebooks: async () => ({ notebooks: [notebook("nb_child", "Child", "nb_root"), notebook("nb_root", "Root")] }),
         listPrompts: async () => ({ prompts: [prompt] }),
@@ -186,11 +186,11 @@ describe("EdgeEver ZIP", () => {
           },
         }), { headers: { "Content-Type": "image/png" } }),
       },
-      { edgeeverVersion: "0.1.13", buildId: "test-build" }
+      { ponderVersion: "0.1.13", buildId: "test-build" }
     );
-    const backup = await parseEdgeEverZip(blob);
+    const backup = await parsePonderZip(blob);
 
-    expect(backup.manifest.format).toBe("edgeever-zip");
+    expect(backup.manifest.format).toBe("ponder-zip");
     expect(backup.manifest.formatVersion).toBe(2);
     expect(backup.manifest.counts).toEqual({ notebooks: 2, memos: 1, revisions: 1, resources: 1, prompts: 1 });
     expect(backup.notebooks.find((item) => item.id === "nb_child")).toMatchObject({
@@ -205,23 +205,23 @@ describe("EdgeEver ZIP", () => {
     const files = unzipSync(new Uint8Array(await blob.arrayBuffer()));
     expect(Array.from(files[backup.memos[0].resources[0].archivePath])).toEqual([1, 2, 3]);
     const markdown = strFromU8(files["notes/Root/Child/Backup note.md"]);
-    expect(splitMarkdownFrontMatter(markdown)?.values?.edgeever_id).toBe("memo_backup");
+    expect(splitMarkdownFrontMatter(markdown)?.values?.ponder_id).toBe("memo_backup");
     expect(markdown).toContain("![asset](Backup%20note.assets/asset.png)");
     expect(backup.memos[0].resources[0].archivePath).toBe("notes/Root/Child/Backup note.assets/asset.png");
   });
 
   test("keeps version 1 archives importable without prompt data", async () => {
     const legacyManifest = {
-      format: "edgeever-zip",
+      format: "ponder-zip",
       formatVersion: 1,
       schemaVersion: 1,
-      edgeeverVersion: "1.13.3",
+      ponderVersion: "1.13.3",
       buildId: "legacy-build",
       exportedAt: "2026-08-09T00:00:00.000Z",
       includesTrash: false,
       counts: { notebooks: 0, memos: 0, revisions: 0, resources: 0 },
     };
-    const backup = await parseEdgeEverZip(new Blob([zipSync({
+    const backup = await parsePonderZip(new Blob([zipSync({
       "manifest.json": strToU8(JSON.stringify(legacyManifest)),
       "notebooks.json": strToU8("[]"),
     })]));
@@ -232,7 +232,7 @@ describe("EdgeEver ZIP", () => {
 
   test("imports Markdown attachments without counting them as notes in v1 and v2 backups", async () => {
     const attachment = strToU8("# Attached Markdown\n");
-    const blob = await createEdgeEverZip({
+    const blob = await createPonderZip({
       listNotebooks: async () => ({ notebooks: [notebook("nb_child", "Child")] }),
       listPrompts: async () => ({ prompts: [] }),
       getPage: async () => ({
@@ -250,7 +250,7 @@ describe("EdgeEver ZIP", () => {
         nextOffset: null,
       }),
       getResourceResponse: async () => new Response(attachment),
-    }, { edgeeverVersion: "1.125.0", buildId: "markdown-attachment" });
+    }, { ponderVersion: "1.125.0", buildId: "markdown-attachment" });
     const files = unzipSync(new Uint8Array(await blob.arrayBuffer()));
     const manifest = JSON.parse(strFromU8(files["manifest.json"]));
     const attachmentPath = "notes/Child/Backup note.assets/reference.md";
@@ -260,11 +260,11 @@ describe("EdgeEver ZIP", () => {
       const archiveFiles = { ...files };
       archiveFiles["manifest.json"] = strToU8(JSON.stringify({ ...manifest, formatVersion }));
       if (formatVersion === 1) delete archiveFiles["prompts.json"];
-      const backup = await parseEdgeEverZip(new Blob([zipSync(archiveFiles)]));
+      const backup = await parsePonderZip(new Blob([zipSync(archiveFiles)]));
       expect(backup.memos).toHaveLength(1);
       expect(backup.memos[0].resources[0].archivePath).toBe(attachmentPath);
       const restored: Uint8Array[] = [];
-      await restoreEdgeEverZip(backup, {
+      await restorePonderZip(backup, {
         restoreNotebooks: async () => {},
         restoreMemos: async () => {},
         restorePrompts: async () => {},
@@ -279,7 +279,7 @@ describe("EdgeEver ZIP", () => {
       for (const missingPath of ["memos/memo_backup.json", "notes/Child/Backup note.md", attachmentPath]) {
         const incomplete = { ...archiveFiles };
         delete incomplete[missingPath];
-        await expect(parseEdgeEverZip(new Blob([zipSync(incomplete)]))).rejects.toEqual(
+        await expect(parsePonderZip(new Blob([zipSync(incomplete)]))).rejects.toEqual(
           expect.objectContaining({ code: missingPath === attachmentPath ? "incompleteResources" : "incompleteData" }),
         );
       }
@@ -287,7 +287,7 @@ describe("EdgeEver ZIP", () => {
       missingRevision["manifest.json"] = strToU8(JSON.stringify({
         ...manifest, formatVersion, counts: { ...manifest.counts, revisions: 1 },
       }));
-      await expect(parseEdgeEverZip(new Blob([zipSync(missingRevision)]))).rejects.toEqual(
+      await expect(parsePonderZip(new Blob([zipSync(missingRevision)]))).rejects.toEqual(
         expect.objectContaining({ code: "incompleteData" }),
       );
     }
@@ -295,10 +295,10 @@ describe("EdgeEver ZIP", () => {
 
   test("reads large archives by bounded ranges instead of buffering the ZIP", async () => {
     const manifest = {
-      format: "edgeever-zip",
+      format: "ponder-zip",
       formatVersion: 1,
       schemaVersion: 1,
-      edgeeverVersion: "1.13.3",
+      ponderVersion: "1.13.3",
       buildId: "large-stream-test",
       exportedAt: "2026-08-31T00:00:00.000Z",
       includesTrash: false,
@@ -332,7 +332,7 @@ describe("EdgeEver ZIP", () => {
       },
     } as Blob;
 
-    const backup = await parseEdgeEverZip(largeStreamingArchive);
+    const backup = await parsePonderZip(largeStreamingArchive);
 
     expect(backup.manifest.buildId).toBe("large-stream-test");
     expect(backup.archive).toBe(largeStreamingArchive);
@@ -392,7 +392,7 @@ describe("EdgeEver ZIP", () => {
       [docxResource.url, docx],
       [xlsxResource.url, xlsx],
     ]);
-    const blob = await createEdgeEverZip({
+    const blob = await createPonderZip({
       listNotebooks: async () => ({ notebooks: [officeNotebook] }),
       listPrompts: async () => ({ prompts: [] }),
       getPage: async () => ({
@@ -403,11 +403,11 @@ describe("EdgeEver ZIP", () => {
         nextOffset: null,
       }),
       getResourceResponse: async (url) => new Response(files.get(url)),
-    }, { edgeeverVersion: "1.95.0", buildId: "office-zip" });
+    }, { ponderVersion: "1.95.0", buildId: "office-zip" });
 
-    const backup = await parseEdgeEverZip(blob);
+    const backup = await parsePonderZip(blob);
     const restored = new Map<string, Uint8Array>();
-    await restoreEdgeEverZip(backup, {
+    await restorePonderZip(backup, {
       restoreNotebooks: async () => {},
       restoreMemos: async () => {},
       restorePrompts: async () => {},
@@ -450,10 +450,10 @@ describe("EdgeEver ZIP", () => {
     };
     const backup = {
       manifest: {
-        format: "edgeever-zip" as const,
+        format: "ponder-zip" as const,
         formatVersion: 2 as const,
         schemaVersion: 1,
-        edgeeverVersion: "0.1.13",
+        ponderVersion: "0.1.13",
         buildId: "test-build",
         exportedAt: "2026-07-14T00:00:00.000Z",
         includesTrash: false as const,
@@ -475,7 +475,7 @@ describe("EdgeEver ZIP", () => {
       archive: new Blob([zipSync({ "resources/res_backup/asset.png": new Uint8Array([1, 2, 3]) })]),
     };
 
-    await restoreEdgeEverZip(backup, {
+    await restorePonderZip(backup, {
       restoreNotebooks: async () => { calls.push("notebooks"); },
       restoreMemos: async () => { calls.push("memos"); },
       restorePrompts: async () => { calls.push("prompts"); },
@@ -496,10 +496,10 @@ describe("EdgeEver ZIP", () => {
     const calls: string[] = [];
     const backup = {
       manifest: {
-        format: "edgeever-zip" as const,
+        format: "ponder-zip" as const,
         formatVersion: 1 as const,
         schemaVersion: 1,
-        edgeeverVersion: "1.13.3",
+        ponderVersion: "1.13.3",
         buildId: "test-build",
         exportedAt: "2026-08-09T00:00:00.000Z",
         includesTrash: false as const,
@@ -521,7 +521,7 @@ describe("EdgeEver ZIP", () => {
       archive: new Blob([zipSync({})]),
     };
 
-    await restoreEdgeEverZipAndRefresh(
+    await restorePonderZipAndRefresh(
       backup,
       {
         restoreNotebooks: async () => { calls.push("notebooks"); },

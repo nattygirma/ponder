@@ -9,7 +9,7 @@ export const bundleTestScripts = (names) => {
   const entryPoints = names.map((name) =>
     fileURLToPath(new URL(`./src/${name}.ts`, import.meta.url)),
   );
-  const bundleDirectory = mkdtempSync(join(tmpdir(), "edgeever-extension-test-"));
+  const bundleDirectory = mkdtempSync(join(tmpdir(), "ponder-extension-test-"));
   const bundlePath = join(bundleDirectory, "scripts.json");
   let scripts;
   try {

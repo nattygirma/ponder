@@ -9,7 +9,7 @@ import {
   type TableAttachment,
   type TableFormFieldSetting,
   type TableFormSettings,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { getCookie, setCookie } from "hono/cookie";

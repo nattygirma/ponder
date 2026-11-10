@@ -1,3 +1,4 @@
+import { restrictedUserId } from "./team-service";
 import {
   DeleteMemosSchema,
   DuplicateMemoSchema,
@@ -9,7 +10,7 @@ import {
   type MemoEditSession,
   type MemoRevision,
   type MemoUpdateInput,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import type { AppContext, AppEnv, AuditActor, Bindings } from "./api-context";
@@ -141,6 +142,7 @@ export const registerMemoRoutes = (
 
     return context.json(await dependencies.listMemos(context.env.storage.db, {
       workspaceId: getWorkspaceId(context),
+      restrictedFor: restrictedUserId(context.get("auth")),
       includeTotal: context.req.query("includeTotal") !== "0",
       notebookId: context.req.query("notebookId"),
       includeNotebookDescendants: context.req.query("includeDescendants") === "1",

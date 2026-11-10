@@ -7,12 +7,6 @@
       "Editor focus mode enters browser fullscreen, and the AI assistant button aligns with the note outline.",
       "Backup and migration settings make scheduled backup status and import options easier to find."
     ],
-    "zh-CN": [
-      "独立设置笔记正文的间距和对齐方式，在重新分组的阅读偏好中直接找到自定义 CSS。数字胶囊标题现在与正文文字大小一致。",
-      "桌面端安装待处理更新前会重新检查是否有更新版本，减少经过中间版本的重复升级（#776）。",
-      "编辑器专注模式会进入浏览器全屏，AI 助手入口与笔记大纲内容对齐。",
-      "调整备份和迁移设置的布局，更容易找到定时备份状态和导入选项。"
-    ],
     "ja": [
       "ノート本文の間隔と配置を個別に設定でき、整理された閲覧設定からカスタムCSSを直接開けます。番号付き見出しの文字サイズも本文と揃えました。",
       "デスクトップアプリは更新のインストール前に最新版を確認し、中間バージョンを経由する更新を減らします。",

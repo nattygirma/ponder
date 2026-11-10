@@ -5,7 +5,7 @@ import type {
   AiPromptResultMode,
   AiPromptTemplate,
   AiPromptTemplateUpdateInput,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import {
   ChevronLeft,
   Eye,

@@ -19,7 +19,7 @@ export const assertWindowsUpdateSigningKey = ({
   expectedPublicKey = WINDOWS_UPDATE_PUBLIC_KEY_PEM,
 }) => {
   if (!privateKeyPath) {
-    throw new Error("EDGE_EVER_WINDOWS_UPDATE_SIGNING_KEY must point to the offline Ed25519 private key");
+    throw new Error("PONDER_WINDOWS_UPDATE_SIGNING_KEY must point to the offline Ed25519 private key");
   }
   const privateKey = createPrivateKey(readFileSync(privateKeyPath, "utf8"));
   if (privateKey.asymmetricKeyType !== "ed25519") {
@@ -81,7 +81,7 @@ const run = () => {
   signWindowsUpdateManifest({
     manifestPath,
     signaturePath,
-    privateKeyPath: process.env.EDGE_EVER_WINDOWS_UPDATE_SIGNING_KEY,
+    privateKeyPath: process.env.PONDER_WINDOWS_UPDATE_SIGNING_KEY,
   });
   process.stdout.write(`${signaturePath}\n`);
 };

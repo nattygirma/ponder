@@ -1,7 +1,5 @@
 # Issue 701: restore resource XSS protection
 
-[简体中文](2026-10-28-restore-resource-xss.zh-CN.md)
-
 ## Problem and outcome
 
 [Issue #701](https://github.com/tianma-if/edgeever/issues/701) reports that restore accepts `kind=image` with `mimeType=text/html`, while resource responses trust `kind` to enable inline rendering. Close both the write-time mismatch and the read-time exposure of previously stored resources. Work starts from official `main` at `b8496806` in a separate worktree.

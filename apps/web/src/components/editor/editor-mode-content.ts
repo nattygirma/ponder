@@ -2,7 +2,7 @@ import {
   docToMarkdown,
   markdownToDoc,
   type TiptapDoc,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 export type MarkdownModeSnapshot = {
   memoId: string;
@@ -81,7 +81,7 @@ const hasRichOnlyTableCells = (original: TiptapDoc, projection: TiptapDoc): bool
   });
 };
 
-const RICH_CELL_MARKER = "\uE000EDGEEVERRICHCELL\uE001";
+const RICH_CELL_MARKER = "\uE000PONDERRICHCELL\uE001";
 
 const cellText = (cell: ContentNode): string | null => {
   if (cell.content?.length !== 1 || cell.content[0]?.type !== "paragraph") return null;

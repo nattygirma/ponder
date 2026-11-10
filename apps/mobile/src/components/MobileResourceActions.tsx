@@ -21,28 +21,6 @@ type MobileResourceActionsProps = {
 };
 
 const copy = {
-  "zh-CN": {
-    attachmentActions: "附件操作",
-    imageActions: "图片操作",
-    cancel: "取消",
-    delete: "删除",
-    attachmentDeleteConfirm: "附件会从存储空间和当前笔记中永久删除，此操作无法撤销。",
-    attachmentDeleteTitle: "删除附件",
-    // Opens the system share sheet (not a silent save-to-folder).
-    share: "分享",
-    // Saves to a user-chosen folder (Android SAF) or share-as-save fallback.
-    download: "下载",
-    downloadFailed: "无法下载",
-    failed: "资源操作失败，请重试。",
-    filename: "文件名",
-    rename: "重命名",
-    attachmentRenameTitle: "重命名附件",
-    imageDeleteConfirm: "图片会从存储空间和当前笔记中永久删除，此操作无法撤销。",
-    imageDeleteTitle: "删除图片",
-    imageRenameTitle: "重命名图片",
-    save: "保存",
-    syncedOnly: "资源同步完成后才能重命名或删除。",
-  },
   "en-US": {
     attachmentActions: "Attachment actions",
     imageActions: "Image actions",
@@ -82,7 +60,7 @@ const copy = {
     imageDeleteConfirm: "画像は保存領域とこのノートから完全に削除され、元に戻せません。",
     imageDeleteTitle: "画像を削除",
     imageRenameTitle: "画像の名前を変更",
-    save: "保存",
+    save: "Save",
     syncedOnly: "リソースの同期が終わってから、名前の変更と削除ができます。",
   },
   pl: {

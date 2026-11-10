@@ -95,8 +95,7 @@ describe("desktop edit context menu", () => {
     expect(template.every((item) => item.type === "separator" || item.role)).toBe(true);
   });
 
-  test("context menu labels are localized for Chinese and Polish", () => {
-    expect(desktopMenuCopy("zh-CN").pasteAsPlainText).toBe("粘贴为纯文本");
+  test("context menu labels are localized for Polish", () => {
     expect(desktopMenuCopy("en").pasteAsPlainText).toBe("Paste as Plain Text");
     const pl = desktopMenuCopy("pl-PL");
     expect([pl.cut, pl.copy, pl.paste, pl.pasteAsPlainText, pl.selectAll, pl.addToDictionary, pl.copyLinkAddress]).toEqual([

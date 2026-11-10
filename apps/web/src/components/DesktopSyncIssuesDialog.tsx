@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ExternalLink, LoaderCircle, RefreshCw, RotateCcw, Trash2 } from "lucide-react";
-import { buildGitHubFeedbackUrl, getMemoSaveErrorReasonKey, type DesktopOutboxItem, type Notebook } from "@edgeever/shared";
+import { buildGitHubFeedbackUrl, getMemoSaveErrorReasonKey, type DesktopOutboxItem, type Notebook } from "@ponder/shared";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";

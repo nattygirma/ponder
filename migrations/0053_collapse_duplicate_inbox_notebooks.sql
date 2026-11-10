@@ -2,7 +2,7 @@ PRAGMA foreign_keys = ON;
 
 -- 0046 restored a workspace-scoped inbox id, but only looked for `nb_inbox`
 -- or `{workspace}_inbox`. Workspaces whose inbox already existed under a
--- different id (slug `inbox`) got a second empty "等待分类". Keep one active
+-- different id (slug `inbox`) got a second empty inbox. Keep one active
 -- inbox per workspace: prefer the notebook that already has notes.
 CREATE TABLE _inbox_dedup_canonical (
   workspace_id TEXT PRIMARY KEY,

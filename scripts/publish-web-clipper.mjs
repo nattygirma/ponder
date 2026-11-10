@@ -18,8 +18,8 @@ const REPO_ROOT = resolve(fileURLToPath(new URL("..", import.meta.url)));
 export const OFFICIAL_REPOSITORY = "tianma-if/edgeever";
 export const CHROME_PUBLISHER_ID = "8c414fb4-4243-4b51-9e6b-fe05e49307e3";
 export const CHROME_EXTENSION_ID = "gjadpfmanienmlofajibkfkkpfdkclgo";
-export const FIREFOX_ADDON_SLUG = "edgeever-web-clipper";
-export const FIREFOX_ADDON_ID = "web-clipper@edgeever.org";
+export const FIREFOX_ADDON_SLUG = "ponder-web-clipper";
+export const FIREFOX_ADDON_ID = "web-clipper@appkeep.io";
 export const FIREFOX_LICENSE_SLUG = "AGPL-3.0-only";
 const CHROME_SCOPE = "https://www.googleapis.com/auth/chromewebstore";
 const SOURCE_SKIP_DIRECTORIES = new Set([
@@ -234,7 +234,7 @@ export const credentialPresence = (env) => ({
   ),
   amo: Boolean(env.AMO_JWT_ISSUER && env.AMO_JWT_SECRET),
   reviewInstance: Boolean(
-    env.EDGE_EVER_REVIEW_INSTANCE_URL && env.EDGE_EVER_REVIEW_API_TOKEN,
+    env.PONDER_REVIEW_INSTANCE_URL && env.PONDER_REVIEW_API_TOKEN,
   ),
 });
 
@@ -269,7 +269,7 @@ export const resolveReleaseNotes = ({ notes, notesFile, version }) => {
       return limitNotes(fromFile);
     }
   }
-  return `EdgeEver Web Clipper ${version}.`;
+  return `Ponder Web Clipper ${version}.`;
 };
 
 const limitNotes = (notes) => {
@@ -281,7 +281,7 @@ const limitNotes = (notes) => {
 
 export const buildApprovalNotes = ({ version, reviewInstanceUrl, reviewApiToken }) => {
   const lines = [
-    "Source archive root: edgeever-source.",
+    "Source archive root: ponder-source.",
     `Reproduce version ${version} with Bun 1.3.14 or later and Node.js 20 or later:`,
     "bun install --frozen-lockfile",
     "bun run test:extension",
@@ -289,7 +289,7 @@ export const buildApprovalNotes = ({ version, reviewInstanceUrl, reviewApiToken 
     "bun run lint:extension:firefox",
     "bun run package:extension:firefox",
     "See SOURCE_BUILD.md.",
-    "The extension reads a page only after a clip action and sends it to the EdgeEver instance configured in the extension settings.",
+    "The extension reads a page only after a clip action and sends it to the Ponder instance configured in the extension settings.",
     "Review steps are in apps/extension/FIREFOX_STORE_LISTING.md.",
   ];
   if (reviewInstanceUrl && reviewApiToken) {
@@ -549,7 +549,7 @@ export const createFirefoxClient = ({
     },
     uploadPackage: async (zipPath) => {
       const form = new FormData();
-      form.append("upload", new Blob([readFileSync(zipPath)]), "edgeever-web-clipper.zip");
+      form.append("upload", new Blob([readFileSync(zipPath)]), "ponder-web-clipper.zip");
       form.append("channel", "listed");
       const response = await fetchImpl("https://addons.mozilla.org/api/v5/addons/upload/", {
         method: "POST",
@@ -585,7 +585,7 @@ export const createFirefoxClient = ({
     ),
     attachSource: async ({ version, sourcePath, releaseNotes, approvalNotes }) => {
       const form = new FormData();
-      form.append("source", new Blob([readFileSync(sourcePath)]), "edgeever-web-clipper-source.zip");
+      form.append("source", new Blob([readFileSync(sourcePath)]), "ponder-web-clipper-source.zip");
       const sourceResponse = await fetchImpl(`${addonUrl}/versions/${version}/`, {
         method: "PATCH",
         headers: { Authorization: authorization() },
@@ -656,11 +656,11 @@ export const copySourceArchive = (repoRoot, destinationRoot) => {
 };
 
 export const createSourceArchive = (repoRoot, sourceZip) => {
-  const staging = mkdtempSync(join(tmpdir(), "edgeever-web-clipper-source-"));
+  const staging = mkdtempSync(join(tmpdir(), "ponder-web-clipper-source-"));
   try {
-    copySourceArchive(repoRoot, join(staging, "edgeever-source"));
+    copySourceArchive(repoRoot, join(staging, "ponder-source"));
     rmSync(sourceZip, { force: true });
-    runCommand("zip", ["-q", "-r", "-X", sourceZip, "edgeever-source", "-x", "*.DS_Store"], { cwd: staging });
+    runCommand("zip", ["-q", "-r", "-X", sourceZip, "ponder-source", "-x", "*.DS_Store"], { cwd: staging });
   } finally {
     rmSync(staging, { recursive: true, force: true });
   }
@@ -691,16 +691,16 @@ export const assertIdenticalBuildDirectories = (referenceDirectory, rebuiltDirec
 
 export const sourceRebuildEnvironment = (environment = process.env) => ({
   ...Object.fromEntries(Object.entries(environment).filter(([key]) =>
-    !/^(CHROME_WEB_STORE_|AMO_|EDGE_EVER_REVIEW_)/.test(key) && !["GITHUB_TOKEN", "GH_TOKEN"].includes(key))),
+    !/^(CHROME_WEB_STORE_|AMO_|PONDER_REVIEW_)/.test(key) && !["GITHUB_TOKEN", "GH_TOKEN"].includes(key))),
   NODE_PATH: "",
   NODE_OPTIONS: "",
 });
 
 export const verifySourceArchive = ({ sourceZip, referenceDirectory }) => {
-  const staging = mkdtempSync(join(tmpdir(), "edgeever-web-clipper-rebuild-"));
+  const staging = mkdtempSync(join(tmpdir(), "ponder-web-clipper-rebuild-"));
   try {
     runCommand("unzip", ["-q", sourceZip, "-d", staging]);
-    const sourceRoot = join(staging, "edgeever-source");
+    const sourceRoot = join(staging, "ponder-source");
     if (!existsSync(join(sourceRoot, "package.json"))) throw new Error("Source archive is missing its root package.json");
     if (existsSync(join(sourceRoot, "node_modules")) || existsSync(join(sourceRoot, "apps/extension/dist-firefox"))) {
       throw new Error("Source rebuild must start without dependencies or built assets");
@@ -763,7 +763,7 @@ const buildPackages = (version) => {
   const chromiumZip = join(
     REPO_ROOT,
     "apps/extension/store-assets",
-    `edgeever-web-clipper-v${version}.zip`,
+    `ponder-web-clipper-v${version}.zip`,
   );
   mkdirSync(dirname(chromiumZip), { recursive: true });
   zipDirectoryContents(join(REPO_ROOT, "apps/extension/dist"), chromiumZip);
@@ -772,7 +772,7 @@ const buildPackages = (version) => {
   const sourceZip = join(
     REPO_ROOT,
     "apps/extension/web-ext-artifacts",
-    `edgeever_web_clipper-${version}-source.zip`,
+    `ponder_web_clipper-${version}-source.zip`,
   );
   createSourceArchive(REPO_ROOT, sourceZip);
   // This runs before either store is contacted, including in --dry-run mode.
@@ -878,8 +878,8 @@ export const submitFirefox = async ({ version, firefoxZip, sourceZip, releaseNot
   }));
   const approvalNotes = buildApprovalNotes({
     version,
-    reviewInstanceUrl: env.EDGE_EVER_REVIEW_INSTANCE_URL,
-    reviewApiToken: env.EDGE_EVER_REVIEW_API_TOKEN,
+    reviewInstanceUrl: env.PONDER_REVIEW_INSTANCE_URL,
+    reviewApiToken: env.PONDER_REVIEW_API_TOKEN,
   });
   const plan = firefoxSubmissionPlan({
     packageVersion: version,
@@ -954,7 +954,7 @@ const main = async () => {
     return;
   }
 
-  if (!process.env.EDGE_EVER_REVIEW_INSTANCE_URL || !process.env.EDGE_EVER_REVIEW_API_TOKEN) {
+  if (!process.env.PONDER_REVIEW_INSTANCE_URL || !process.env.PONDER_REVIEW_API_TOKEN) {
     console.warn("Review instance credentials are unset. Firefox approval notes omit the review login.");
   }
 

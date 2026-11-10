@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
-import type { MemoDetail, MemoEditSession } from "@edgeever/shared";
+import type { MemoDetail, MemoEditSession } from "@ponder/shared";
 import type { MemoUpdateSyncPayload } from "../apps/web/src/lib/local-db";
 
 const { localDb } = await import("../apps/web/src/lib/local-db");

@@ -9,11 +9,7 @@ import {
 } from "./locales.ts";
 
 describe("supported locale matching", () => {
-  test("maps Chinese, English, and Japanese families onto the shipped locales", () => {
-    expect(matchSupportedLocale("zh")).toBe("zh-CN");
-    expect(matchSupportedLocale("zh-CN")).toBe("zh-CN");
-    expect(matchSupportedLocale("zh_TW")).toBe("zh-CN");
-    expect(matchSupportedLocale("zh-Hans-CN")).toBe("zh-CN");
+  test("maps English and Japanese families onto the shipped locales", () => {
     expect(matchSupportedLocale("en")).toBe("en-US");
     expect(matchSupportedLocale("en-GB")).toBe("en-US");
     expect(matchSupportedLocale("en_US")).toBe("en-US");
@@ -29,6 +25,8 @@ describe("supported locale matching", () => {
   });
 
   test("does not treat unrelated tags as a shipped locale", () => {
+    expect(matchSupportedLocale("zh-CN")).toBeNull();
+    expect(matchSupportedLocale("zh_TW")).toBeNull();
     expect(matchSupportedLocale("fr-FR")).toBeNull();
     expect(matchSupportedLocale("ko-KR")).toBeNull();
     expect(matchSupportedLocale("pt-BR")).toBeNull();
@@ -38,11 +36,11 @@ describe("supported locale matching", () => {
 });
 
 describe("supported locale resolution", () => {
-  test("keeps Chinese as the empty default and English as the unmatched fallback", () => {
-    expect(defaultLocale).toBe("zh-CN");
+  test("uses English as the empty default and the unmatched fallback", () => {
+    expect(defaultLocale).toBe("en-US");
     expect(unmatchedLocale).toBe("en-US");
-    expect(resolveSupportedLocale(null)).toBe("zh-CN");
-    expect(resolveSupportedLocale("")).toBe("zh-CN");
+    expect(resolveSupportedLocale(null)).toBe("en-US");
+    expect(resolveSupportedLocale("")).toBe("en-US");
     expect(resolveSupportedLocale("ja-JP")).toBe("ja");
     expect(resolveSupportedLocale("ko")).toBe("en-US");
     expect(resolveSupportedLocale("de-DE")).toBe("en-US");
@@ -55,6 +53,6 @@ describe("supported locale resolution", () => {
     expect(resolveSupportedLocaleFromCandidates(["fr-FR", "de-DE"])).toBe("en-US");
     expect(resolveSupportedLocale("ja-JP,zh-CN;q=0.8")).toBe("ja");
     expect(resolveSupportedLocale("fr-FR,fr;q=0.9")).toBe("en-US");
-    expect(resolveSupportedLocale("zh-CN,zh;q=0.9,en;q=0.8")).toBe("zh-CN");
+    expect(resolveSupportedLocale("zh-CN,zh;q=0.9,en;q=0.8")).toBe("en-US");
   });
 });

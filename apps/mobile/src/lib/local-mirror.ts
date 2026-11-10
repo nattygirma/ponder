@@ -1,4 +1,4 @@
-import type { createEdgeEverClient, ListMemosResponse, MemoFilterMode, MemoSortMode } from "@edgeever/client";
+import type { createPonderClient, ListMemosResponse, MemoFilterMode, MemoSortMode } from "@ponder/client";
 import {
   hasSyncStateReset,
   isSyncMetadataInitialized,
@@ -7,12 +7,12 @@ import {
   type MemoSummary,
   type Notebook,
   type TagSummary,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import * as SQLite from "expo-sqlite";
 import { serializeMobileDatabaseWrites } from "./mobile-database-access";
 import { filterLocalMemosByExactTag, summarizeMobileTags } from "./mobile-tags";
 
-const DATABASE_NAME = "edgeever-mobile.db";
+const DATABASE_NAME = "ponder-mobile.db";
 const BOOTSTRAP_PAGE_SIZE = 200;
 const BOOTSTRAP_WRITE_BATCH_SIZE = 50;
 const CHANGE_PAGE_SIZE = 200;
@@ -254,7 +254,7 @@ export const replaceLocalMemoId = async (scope: string, temporaryId: string, mem
 };
 
 export const syncMobileLocalMirror = async (
-  client: ReturnType<typeof createEdgeEverClient>,
+  client: ReturnType<typeof createPonderClient>,
   scope: string,
   options: MobileLocalMirrorSyncOptions = {}
 ) => {
@@ -270,7 +270,7 @@ export const syncMobileLocalMirror = async (
 };
 
 const performMobileLocalMirrorSync = async (
-  client: ReturnType<typeof createEdgeEverClient>,
+  client: ReturnType<typeof createPonderClient>,
   scope: string,
   options: MobileLocalMirrorSyncOptions = {}
 ) => {

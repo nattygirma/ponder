@@ -21,10 +21,10 @@ for (const kind of ["image", "attachment"]) {
       });
       await page.goto("/");
       // A prior browser session may have left focus mode on.
-      const exitFocus = page.getByRole("button", { name: "退出专注模式", exact: true });
+      const exitFocus = page.getByRole("button", { name: "Exit focus mode", exact: true });
       if (await exitFocus.isVisible()) await exitFocus.click();
-      await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-      await page.getByPlaceholder("搜索笔记").fill(title);
+      await page.getByRole("button", { name: "All notes", exact: true }).click();
+      await page.getByPlaceholder("Search notes").fill(title);
       await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
       const editor = page.locator(".ProseMirror[contenteditable='true']");
       await expect(editor).toContainText("LAST paragraph");
@@ -70,7 +70,7 @@ for (const kind of ["image", "attachment"]) {
       releaseUpload();
       await expect(placeholder).toHaveCount(0);
       if (kind === "image") {
-        const image = editor.locator(".edgeever-image-node");
+        const image = editor.locator(".ponder-image-node");
         await expect(image).toBeVisible();
         await expect.poll(() => editor.evaluate((element) => {
           const imageBlock = Array.from(element.children).find((child) => child.querySelector("img"));

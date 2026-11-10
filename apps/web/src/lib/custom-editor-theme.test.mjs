@@ -106,7 +106,7 @@ describe("custom editor theme files", () => {
   });
 
   test("creates a filesystem-safe descriptive filename", () => {
-    expect(customEditorThemeFileName(theme.name)).toBe("EdgeEver-Calm - Green.json");
+    expect(customEditorThemeFileName(theme.name)).toBe("Ponder-Calm - Green.json");
   });
 
   test("localizes factory custom theme names without rewriting user names", () => {

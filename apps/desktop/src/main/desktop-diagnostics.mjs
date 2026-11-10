@@ -1,4 +1,4 @@
-const GITHUB_NEW_ISSUE_URL = "https://github.com/tianma-if/edgeever/issues/new";
+const DESKTOP_REPORT_URL = "https://appkeep.io";
 const DESKTOP_CLIENT_BY_PLATFORM = {
   darwin: "macOS",
   win32: "Windows",
@@ -35,44 +35,5 @@ export const normalizeDesktopDiagnostic = (input = {}) => {
   };
 };
 
-export const buildDesktopDiagnosticIssueUrl = ({ diagnostic, systemInfo }) => {
-  const normalized = normalizeDesktopDiagnostic(diagnostic);
-  const safeSystemInfo = {
-    appVersion: sanitizeDesktopDiagnosticText(systemInfo.appVersion),
-    platform: sanitizeDesktopDiagnosticText(systemInfo.platform),
-    architecture: sanitizeDesktopDiagnosticText(systemInfo.architecture),
-    deviceModel: sanitizeDesktopDiagnosticText(systemInfo.deviceModel),
-    osVersion: sanitizeDesktopDiagnosticText(systemInfo.osVersion),
-    osRelease: sanitizeDesktopDiagnosticText(systemInfo.osRelease),
-    electron: sanitizeDesktopDiagnosticText(systemInfo.electron),
-    chrome: sanitizeDesktopDiagnosticText(systemInfo.chrome),
-    gpu: sanitizeDesktopDiagnosticText(systemInfo.gpu),
-    gpuFeatures: sanitizeDesktopDiagnosticText(systemInfo.gpuFeatures),
-  };
-  const title = `[Crash] Desktop renderer failure (${safeSystemInfo.platform} ${safeSystemInfo.architecture})`;
-  const systemInfoText = Object.entries(safeSystemInfo)
-    .filter(([, value]) => value)
-    .map(([key, value]) => `- ${key}: ${value}`)
-    .join("\n");
-  const client = DESKTOP_CLIENT_BY_PLATFORM[safeSystemInfo.platform] ?? "";
-  const makeUrl = (reportDiagnostic) => {
-    const params = new URLSearchParams({
-      template: "bug.yml",
-      title,
-      "system-info": systemInfoText,
-      diagnostics: JSON.stringify({ diagnostic: reportDiagnostic, systemInfo: safeSystemInfo }, null, 2),
-    });
-    if (client) params.set("client", client);
-    return `${GITHUB_NEW_ISSUE_URL}?${params.toString()}`;
-  };
-
-  const fullUrl = makeUrl(normalized);
-  if (fullUrl.length < 8_000) return fullUrl;
-  return makeUrl({
-    ...normalized,
-    message: normalized.message.slice(0, 200),
-    stack: normalized.stack.slice(0, 300),
-    componentStack: normalized.componentStack.slice(0, 200),
-    reason: normalized.reason.slice(0, 100),
-  });
-};
+// appkeep.io has no report form yet, so crash details are deliberately left out of the link.
+export const buildDesktopDiagnosticIssueUrl = () => DESKTOP_REPORT_URL;

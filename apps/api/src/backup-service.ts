@@ -8,7 +8,7 @@ import {
   type JsonBackupMemo,
   type JsonBackupNotebook,
   type TiptapDoc,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { AppError } from "./app-error";
 import { audit } from "./audit";
 import { createId } from "./entity-utils";

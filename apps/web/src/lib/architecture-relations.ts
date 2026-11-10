@@ -17,11 +17,11 @@ export const focusArchitectureRelations = (
       focusedNodes.add(edge.getSourceCellId());
       focusedNodes.add(edge.getTargetCellId());
     }
-    graph.findViewByCell(edge)?.container.classList.toggle("edgeever-relation-focused", focusedEdges.has(edge.id));
+    graph.findViewByCell(edge)?.container.classList.toggle("ponder-relation-focused", focusedEdges.has(edge.id));
   }
   for (const node of graph.getNodes()) {
     const container = graph.findViewByCell(node)?.container;
-    container?.classList.toggle("edgeever-relation-focused", focusedNodes.has(node.id));
-    container?.classList.toggle("edgeever-relation-boundary", node.getData<{ shape?: string }>()?.shape === "boundary");
+    container?.classList.toggle("ponder-relation-focused", focusedNodes.has(node.id));
+    container?.classList.toggle("ponder-relation-boundary", node.getData<{ shape?: string }>()?.shape === "boundary");
   }
 };

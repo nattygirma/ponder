@@ -1,13 +1,13 @@
 ---
 draft: false
-title: "EdgeEver 自托管部署指南：Cloudflare 与 Docker"
-snippet: "使用 Cloudflare 免费 Serverless，或在 VPS、NAS 与家庭服务器上一键完成 Docker 自托管。"
+title: "Self-host Ponder with Cloudflare or Docker"
+snippet: "Run Ponder on Cloudflare Serverless, or install it with Docker on a VPS, NAS, or home server."
 image: {
     src: "/images/agent-deploy.jpg",
-    alt: "EdgeEver 的 Cloudflare 与 Docker 自托管方案"
+    alt: "Cloudflare and Docker self-hosting options for Ponder"
 }
 publishDate: "2026-07-02 00:50"
 category: "Deployment"
-author: "EdgeEver Team"
+author: "Ponder Team"
 tags: [cloudflare, docker, deploy, ai-agent, self-hosted]
 ---

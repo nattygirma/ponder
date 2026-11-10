@@ -97,11 +97,11 @@ describe("WeChat chat archive", () => {
     expect(note.markdown).not.toContain("💬 **微信聊天记录**");
     expect(note.markdown).toContain("**鱼** · 2026年9月22日 22:15");
     expect(note.markdown).toContain("[发布说明](https://example.com/post)");
-    expect(note.markdown).toContain("![微信图片_202609222215_1.jpg](edgeever-wechat-media://m1)");
+    expect(note.markdown).toContain("![微信图片_202609222215_1.jpg](ponder-wechat-media://m1)");
     expect(note.markdown).toContain("😶还没注册");
     expect(note.markdown).toContain("*[动画表情]*");
-    expect(note.markdown).toContain("[附件：微信视频_1.mp4](edgeever-wechat-media://m2)");
-    expect(note.markdown).toContain("[附件：说明.pdf](edgeever-wechat-media://m3)");
+    expect(note.markdown).toContain("[Attachment: 微信视频_1.mp4](ponder-wechat-media://m2)");
+    expect(note.markdown).toContain("[Attachment: 说明.pdf](ponder-wechat-media://m3)");
     expect(note.markdown).not.toContain(".zip");
     expect(note.media.map((item) => [item.filename, item.mimeType, Buffer.from(item.bytes).toString()])).toEqual([
       ["微信图片_202609222215_1.jpg", "image/jpeg", "jpeg-bytes"],
@@ -150,8 +150,8 @@ describe("WeChat chat archive", () => {
   });
 
   test("adds the first message time when WeChat provides only a generic archive name", () => {
-    expect(wechatChatNoteFromArchive(sampleArchive(), "聊天记录.zip").title).toBe("聊天记录 · 2026-09-22 22:15");
-    expect(wechatChatNoteFromArchive(sampleArchive()).title).toBe("聊天记录 · 2026-09-22 22:15");
+    expect(wechatChatNoteFromArchive(sampleArchive(), "聊天记录.zip").title).toBe("Chat history · 2026-09-22 22:15");
+    expect(wechatChatNoteFromArchive(sampleArchive()).title).toBe("Chat history · 2026-09-22 22:15");
     const withoutMessages = zipOf([{ name: "聊天记录.txt", data: "无法识别时间的旧聊天记录" }]);
     expect(wechatChatNoteFromArchive(withoutMessages, "聊天记录.zip").title).toBe("聊天记录");
   });
@@ -170,7 +170,7 @@ describe("WeChat chat archive", () => {
       "收到",
     ].join("\n") }]);
     const note = wechatChatNoteFromArchive(archive, "聊天记录.zip");
-    expect(note.title).toBe("聊天记录 · 2026-09-22 22:15");
+    expect(note.title).toBe("Chat history · 2026-09-22 22:15");
     expect(note.markdown).toContain("聊天开始前的说明");
     expect(note.markdown).toContain("\\[系统消息\\] 群名已更改");
     expect(note.markdown).toContain("收到");

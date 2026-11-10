@@ -2,11 +2,11 @@ import {
   PluginEmbed as BasePluginEmbed,
   normalizePluginEmbedAttributes,
   type PluginEmbedAttributes,
-} from "@edgeever/shared";
-import type { PluginEmbedInstance } from "@edgeever/plugin-api";
+} from "@ponder/shared";
+import type { PluginEmbedInstance } from "@ponder/plugin-api";
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import type { EdgeEverPluginHost } from "@/lib/plugins/plugin-host";
+import type { PonderPluginHost } from "@/lib/plugins/plugin-host";
 
 const toPluginEmbedInstance = (attributes: PluginEmbedAttributes): PluginEmbedInstance => ({
   id: attributes.id,
@@ -18,7 +18,7 @@ const toPluginEmbedInstance = (attributes: PluginEmbedAttributes): PluginEmbedIn
   data: JSON.parse(attributes.dataJson) as PluginEmbedInstance["data"],
 });
 
-const PluginEmbedNodeView = ({ node, host }: NodeViewProps & { host: EdgeEverPluginHost }) => {
+const PluginEmbedNodeView = ({ node, host }: NodeViewProps & { host: PonderPluginHost }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [mountError, setMountError] = useState<string | null>(null);
   const snapshot = useSyncExternalStore(host.subscribe, host.getSnapshot, host.getSnapshot);
@@ -54,7 +54,7 @@ const PluginEmbedNodeView = ({ node, host }: NodeViewProps & { host: EdgeEverPlu
 
   const fallbackTitle = attributes?.title || attributes?.type || "Plugin embed";
   return (
-    <NodeViewWrapper className="edgeever-plugin-embed-node" contentEditable={false}>
+    <NodeViewWrapper className="ponder-plugin-embed-node" contentEditable={false}>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-card">
         {registered ? <div ref={containerRef} className="min-h-32" /> : (
           <div className="flex min-h-24 items-center justify-center bg-slate-50 px-4 text-sm font-medium text-slate-500">
@@ -67,7 +67,7 @@ const PluginEmbedNodeView = ({ node, host }: NodeViewProps & { host: EdgeEverPlu
   );
 };
 
-export const createPluginEmbedExtension = (host: EdgeEverPluginHost) => BasePluginEmbed.extend({
+export const createPluginEmbedExtension = (host: PonderPluginHost) => BasePluginEmbed.extend({
   addNodeView() {
     return ReactNodeViewRenderer((props) => <PluginEmbedNodeView {...props} host={host} />);
   },

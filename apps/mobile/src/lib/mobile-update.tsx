@@ -3,7 +3,7 @@ import Constants from "expo-constants";
 import { AppState, Linking, Platform, type AppStateStatus } from "react-native";
 import * as Updates from "expo-updates";
 import { Alert } from "../components/LocalizedText";
-import { googlePlayUpdates, openGooglePlayDetails } from "../../modules/edgeever-app-store";
+import { googlePlayUpdates, openGooglePlayDetails } from "../../modules/ponder-app-store";
 import { MobilePlayUpdate } from "./mobile-play-update";
 import { useMobileLocale, getMobileCatalog, formatMobileCopy } from "./mobile-locale";
 import {

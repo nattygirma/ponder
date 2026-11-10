@@ -31,17 +31,14 @@ describe("mobile editor contract", () => {
   });
 
   test("provides the same localized copy to both mobile clients", () => {
-    expect(getMobileEditorPlaceholder("zh-CN")).toBe("开始记录...");
     expect(getMobileEditorPlaceholder("en-US")).toBe("Start writing...");
-    expect(getMobileEditorToolbarLabel("zh-CN")).toBe("编辑器工具栏");
-    expect(getMobileEditorToolbarActionLabel("undo", "zh-CN")).toBe("撤销");
+    expect(getMobileEditorToolbarActionLabel("undo", "en-US")).toBe("Undo");
     expect(getMobileEditorToolbarActionLabel("redo", "en-US")).toBe("Redo");
     expect(getMobileEditorToolbarActionLabel("undo", "ja")).toBe("元に戻す");
     expect(getMobileEditorToolbarActionLabel("bulletList", "en-US")).toBe("Bullet list");
-    expect(getMobileEditorToolbarActionLabel("taskList", "zh-CN")).toBe("任务清单");
-    expect(getMobileEditorToolbarActionLabel("increaseListIndent", "zh-CN")).toBe("增加列表层级（Tab）");
+    expect(getMobileEditorToolbarActionLabel("taskList", "en-US")).toBe("Task list");
+    expect(getMobileEditorToolbarActionLabel("increaseListIndent", "en-US")).toBe("Increase list level (Tab)");
     expect(getMobileEditorToolbarActionLabel("decreaseListIndent", "en-US")).toBe("Decrease list level (Shift + Tab)");
-    expect(getMobileEditorImageScaleLabel("zh-CN")).toBe("图片显示尺寸");
     expect(getMobileEditorImageWidthPresetLabel("medium", "en-US")).toBe("Medium");
   });
 
@@ -65,7 +62,7 @@ const collectCopyKeys = (value, prefix = "") =>
 describe("mobile editor copy", () => {
   test("ships the same keys for every locale", () => {
     const englishKeys = collectCopyKeys(getMobileEditorCopy("en-US"));
-    for (const locale of ["zh-CN", "ja", "pl", "ru"]) {
+    for (const locale of ["ja", "pl", "ru"]) {
       expect({ locale, keys: collectCopyKeys(getMobileEditorCopy(locale)) }).toEqual({ locale, keys: englishKeys });
     }
   });
@@ -73,7 +70,6 @@ describe("mobile editor copy", () => {
   test("localizes editor overlays instead of falling back to English", () => {
     expect(getMobileEditorCopy("pl").codeBlock.copy).toBe("Kopiuj kod");
     expect(getMobileEditorCopy("ja").codeBlock.copy).toBe("コードをコピー");
-    expect(getMobileEditorCopy("zh-CN").codeBlock.copy).toBe("复制代码");
     expect(getMobileEditorCopy("ru").codeBlock.copy).toBe("Копировать код");
   });
 });

@@ -1,4 +1,4 @@
-import { withFontDeadline } from "@edgeever/shared/font-loader";
+import { withFontDeadline } from "@ponder/shared/font-loader";
 import { FontLoadFeedback } from "./FontLoadFeedback";
 import { createFontLoadState } from "@/lib/font-load-state";
 import { loadPosterFont } from "@/lib/poster-design/fonts";
@@ -39,7 +39,7 @@ import {
   type Notebook,
   type PosterDocument,
   type PosterElement,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -63,7 +63,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { api } from "@/lib/api";
-import type { EdgeEverRepository } from "@/lib/repository";
+import type { PonderRepository } from "@/lib/repository";
 import {
   Canvas,
   ActiveSelection,
@@ -107,7 +107,6 @@ import { AiSidebar, readAiSidebarOpen, writeAiSidebarOpen } from "./ai-sidebar/A
 import { AiSidebarErrorBoundary } from "./ai-sidebar/AiSidebarErrorBoundary";
 import { getNotebookMoveOptions } from "@/lib/app-helpers";
 import { parseTagsText } from "@/lib/utils";
-import { prefersChineseContent } from "@/lib/bilingual-content-locale";
 
 const artwork = (document: PosterDocument) =>
   JSON.stringify({ ...document, previewResourceId: undefined });
@@ -115,7 +114,7 @@ const snapshot = (title: string, document: PosterDocument) =>
   JSON.stringify([title, artwork(document)]);
 type Props = {
   memo: MemoDetail;
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
   readOnly: boolean;
   companionAvailable?: boolean;
   beforeCompanionApply?: () => Promise<void>;
@@ -142,7 +141,7 @@ export default function PosterEditorPane({
   companionAvailable = false, beforeCompanionApply, onCompanionNotesChanged,
 }: Props) {
   const { t, i18n } = useTranslation();
-  const zh = prefersChineseContent(i18n.language);
+  const zh = false;
   const initial = useMemo(
     () => parsePosterDocument(memo.contentMarkdown),
     [memo.contentMarkdown],
@@ -247,7 +246,7 @@ export default function PosterEditorPane({
     left: number;
     top: number;
   } | null>(null);
-  const draftKey = `edgeever:poster-draft:${memo.id}`;
+  const draftKey = `ponder:poster-draft:${memo.id}`;
   const dirty = snapshot(title, document) !== saved || tagsText !== savedTags;
   const fontStatus = useSyncExternalStore(fontLoadState.subscribe, fontLoadState.getSnapshot, fontLoadState.getSnapshot);
   const editable = !readOnly && Boolean(initial) && ready && !busy;
@@ -1159,7 +1158,7 @@ export default function PosterEditorPane({
       const { memo: source } = await repository.getMemo(sourceId);
       if (
         source.isDeleted ||
-        /<!--\s*edgeever-(?:poster|diagram|table|infographic)-v1:/.test(
+        /<!--\s*ponder-(?:poster|diagram|table|infographic)-v1:/.test(
           source.contentMarkdown,
         )
       )
@@ -1642,9 +1641,7 @@ export default function PosterEditorPane({
               className="min-w-32 justify-between text-xs"
             >
               {platform
-                ? zh
-                  ? platform.zh
-                  : platform.en
+                ? platform.en
                 : `${document.width} × ${document.height}`}
               <ChevronDown className="h-3 w-3" />
             </Button>
@@ -1656,7 +1653,7 @@ export default function PosterEditorPane({
                 disabled={!editable}
                 onSelect={() => changePlatform(entry.id)}
               >
-                {zh ? entry.zh : entry.en}
+                {entry.en}
                 <span className="ml-auto pl-4 text-[10px] text-slate-400">
                   {entry.width}×{entry.height}
                 </span>
@@ -1985,7 +1982,7 @@ export default function PosterEditorPane({
                           height: zone.h * document.height * zoom,
                         }}
                       >
-                        {zh ? zone.zh : zone.en}
+                        {zone.en}
                       </div>
                     ))}
                   {guides.x !== undefined && (

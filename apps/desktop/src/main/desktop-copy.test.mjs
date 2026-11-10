@@ -51,7 +51,7 @@ describe("resolveDesktopLocale", () => {
   });
 
   test("maps regional variants onto the catalog locale", () => {
-    expect(resolveDesktopLocale("zh_Hant")).toBe("zh-CN");
+    expect(resolveDesktopLocale("zh_Hant")).toBe("en-US");
     expect(resolveDesktopLocale("pl-PL")).toBe("pl");
     expect(resolveDesktopLocale("RU")).toBe("ru");
     expect(desktopDialogCopy("ja-JP").reload).toBe("再読み込み");
@@ -60,7 +60,7 @@ describe("resolveDesktopLocale", () => {
 
 describe("formatDesktopCopy", () => {
   test("replaces known placeholders and leaves unknown ones", () => {
-    expect(formatDesktopCopy("EdgeEver v{version}", { version: "1.2.3" })).toBe("EdgeEver v1.2.3");
+    expect(formatDesktopCopy("Ponder v{version}", { version: "1.2.3" })).toBe("Ponder v1.2.3");
     expect(formatDesktopCopy("{stamp} {missing}", { stamp: 7 })).toBe("7 {missing}");
     expect(formatDesktopCopy("no placeholders", {})).toBe("no placeholders");
   });

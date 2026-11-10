@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { DEFAULT_MEMO_TITLE, type MemoDetail, type MemoRevision } from "@edgeever/shared";
+import { DEFAULT_MEMO_TITLE, type MemoDetail, type MemoRevision } from "@ponder/shared";
 import { History, RotateCcw, X } from "../components/icons";
 import { Modal, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -111,10 +111,10 @@ export const RevisionHistoryModal = ({
   });
 
   const requestRestoreRevision = (revision: MemoRevision) => {
-    Alert.alert("恢复到这个历史版本", "当前内容会被这个历史版本替换，恢复后仍会产生新的历史记录。", [
-      { text: "取消", style: "cancel" },
+    Alert.alert("Restore this historical version", "The current content will be replaced by this historical version, and a new revision will still be created.", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: "恢复",
+        text: "Restore",
         onPress: () => restoreRevisionMutation.mutate(revision),
       },
     ]);
@@ -127,11 +127,11 @@ export const RevisionHistoryModal = ({
           <View style={styles.managementHeaderText}>
             <View style={styles.managementTitleRow}>
               <History color="#059669" size={19} />
-              <Text style={styles.managementTitle}>版本历史</Text>
+              <Text style={styles.managementTitle}>Version history</Text>
             </View>
             <Text numberOfLines={1} style={styles.managementSubtitle}>{memo?.title?.trim() || DEFAULT_MEMO_TITLE}</Text>
           </View>
-          <IconButton accessibilityLabel="关闭" onPress={onClose}>
+          <IconButton accessibilityLabel="Close" onPress={onClose}>
             <X color="#0f172a" size={20} />
           </IconButton>
         </View>
@@ -139,34 +139,34 @@ export const RevisionHistoryModal = ({
         <ScrollView contentContainerStyle={styles.revisionHistoryContent}>
           <View style={styles.revisionSummaryRow}>
             <View style={styles.revisionSummaryText}>
-              <Text style={styles.settingsRowTitle}>{selectedRevision ? `版本 ${selectedRevision.revision}` : "未选择历史版本"}</Text>
-              <Text style={styles.settingsRowDescription}>选择历史记录后可预览并恢复。</Text>
+              <Text style={styles.settingsRowTitle}>{selectedRevision ? `Revision ${selectedRevision.revision}` : "No revision selected"}</Text>
+              <Text style={styles.settingsRowDescription}>Select a version to preview and restore it.</Text>
             </View>
             {selectedRevision ? (
-              <ActionButton disabled={restoreRevisionMutation.isPending || Boolean(memo?.isDeleted)} label={restoreRevisionMutation.isPending ? "恢复中" : "恢复该版本"} onPress={() => requestRestoreRevision(selectedRevision)}>
+              <ActionButton disabled={restoreRevisionMutation.isPending || Boolean(memo?.isDeleted)} label={restoreRevisionMutation.isPending ? "Restoring" : "Restore this version"} onPress={() => requestRestoreRevision(selectedRevision)}>
                 <RotateCcw color="#0f172a" size={16} />
               </ActionButton>
             ) : null}
           </View>
 
-          <Text style={styles.revisionTimelineLabel}>历史记录</Text>
+          <Text style={styles.revisionTimelineLabel}>History</Text>
           {revisionsQuery.isLoading ? (
             <View style={styles.revisionTimelineState}>
-              <Text style={styles.mutedText}>加载中</Text>
+              <Text style={styles.mutedText}>Loading</Text>
             </View>
           ) : revisionsQuery.isError ? (
             <View style={styles.revisionTimelineState}>
-              <Text style={styles.errorText}>加载失败</Text>
+              <Text style={styles.errorText}>Failed to load</Text>
               <Text style={styles.revisionTimelineError}>
-                {revisionsQuery.error instanceof Error ? revisionsQuery.error.message : "请稍后重试"}
+                {revisionsQuery.error instanceof Error ? revisionsQuery.error.message : "Please try again later"}
               </Text>
-              <ActionButton label="重试" onPress={() => void revisionsQuery.refetch()}>
+              <ActionButton label="Retry" onPress={() => void revisionsQuery.refetch()}>
                 <RotateCcw color="#0f172a" size={16} />
               </ActionButton>
             </View>
           ) : revisions.length === 0 ? (
             <View style={styles.revisionTimelineState}>
-              <Text style={styles.mutedText}>暂无历史版本</Text>
+              <Text style={styles.mutedText}>No previous versions</Text>
             </View>
           ) : (
             <View style={styles.revisionTimeline}>
@@ -176,9 +176,9 @@ export const RevisionHistoryModal = ({
                   onPress={() => setSelectedRevisionId(revision.id)}
                   style={[styles.revisionPill, selectedRevision?.id === revision.id && styles.revisionPillActive]}
                 >
-                  <Text style={[styles.revisionPillTitle, selectedRevision?.id === revision.id && styles.revisionPillTitleActive]}>{`版本 ${revision.revision}`}</Text>
+                  <Text style={[styles.revisionPillTitle, selectedRevision?.id === revision.id && styles.revisionPillTitleActive]}>{`Revision ${revision.revision}`}</Text>
                   <Text style={[styles.revisionPillMeta, selectedRevision?.id === revision.id && styles.revisionPillTitleActive]}>
-                    {formatDate(revision.createdAt, localePreference)} · {revision.createdBy === "table-form" ? "表单提交" : formatRevisionActor(revision.createdBy)}
+                    {formatDate(revision.createdAt, localePreference)} · {revision.createdBy === "table-form" ? "Form submission" : formatRevisionActor(revision.createdBy)}
                   </Text>
                 </Pressable>
               ))}
@@ -187,11 +187,11 @@ export const RevisionHistoryModal = ({
 
           {selectedRevision ? (
             <View style={styles.revisionPreviewCard}>
-              <Text selectable style={styles.revisionPreviewText}>{selectedRevision.contentMarkdown || "空笔记"}</Text>
+              <Text selectable style={styles.revisionPreviewText}>{selectedRevision.contentMarkdown || "Empty note"}</Text>
             </View>
           ) : null}
           {restoreRevisionMutation.error ? (
-            <Text style={styles.errorText}>{restoreRevisionMutation.error instanceof Error ? restoreRevisionMutation.error.message : "恢复失败"}</Text>
+            <Text style={styles.errorText}>{restoreRevisionMutation.error instanceof Error ? restoreRevisionMutation.error.message : "Could not restore"}</Text>
           ) : null}
         </ScrollView>
       </SafeAreaView>

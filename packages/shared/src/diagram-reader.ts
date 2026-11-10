@@ -81,7 +81,7 @@ export const attachDiagramReader = (
 ) => {
   const detachScroll = attachDiagramScroll(container, graph);
   const host = container.parentElement;
-  host?.classList.add("edgeever-diagram-reader-host");
+  host?.classList.add("ponder-diagram-reader-host");
   const fit = () => {
     graph.zoomToFit({ maxScale: 1, padding: DIAGRAM_READER_FIT_PADDING });
     graph.centerContent();
@@ -155,7 +155,7 @@ export const attachDiagramReader = (
       container.removeEventListener("touchend", onTouchEnd);
       container.removeEventListener("touchcancel", onTouchEnd);
       graph.enablePanning?.();
-      host?.classList.remove("edgeever-diagram-reader-host");
+      host?.classList.remove("ponder-diagram-reader-host");
       delete container.dataset.scale;
     },
   };

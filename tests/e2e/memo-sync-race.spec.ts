@@ -11,7 +11,7 @@ type StoredQueueItem = {
 
 const readSyncQueue = (page: Page) => page.evaluate(
   () => new Promise<StoredQueueItem[]>((resolve, reject) => {
-    const openRequest = indexedDB.open("edgeever-local");
+    const openRequest = indexedDB.open("ponder-local");
     openRequest.onerror = () => reject(openRequest.error);
     openRequest.onsuccess = () => {
       const database = openRequest.result;
@@ -45,7 +45,7 @@ const waitForPendingQueuedContent = (page: Page, memoId: string, marker: string)
 ).toBe("pending");
 
 const waitForSyncCompleted = (page: Page) => page.evaluate(() => new Promise<void>((resolve) => {
-  window.addEventListener("edgeever:sync-completed", () => resolve(), { once: true });
+  window.addEventListener("ponder:sync-completed", () => resolve(), { once: true });
 }));
 
 const readEditorSelection = (page: Page) => page.evaluate(() => {
@@ -104,9 +104,9 @@ test("keeps the caret and rebases edits made while autosave sync is in flight", 
   try {
     await page.goto("/");
     await page.locator('[data-notebook-tree-button="true"]').filter({ hasText: notebookName! }).first().click();
-    await page.getByPlaceholder("搜索笔记").fill(marker);
+    await page.getByPlaceholder("Search notes").fill(marker);
     await page.locator(`[data-memo-id="${memoId}"]`).locator("button").first().click();
-    await page.getByRole("button", { name: "清空搜索", exact: true }).click();
+    await page.getByRole("button", { name: "Clear search", exact: true }).click();
 
     const editor = page.locator(".ProseMirror[contenteditable='true']");
     const firstParagraph = editor.locator("p").first();
@@ -116,7 +116,7 @@ test("keeps the caret and rebases edits made while autosave sync is in flight", 
     await page.keyboard.insertText(" first-save");
     await waitForQueuedContent(page, memoId, "first-save");
 
-    await page.evaluate(() => window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed")));
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed")));
     await firstUpdateStarted;
 
     await firstParagraph.click();
@@ -148,7 +148,7 @@ test("keeps the caret and rebases edits made while autosave sync is in flight", 
       (response) => response.request().method() === "PATCH" && new URL(response.url()).pathname === `/api/v1/memos/${memoId}`,
     );
     const secondSyncCompleted = waitForSyncCompleted(page);
-    await page.evaluate(() => window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed")));
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed")));
     expect((await secondUpdateResponse).ok()).toBe(true);
     await secondSyncCompleted;
     expect(await readEditorSelection(page)).toEqual(selectionBeforeCompletedSync);
@@ -207,16 +207,16 @@ test("preserves a mind-map draft when an earlier autosave is acknowledged", asyn
   try {
     await page.goto("/");
     await page.locator('[data-notebook-tree-button="true"]').filter({ hasText: notebook.name }).first().click();
-    await page.getByPlaceholder("搜索笔记").fill(marker);
+    await page.getByPlaceholder("Search notes").fill(marker);
     await page.locator(`[data-memo-id="${memoId}"]`).locator("button").first().click();
-    await page.getByRole("button", { name: "清空搜索", exact: true }).click();
+    await page.getByRole("button", { name: "Clear search", exact: true }).click();
     const canvas = page.locator('[data-diagram-kind="mind-map"]');
     await expect(canvas.locator(".x6-node")).toHaveCount(8);
 
-    const title = page.getByRole("textbox", { name: "图表标题", exact: true });
+    const title = page.getByRole("textbox", { name: "Diagram title", exact: true });
     await title.fill(`${marker}-first-save`);
     await waitForQueuedContent(page, memoId, "first-save");
-    await page.evaluate(() => window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed")));
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed")));
     await updateStored;
 
     // Keep the next edit inside the real 1,200 ms debounce window while the
@@ -226,11 +226,11 @@ test("preserves a mind-map draft when an earlier autosave is acknowledged", asyn
     await canvas.focus();
     await page.keyboard.press("Tab");
     await page.clock.runFor(100);
-    const nodeInput = page.getByRole("textbox", { name: "编辑节点文字", exact: true });
+    const nodeInput = page.getByRole("textbox", { name: "Edit node text", exact: true });
     await nodeInput.fill("draft-during-sync");
     await canvas.focus();
     await title.fill(`${marker}-newer-title`);
-    await page.getByRole("button", { name: "选择笔记标签", exact: true }).click();
+    await page.getByRole("button", { name: "Choose note tags", exact: true }).click();
     const tagDialog = page.getByRole("dialog");
     await tagDialog.getByRole("textbox").fill(tag);
     await tagDialog.locator('button[type="submit"]').click();
@@ -243,7 +243,7 @@ test("preserves a mind-map draft when an earlier autosave is acknowledged", asyn
     await completed;
     await expect(title).toHaveValue(`${marker}-newer-title`);
     await expect(canvas.locator(".x6-node")).toHaveCount(9);
-    await expect(page.getByText("未保存", { exact: true }).last()).toBeVisible();
+    await expect(page.getByText("Not saved", { exact: true }).last()).toBeVisible();
 
     const nextUpdate = page.waitForResponse((response) => response.request().method() === "PATCH"
       && new URL(response.url()).pathname === `/api/v1/memos/${memoId}`
@@ -255,7 +255,7 @@ test("preserves a mind-map draft when an earlier autosave is acknowledged", asyn
       const body = await response.json() as { memo: { contentMarkdown: string } };
       return body.memo.contentMarkdown.includes("draft-during-sync");
     }).toBe(true);
-    await page.evaluate(() => window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed")));
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed")));
     const nextResponse = await nextUpdate;
     expect(nextResponse.ok(), await nextResponse.text()).toBe(true);
     const savedResponse = await page.request.get(`/api/v1/memos/${memoId}`);
@@ -266,8 +266,8 @@ test("preserves a mind-map draft when an earlier autosave is acknowledged", asyn
 
     await page.clock.resume();
     await page.reload();
-    await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-    await page.getByPlaceholder("搜索笔记").fill(`${marker}-newer-title`);
+    await page.getByRole("button", { name: "All notes", exact: true }).click();
+    await page.getByPlaceholder("Search notes").fill(`${marker}-newer-title`);
     await page.locator(`[data-memo-id="${memoId}"]`).locator("button").first().click();
     await expect(canvas).toContainText("draft-during-sync");
     await expect(title).toHaveValue(`${marker}-newer-title`);
@@ -292,7 +292,7 @@ test("preserves a mind-map draft when an earlier autosave is acknowledged", asyn
       });
       expect(update.ok(), await update.text()).toBe(true);
       const { memo: incoming } = await update.json();
-      await page.evaluate((detail) => window.dispatchEvent(new CustomEvent("edgeever:memo-detail-refreshed", { detail })), incoming);
+      await page.evaluate((detail) => window.dispatchEvent(new CustomEvent("ponder:memo-detail-refreshed", { detail })), incoming);
       return incoming as { revision: number; contentHash: string };
     };
 
@@ -311,16 +311,16 @@ test("preserves a mind-map draft when an earlier autosave is acknowledged", asyn
     await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now()) + 50));
     // Returning tags to their saved values leaves the existing tagsDirty flag
     // set. It must not mask an outline confirmation being canceled.
-    await page.getByRole("button", { name: "选择笔记标签", exact: true }).click();
+    await page.getByRole("button", { name: "Choose note tags", exact: true }).click();
     await tagDialog.getByRole("textbox").fill(deferredTag);
     await tagDialog.locator('button[type="submit"]').click();
     await tagDialog.locator("button").filter({ hasText: `#${deferredTag}` }).first().click();
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: "大纲视图", exact: true }).click();
-    const outline = page.getByRole("textbox", { name: "大纲视图", exact: true });
+    await page.getByRole("button", { name: "Outline view", exact: true }).click();
+    const outline = page.getByRole("textbox", { name: "Outline view", exact: true });
     const outlineBeforeRemoval = await outline.inputValue();
     await outline.fill(outlineBeforeRemoval.split("\n")[0]!);
-    const outlinePane = page.locator('section[aria-label="大纲视图"]');
+    const outlinePane = page.locator('section[aria-label="Outline view"]');
     await expect(outlinePane.getByRole("button", { name: /恢复/ })).toBeVisible();
     const idleRemote = await changeRemoteRoot("remote-after-outline-restore");
     // Flush the query notification before restoring, then X6's async paint.
@@ -329,7 +329,7 @@ test("preserves a mind-map draft when an earlier autosave is acknowledged", asyn
     await page.clock.runFor(50);
     await expect(canvas).toContainText("remote-after-outline-restore");
     await expect(outline).toHaveValue(new RegExp("remote-after-outline-restore"));
-    await page.getByRole("button", { name: "画布视图", exact: true }).click();
+    await page.getByRole("button", { name: "Canvas view", exact: true }).click();
 
     await canvas.focus();
     await page.keyboard.press("Tab");
@@ -377,24 +377,24 @@ test("keeps a new mind-map editor and its draft when its temporary id is remappe
 
   try {
     await page.goto("/");
-    await page.getByRole("button", { name: "选择笔记类型", exact: true }).click();
-    await page.getByRole("menuitem", { name: "思维导图", exact: true }).click();
+    await page.getByRole("button", { name: "Choose note type", exact: true }).click();
+    await page.getByRole("menuitem", { name: "Mind map", exact: true }).click();
     memoId = await createdId;
     const canvas = page.locator('[data-diagram-kind="mind-map"]');
     await expect(canvas.locator(".x6-node")).toHaveCount(8);
     await page.clock.install();
     await page.clock.pauseAt(new Date(await page.evaluate(() => Date.now()) + 1_000));
-    const title = page.getByRole("textbox", { name: "图表标题", exact: true });
+    const title = page.getByRole("textbox", { name: "Diagram title", exact: true });
     const marker = `new-diagram-${Date.now()}`;
     await title.fill(marker);
     await canvas.focus();
     await page.keyboard.press("Tab");
     await page.clock.runFor(100);
-    const input = page.getByRole("textbox", { name: "编辑节点文字", exact: true });
+    const input = page.getByRole("textbox", { name: "Edit node text", exact: true });
     await input.fill("draft-during-id-remap");
     const originalGraph = await canvas.locator(".x6-graph-svg").elementHandle();
     const mapped = page.evaluate(() => new Promise<void>((resolve) => {
-      window.addEventListener("edgeever:memo-id-remapped", () => resolve(), { once: true });
+      window.addEventListener("ponder:memo-id-remapped", () => resolve(), { once: true });
     }));
     releaseCreate();
     await mapped;
@@ -416,13 +416,13 @@ test("keeps a new mind-map editor and its draft when its temporary id is remappe
       const body = await response.json() as { memo: { contentMarkdown: string } };
       return body.memo.contentMarkdown.includes("draft-during-id-remap");
     }).toBe(true);
-    await page.evaluate(() => window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed")));
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed")));
     const response = await saved;
     expect(response.ok(), await response.text()).toBe(true);
     await page.clock.resume();
     await page.reload();
-    await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-    await page.getByPlaceholder("搜索笔记").fill(marker);
+    await page.getByRole("button", { name: "All notes", exact: true }).click();
+    await page.getByPlaceholder("Search notes").fill(marker);
     await page.locator(`[data-memo-id="${memoId}"]`).locator("button").first().click();
     await expect(title).toHaveValue(marker);
     await expect(canvas).toContainText("draft-during-id-remap");

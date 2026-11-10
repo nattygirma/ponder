@@ -4,14 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { WORKSPACE_PAGE_TITLE_CLASSNAME } from "@/lib/workspace-ui";
 import { marked } from "marked";
-import migrationGuideMarkdown from "../../../../docs/evernote-migration-guide.md?raw";
-import migrationGuideEnglishMarkdown from "../../../../docs/evernote-migration-guide.en-US.md?raw";
+import migrationGuideEnglishMarkdown from "../../../../docs/evernote-migration-guide.md?raw";
 import { ExecutionCenterButton } from "@/components/execution/ExecutionCenterButton";
-import { prefersChineseContent } from "@/lib/bilingual-content-locale";
 
 export const EvernoteImportGuidePane = ({ onClose, onOpenExecutionCenter }: { onClose: () => void; onOpenExecutionCenter?: () => void }) => {
   const { i18n, t } = useTranslation();
-  const markdown = prefersChineseContent(i18n.resolvedLanguage) ? migrationGuideMarkdown : migrationGuideEnglishMarkdown;
+  const markdown = migrationGuideEnglishMarkdown;
   const htmlContent = useMemo(() => marked.parse(markdown) as string, [markdown]);
 
   return (

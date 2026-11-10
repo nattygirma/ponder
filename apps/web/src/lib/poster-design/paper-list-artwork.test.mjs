@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { PosterElementSchema } from '@edgeever/shared';
+import { PosterElementSchema } from '@ponder/shared';
 import { paperListPaper } from './paper-list-artwork';
 import { posterPrimitiveFromObject } from './templates';
 

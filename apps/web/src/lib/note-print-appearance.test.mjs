@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { resolveNoteProse } from "@edgeever/shared";
+import { resolveNoteProse } from "@ponder/shared";
 import { DEFAULT_NOTE_PROSE_STYLE_PREFERENCES } from "./note-prose-style-preference.ts";
 import { notePrintAppearanceCss, notePrintAppearanceFromProse } from "./note-print-appearance.ts";
 
@@ -11,7 +11,7 @@ describe("note print appearance", () => {
       ));
       if (choice === "maple-mono-cn" || choice === "jetbrains") {
         expect(css).toContain("--editor-code-font-family:");
-        expect(css).toContain(choice === "jetbrains" ? "EdgeEver Share JetBrains Mono" : "EdgeEver Share Maple Mono CN");
+        expect(css).toContain(choice === "jetbrains" ? "Ponder Share JetBrains Mono" : "Ponder Share Maple Mono CN");
       } else expect(css).not.toContain("--editor-code-font-family:");
     }
   });
@@ -55,7 +55,7 @@ describe("note print appearance", () => {
     expect(css).toContain("background: #20AD9D;");
     expect(css).toContain("background: #f9fafb;");
     expect(css).not.toContain("border-color: #CDEFEA;");
-    expect(css).toContain(".edgeever-editor .ProseMirror strong { color: #112233; }");
+    expect(css).toContain(".ponder-editor .ProseMirror strong { color: #112233; }");
     expect(css).not.toContain("not-a-theme");
   });
 });

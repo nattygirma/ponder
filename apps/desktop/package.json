@@ -1,10 +1,10 @@
 {
-  "name": "@edgeever/desktop",
+  "name": "@ponder/desktop",
   "version": "2.19.0",
-  "desktopName": "EdgeEver",
+  "desktopName": "Ponder",
   "private": true,
-  "description": "Native EdgeEver desktop client",
-  "author": "EdgeEver contributors",
+  "description": "Native Ponder desktop client",
+  "author": "Ponder contributors",
   "type": "module",
   "main": "src/main/index.mjs",
   "scripts": {
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@agentclientprotocol/sdk": "^1.5.1",
-    "@edgeever/public-network": "workspace:*",
+    "@ponder/public-network": "workspace:*",
     "croner": "^10.0.1",
     "electron-updater": "^6.6.2",
     "fflate": "0.8.3",

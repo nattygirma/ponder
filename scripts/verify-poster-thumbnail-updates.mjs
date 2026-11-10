@@ -9,7 +9,7 @@ import { automaticPosterThumbnails } from "../apps/web/poster-thumbnails.ts";
 import { sources, projectRoot, ensurePosterThumbnails, sourceState, thumbnailsCurrent } from "./prepare-poster-thumbnails.mjs";
 
 await ensurePosterThumbnails();
-const root = await mkdtemp(path.join(tmpdir(), "edgeever-poster-watch-"));
+const root = await mkdtemp(path.join(tmpdir(), "ponder-poster-watch-"));
 let server;
 const output = path.join(root, "apps/web/src/assets/poster-template-previews");
 const readManifest = async () => JSON.parse(await readFile(path.join(output, "manifest.json"), "utf8"));
@@ -42,17 +42,17 @@ try {
   const file = path.join(root, "apps/web/src/lib/poster-design/vendor/qiaomu/templates.ts");
   const original = await readFile(file, "utf8");
   const before = await readManifest();
-  const untouched = await stat(path.join(output, "folio.zh.webp"));
+  const untouched = await stat(path.join(output, "folio.en.webp"));
   assert(original.includes("bg: '#ffffff', bg2: '#ffffff', ink: '#171717'"));
   await writeFile(file, original.replace("bg: '#ffffff', bg2: '#ffffff', ink: '#171717'", "bg: '#e8f4ff', bg2: '#e8f4ff', ink: '#171717'"));
   const changed = await waitCurrent(before.sourceHash);
   for (const template of before.templates) {
     const next = changed.templates.find(entry => entry.id === template.id);
-    for (const language of ["zh", "en"]) {
+    for (const language of ["en"]) {
       assert.equal(next[language].sha256 !== template[language].sha256, template.id === "minimal", `Unexpected refresh: ${template.id}/${language}`);
     }
   }
-  assert.equal((await stat(path.join(output, "folio.zh.webp"))).mtimeMs, untouched.mtimeMs);
+  assert.equal((await stat(path.join(output, "folio.en.webp"))).mtimeMs, untouched.mtimeMs);
   console.log("PASS: saving one template automatically regenerates only its two thumbnails; other files stay untouched");
 
   const saved = await readFile(file, "utf8");
@@ -61,7 +61,7 @@ try {
   assert(added.templates.some(template => template.id === "watch-test-new"));
   for (const template of changed.templates) {
     const next = added.templates.find(entry => entry.id === template.id);
-    assert.equal(next.zh.sha256, template.zh.sha256);
+    assert.equal(next.en.sha256, template.en.sha256);
     assert.equal(next.en.sha256, template.en.sha256);
   }
   console.log("PASS: adding a template automatically creates its Chinese and English images without redrawing existing templates");
@@ -69,7 +69,7 @@ try {
   await writeFile(file, saved);
   const removed = await waitCurrent(added.sourceHash);
   assert(!removed.templates.some(template => template.id === "watch-test-new"));
-  await assert.rejects(readFile(path.join(output, "watch-test-new.zh.webp")), { code: "ENOENT" });
+  await assert.rejects(readFile(path.join(output, "watch-test-new.en.webp")), { code: "ENOENT" });
   console.log("PASS: deleting a template automatically removes its generated images");
 } finally {
   await server?.close();

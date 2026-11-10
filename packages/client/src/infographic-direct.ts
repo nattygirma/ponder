@@ -1,6 +1,6 @@
 import { isStepCount, tool, ToolLoopAgent, type LanguageModel } from "ai";
 import { z } from "zod";
-import { infographicRequestsTimeline, type InfographicAgentEvent, type InfographicAgentRequest } from "@edgeever/shared";
+import { infographicRequestsTimeline, type InfographicAgentEvent, type InfographicAgentRequest } from "@ponder/shared";
 import { throwIfAborted } from "./abort-signal";
 
 export const runInfographicAgent = async (args: {

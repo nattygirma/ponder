@@ -22,7 +22,7 @@ fn enqueue_change(
     if kind == "memo.update" {
         let existing: Option<(i64, String, String)> = database
             .query_row(
-                "SELECT id, payload_json, status FROM _edgeever_sidecar_outbox WHERE kind = 'memo.update' AND entity_id = ?1 AND status IN ('pending', 'error', 'conflict') ORDER BY id LIMIT 1",
+                "SELECT id, payload_json, status FROM _ponder_sidecar_outbox WHERE kind = 'memo.update' AND entity_id = ?1 AND status IN ('pending', 'error', 'conflict') ORDER BY id LIMIT 1",
                 [entity_id],
                 |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
             )
@@ -46,7 +46,7 @@ fn enqueue_change(
             }
             database
                 .execute(
-                    "UPDATE _edgeever_sidecar_outbox
+                    "UPDATE _ponder_sidecar_outbox
                  SET payload_json = ?1,
                      status = CASE WHEN ?2 = 'conflict' THEN 'conflict' ELSE 'pending' END,
                      last_error = CASE WHEN ?2 = 'conflict' THEN last_error ELSE NULL END,
@@ -64,7 +64,7 @@ fn enqueue_change(
         }
     }
     database.execute(
-        "INSERT INTO _edgeever_sidecar_outbox (kind, entity_id, payload_json) VALUES (?1, ?2, ?3)",
+        "INSERT INTO _ponder_sidecar_outbox (kind, entity_id, payload_json) VALUES (?1, ?2, ?3)",
         rusqlite::params![kind, entity_id, payload.to_string()],
     ).map(|_| ()).map_err(|e| e.to_string())
 }
@@ -109,7 +109,7 @@ fn resolve_remapped_memo_base(
 fn meta_value(database: &Connection, key: &str) -> Option<String> {
     database
         .query_row(
-            "SELECT value FROM _edgeever_sidecar_meta WHERE key = ?1",
+            "SELECT value FROM _ponder_sidecar_meta WHERE key = ?1",
             [key],
             |row| row.get(0),
         )
@@ -118,7 +118,7 @@ fn meta_value(database: &Connection, key: &str) -> Option<String> {
 
 fn set_meta(database: &Connection, key: &str, value: &str) -> Result<(), String> {
     database.execute(
-        "INSERT INTO _edgeever_sidecar_meta (key, value, updated_at) VALUES (?1, ?2, strftime('%Y-%m-%dT%H:%M:%fZ','now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+        "INSERT INTO _ponder_sidecar_meta (key, value, updated_at) VALUES (?1, ?2, strftime('%Y-%m-%dT%H:%M:%fZ','now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
         rusqlite::params![key, value],
     ).map(|_| ()).map_err(|e| e.to_string())
 }
@@ -209,23 +209,23 @@ mod tests {
             let database = Connection::open_in_memory().unwrap();
             database
                 .execute_batch(
-                    "CREATE TABLE _edgeever_sidecar_outbox (
+                    "CREATE TABLE _ponder_sidecar_outbox (
                     id INTEGER PRIMARY KEY, kind TEXT NOT NULL, entity_id TEXT NOT NULL,
                     payload_json TEXT NOT NULL, status TEXT NOT NULL, version INTEGER NOT NULL
                 );
-                INSERT INTO _edgeever_sidecar_outbox VALUES
+                INSERT INTO _ponder_sidecar_outbox VALUES
                     (1, 'memo.update', 'memo-a', '{}', 'conflict', 1),
                     (2, 'memo.update', 'memo-b', '{}', 'conflict', 1);",
                 )
                 .unwrap();
             database
                 .execute(
-                    "INSERT INTO _edgeever_sidecar_outbox VALUES (3, ?1, ?2, ?3, 'pending', 1)",
+                    "INSERT INTO _ponder_sidecar_outbox VALUES (3, ?1, ?2, ?3, 'pending', 1)",
                     rusqlite::params![kind, entity_id, payload.to_string()],
                 )
                 .unwrap();
             database.execute(
-                "INSERT INTO _edgeever_sidecar_outbox VALUES (4, 'memo.update', 'memo-a', '{}', 'conflict', 1)",
+                "INSERT INTO _ponder_sidecar_outbox VALUES (4, 'memo.update', 'memo-a', '{}', 'conflict', 1)",
                 [],
             ).unwrap();
 
@@ -233,7 +233,7 @@ mod tests {
             assert_eq!(stale["superseded"], true);
             let count: i64 = database
                 .query_row(
-                    "SELECT COUNT(*) FROM _edgeever_sidecar_outbox WHERE status = 'conflict'",
+                    "SELECT COUNT(*) FROM _ponder_sidecar_outbox WHERE status = 'conflict'",
                     [],
                     |row| row.get(0),
                 )
@@ -242,7 +242,7 @@ mod tests {
 
             sync_outbox_ack(&database, &json!({ "id": 3, "version": 1 })).unwrap();
             let remaining: Vec<i64> = database
-                .prepare("SELECT id FROM _edgeever_sidecar_outbox ORDER BY id")
+                .prepare("SELECT id FROM _ponder_sidecar_outbox ORDER BY id")
                 .unwrap()
                 .query_map([], |row| row.get(0))
                 .unwrap()
@@ -259,8 +259,8 @@ mod tests {
     #[test]
     fn string_param_rejects_missing_or_non_string_values() {
         assert_eq!(
-            string_param(&json!({ "name": "EdgeEver" }), "name").unwrap(),
-            "EdgeEver"
+            string_param(&json!({ "name": "Ponder" }), "name").unwrap(),
+            "Ponder"
         );
         assert!(string_param(&json!({}), "name").is_err());
         assert!(string_param(&json!({ "name": 42 }), "name").is_err());
@@ -324,18 +324,18 @@ mod tests {
         database
             .execute_batch(
                 "PRAGMA foreign_keys = ON;
-                 CREATE TABLE _edgeever_sidecar_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL);
-                 CREATE TABLE _edgeever_sidecar_outbox (id INTEGER PRIMARY KEY, kind TEXT NOT NULL, entity_id TEXT NOT NULL, payload_json TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending');
+                 CREATE TABLE _ponder_sidecar_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL);
+                 CREATE TABLE _ponder_sidecar_outbox (id INTEGER PRIMARY KEY, kind TEXT NOT NULL, entity_id TEXT NOT NULL, payload_json TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'pending');
                  CREATE TABLE notebooks (id TEXT PRIMARY KEY, parent_id TEXT REFERENCES notebooks(id) ON DELETE RESTRICT, name TEXT NOT NULL);
                  CREATE TABLE memos (id TEXT PRIMARY KEY, notebook_id TEXT NOT NULL REFERENCES notebooks(id) ON DELETE RESTRICT, title TEXT);
                  CREATE TABLE memo_contents (memo_id TEXT PRIMARY KEY REFERENCES memos(id) ON DELETE CASCADE, content_markdown TEXT NOT NULL);
                  CREATE TABLE resources (id TEXT PRIMARY KEY, memo_id TEXT NOT NULL REFERENCES memos(id) ON DELETE RESTRICT);
-                 INSERT INTO _edgeever_sidecar_meta VALUES ('sync.cursor', '42', 'now'), ('sync.identity', 'workspace-a', 'now');
+                 INSERT INTO _ponder_sidecar_meta VALUES ('sync.cursor', '42', 'now'), ('sync.identity', 'workspace-a', 'now');
                  INSERT INTO notebooks VALUES ('stale-notebook', NULL, 'Stale'), ('draft-parent', NULL, 'Draft parent'), ('draft-notebook', 'draft-parent', 'Draft');
                  INSERT INTO memos VALUES ('stale-memo', 'stale-notebook', 'Stale cache'), ('draft-memo', 'draft-notebook', 'Unsynced draft');
                  INSERT INTO memo_contents VALUES ('stale-memo', 'stale'), ('draft-memo', 'local changes');
                  INSERT INTO resources VALUES ('stale-resource', 'stale-memo'), ('draft-resource', 'draft-memo');
-                 INSERT INTO _edgeever_sidecar_outbox (id, kind, entity_id, payload_json) VALUES (1, 'memo.update', 'draft-memo', '{\"memoId\":\"draft-memo\"}');",
+                 INSERT INTO _ponder_sidecar_outbox (id, kind, entity_id, payload_json) VALUES (1, 'memo.update', 'draft-memo', '{\"memoId\":\"draft-memo\"}');",
             )
             .unwrap();
 
@@ -414,7 +414,7 @@ mod tests {
         database
             .execute_batch(
                 "PRAGMA foreign_keys = ON;
-                 CREATE TABLE _edgeever_sidecar_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL);
+                 CREATE TABLE _ponder_sidecar_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL, updated_at TEXT NOT NULL);
                  CREATE TABLE notebooks (
                    id TEXT PRIMARY KEY,
                    slug TEXT,

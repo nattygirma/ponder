@@ -1,8 +1,6 @@
-# EdgeEver Plugin Development Guide
+# Ponder Plugin Development Guide
 
-[简体中文](plugin-development.zh-CN.md)
-
-EdgeEver provides client plugin and no-code theme extension capabilities. Users can install extensions from the official marketplace, public GitHub repositories, or manifest URLs. Installed extensions sync across Web and desktop platforms with the current workspace and run while EdgeEver is open; Android and iOS native apps do not run plugins.
+Ponder provides client plugin and no-code theme extension capabilities. Users can install extensions from the official marketplace, public GitHub repositories, or manifest URLs. Installed extensions sync across Web and desktop platforms with the current workspace and run while Ponder is open; Android and iOS native apps do not run plugins.
 
 > [!NOTE]
 > **Security Model**: Client plugins use a trusted-code model (similar to Obsidian). Enabling a plugin grants it trust to run within the client JavaScript environment and invoke plugin APIs. Capability declarations (`permissions`) in the manifest disclose the functional scope to users and do not enforce a hard sandbox. The same applies to `networkHosts`: it describes intended destinations rather than restricting plugin code. Desktop plugins can also reach login credentials, local data and Agent capabilities through the client bridge. Theme packages are purely declarative JSON and execute no JavaScript.
@@ -53,8 +51,8 @@ Every plugin must supply a `manifest.json` at its root:
   "description": "Shows recently updated notes.",
   "locales": {
     "zh-CN": {
-      "name": "最近笔记",
-      "description": "查看最近更新的笔记。"
+      "name": "Recent notes",
+      "description": "View recently updated notes."
     }
   },
   "entry": "./main.js",
@@ -103,7 +101,7 @@ export default {
       id: "hello-world",
       title: "Say Hello",
       run() {
-        context.ui.showNotice("Hello from EdgeEver Plugin!");
+        context.ui.showNotice("Hello from Ponder Plugin!");
       }
     });
 
@@ -115,10 +113,10 @@ export default {
 };
 ```
 
-TypeScript projects can use `@edgeever/plugin-api`:
+TypeScript projects can use `@ponder/plugin-api`:
 
 ```ts
-import { definePlugin } from "@edgeever/plugin-api";
+import { definePlugin } from "@ponder/plugin-api";
 
 export default definePlugin({
   activate(context) {
@@ -160,7 +158,7 @@ The plugin context object (`context`) exposes these capability interfaces:
 | **`context.storage`** | `storage` | `get()`, `set()`, `remove()` | Device-local lightweight key-value storage (per workspace & plugin) |
 | **`context.secrets`** | `secrets` | `get()`, `set()`, `remove()` | Device-local encrypted secret storage (API keys, tokens) |
 | **`context.network`** | `network`<br>`network:public` | `fetch(url, options)` | Network requests (standard requests or public anonymous read-only) |
-| **`context.schedules`** | `schedules` | `upsert()`, `list()`, `remove()` | Desktop-only persistent scheduled tasks running while EdgeEver is open |
+| **`context.schedules`** | `schedules` | `upsert()`, `list()`, `remove()` | Desktop-only persistent scheduled tasks running while Ponder is open |
 | **`context.events`** | *(None)* | `on(event, handler)` | Subscribe to workspace note, tag, template, and sync completion events |
 | **`context.ai`** | `ai:generate` | `status()`, `generate()`, `transcribeResource()`, `transcribeMedia()` | Invoke workspace-configured AI models for text generation & media transcription |
 
@@ -303,7 +301,7 @@ await context.infographics.edit(infographicNoteId, {
 
 Plugin saves also compare the local snapshot inside the repository transaction, preventing multiple windows from overwriting each other after host validation. Unresolved sync conflicts block further plugin writes and preserve the queued draft and diagnostics. Desktop plugin saves use a dedicated native method that commits content, history, and outbox together. Older hosts without that method throw `HOST_UPGRADE_REQUIRED`; no unguarded fallback is attempted. Ordinary editor save behavior is unchanged. Server history retains the existing five-minute snapshot policy, so each plugin write is not guaranteed a separate cloud revision.
 
-After building the sidecar, maintainers can run `bun run test:plugin-sync` to verify an isolated Web IndexedDB → local API/SQLite → native sidecar → Web round trip, offline persistence, restart, and conflict recovery. `test:desktop:sidecar` includes this check. Set `EDGE_EVER_LEGACY_SIDECAR_PATH` and optionally `EDGE_EVER_LEGACY_MIGRATIONS_PATH` to also verify data created by an older native service upgrading to the current build. All native processes use temporary test directories; the installed desktop application is not launched and real account data is not read. This verifies the native service on the current host and does not replace device or in-app acceptance on other platforms.
+After building the sidecar, maintainers can run `bun run test:plugin-sync` to verify an isolated Web IndexedDB → local API/SQLite → native sidecar → Web round trip, offline persistence, restart, and conflict recovery. `test:desktop:sidecar` includes this check. Set `PONDER_LEGACY_SIDECAR_PATH` and optionally `PONDER_LEGACY_MIGRATIONS_PATH` to also verify data created by an older native service upgrading to the current build. All native processes use temporary test directories; the installed desktop application is not launched and real account data is not read. This verifies the native service on the current host and does not replace device or in-app acceptance on other platforms.
 
 
 ### 2. Templates
@@ -389,7 +387,7 @@ if (doc) {
 
 #### Custom Block Embeds
 
-Register custom block-level embed renderers (serialized in Markdown as `edgeever-plugin-embed` code fences):
+Register custom block-level embed renderers (serialized in Markdown as `ponder-plugin-embed` code fences):
 
 ```ts
 // 1. Register embed renderer
@@ -492,7 +490,7 @@ await context.ui.panels.open("task-dashboard", { state: { initialTab: "all" } })
 
 ### 8. Settings
 
-Declare settings fields in `manifest.json`; EdgeEver renders the settings UI automatically:
+Declare settings fields in `manifest.json`; Ponder renders the settings UI automatically:
 
 ```json
 {
@@ -578,7 +576,7 @@ const xml = await publicRes.text();
 
 ### 11. Schedules (Desktop Only)
 
-Desktop plugins can persist scheduled execution of registered commands while EdgeEver is running:
+Desktop plugins can persist scheduled execution of registered commands while Ponder is running:
 
 ```ts
 // Register command
@@ -697,7 +695,7 @@ A plugin distribution bundle must be self-contained:
 - `main.js`: Single-file JavaScript bundle (max 5 MB)
 - `styles.css`: Optional stylesheet (max 1 MB)
 
-If using `@edgeever/plugin-api`, inline it into `main.js` during build.
+If using `@ponder/plugin-api`, inline it into `main.js` during build.
 
 ### GitHub Distribution
 
@@ -706,12 +704,12 @@ If using `@edgeever/plugin-api`, inline it into `main.js` during build.
 3. Attach `manifest.json`, `main.js`, and optional `styles.css` as Release assets.
 4. Users install it directly via the Plugin Marketplace page:
    ```text
-   https://github.com/owner/edgeever-plugin
+   https://github.com/owner/ponder-plugin
    ```
 
 ### Local Testing
 
-While developing EdgeEver, install local extension manifests in the Plugin Marketplace:
+While developing Ponder, install local extension manifests in the Plugin Marketplace:
 - `/extensions/recent-notes/manifest.json` (Official example plugin)
 - `/extensions/nord-emerald/manifest.json` (Official example theme)
 

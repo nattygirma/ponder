@@ -13,15 +13,15 @@ import {
 import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import type { EdgeEverRepository } from "@/lib/repository";
-import type { ResourceListItem } from "@edgeever/shared";
+import type { PonderRepository } from "@/lib/repository";
+import type { ResourceListItem } from "@ponder/shared";
 import { PosterSection } from "./PosterControls";
 function ResourceThumbnail({
   resource,
   repository,
 }: {
   resource: ResourceListItem;
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
 }) {
   const host = useRef<HTMLDivElement>(null),
     [visible, setVisible] = useState(false),
@@ -78,7 +78,7 @@ export function PosterAssetsPanel({
   onShape,
   onText,
 }: {
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
   disabled: boolean;
   onUpload: () => void;
   onResource: (resource: ResourceListItem) => void;

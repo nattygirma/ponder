@@ -39,6 +39,6 @@ describe("infographic editor header", () => {
     expect(source).toContain("infographicSessionHistory");
     expect(source).toContain("onCreateSession");
     expect(source).toContain("activeSessionId");
-    expect(source).toContain("edgeever-infographic-preview");
+    expect(source).toContain("ponder-infographic-preview");
   });
 });

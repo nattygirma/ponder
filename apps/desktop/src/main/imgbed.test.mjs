@@ -49,10 +49,10 @@ test("connection test uploads a tiny PNG to the configured folder", async () => 
     const file = (await request.formData()).get("file");
     const bytes = new Uint8Array(await file.arrayBuffer());
     seen.push([new URL(request.url).searchParams.get("uploadFolder"), file.name, file.type, Array.from(bytes.slice(0, 4))]);
-    return Response.json([{ src: "/file/notes/edgeever-connection-test.png" }]);
+    return Response.json([{ src: "/file/notes/ponder-connection-test.png" }]);
   });
   expect(await testImgBedConnection({ endpoint, token: "imgbed-token", uploadFolder: "notes", nameType: "default" })).toBe(true);
-  expect(seen).toEqual([["notes", "edgeever-connection-test.png", "image/png", [137, 80, 78, 71]]]);
+  expect(seen).toEqual([["notes", "ponder-connection-test.png", "image/png", [137, 80, 78, 71]]]);
 });
 
 test("reports rejected tokens and malformed responses without echoing the token", async () => {

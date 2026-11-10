@@ -5,7 +5,7 @@ import {
   getMobileEditorToolbarActionLabel,
   type MobileEditorLocale,
   type MobileEditorToolbarActionId,
-} from "@edgeever/shared/mobile-editor";
+} from "@ponder/shared/mobile-editor";
 import type { ReactNode } from "react";
 import type { NotebookMoveOption } from "@/lib/app-helpers";
 import type { MobileEditorSaveState } from "@/lib/mobile-editor-standalone";

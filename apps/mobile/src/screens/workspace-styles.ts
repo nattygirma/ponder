@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
-import { MEMO_CONTENT_STYLE } from "@edgeever/shared";
-import { MOBILE_UI_METRICS } from "@edgeever/shared/mobile-ui";
+import { MEMO_CONTENT_STYLE } from "@ponder/shared";
+import { MOBILE_UI_METRICS } from "@ponder/shared/mobile-ui";
 import { resolveMobileThemeStyles, type MobileResolvedTheme } from "../lib/mobile-theme";
 
 const DETAIL_CONTENT_HORIZONTAL_PADDING = 16;

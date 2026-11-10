@@ -22,7 +22,7 @@ class Statement {
 const db = { prepare: (query) => new Statement(query), batch: async (statements) => {
   return sql.transaction(() => statements.map(s => sql.prepare(s.query).run(...s.args)))();
 } };
-const env = { EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: 'isolated-714-test-key', storage: { db, resources: {
+const env = { PONDER_CREDENTIALS_ENCRYPTION_KEY: 'isolated-714-test-key', storage: { db, resources: {
   get: async () => ({body: new Blob(['attachment-714']).stream(), size: 14, writeHttpMetadata() {}}),
 } } };
 const appFor = (routes) => {

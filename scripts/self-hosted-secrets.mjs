@@ -3,16 +3,16 @@ import { chmod, readFile, rename, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 const FILE_SECRET_NAMES = [
-  "EDGE_EVER_AUTH_PASSWORD",
-  "EDGE_EVER_AUTH_PASSWORD_HASH",
+  "PONDER_AUTH_PASSWORD",
+  "PONDER_AUTH_PASSWORD_HASH",
   // Legacy decryption fallback for credentials saved by older releases.
-  "EDGE_EVER_STORAGE_ENCRYPTION_KEY",
-  "EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY",
-  "EDGE_EVER_S3_ACCESS_KEY_ID",
-  "EDGE_EVER_S3_SECRET_ACCESS_KEY",
+  "PONDER_STORAGE_ENCRYPTION_KEY",
+  "PONDER_CREDENTIALS_ENCRYPTION_KEY",
+  "PONDER_S3_ACCESS_KEY_ID",
+  "PONDER_S3_SECRET_ACCESS_KEY",
 ];
 
-export const SELF_HOSTED_SECRETS_FILE_NAME = "edgeever-secrets.json";
+export const SELF_HOSTED_SECRETS_FILE_NAME = "ponder-secrets.json";
 const SECRETS_VERSION = 1;
 
 const trimSecret = (value) => {
@@ -43,9 +43,9 @@ export const loadSelfHostedEnvironment = async (environment = process.env) => {
 };
 
 export const hasSelfHostedCredentialSeed = (environment) => Boolean(
-  trimSecret(environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY)
-  || trimSecret(environment.EDGE_EVER_AUTH_PASSWORD)
-  || trimSecret(environment.EDGE_EVER_AUTH_PASSWORD_HASH),
+  trimSecret(environment.PONDER_CREDENTIALS_ENCRYPTION_KEY)
+  || trimSecret(environment.PONDER_AUTH_PASSWORD)
+  || trimSecret(environment.PONDER_AUTH_PASSWORD_HASH),
 );
 
 const corruptSecretsMessage = (filePath) => (
@@ -119,23 +119,23 @@ const fillMissingSecrets = (stored, envSecrets) => {
 
 const applyPersistedSecrets = (environment, stored, envSecrets) => {
   if (!envSecrets.authPassword && stored.authPassword) {
-    environment.EDGE_EVER_AUTH_PASSWORD = stored.authPassword;
+    environment.PONDER_AUTH_PASSWORD = stored.authPassword;
   }
   if (!envSecrets.authPasswordHash && stored.authPasswordHash) {
-    environment.EDGE_EVER_AUTH_PASSWORD_HASH = stored.authPasswordHash;
+    environment.PONDER_AUTH_PASSWORD_HASH = stored.authPasswordHash;
   }
   if (!envSecrets.credentialsEncryptionKey && stored.credentialsEncryptionKey) {
-    environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY = stored.credentialsEncryptionKey;
+    environment.PONDER_CREDENTIALS_ENCRYPTION_KEY = stored.credentialsEncryptionKey;
   }
   if (stored.authPassword && envSecrets.authPassword && stored.authPassword !== envSecrets.authPassword) {
-    environment.EDGE_EVER_AUTH_PASSWORD_FALLBACK = stored.authPassword;
+    environment.PONDER_AUTH_PASSWORD_FALLBACK = stored.authPassword;
   }
   if (
     stored.credentialsEncryptionKey
     && envSecrets.credentialsEncryptionKey
     && stored.credentialsEncryptionKey !== envSecrets.credentialsEncryptionKey
   ) {
-    environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = stored.credentialsEncryptionKey;
+    environment.PONDER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = stored.credentialsEncryptionKey;
   }
   return environment;
 };
@@ -153,9 +153,9 @@ export const ensureSelfHostedCredentialSecrets = async (
   const generateIfMissing = options.generateIfMissing === true;
   const filePath = resolveSelfHostedSecretsPath(dataDirectory);
   const envSecrets = {
-    authPassword: trimSecret(environment.EDGE_EVER_AUTH_PASSWORD),
-    authPasswordHash: trimSecret(environment.EDGE_EVER_AUTH_PASSWORD_HASH),
-    credentialsEncryptionKey: trimSecret(environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY),
+    authPassword: trimSecret(environment.PONDER_AUTH_PASSWORD),
+    authPasswordHash: trimSecret(environment.PONDER_AUTH_PASSWORD_HASH),
+    credentialsEncryptionKey: trimSecret(environment.PONDER_CREDENTIALS_ENCRYPTION_KEY),
   };
   let stored = await readPersistedSecrets(filePath);
   let persisted = false;

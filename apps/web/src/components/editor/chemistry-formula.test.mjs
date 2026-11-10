@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { CHEMISTRY_EXAMPLES, insertChemistryExample, isChemistryLatex, mathFormulaSubjectOf } from "./chemistry-formula.ts";
 import { renderMathPreview } from "./math-formula-preview.ts";
 
-const locales = ["en-US", "pl", "zh-CN", "ja", "ru"].map((name) =>
+const locales = ["en-US", "pl", "ja", "ru"].map((name) =>
   readFileSync(new URL(`../../../../../packages/shared/src/i18n/${name}.ts`, import.meta.url), "utf8"));
 
 describe("chemistry formulas in the formula dialog", () => {

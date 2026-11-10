@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { sealCompanionProcess } from "@edgeever/shared";
+import { sealCompanionProcess } from "@ponder/shared";
 import { describeCompanionTool, parseJsonArray } from "./companion-tool-receipts.ts";
 
 describe("companion tool receipts", () => {

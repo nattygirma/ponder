@@ -70,12 +70,11 @@ const usage = `Usage:
     --issue-title "Release issue title" \\
     --label bug \\
     --change-en "English user-facing change" \\
-    --change-zh "中文用户更新说明" \\
     --change-locale "ja:日本語のユーザー向け説明" \\
     --change-commit "abcdef1" \\
     --change-issue "123:en"
 
-Repeat --change-en, --change-zh, --change-locale ja:, --change-commit, and --change-issue for multiple paired release bullets.
+Repeat --change-en, --change-locale ja:, --change-commit, and --change-issue for multiple paired release bullets.
 Use comma-separated SHAs when one bullet covers multiple commits. Every other
 commit requires --ignore-commit "abcdef1:reason".
 
@@ -85,9 +84,8 @@ Options:
   --issue-title <title>      Required umbrella Issue title
   --label <label>            Required Issue label; may be repeated
   --change-en <text>         Required English release bullet; may be repeated
-  --change-zh <text>         Required Chinese release bullet; may be repeated
   --change-locale <tag:text> Required Japanese bullet as ja: or ja-JP:; other locales optional
-  --change-issue <ids>      Required per change: resolved Issue numbers with en/zh language (123:en,456:zh), or none
+  --change-issue <ids>      Required per change: resolved Issue numbers with language (123:en,456:en), or none
   --finish-issues <tag>     Retry Issue follow-up for an already published, audited Release
   --change-commit <sha,...>  Commits covered by the corresponding bilingual bullet
   --ignore-commit <sha:why>  Explicitly exclude a non-user-facing commit; may be repeated
@@ -104,7 +102,6 @@ export const parseReleaseArgs = (argv) => {
     issueTitle: "",
     labels: [],
     changesEn: [],
-    changesZh: [],
     localizedChanges: [],
     changeCommits: [],
     changeIssues: [],
@@ -122,7 +119,6 @@ export const parseReleaseArgs = (argv) => {
     ["--issue-title", "issueTitle"],
     ["--label", "labels"],
     ["--change-en", "changesEn"],
-    ["--change-zh", "changesZh"],
     ["--change-locale", "localizedChanges"],
     ["--change-commit", "changeCommits"],
     ["--change-issue", "changeIssues"],
@@ -184,11 +180,8 @@ export const parseReleaseArgs = (argv) => {
   if (options.labels.length === 0) {
     throw new Error("At least one --label is required.");
   }
-  if (options.changesEn.length === 0 || options.changesZh.length === 0) {
-    throw new Error("At least one --change-en and --change-zh are required.");
-  }
-  if (options.changesEn.length !== options.changesZh.length) {
-    throw new Error("--change-en and --change-zh must have the same count.");
+  if (options.changesEn.length === 0) {
+    throw new Error("At least one --change-en is required.");
   }
   if (options.changesEn.length !== options.changeCommits.length) {
     throw new Error("Each bilingual change requires one corresponding --change-commit value.");
@@ -201,8 +194,8 @@ export const parseReleaseArgs = (argv) => {
     if (!/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(locale) || !change) {
       throw new Error('--change-locale must use "<locale>:<user-facing change>".');
     }
-    if (["en-us", "zh-cn"].includes(locale.toLowerCase())) {
-      throw new Error("Use --change-en and --change-zh for en-US and zh-CN release changes.");
+    if (locale.toLowerCase() === "en-us") {
+      throw new Error("Use --change-en for en-US release changes.");
     }
     (localizedChanges[locale] ??= []).push(change);
   }
@@ -396,14 +389,10 @@ export const buildReleaseTitle = (tag) => {
   return tag;
 };
 
-export const buildIssueBody = ({ changesEn, changesZh, commitCoverageAudit, changeIssues = [] }) => [
+export const buildIssueBody = ({ changesEn, commitCoverageAudit, changeIssues = [] }) => [
   "## Summary",
   "",
   ...changesEn.map((change) => `- ${change}`),
-  "",
-  "## 中文说明",
-  "",
-  ...changesZh.map((change) => `- ${change}`),
   "",
   ...(commitCoverageAudit ? [
     "## Commit coverage audit",
@@ -426,17 +415,10 @@ export const buildIssueBody = ({ changesEn, changesZh, commitCoverageAudit, chan
 
 export const buildReleaseNotes = ({
   changesEn,
-  changesZh,
   issueNumber,
   contributors = [],
   resolvedIssues = [],
 }) => [
-  "## 主要更新",
-  "",
-  ...changesZh.map((change) => `- ${change}`),
-  "",
-  `关联 Issue：${[issueNumber, ...resolvedIssues.map((issue) => issue.number)].map((number) => `#${number}`).join(", ")}`,
-  "",
   "## Key Changes",
   "",
   ...changesEn.map((change) => `- ${change}`),
@@ -444,16 +426,15 @@ export const buildReleaseNotes = ({
   `Related Issue: ${[issueNumber, ...resolvedIssues.map((issue) => issue.number)].map((number) => `#${number}`).join(", ")}`,
   "",
   ...(contributors.length ? [
-    `贡献者 / Contributors：${normalizeContributors(contributors).map((username) => `@${username}`).join(" ")}`,
+    `Contributors: ${normalizeContributors(contributors).map((username) => `@${username}`).join(" ")}`,
     "",
   ] : []),
 ].join("\n");
 
-export const buildReleaseSummary = ({ version, changesEn, changesZh, localizedChanges = {} }) => ({
+export const buildReleaseSummary = ({ version, changesEn, localizedChanges = {} }) => ({
   version,
   changes: {
     "en-US": [...changesEn],
-    "zh-CN": [...changesZh],
     ...Object.fromEntries(Object.entries(localizedChanges).map(([locale, changes]) => [locale, [...changes]])),
   },
 });
@@ -475,12 +456,12 @@ export const selectPublishedDmg = (assets, arch = process.arch) => {
     throw new Error(`Unsupported macOS architecture for installation: ${arch}.`);
   }
   const matches = assets.filter((asset) =>
-    new RegExp(`^EdgeEver-(.+)-mac-${arch}\\.dmg$`).test(asset.name)
+    new RegExp(`^Ponder-(.+)-mac-${arch}\\.dmg$`).test(asset.name)
   );
   if (matches.length !== 1) {
     throw new Error(`Expected exactly one macOS ${arch} DMG, found ${matches.length}.`);
   }
-  const version = new RegExp(`^EdgeEver-(.+)-mac-${arch}\\.dmg$`).exec(matches[0].name)?.[1];
+  const version = new RegExp(`^Ponder-(.+)-mac-${arch}\\.dmg$`).exec(matches[0].name)?.[1];
   if (!version || !matches[0].digest?.startsWith("sha256:")) {
     throw new Error("Published DMG is missing its version or SHA-256 digest.");
   }
@@ -611,7 +592,7 @@ export const updateIosProjectMarketingVersion = (contents, nextVersion) => {
   );
   if (!matches || matches.length < 2) {
     throw new Error(
-      "Unable to update apps/ios/EdgeEver.xcodeproj/project.pbxproj MARKETING_VERSION.",
+      "Unable to update apps/ios/Ponder.xcodeproj/project.pbxproj MARKETING_VERSION.",
     );
   }
   return updated;
@@ -625,7 +606,6 @@ const updateReleaseVersions = ({
   mobileRebuild,
   iosRebuild,
   changesEn,
-  changesZh,
   localizedChanges,
 }) => {
   const changedPaths = ["package.json", "release-summary.json"];
@@ -635,7 +615,6 @@ const updateReleaseVersions = ({
   writeJson("release-summary.json", buildReleaseSummary({
     version: nextVersion,
     changesEn,
-    changesZh,
     localizedChanges,
   }));
 
@@ -671,7 +650,7 @@ const updateReleaseVersions = ({
 
   if (iosRebuild) {
     const iosVersionPath = "apps/ios/Config/Version.xcconfig";
-    const iosProjectPath = "apps/ios/EdgeEver.xcodeproj/project.pbxproj";
+    const iosProjectPath = "apps/ios/Ponder.xcodeproj/project.pbxproj";
     writeFileSync(
       iosVersionPath,
       updateIosMarketingVersion(readFileSync(iosVersionPath, "utf8"), nextVersion),
@@ -758,7 +737,7 @@ const listWorkflowRuns = ({ repository, workflow, event }) => ghJson([
 ]);
 
 const releaseCheckpointMarker = (tag) =>
-  `<!-- edgeever-release-checkpoint:${tag}\n`;
+  `<!-- ponder-release-checkpoint:${tag}\n`;
 
 const CHECKPOINT_RUN_FIELDS = [
   "desktopRunId",
@@ -1318,7 +1297,7 @@ const assertDraftAssets = ({
 
   if (!mobileRebuild) {
     const previousApk = previousAssets.find((asset) =>
-      /^edgeever-android-v.*-arm64-v8a\.apk$/.test(asset.name)
+      /^ponder-android-v.*-arm64-v8a\.apk$/.test(asset.name)
     );
     if (!previousApk || !reusedAssetMatches(previousAssets, assets, previousApk.name)) {
       throw new Error("Reused Android APK filename, size, or checksum changed.");
@@ -1328,9 +1307,9 @@ const assertDraftAssets = ({
     const previousDesktopNames = previousAssets
       .map((asset) => asset.name)
       .filter((name) =>
-        /^EdgeEver-.*-mac-(?:arm64|x64)\.(?:dmg|zip)(?:\.blockmap)?$/.test(name) ||
-        /^EdgeEver-.*-windows-x64\.exe$/.test(name) ||
-        /^EdgeEver-.*-linux-x64\.AppImage$/.test(name) ||
+        /^Ponder-.*-mac-(?:arm64|x64)\.(?:dmg|zip)(?:\.blockmap)?$/.test(name) ||
+        /^Ponder-.*-windows-x64\.exe$/.test(name) ||
+        /^Ponder-.*-linux-x64\.AppImage$/.test(name) ||
         [
           "latest-mac.yml",
           "latest.yml",
@@ -1353,7 +1332,7 @@ const assertDraftAssets = ({
 };
 
 const signDraftWindowsUpdate = ({ repository, tag }) => {
-  const temporaryDirectory = mkdtempSync(join(tmpdir(), "edgeever-windows-update-signing-"));
+  const temporaryDirectory = mkdtempSync(join(tmpdir(), "ponder-windows-update-signing-"));
   const manifestPath = join(temporaryDirectory, "latest-windows.json");
   const signaturePath = `${manifestPath}.sig`;
   try {
@@ -1371,7 +1350,7 @@ const signDraftWindowsUpdate = ({ repository, tag }) => {
     signWindowsUpdateManifest({
       manifestPath,
       signaturePath,
-      privateKeyPath: process.env.EDGE_EVER_WINDOWS_UPDATE_SIGNING_KEY,
+      privateKeyPath: process.env.PONDER_WINDOWS_UPDATE_SIGNING_KEY,
     });
     run("gh", [
       "release",
@@ -1384,7 +1363,7 @@ const signDraftWindowsUpdate = ({ repository, tag }) => {
     ]);
     console.log(`[release] signed Windows update manifest for ${tag}`);
   } finally {
-    if (temporaryDirectory.startsWith(`${tmpdir()}${sep}edgeever-windows-update-signing-`)) {
+    if (temporaryDirectory.startsWith(`${tmpdir()}${sep}ponder-windows-update-signing-`)) {
       rmSync(temporaryDirectory, { recursive: true, force: true });
     }
   }
@@ -1404,7 +1383,7 @@ export const installPublishedDmg = async ({ repository, tag, assets }) => {
   }
   const { asset: dmg, version: nativeVersion } = selectPublishedDmg(assets);
 
-  const temporaryDirectory = mkdtempSync(join(tmpdir(), "edgeever-release-"));
+  const temporaryDirectory = mkdtempSync(join(tmpdir(), "ponder-release-"));
   const mountDirectory = join(temporaryDirectory, "mount");
   const dmgPath = join(temporaryDirectory, dmg.name);
   mkdirSync(mountDirectory);
@@ -1437,20 +1416,20 @@ export const installPublishedDmg = async ({ repository, tag, assets }) => {
       mountDirectory,
     ]);
     mounted = true;
-    const sourceApp = join(mountDirectory, "EdgeEver.app");
+    const sourceApp = join(mountDirectory, "Ponder.app");
     if (!existsSync(sourceApp)) {
-      throw new Error("Mounted DMG does not contain EdgeEver.app.");
+      throw new Error("Mounted DMG does not contain Ponder.app.");
     }
 
-    run("osascript", ["-e", 'tell application "EdgeEver" to quit'], { allowFailure: true });
+    run("osascript", ["-e", 'tell application "Ponder" to quit'], { allowFailure: true });
     await wait(2_000);
-    const installedApp = "/Applications/EdgeEver.app";
+    const installedApp = "/Applications/Ponder.app";
     if (existsSync(installedApp)) {
       const trashDirectory = join(process.env.HOME || "", ".Trash");
       if (!trashDirectory.startsWith(`${sep}Users${sep}`)) {
         throw new Error("Could not resolve a safe Trash directory for the previous app.");
       }
-      backupPath = join(trashDirectory, `EdgeEver.app.pre-${tag}`);
+      backupPath = join(trashDirectory, `Ponder.app.pre-${tag}`);
       if (existsSync(backupPath)) {
         backupPath = `${backupPath}.${Date.now()}`;
       }
@@ -1480,7 +1459,7 @@ export const installPublishedDmg = async ({ repository, tag, assets }) => {
     }
     run("open", ["-a", installedApp]);
     console.log(
-      `[release] installed and launched EdgeEver ${nativeVersion} from ${tag}`,
+      `[release] installed and launched Ponder ${nativeVersion} from ${tag}`,
     );
     if (backupPath) {
       console.log(`[release] previous app backup: ${backupPath}`);
@@ -1489,7 +1468,7 @@ export const installPublishedDmg = async ({ repository, tag, assets }) => {
     if (mounted) {
       run("hdiutil", ["detach", mountDirectory], { allowFailure: true });
     }
-    if (temporaryDirectory.startsWith(`${tmpdir()}${sep}edgeever-release-`)) {
+    if (temporaryDirectory.startsWith(`${tmpdir()}${sep}ponder-release-`)) {
       rmSync(temporaryDirectory, { recursive: true, force: true });
     }
   }
@@ -1607,7 +1586,6 @@ const releaseMain = async (options) => {
   if (options.dryRun) {
     console.log(buildReleaseNotes({
       changesEn: options.changesEn,
-      changesZh: options.changesZh,
       localizedChanges: options.localizedChanges,
       issueNumber: 0,
       contributors: options.contributors,
@@ -1618,7 +1596,7 @@ const releaseMain = async (options) => {
 
   if (desktopPlan.rebuild) {
     assertWindowsUpdateSigningKey({
-      privateKeyPath: process.env.EDGE_EVER_WINDOWS_UPDATE_SIGNING_KEY,
+      privateKeyPath: process.env.PONDER_WINDOWS_UPDATE_SIGNING_KEY,
     });
     console.log("[release] Windows update signing key matches the pinned desktop trust anchor");
   }
@@ -1662,7 +1640,6 @@ const releaseMain = async (options) => {
       mobileRebuild: mobilePlan.rebuild,
       iosRebuild: iosPlan.rebuild,
       changesEn: options.changesEn,
-      changesZh: options.changesZh,
       localizedChanges: options.localizedChanges,
     });
     run("git", ["add", ...versionPaths]);
@@ -1673,7 +1650,6 @@ const releaseMain = async (options) => {
 
     const notes = buildReleaseNotes({
       changesEn: options.changesEn,
-      changesZh: options.changesZh,
       issueNumber,
       contributors: options.contributors,
       resolvedIssues: options.resolvedIssues,

@@ -76,11 +76,11 @@ export const readImageHtmlAttribute = (source: string, name: string) => {
 const supportedImageSource = (source: string) => {
   // oxlint-disable-next-line no-control-regex -- do not accept executable or ambiguous URL schemes
   if (!source || /[\u0000-\u0020]/.test(source)) return false;
-  return /^(?:https?:\/\/|edgeever-resource:\/\/|edgeever-staged:\/\/|\/(?!\/))/i.test(source);
+  return /^(?:https?:\/\/|ponder-resource:\/\/|ponder-staged:\/\/|\/(?!\/))/i.test(source);
 };
 const LINKED_IMAGE_HTML = /<a\b((?:[^"'>]|"[^"]*"|'[^']*')*)>\s*(<img\b(?:[^"'>]|"[^"]*"|'[^']*')*\/?>)\s*<\/a>[ \t]*(?:\n|$)/i;
 
-/** HTML keeps the alignment useful in exports outside EdgeEver, too. */
+/** HTML keeps the alignment useful in exports outside Ponder, too. */
 export const alignedImageToHtml = (node: JSONContent): string => {
   const attrs = node.attrs ?? {};
   const alignment = parseImageAlignment(attrs.alignment) ?? "left";
@@ -103,7 +103,7 @@ export const alignedImageToHtml = (node: JSONContent): string => {
     : image;
 };
 
-export const EdgeEverImage = Image.extend({
+export const PonderImage = Image.extend({
   renderMarkdown(node) {
     if (parseImageAlignment(node.attrs?.alignment)) return alignedImageToHtml(node);
     const link = getImageLink(node.attrs?.link);

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { createEdgeEverClient } from "./index.ts";
+import { createPonderClient } from "./index.ts";
 
 const target = "https://models.example/v1/chat/completions";
 const init = { method: "POST", headers: { authorization: "Bearer model-key", "content-type": "application/json" }, body: JSON.stringify({ model: "test", messages: [] }) };
@@ -8,7 +8,7 @@ const response = () => new Response('data: [DONE]\n\n', { headers: { "content-ty
 for (const mode of ["direct", "cors", "http", "cancel", "stream"]) test(`browser AI transport: ${mode}`, async () => {
   const calls = []; let directCalls = 0;
   const abort = new AbortController();
-  const client = createEdgeEverClient({
+  const client = createPonderClient({
     baseUrl: "https://notes.example", token: "instance-session", allowAiServerFallback: true,
     providerFetch: async (_url, requestInit) => {
       directCalls++;
@@ -24,9 +24,9 @@ for (const mode of ["direct", "cors", "http", "cancel", "stream"]) test(`browser
       calls.push(String(url));
       const headers = new Headers(requestInit.headers);
       expect(headers.get("authorization")).toBe("Bearer instance-session");
-      expect(headers.get("x-edgeever-ai-target")).toBe(target);
-      expect(headers.get("x-edgeever-ai-method")).toBe("POST");
-      expect(JSON.parse(headers.get("x-edgeever-ai-headers")).authorization).toBe("Bearer model-key");
+      expect(headers.get("x-ponder-ai-target")).toBe(target);
+      expect(headers.get("x-ponder-ai-method")).toBe("POST");
+      expect(JSON.parse(headers.get("x-ponder-ai-headers")).authorization).toBe("Bearer model-key");
       expect(new TextDecoder().decode(requestInit.body)).toBe(init.body);
       return response();
     },
@@ -44,15 +44,15 @@ for (const mode of ["direct", "cors", "http", "cancel", "stream"]) test(`browser
 });
 
 test("native clients never enable the browser fallback by default", async () => {
-  const client = createEdgeEverClient({ fetch: async () => { throw new Error("Must not relay"); }, providerFetch: async () => { throw new TypeError("Failed to fetch"); } });
+  const client = createPonderClient({ fetch: async () => { throw new Error("Must not relay"); }, providerFetch: async () => { throw new TypeError("Failed to fetch"); } });
   await expect(client.fetchAiProvider(target, init)).rejects.toThrow("Failed to fetch");
 });
 
 test("fallback preserves multipart audio and the browser boundary", async () => {
   const form = new FormData(); form.append("file", new Blob(["audio-test"]), "test.wav"); form.append("model", "whisper-1");
-  const client = createEdgeEverClient({ allowAiServerFallback: true, providerFetch: async () => { throw new TypeError("Failed to fetch"); }, fetch: async (_url, requestInit) => {
+  const client = createPonderClient({ allowAiServerFallback: true, providerFetch: async () => { throw new TypeError("Failed to fetch"); }, fetch: async (_url, requestInit) => {
     const headers = new Headers(requestInit.headers);
-    const original = JSON.parse(headers.get("x-edgeever-ai-headers"));
+    const original = JSON.parse(headers.get("x-ponder-ai-headers"));
     const parsed = await new Response(requestInit.body, { headers: { "content-type": original["content-type"] } }).formData();
     expect(parsed.get("model")).toBe("whisper-1"); expect(await parsed.get("file").text()).toBe("audio-test");
     return Response.json({ text: "transcribed" });

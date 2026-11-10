@@ -15,14 +15,14 @@ const platforms = [
 test("Hacker News clips persist through the extension and local API; archived images survive source blocking", async ({ request, baseURL }) => {
   test.setTimeout(180_000);
   execFileSync("bun", ["run", "build:extension"], { cwd: repositoryRoot, stdio: "pipe" });
-  const directory = mkdtempSync(join(tmpdir(), "edgeever-platform-extension-"));
-  const profile = mkdtempSync(join(tmpdir(), "edgeever-platform-browser-"));
+  const directory = mkdtempSync(join(tmpdir(), "ponder-platform-extension-"));
+  const profile = mkdtempSync(join(tmpdir(), "ponder-platform-browser-"));
   cpSync(join(repositoryRoot, "apps/extension/dist"), directory, { recursive: true });
   const manifestPath = join(directory, "manifest.json");
   const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
   // The test cannot grant activeTab by clicking browser chrome. Give only this
   // temporary build the sampled hosts, image host and local instance access.
-  manifest.host_permissions = ["http://127.0.0.1/*", "https://news.ycombinator.com/*", "https://images.edgeever.test/*"];
+  manifest.host_permissions = ["http://127.0.0.1/*", "https://news.ycombinator.com/*", "https://images.ponder.test/*"];
   writeFileSync(manifestPath, JSON.stringify(manifest));
 
   let context: BrowserContext | undefined;
@@ -46,13 +46,13 @@ test("Hacker News clips persist through the extension and local API; archived im
     await context.route(/^https:\/\//, async (route) => {
       const url = route.request().url(); sourceRequests.push(url);
       if (sourceBlocked) { await route.abort(); return; }
-      if (url.startsWith("https://images.edgeever.test/")) { await route.fulfill({ contentType: "image/png", body: png }); return; }
+      if (url.startsWith("https://images.ponder.test/")) { await route.fulfill({ contentType: "image/png", body: png }); return; }
       const platform = platforms.find((entry) => url === entry.url);
       if (!platform) { await route.abort(); return; }
       const html = failure ? "<html><body><h1>Sign in</h1><p>Unrelated comments</p></body></html>"
         : readFileSync(join(repositoryRoot, `apps/extension/fixtures/platforms/${platform.name}.html`), "utf8")
-          .replace(/(<div class="toptext"[^>]*>)/, '$1<img src="https://images.edgeever.test/body.png">');
-      if (!failure) expect(html).toContain('src="https://images.edgeever.test/body.png"');
+          .replace(/(<div class="toptext"[^>]*>)/, '$1<img src="https://images.ponder.test/body.png">');
+      if (!failure) expect(html).toContain('src="https://images.ponder.test/body.png"');
       await route.fulfill({ contentType: "text/html; charset=utf-8", body: html });
     });
     const senderPromise = context.waitForEvent("page");
@@ -86,15 +86,15 @@ test("Hacker News clips persist through the extension and local API; archived im
         expect(resources).toHaveLength(1);
         await article.goto("about:blank"); sourceBlocked = true;
         // With the source page gone and every external source host blocked,
-        // reopen the saved note's image from the EdgeEver resource endpoint.
+        // reopen the saved note's image from the Ponder resource endpoint.
         const blob = await request.get(`/api/v1/resources/${resources[0][1]}/blob`);
         expect(blob.ok()).toBe(true);
         expect(Buffer.from(await blob.body()).equals(png)).toBe(true);
       }
       const preview = await context.newPage();
       await preview.goto(baseURL!);
-      await preview.getByRole("button", { name: "全部笔记", exact: true }).click();
-      await preview.getByPlaceholder("搜索笔记").fill(platform.title);
+      await preview.getByRole("button", { name: "All notes", exact: true }).click();
+      await preview.getByPlaceholder("Search notes").fill(platform.title);
       await preview.locator(`[data-memo-id="${note!.id}"]`).locator("button").first().click();
       const editor = preview.locator(".ProseMirror");
       await expect(editor).toContainText(platform.text);

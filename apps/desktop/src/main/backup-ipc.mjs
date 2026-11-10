@@ -24,7 +24,7 @@ export const registerBackupIpc = ({ ipcMain, manager, getWindow, dialog, shell }
           value = true; break;
         }
         case "choose-import": {
-          const result = await dialog.showOpenDialog(getWindow(), { properties: ["openFile"], defaultPath: manager.status()?.actualDirectory, filters: [{ name: "EdgeEver backup", extensions: ["zip", "enc"] }, { name: "All files", extensions: ["*"] }] });
+          const result = await dialog.showOpenDialog(getWindow(), { properties: ["openFile"], defaultPath: manager.status()?.actualDirectory, filters: [{ name: "Ponder backup", extensions: ["zip", "enc"] }, { name: "All files", extensions: ["*"] }] });
           checkScope();
           value = result.canceled ? null : await manager.selectImport(result.filePaths[0]); break;
         }

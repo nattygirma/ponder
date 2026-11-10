@@ -55,7 +55,7 @@ export const normalizeProtectedResourcePath = (source: string, baseUrl = "") => 
 
 /**
  * Relative protected load path (`/api/v1/resources/:id/blob`) or null when the
- * source is not a protected EdgeEver resource.
+ * source is not a protected Ponder resource.
  */
 export const toProtectedResourceLoadPath = (source: string, baseUrl = ""): string | null => {
   const path = normalizeProtectedResourcePath(source, baseUrl);
@@ -65,13 +65,13 @@ export const toProtectedResourceLoadPath = (source: string, baseUrl = ""): strin
 export const blobToDataUrl = (blob: Blob) =>
   new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onerror = () => reject(reader.error ?? new Error("资源读取失败"));
+    reader.onerror = () => reject(reader.error ?? new Error("Could not read the resource"));
     reader.onloadend = () => {
       if (typeof reader.result === "string") {
         resolve(reader.result);
         return;
       }
-      reject(new Error("资源读取失败"));
+      reject(new Error("Could not read the resource"));
     };
     reader.readAsDataURL(blob);
   });
@@ -100,7 +100,7 @@ export const toProtectedResourceLoadFailure = (
 export const reportProtectedResourceLoadFailure = (failure: ProtectedResourceLoadFailure) => {
   const statusPart = failure.status != null ? ` status=${failure.status}` : "";
   console.warn(
-    `[EdgeEver] protected image load failed path=${failure.path}${statusPart} message=${failure.message}`
+    `[Ponder] protected image load failed path=${failure.path}${statusPart} message=${failure.message}`
   );
 };
 

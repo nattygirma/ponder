@@ -14,7 +14,7 @@ current concrete implementation lives in
 - `DatabaseAdapter`: SQL statements and batches.
 - `BlobStoreAdapter`: attachment `get`, `put`, and `delete` operations.
 
-Cloudflare injects the D1/R2 adapter into `fetchEdgeEverApp`; the Bun entrypoint
+Cloudflare injects the D1/R2 adapter into `fetchPonderApp`; the Bun entrypoint
 injects the SQLite/filesystem or SQLite/S3 adapter into that same function.
 Neither entrypoint owns route or business decisions.
 
@@ -34,9 +34,9 @@ The supported container deployment is a single application container with one
 persistent `/data` mount:
 
 ```text
-EdgeEver container
-├── SQLite database          -> /data/edgeever.sqlite
-├── credential secrets       -> /data/edgeever-secrets.json
+Ponder container
+├── SQLite database          -> /data/ponder.sqlite
+├── credential secrets       -> /data/ponder-secrets.json
 └── attachment store         -> /data/resources
 ```
 
@@ -61,7 +61,7 @@ ambiguous.
   keep credential encryption. Cloudflare continues to use Worker secrets only.
   Object-storage secrets and personal AI model API keys use separate
   purpose-specific keys derived from the existing instance authentication
-  secret. An optional `EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY` can override the
+  secret. An optional `PONDER_CREDENTIALS_ENCRYPTION_KEY` can override the
   AI credential key for advanced rotation. Stored credentials must remain
   AES-GCM ciphertext.
 - Make `/data` the only required persistent application path so NAS users can
@@ -69,7 +69,7 @@ ambiguous.
 - Keep the production entry at `scripts/self-hosted-server.js`, and keep
   `scripts/self-hosted-server.mjs` as an alias for NAS/GUI command overrides
   saved from v1.62 and earlier.
-- Support `EDGE_EVER_AUTH_USERNAME`, `EDGE_EVER_AUTH_PASSWORD`, and session
+- Support `PONDER_AUTH_USERNAME`, `PONDER_AUTH_PASSWORD`, and session
   settings without Cloudflare-specific naming assumptions in the container
   entrypoint.
 - Keep login brute-force protection in the application layer with SQLite/D1-
@@ -79,29 +79,29 @@ ambiguous.
   readiness and attachment-store readiness.
 
 Operational instructions, including secrets, HTTPS, backups, upgrades, and NAS
-permissions, live in [Deploy EdgeEver with Docker](deploy-docker.md).
+permissions, live in [Deploy Ponder with Docker](deploy-docker.md).
 
 The Docker image and local development use the same Bun runtime:
 
 ```sh
 bun run build:web
-EDGE_EVER_AUTH_PASSWORD='<strong-password>' bun run start:self-hosted
+PONDER_AUTH_PASSWORD='<strong-password>' bun run start:self-hosted
 ```
 
-Set `EDGE_EVER_DATA_DIR` to the directory that should be persisted by Docker
+Set `PONDER_DATA_DIR` to the directory that should be persisted by Docker
 or a NAS volume.
 Long-running streaming responses use a 120-second idle timeout by default. Set
-`EDGE_EVER_IDLE_TIMEOUT_SECONDS` to a value from 10 to 255 to override it.
+`PONDER_IDLE_TIMEOUT_SECONDS` to a value from 10 to 255 to override it.
 
 The same runtime can use an S3-compatible object store:
 
 ```sh
-EDGE_EVER_STORAGE_BACKEND=s3 \
-EDGE_EVER_S3_ENDPOINT='http://minio:9000' \
-EDGE_EVER_S3_REGION='us-east-1' \
-EDGE_EVER_S3_BUCKET='edgeever' \
-EDGE_EVER_S3_ACCESS_KEY_ID='<access-key>' \
-EDGE_EVER_S3_SECRET_ACCESS_KEY='<secret-key>' \
+PONDER_STORAGE_BACKEND=s3 \
+PONDER_S3_ENDPOINT='http://minio:9000' \
+PONDER_S3_REGION='us-east-1' \
+PONDER_S3_BUCKET='ponder' \
+PONDER_S3_ACCESS_KEY_ID='<access-key>' \
+PONDER_S3_SECRET_ACCESS_KEY='<secret-key>' \
 bun run start:self-hosted
 ```
 

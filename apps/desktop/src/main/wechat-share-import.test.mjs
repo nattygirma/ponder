@@ -72,23 +72,23 @@ afterEach(async () => {
 });
 
 describe("WeChat share handoff", () => {
-  test("accepts only an absolute file from the edgeever share URL", () => {
-    expect(wechatImportFilePath("edgeever://wechat-import?path=/Users/me/Downloads/EdgeEver%20Incoming/a/chat.zip")).toBe(
-      "/Users/me/Downloads/EdgeEver Incoming/a/chat.zip",
+  test("accepts only an absolute file from the ponder share URL", () => {
+    expect(wechatImportFilePath("ponder://wechat-import?path=/Users/me/Downloads/Ponder%20Incoming/a/chat.zip")).toBe(
+      "/Users/me/Downloads/Ponder Incoming/a/chat.zip",
     );
-    expect(wechatImportFilePath("edgeever://share-import?path=/Users/me/Downloads/EdgeEver%20Incoming/a/sheet.xlsx")).toBe(
-      "/Users/me/Downloads/EdgeEver Incoming/a/sheet.xlsx",
+    expect(wechatImportFilePath("ponder://share-import?path=/Users/me/Downloads/Ponder%20Incoming/a/sheet.xlsx")).toBe(
+      "/Users/me/Downloads/Ponder Incoming/a/sheet.xlsx",
     );
-    expect(wechatImportFilePath("edgeever://memo/memo_1")).toBeNull();
+    expect(wechatImportFilePath("ponder://memo/memo_1")).toBeNull();
     expect(wechatImportFilePath("https://example.com/chat.zip")).toBeNull();
-    expect(wechatImportFilePath("edgeever://wechat-import?path=chat.zip")).toBeNull();
+    expect(wechatImportFilePath("ponder://wechat-import?path=chat.zip")).toBeNull();
     expect(isPathInsideDirectory("/tmp/in/uuid/chat.zip", "/tmp/in")).toBe(true);
     expect(isPathInsideDirectory("/tmp/in", "/tmp/in")).toBe(false);
     expect(isPathInsideDirectory("/tmp/other/chat.zip", "/tmp/in")).toBe(false);
   });
 
   test("imports a zip from the incoming folder and then deletes it", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const temp = join(root, "temp");
@@ -107,23 +107,23 @@ describe("WeChat share handoff", () => {
       tempPath: () => temp,
       sendToRenderer: (payload) => sent.push(payload),
     });
-    const url = `edgeever://wechat-import?path=${encodeURIComponent(zipPath)}`;
+    const url = `ponder://wechat-import?path=${encodeURIComponent(zipPath)}`;
     await controller.importFromProtocolUrl(url);
     expect(sent).toHaveLength(1);
     expect(sent[0].ok).toBe(true);
     expect(sent[0].title).toBe("聊天记录_20260922_223222");
-    expect(sent[0].markdown).toContain("![微信图片_1.jpg](edgeever-wechat-media://m1)");
+    expect(sent[0].markdown).toContain("![微信图片_1.jpg](ponder-wechat-media://m1)");
     const media = await controller.readMedia(sent[0].importId, "m1");
     expect(Buffer.from(media.bytes).toString()).toBe("jpeg");
     expect((await stat(zipPath)).isFile()).toBe(true);
     await controller.finish(sent[0].importId, true);
     await expect(stat(zipPath)).rejects.toThrow();
     await expect(stat(batch)).rejects.toThrow();
-    await expect(readFile(join(temp, "edgeever-wechat-import", sent[0].importId, "m1.bin"))).rejects.toThrow();
+    await expect(readFile(join(temp, "ponder-wechat-import", sent[0].importId, "m1.bin"))).rejects.toThrow();
   });
 
   test("does not read a zip outside the incoming folder", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const outside = join(root, "secret.zip");
     await writeFile(outside, Buffer.from("secret"));
@@ -133,13 +133,13 @@ describe("WeChat share handoff", () => {
       tempPath: () => join(root, "temp"),
       sendToRenderer: (payload) => sent.push(payload),
     });
-    await controller.importFromProtocolUrl(`edgeever://wechat-import?path=${encodeURIComponent(outside)}`);
+    await controller.importFromProtocolUrl(`ponder://wechat-import?path=${encodeURIComponent(outside)}`);
     expect(sent).toHaveLength(0);
     expect((await readFile(outside)).toString()).toBe("secret");
   });
 
   test("accepts the share extension's sandbox Downloads alias without a duplicate scan", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -158,7 +158,7 @@ describe("WeChat share handoff", () => {
       sendToRenderer: (payload) => sent.push(payload),
       writeDiagnostic: (event) => diagnostics.push(event),
     });
-    await controller.importFromProtocolUrl(`edgeever://wechat-import?path=${encodeURIComponent(sandboxPath)}`);
+    await controller.importFromProtocolUrl(`ponder://wechat-import?path=${encodeURIComponent(sandboxPath)}`);
     expect(sent).toHaveLength(1);
     expect(sent[0].ok).toBe(true);
     expect(diagnostics).not.toContain("wechat-import.rejected");
@@ -169,7 +169,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("rejects a link in the incoming folder that resolves outside it", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -184,13 +184,13 @@ describe("WeChat share handoff", () => {
       tempPath: () => join(root, "temp"),
       sendToRenderer: (payload) => sent.push(payload),
     });
-    await controller.importFromProtocolUrl(`edgeever://wechat-import?path=${encodeURIComponent(linked)}`);
+    await controller.importFromProtocolUrl(`ponder://wechat-import?path=${encodeURIComponent(linked)}`);
     expect(sent).toHaveLength(0);
     expect((await stat(outside)).isFile()).toBe(true);
   });
 
   test("a rejected protocol path does not report failure before a valid share is scanned", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -203,7 +203,7 @@ describe("WeChat share handoff", () => {
       tempPath: () => join(root, "temp"),
       sendToRenderer: (payload) => sent.push(payload),
     });
-    await controller.importFromProtocolUrl(`edgeever://wechat-import?path=${encodeURIComponent(join(root, "stale.zip"))}`);
+    await controller.importFromProtocolUrl(`ponder://wechat-import?path=${encodeURIComponent(join(root, "stale.zip"))}`);
     await controller.importPending();
     expect(sent).toHaveLength(1);
     expect(sent[0].ok).toBe(true);
@@ -212,7 +212,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("reports a recognized incoming path with an invalid archive", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -235,7 +235,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("picks up a completed share without a protocol URL and ignores a duplicate URL", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -252,7 +252,7 @@ describe("WeChat share handoff", () => {
     await controller.importPending();
     expect(sent).toHaveLength(0);
     await rename(partialPath, zipPath);
-    const url = `edgeever://wechat-import?path=${encodeURIComponent(zipPath)}`;
+    const url = `ponder://wechat-import?path=${encodeURIComponent(zipPath)}`;
     await Promise.all([controller.importPending(), controller.importFromProtocolUrl(url)]);
     expect(sent).toHaveLength(1);
     expect(sent[0].ok).toBe(true);
@@ -269,7 +269,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("skips failed shares across restarts while recovering unfinished shares", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const incoming = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME);
@@ -309,7 +309,7 @@ describe("WeChat share handoff", () => {
     }
     // An explicit handoff can retry a failed share after a restart.
     const failedZip = join(incoming, "first", "聊天记录.zip");
-    await restarted.importFromProtocolUrl(`edgeever://wechat-import?path=${encodeURIComponent(failedZip)}`);
+    await restarted.importFromProtocolUrl(`ponder://wechat-import?path=${encodeURIComponent(failedZip)}`);
     expect(resumed).toHaveLength(2);
     await restarted.finish(resumed[1].importId, false);
     expect(restarted.retry(resumed[1].importId)).toBe(true);
@@ -320,7 +320,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("finishing one zip keeps another zip in the same incoming batch", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -347,7 +347,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("saves a shared spreadsheet as a file instead of a WeChat chat", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -360,7 +360,7 @@ describe("WeChat share handoff", () => {
       tempPath: () => join(root, "temp"),
       sendToRenderer: (payload) => sent.push(payload),
     });
-    await controller.importFromProtocolUrl(`edgeever://share-import?path=${encodeURIComponent(filePath)}`);
+    await controller.importFromProtocolUrl(`ponder://share-import?path=${encodeURIComponent(filePath)}`);
     expect(sent).toHaveLength(1);
     expect(sent[0]).toMatchObject({
       ok: true,
@@ -376,7 +376,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("still unpacks a WeChat chat when it arrives through the file share URL", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -389,7 +389,7 @@ describe("WeChat share handoff", () => {
       tempPath: () => join(root, "temp"),
       sendToRenderer: (payload) => sent.push(payload),
     });
-    await controller.importFromProtocolUrl(`edgeever://share-import?path=${encodeURIComponent(zipPath)}`);
+    await controller.importFromProtocolUrl(`ponder://share-import?path=${encodeURIComponent(zipPath)}`);
     expect(sent).toHaveLength(1);
     expect(sent[0].ok).toBe(true);
     expect(sent[0].kind).toBeUndefined();
@@ -397,7 +397,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("reports a Finder file-id placeholder instead of treating it as a chat", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -414,14 +414,14 @@ describe("WeChat share handoff", () => {
       sendToRenderer: (payload) => sent.push(payload),
       writeDiagnostic: (event, details) => diagnostics.push({ event, details }),
     });
-    await controller.importFromProtocolUrl(`edgeever://wechat-import?path=${encodeURIComponent(zipPath)}`);
+    await controller.importFromProtocolUrl(`ponder://wechat-import?path=${encodeURIComponent(zipPath)}`);
     expect(sent).toEqual([{ ok: false, kind: "file", reason: "unreadable" }]);
     await expect(stat(zipPath)).rejects.toThrow();
     expect(diagnostics).toContainEqual({ event: "share-import.rejected", details: { reason: "unreadable" } });
   });
 
   test("rejects a shared file larger than the configured limit", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const downloads = join(root, "Downloads");
     const batch = join(downloads, WECHAT_INCOMING_DIRECTORY_NAME, "batch");
@@ -435,7 +435,7 @@ describe("WeChat share handoff", () => {
       sendToRenderer: (payload) => sent.push(payload),
       maxBytes: 4,
     });
-    await controller.importFromProtocolUrl(`edgeever://share-import?path=${encodeURIComponent(filePath)}`);
+    await controller.importFromProtocolUrl(`ponder://share-import?path=${encodeURIComponent(filePath)}`);
     expect(sent).toEqual([{ ok: false, kind: "file", reason: "too-large" }]);
     expect((await stat(filePath)).isFile()).toBe(true);
     const restarted = createWeChatShareController({
@@ -451,7 +451,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("does not read a shared file outside the incoming folder", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const outside = join(root, "secret.xlsx");
     await writeFile(outside, Buffer.from("secret"));
@@ -461,13 +461,13 @@ describe("WeChat share handoff", () => {
       tempPath: () => join(root, "temp"),
       sendToRenderer: (payload) => sent.push(payload),
     });
-    await controller.importFromProtocolUrl(`edgeever://share-import?path=${encodeURIComponent(outside)}`);
+    await controller.importFromProtocolUrl(`ponder://share-import?path=${encodeURIComponent(outside)}`);
     expect(sent).toHaveLength(0);
     expect((await readFile(outside)).toString()).toBe("secret");
   });
 
   test("imports a local file from the Windows verb without deleting it", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const filePath = join(root, "功能梳理表.xlsx");
     await writeFile(filePath, Buffer.from("spreadsheet"));
@@ -493,7 +493,7 @@ describe("WeChat share handoff", () => {
   });
 
   test("keeps a local WeChat zip in place after preparing the chat", async () => {
-    const root = await mkdtemp(join(tmpdir(), "edgeever-wechat-share-"));
+    const root = await mkdtemp(join(tmpdir(), "ponder-wechat-share-"));
     roots.push(root);
     const zipPath = join(root, "聊天记录.zip");
     await writeFile(zipPath, zipOf("聊天记录.txt", "·鱼\n2026年9月22日 22:15\n你好\n", "附件/readme.txt", "hello"));

@@ -7,9 +7,9 @@ import {
   type MemoDetail,
   type MemoTemplate,
   type TiptapDoc,
-} from "@edgeever/shared";
-import { listMemoTemplateGallery } from "@edgeever/shared/memo-template-gallery";
-import { localizeDefaultMemoTemplate } from "@edgeever/shared/memo-template-seeds";
+} from "@ponder/shared";
+import { listMemoTemplateGallery } from "@ponder/shared/memo-template-gallery";
+import { localizeDefaultMemoTemplate } from "@ponder/shared/memo-template-seeds";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { audit } from "./audit";

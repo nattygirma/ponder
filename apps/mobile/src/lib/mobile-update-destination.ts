@@ -1,5 +1,5 @@
 import type { MobileInstallUpdateSource } from "./mobile-release";
-import type { GooglePlayOpenResult } from "../../modules/edgeever-app-store";
+import type { GooglePlayOpenResult } from "../../modules/ponder-app-store";
 
 type MobileUpdateDestinationDependencies = {
   linking: {

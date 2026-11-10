@@ -1,4 +1,4 @@
-import { PUBLIC_PAGE_ROBOTS } from "@edgeever/shared/public-page-headers";
+import { PUBLIC_PAGE_ROBOTS } from "@ponder/shared/public-page-headers";
 import { describe, expect, test } from "bun:test";
 import { Database } from "bun:sqlite";
 import { globSync, readFileSync } from "node:fs";
@@ -35,7 +35,7 @@ const shell = `<!doctype html>
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content="old description" />
-    <title>EdgeEver</title>
+    <title>Ponder</title>
   </head>
   <body>
     <div id="root"></div>
@@ -88,13 +88,13 @@ describe("public memo share pages", () => {
     expect(response.headers.get("link")).toBe(`<https://note.example/share/${token}.md>; rel="alternate"; type="text/markdown"`);
     expect(response.headers.get("etag")).toBeNull();
     const html = await response.text();
-    expect(html).toContain(`<title>A $&amp; $&#39; $$ &lt;script&gt; · EdgeEver</title>`);
+    expect(html).toContain(`<title>A $&amp; $&#39; $$ &lt;script&gt; · Ponder</title>`);
     expect(html).toContain(`<meta name="robots" content="${PUBLIC_PAGE_ROBOTS}">`);
     expect(html).toContain(`rel="canonical" href="https://note.example/share/${token}"`);
     expect(html).toContain(`rel="alternate" type="text/markdown" href="https://note.example/share/${token}.md"`);
     expect(html).toContain("Hello &lt;script&gt;secret()&lt;/script&gt;");
     expect(html).not.toContain("<script>secret()");
-    expect(html).toContain('<div id="root"><article id="edgeever-shared-note"');
+    expect(html).toContain('<div id="root"><article id="ponder-shared-note"');
     expect(html).toContain('<script type="module" src="/src/main.tsx"></script>');
     expect(html).not.toContain("old description");
   });
@@ -108,10 +108,10 @@ describe("public memo share pages", () => {
           .run(Number(showUpdatedAt), Number(showBranding), token);
         const html = await (await render(sqlite, `/share/${token}`)).text();
         expect(html.includes("<time ")).toBe(showUpdatedAt);
-        expect(html.includes("Published with EdgeEver</a>")).toBe(showBranding);
+        expect(html.includes("Published with Ponder</a>")).toBe(showBranding);
         if (showBranding) {
           expect(html).toContain('<footer style="');
-          expect(html).toContain('href="https://edgeever.org/"');
+          expect(html).toContain('href="https://appkeep.io/"');
           expect(html.indexOf("<footer ")).toBeGreaterThan(html.indexOf("</pre>"));
         }
         expect(html).not.toContain("Read-only share");
@@ -138,7 +138,7 @@ describe("public memo share pages", () => {
 
     const browser = await render(sqlite, `/share/${token}`, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
     expect(browser.headers.get("content-type")).toContain("text/html");
-    expect(await browser.text()).toContain("edgeever-shared-note");
+    expect(await browser.text()).toContain("ponder-shared-note");
   });
 
   test("omits the body when the share is missing, deleted, or password protected", async () => {
@@ -146,7 +146,7 @@ describe("public memo share pages", () => {
     const missing = await render(sqlite, `/share/${"m".repeat(43)}`);
     expect(missing.status).toBe(200);
     const missingHtml = await missing.text();
-    expect(missingHtml).not.toContain("edgeever-shared-note");
+    expect(missingHtml).not.toContain("ponder-shared-note");
     expect(missingHtml).not.toContain("secret()");
     expect(missingHtml).toContain('<script type="module" src="/src/main.tsx"></script>');
 
@@ -205,7 +205,7 @@ describe("public memo share pages", () => {
     sqlite.query("UPDATE memo_contents SET content_markdown = ? WHERE memo_id = 'memo_source'").run("Body text\n");
     const html = await (await render(sqlite, `/share/${token}`)).text();
     expect(html).not.toContain("无标题笔记");
-    expect(html).toContain("<title>Shared note · EdgeEver</title>");
+    expect(html).toContain("<title>Shared note · Ponder</title>");
     expect(html).toContain('<meta property="og:title" content="Shared note">');
     expect(html).toContain('<meta name="twitter:title" content="Shared note">');
     expect(html).toContain("Body text");
@@ -231,7 +231,7 @@ describe("public memo share pages", () => {
     expect(worker).toContain('pathname.startsWith("/share/")');
     expect(selfHosted).toContain("renderPublicMemoSharePage");
     expect(wrangler).toContain('"/share/*"');
-    expect(webConfig).toContain("!/^\\/(?:share|s)\\//.test(url.pathname)");
+    expect(webConfig).toContain("!/^\\/(?:share|s|_altstack)\\//.test(url.pathname)");
   });
 });
 
@@ -249,7 +249,7 @@ describe("expiring and counted share pages", () => {
       const html = await render(sqlite, `/share/${token}`);
       const page = await html.text();
       expect(page).not.toContain("Hello");
-      expect(page).not.toContain("edgeever-shared-note");
+      expect(page).not.toContain("ponder-shared-note");
       expect(page).toContain("This shared link has expired.");
       expect(html.headers.get("Link")).toBeNull();
       expect(viewCount(sqlite)).toBe(0);
@@ -263,7 +263,7 @@ describe("expiring and counted share pages", () => {
     try {
       sqlite.query("UPDATE memo_shares SET expires_at = '2999-01-01T00:00:00.000Z' WHERE token = ?").run(token);
       expect((await render(sqlite, `/share/${token}.md`)).status).toBe(200);
-      expect(await (await render(sqlite, `/share/${token}`)).text()).toContain("edgeever-shared-note");
+      expect(await (await render(sqlite, `/share/${token}`)).text()).toContain("ponder-shared-note");
     } finally {
       sqlite.close();
     }

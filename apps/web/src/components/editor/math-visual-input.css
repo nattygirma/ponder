@@ -1,4 +1,4 @@
-.edgeever-math-visual-input {
+.ponder-math-visual-input {
   --keyboard-accent-color: rgb(var(--slate-900-rgb));
   --keyboard-background: hsl(var(--card));
   --keycap-height: 36px;
@@ -32,19 +32,19 @@
 
 /* MathLive's default modifier padding assumes taller keys. Keep icons centered
    in our compact keys, including Shift and Backspace's edge-aligned defaults. */
-.edgeever-math-visual-input .ML__keyboard .MLK__rows .MLK__row > .action,
-.edgeever-math-visual-input .ML__keyboard .MLK__rows .MLK__row > .shift {
+.ponder-math-visual-input .ML__keyboard .MLK__rows .MLK__row > .action,
+.ponder-math-visual-input .ML__keyboard .MLK__rows .MLK__row > .shift {
   padding: 0;
   align-items: center;
   justify-content: center;
 }
 
-.edgeever-math-visual-input .ML__keyboard .MLK__rows .MLK__row > .action > svg,
-.edgeever-math-visual-input .ML__keyboard .MLK__rows .MLK__row > .shift > svg {
+.ponder-math-visual-input .ML__keyboard .MLK__rows .MLK__row > .action > svg,
+.ponder-math-visual-input .ML__keyboard .MLK__rows .MLK__row > .shift > svg {
   margin: 0;
 }
 
-.edgeever-math-visual-input math-field {
+.ponder-math-visual-input math-field {
   display: block;
   width: 100%;
   min-height: 56px;
@@ -58,15 +58,15 @@
   --selection-background-color: rgb(var(--slate-200-rgb));
 }
 
-.edgeever-math-visual-input math-field:focus-within {
+.ponder-math-visual-input math-field:focus-within {
   border-color: rgb(var(--slate-500-rgb));
   outline: 2px solid rgb(var(--slate-900-rgb) / 10%);
 }
 
-.edgeever-math-visual-input math-field::part(virtual-keyboard-toggle) {
+.ponder-math-visual-input math-field::part(virtual-keyboard-toggle) {
   color: rgb(var(--slate-500-rgb));
 }
 
-.edgeever-math-visual-input math-field::part(menu-toggle) {
+.ponder-math-visual-input math-field::part(menu-toggle) {
   display: none;
 }

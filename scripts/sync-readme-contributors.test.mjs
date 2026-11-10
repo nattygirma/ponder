@@ -89,10 +89,10 @@ describe("README contributors wall sync", () => {
   });
 
   test("appends and idempotently updates the contributors section across all five READMEs", () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), "edgeever-readme-contributors-"));
+    const tempRoot = mkdtempSync(join(tmpdir(), "ponder-readme-contributors-"));
     try {
       for (const { file } of README_CONTRIBUTOR_SECTIONS) {
-        writeFileSync(join(tempRoot, file), `# EdgeEver\n\nBody for ${file}\n`);
+        writeFileSync(join(tempRoot, file), `# Ponder\n\nBody for ${file}\n`);
       }
 
       const initialContributors = [
@@ -121,12 +121,6 @@ describe("README contributors wall sync", () => {
       });
       expect(thirdRun.updatedFiles).toHaveLength(README_CONTRIBUTOR_SECTIONS.length);
 
-      const zhReadme = readFileSync(join(tempRoot, "README.zh-CN.md"), "utf8");
-      expect(zhReadme).toContain("## 贡献者");
-      expect(zhReadme).toContain(CONTRIBUTORS_START_MARKER);
-      expect(zhReadme).toContain(CONTRIBUTORS_END_MARKER);
-      expect(zhReadme).toContain(circularAvatarUrl(304439776));
-      expect(zhReadme.match(/## 贡献者/g)).toHaveLength(1);
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }

@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { ArrowUp, Sparkles, Undo2 } from "lucide-react";
 import { useState, type MouseEvent } from "react";
-import type { InfographicConversationTurn } from "@edgeever/shared";
+import type { InfographicConversationTurn } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Conversation, ConversationContent, ConversationEmptyState, ConversationScrollButton } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
@@ -105,7 +105,7 @@ function InfographicReply({ children, isAnimating }: { children: string; isAnima
   return (
     <MessageResponse
       allowedTags={sidebarNoteLinkAllowedTags}
-      className="edgeever-infographic-chat-response break-words"
+      className="ponder-infographic-chat-response break-words"
       components={sidebarNoteLinkComponents}
       isAnimating={isAnimating}
     >

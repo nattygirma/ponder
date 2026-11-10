@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { FILE_ATTACHMENT_NODE_TYPE, resolveMemoContentDoc } from "@edgeever/shared";
-import { IMAGE_WIDTH_PRESETS } from "@edgeever/shared/image-display";
+import { FILE_ATTACHMENT_NODE_TYPE, resolveMemoContentDoc } from "@ponder/shared";
+import { IMAGE_WIDTH_PRESETS } from "@ponder/shared/image-display";
 import { createWeChatChatMemo } from "./wechat-chat-import.ts";
 
 const memo = {
@@ -21,11 +21,11 @@ describe("WeChat chat note", () => {
       markdown: [
         "**鱼** · 2026年9月22日 22:15",
         "",
-        "![微信图片_1.jpg](edgeever-wechat-media://m1)",
+        "![微信图片_1.jpg](ponder-wechat-media://m1)",
         "",
         "**鱼** · 2026年9月22日 22:20",
         "",
-        "[附件：微信视频_1.mp4](edgeever-wechat-media://m2)",
+        "[附件：微信视频_1.mp4](ponder-wechat-media://m2)",
       ].join("\n"),
       media: [
         { id: "m1", filename: "微信图片_1.jpg", mimeType: "image/jpeg", byteSize: 4 },
@@ -33,17 +33,17 @@ describe("WeChat chat note", () => {
       ],
       createMemo: async () => ({ memo }),
       readMedia: async (item) => new File([item.id], item.filename, { type: item.mimeType }),
-      uploadResource: async (_memoId, file) => ({ url: `edgeever-staged://${file.name}` }),
+      uploadResource: async (_memoId, file) => ({ url: `ponder-staged://${file.name}` }),
       updateMemo: async (_created, content) => {
         updated = content;
         return { memo: { ...memo, contentMarkdown: content.contentMarkdown } };
       },
     });
-    expect(result.contentMarkdown).toContain("edgeever-staged://微信图片_1.jpg");
-    expect(result.contentMarkdown).toContain("edgeever-staged://微信视频_1.mp4");
-    expect(result.contentMarkdown).not.toContain("edgeever-wechat-media://");
+    expect(result.contentMarkdown).toContain("ponder-staged://微信图片_1.jpg");
+    expect(result.contentMarkdown).toContain("ponder-staged://微信视频_1.mp4");
+    expect(result.contentMarkdown).not.toContain("ponder-wechat-media://");
     const saved = JSON.stringify(updated.contentJson);
-    expect(saved).toContain("edgeever-staged://微信图片_1.jpg");
+    expect(saved).toContain("ponder-staged://微信图片_1.jpg");
     expect(saved).toContain(FILE_ATTACHMENT_NODE_TYPE);
     expect(updated.contentJson.content.find((node) => node.type === "image")?.attrs?.width).toBe(
       IMAGE_WIDTH_PRESETS.find((preset) => preset.id === "small").width,
@@ -58,7 +58,7 @@ describe("WeChat chat note", () => {
     await expect(createWeChatChatMemo({
       notebookId: "nb_inbox",
       title: "聊天记录",
-      markdown: "![图.jpg](edgeever-wechat-media://m1)",
+      markdown: "![图.jpg](ponder-wechat-media://m1)",
       media: [{ id: "m1", filename: "图.jpg", mimeType: "image/jpeg", byteSize: 1 }],
       createMemo: async () => ({ memo }),
       readMedia: async () => new File(["x"], "图.jpg", { type: "image/jpeg" }),
@@ -75,9 +75,9 @@ describe("WeChat chat note", () => {
       notebookId: "nb_inbox",
       title: "多图聊天记录",
       markdown: [
-        "![图1.jpg](edgeever-wechat-media://m1)",
+        "![图1.jpg](ponder-wechat-media://m1)",
         "",
-        "![图2.jpg](edgeever-wechat-media://m2)",
+        "![图2.jpg](ponder-wechat-media://m2)",
       ].join("\n"),
       media: [
         { id: "m1", filename: "图1.jpg", mimeType: "image/jpeg", byteSize: 2 },
@@ -85,14 +85,14 @@ describe("WeChat chat note", () => {
       ],
       createMemo: async () => ({ memo }),
       readMedia: async (item) => new File(["a"], item.filename, { type: item.mimeType }),
-      uploadResource: async (_id, file) => ({ url: `edgeever-staged://${file.name}` }),
+      uploadResource: async (_id, file) => ({ url: `ponder-staged://${file.name}` }),
       updateMemo: async (_created, content) => {
         updated = content;
         return { memo: { ...memo, contentMarkdown: content.contentMarkdown } };
       },
     });
-    expect(updated.contentJson.content.some((node) => node.type === "edgeeverImageGallery")).toBe(true);
-    const gallery = updated.contentJson.content.find((node) => node.type === "edgeeverImageGallery");
+    expect(updated.contentJson.content.some((node) => node.type === "ponderImageGallery")).toBe(true);
+    const gallery = updated.contentJson.content.find((node) => node.type === "ponderImageGallery");
     expect(gallery?.content?.length).toBe(2);
   });
 });

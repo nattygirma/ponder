@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { chromium } from "@playwright/test";
-const origin = process.env.EDGE_EVER_BROWSER_TEST_URL ?? "http://127.0.0.1:5173";
+const origin = process.env.PONDER_BROWSER_TEST_URL ?? "http://127.0.0.1:5173";
 const fixture = `${origin}/@fs${process.cwd()}/tests/browser/poster-previews.html`;
 const manifest = JSON.parse(await readFile(new URL("../apps/web/src/assets/poster-template-previews/manifest.json", import.meta.url)));
 const browser = await chromium.launch({ channel: "chrome", headless: true });
@@ -33,9 +33,9 @@ try {
   await page.waitForFunction(() => window.posterPreviewTest);
   await firstReady(page);
   const firstSources = await page.locator('[data-poster-template] img').evaluateAll(images => images.map(image => image.getAttribute('src')));
-  assert(firstSources.every(source => source.includes('.zh.webp') && !source.startsWith('blob:')));
-  assert.equal(await page.getByText('载入版式…', { exact: true }).count(), 0);
-  await page.screenshot({ path: "/tmp/edgeever-static-poster-previews.png" });
+  assert(firstSources.every(source => source.includes('.en.webp') && !source.startsWith('blob:')));
+  assert.equal(await page.getByText('Loading layout…', { exact: true }).count(), 0);
+  await page.screenshot({ path: "/tmp/ponder-static-poster-previews.png" });
   console.log("PASS: visible static previews load with canvas disabled and fonts blocked");
 
   await page.getByRole('button', { name: 'All templates', exact: true }).click();

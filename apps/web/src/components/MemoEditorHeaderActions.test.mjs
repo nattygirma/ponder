@@ -30,7 +30,8 @@ describe("shared memo editor header actions", () => {
     expect(diagramSource).toContain("<MemoEditorHeaderActions");
     expect(editorSource).toContain("textNoteMenuItems=");
     expect(editorSource).toContain("data-ai-assistant-launcher");
-    expect(editorSource).not.toContain("textNoteActions=");
+    // Only the page layout adds actions beside the menu; the note layout keeps them all in it.
+    expect(editorSource).toContain("textNoteActions={pageMode && memo ? (");
     expect(diagramSource).not.toContain("textNoteActions=");
     expect(diagramSource).toContain("data-ai-assistant-launcher");
     expect(diagramSource).toContain("<AiSidebar");

@@ -10,22 +10,22 @@ import TurndownService from "turndown";
 import { createHash } from "node:crypto";
 import sharp from "sharp";
 
-const CONFIG_PATH = process.env.EDGEEVER_CONFIG || join(homedir(), ".edgeever", "config.json");
+const CONFIG_PATH = process.env.PONDER_CONFIG || join(homedir(), ".ponder", "config.json");
 const DEFAULT_URL = "http://127.0.0.1:8787";
 const options = parseOptions(process.argv.slice(2));
 
-const usage = `Import Evernote ENEX files into EdgeEver through MCP.
+const usage = `Import Evernote ENEX files into Ponder through MCP.
 
 Usage:
-  EDGEEVER_URL=https://your.edgeever.host EDGEEVER_TOKEN=... \\
+  PONDER_URL=https://your.ponder.host PONDER_TOKEN=... \\
     bun scripts/import-evernote-enex-via-mcp.mjs --input ./evernote-export
 
   bun scripts/import-evernote-enex-via-mcp.mjs --profile prod --input ./evernote-export --dry-run
 
 Options:
   --input <path>       ENEX file or a directory containing one ENEX file per notebook.
-  --profile <name>    Read URL and token from ~/.edgeever/config.json.
-  --dry-run           Parse and print the plan without writing to EdgeEver.
+  --profile <name>    Read URL and token from ~/.ponder/config.json.
+  --dry-run           Parse and print the plan without writing to Ponder.
   --yes               Import all notebooks without interactive confirmations.
   --include <names>   Comma-separated notebook/stack names to import (only these).
   --exclude <names>   Comma-separated notebook/stack names to exclude.
@@ -218,7 +218,7 @@ async function main() {
     }
 
     if (!assumeYes && index < notebooksInfo.length - 1) {
-      const answer = await readline.question("Review the result in EdgeEver. Continue with the next notebook? Type yes, or anything else to stop: ");
+      const answer = await readline.question("Review the result in Ponder. Continue with the next notebook? Type yes, or anything else to stop: ");
 
       if (answer.trim().toLowerCase() !== "yes") {
         console.log("Stopped by user confirmation.");
@@ -446,11 +446,11 @@ async function findOrCreateNotebook(client, notebooks, name, index, parentId = n
 async function createMcpClient(profileName) {
   const config = await readConfig();
   const profile = profileName ? config.profiles?.[profileName] : undefined;
-  const baseUrl = (process.env.EDGEEVER_URL || profile?.url || DEFAULT_URL).replace(/\/+$/, "");
-  const token = process.env.EDGEEVER_TOKEN || profile?.token;
+  const baseUrl = (process.env.PONDER_URL || profile?.url || DEFAULT_URL).replace(/\/+$/, "");
+  const token = process.env.PONDER_TOKEN || profile?.token;
 
   if (!token) {
-    throw new Error("EDGEEVER_TOKEN is required, or configure a profile with `bun run cli -- profile set`.");
+    throw new Error("PONDER_TOKEN is required, or configure a profile with `bun run cli -- profile set`.");
   }
 
   return { baseUrl, token, nextId: 1 };

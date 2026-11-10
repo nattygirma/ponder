@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import { EditorContent, useEditor, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
-import { docToMarkdown } from "@edgeever/shared";
+import { docToMarkdown } from "@ponder/shared";
 import { EditableImageGallery } from "/src/components/editor/ImageGallery.tsx";
 import "/src/i18n/index.ts";
 
@@ -23,7 +23,7 @@ function Fixture() {
   const editor = useEditor({
     extensions: [StarterKit, DeletableImage, EditableImageGallery],
     content: { type: "doc", content: [{
-      type: "edgeeverImageGallery", attrs: { layout: "2" },
+      type: "ponderImageGallery", attrs: { layout: "2" },
       content: ["/one.jpg", "/two.jpg"].map((src) => ({ type: "image", attrs: { src } })),
     }] },
     onCreate: ({ editor }) => renderState(editor),

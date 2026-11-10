@@ -32,8 +32,8 @@ describe("MCP JSON-RPC helpers", () => {
   });
 
   test("decodes raw and data URL base64 payloads", async () => {
-    expect(new TextDecoder().decode(await decodeBase64Data("RWRnZUV2ZXI="))).toBe("EdgeEver");
-    expect(new TextDecoder().decode(await decodeBase64Data("data:text/plain;base64,RWRnZUV2ZXI="))).toBe("EdgeEver");
+    expect(new TextDecoder().decode(await decodeBase64Data("UG9uZGVy"))).toBe("Ponder");
+    expect(new TextDecoder().decode(await decodeBase64Data("data:text/plain;base64,UG9uZGVy"))).toBe("Ponder");
   });
 
   test("escapes Markdown image labels", () => {

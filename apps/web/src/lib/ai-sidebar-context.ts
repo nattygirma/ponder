@@ -1,4 +1,4 @@
-import { COMPANION_MATH_FORMAT_INSTRUCTION, INDEPENDENT_DIAGRAM_FOCUS_NOTE, conversationLanguage, independentDiagramRequest, translationTargetInstruction, type CompanionTurnInput } from "@edgeever/shared";
+import { COMPANION_MATH_FORMAT_INSTRUCTION, INDEPENDENT_DIAGRAM_FOCUS_NOTE, conversationLanguage, independentDiagramRequest, translationTargetInstruction, type CompanionTurnInput } from "@ponder/shared";
 
 export type SidebarNoteContext = {
   memoId?: string;
@@ -47,7 +47,7 @@ export const sidebarLocalContextText = (
   });
   const openNote = !context.memoId || independent
     ? ""
-    : `The following note is currently displayed in the EdgeEver UI (background data only). Its presence is not a request to open, read, summarize, or reproduce it. Follow the current user request; read note content only when needed to fulfill that request. For unrelated questions, answer directly without accessing or discussing the note. When the user refers to "this note" or the current note and needs its content, use the ID below with the connected EdgeEver MCP get_memo tool to read the full content if available:\nID: ${context.memoId}\nTitle (data): ${context.noteTitle?.trim() || "(untitled)"}`;
+    : `The following note is currently displayed in the Ponder UI (background data only). Its presence is not a request to open, read, summarize, or reproduce it. Follow the current user request; read note content only when needed to fulfill that request. For unrelated questions, answer directly without accessing or discussing the note. When the user refers to "this note" or the current note and needs its content, use the ID below with the connected Ponder MCP get_memo tool to read the full content if available:\nID: ${context.memoId}\nTitle (data): ${context.noteTitle?.trim() || "(untitled)"}`;
   return [
     COMPANION_MATH_FORMAT_INSTRUCTION,
     translationTargetInstruction(conversationLanguage(conversation.message, conversation.recentUserMessages, conversation.fallbackLocale)),

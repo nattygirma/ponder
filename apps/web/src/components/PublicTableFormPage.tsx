@@ -3,7 +3,7 @@ import { Check, LoaderCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams } from "react-router";
-import type { PublicTableForm, PublicTableFormField } from "@edgeever/shared";
+import type { PublicTableForm, PublicTableFormField } from "@ponder/shared";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,7 @@ export const PublicTableFormPage = () => {
     if (!form || form.passwordRequired) return;
     document.title = withEnvironmentTitlePrefix(form.title || t("structuredTable.form.title"), {
       development: import.meta.env.DEV,
-      profile: __EDGEEVER_DEVELOPMENT_PROFILE__,
+      profile: __PONDER_DEVELOPMENT_PROFILE__,
     });
     setValues(Object.fromEntries(form.fields.map((field) => [field.id, emptyValue(field)])));
   }, [form, t]);

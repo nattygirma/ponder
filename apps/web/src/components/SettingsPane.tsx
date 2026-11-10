@@ -25,14 +25,13 @@ import * as m from "motion/react-m";
 import { Button } from "@/components/ui/button";
 
 import type { ShortcutSettings } from "@/lib/app-helpers";
-import type { NoteProsePatch, ResolvedNoteProse } from "@edgeever/shared";
+import type { NoteProsePatch, ResolvedNoteProse } from "@ponder/shared";
 import { BETA_BADGE_CLASSNAME, WORKSPACE_PAGE_TITLE_CLASSNAME } from "@/lib/workspace-ui";
 import { cn } from "@/lib/utils";
 import { AccountInfoCard } from "./settings/AccountInfoCard";
 import { DesktopScheduledBackupCard } from "./settings/DesktopScheduledBackupCard";
 import { DataExportCard } from "./settings/DataExportCard";
 import { DesktopLocalDataCard } from "./settings/DesktopLocalDataCard";
-import { LoginDevicesCard } from "./settings/LoginDevicesCard";
 import { ShareManagementCard } from "./settings/ShareManagementCard";
 import { ThirdPartyImportCard } from "./settings/ThirdPartyImportCard";
 import type { NoteImportController } from "@/lib/note-import/controller";
@@ -42,14 +41,12 @@ import { McpConfigCard } from "./settings/McpConfigCard";
 import { AiSpaceShortcutSettingsItem } from "./settings/AiSpaceShortcutSettingsItem";
 import { PreferenceCard } from "./settings/PreferenceCard";
 import { ShortcutSettingsItem } from "./settings/ShortcutSettingsItem";
-import { PasswordCard } from "./settings/PasswordCard";
-import { UserManagementCard } from "./settings/UserManagementCard";
 import { ObjectStorageCard } from "./settings/ObjectStorageCard";
 import { AiModelCard } from "./settings/AiModelCard";
 import { SpeechTranscriptionCard } from "./settings/SpeechTranscriptionCard";
 import { DesktopAcpAgentCard } from "./settings/DesktopAcpAgentCard";
 import { ThemeToggle } from "./ThemeToggle";
-import type { AuthUser } from "@edgeever/shared";
+import type { AuthUser } from "@ponder/shared";
 import { contentEnterMotion } from "@/lib/motion";
 import { useDeployedUpdateNotice } from "@/hooks/useDeployedUpdateNotice";
 import { ExecutionCenterButton } from "@/components/execution/ExecutionCenterButton";
@@ -62,6 +59,8 @@ const subscribeViewport = (callback: () => void) => {
 
 interface SettingsPaneProps {
   onClose: () => void;
+  onLogout: () => void;
+  isLoggingOut: boolean;
   onOpenTemplates: () => void;
   onOpenAiPrompts: () => void;
   imageCompressionEnabled: boolean;
@@ -70,9 +69,6 @@ interface SettingsPaneProps {
   onShortcutSettingsChange: (settings: ShortcutSettings) => void;
   noteProse: ResolvedNoteProse;
   onNoteProseChange: (patch: NoteProsePatch) => void;
-  onLogout: () => void;
-  isLoggingOut: boolean;
-  authRequired: boolean;
   demoMode: boolean;
   isOwner: boolean;
   user: AuthUser | null;
@@ -89,7 +85,7 @@ const SettingsGroup = ({ children }: { children: ReactNode }) => (
   </div>
 );
 
-type TabKey = "general" | "reading" | "editing" | "shortcuts" | "users" | "data" | "ai" | "mcp" | "speech" | "sharing" | "advanced" | "account" | "system";
+type TabKey = "general" | "reading" | "editing" | "shortcuts" | "data" | "ai" | "mcp" | "speech" | "sharing" | "advanced" | "account" | "system";
 
 interface TabItem {
   key: TabKey;
@@ -100,6 +96,8 @@ interface TabItem {
 
 export const SettingsPane = ({
   onClose,
+  onLogout,
+  isLoggingOut,
   onOpenTemplates,
   onOpenAiPrompts,
   imageCompressionEnabled,
@@ -108,9 +106,6 @@ export const SettingsPane = ({
   onShortcutSettingsChange,
   noteProse,
   onNoteProseChange,
-  onLogout,
-  isLoggingOut,
-  authRequired,
   demoMode,
   isOwner,
   user,
@@ -124,7 +119,7 @@ export const SettingsPane = ({
   const requestedTab = searchParams.get("tab");
   const selectTab = (tab: TabKey | null) => setSearchParams(tab ? { tab } : {}, { replace: true });
   const { unseen: deployedUpdateUnseen } = useDeployedUpdateNotice();
-  const canClearLocalData = Boolean(window.edgeeverDesktop?.canClearLocalData);
+  const canClearLocalData = Boolean(window.ponderDesktop?.canClearLocalData);
   const [devShowWebExport, setDevShowWebExport] = useState(false);
 
   const tabItems: TabItem[] = [
@@ -173,15 +168,6 @@ export const SettingsPane = ({
       label: t("sharing.managementTitle"),
       icon: Share2,
     },
-    ...(isOwner
-      ? [
-          {
-            key: "users" as const,
-            label: t("users.title"),
-            icon: Users,
-          },
-        ]
-      : []),
     ...(isOwner || canClearLocalData
       ? [
           {
@@ -267,28 +253,22 @@ export const SettingsPane = ({
             />
           </div>
         );
-      case "users":
-        return isOwner ? (
-          <SettingsGroup>
-            <UserManagementCard demoMode={demoMode} />
-          </SettingsGroup>
-        ) : null;
       case "data":
         return (
           <SettingsGroup>
             {import.meta.env.DEV && (
               <div className="flex items-center justify-between rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-700 dark:text-amber-300">
-                <span>Dev 预览模式：{devShowWebExport ? "当前为 Web 端原生导出卡片" : "当前为桌面端备份与恢复预览"}</span>
+                <span>Dev preview: {devShowWebExport ? "showing the web export card" : "showing the desktop backup and restore preview"}</span>
                 <button
                   type="button"
                   className="font-medium underline hover:text-amber-900 dark:hover:text-amber-100"
                   onClick={() => setDevShowWebExport((prev) => !prev)}
                 >
-                  {devShowWebExport ? "切换到桌面端预览" : "切换到 Web 原生导出"}
+                  {devShowWebExport ? "Switch to desktop preview" : "Switch to web export"}
                 </button>
               </div>
             )}
-            {window.edgeeverDesktop?.backup || (import.meta.env.DEV && !devShowWebExport) ? (
+            {window.ponderDesktop?.backup || (import.meta.env.DEV && !devShowWebExport) ? (
               <DesktopScheduledBackupCard />
             ) : (
               <DataExportCard refreshWorkspaceAfterImport={refreshWorkspaceAfterImport} />
@@ -327,15 +307,7 @@ export const SettingsPane = ({
       case "account":
         return (
           <SettingsGroup>
-            <AccountInfoCard user={user} />
-            <PasswordCard authRequired={authRequired} demoMode={demoMode} />
-            {demoMode ? null : (
-              <LoginDevicesCard
-                authRequired={authRequired}
-                isLoggingOut={isLoggingOut}
-                onLogout={onLogout}
-              />
-            )}
+            <AccountInfoCard user={user} onLogout={onLogout} isLoggingOut={isLoggingOut} />
           </SettingsGroup>
         );
       case "system":
@@ -373,9 +345,9 @@ export const SettingsPane = ({
       </header>
 
       <div className="flex min-h-0 min-w-0 flex-1 bg-workspace-canvas">
-        {/* 桌面端布局：双栏 */}
+        {/* Desktop layout: two columns */}
         <div className="hidden lg:flex flex-1 min-h-0 min-w-0 mx-auto max-w-5xl px-6 py-6 gap-6">
-          {/* 左侧垂直 Tab 栏 */}
+          {/* Left vertical tab bar */}
           <aside className="w-52 shrink-0 flex flex-col gap-1">
             {tabItems.map((item) => {
               const Icon = item.icon;
@@ -414,7 +386,7 @@ export const SettingsPane = ({
             })}
           </aside>
 
-          {/* 右侧设置内容区 */}
+          {/* Right settings content */}
           <main className="flex-1 min-w-0 overflow-y-auto [scrollbar-gutter:stable] pr-2">
             <m.div key={activeTab} className="grid gap-4" {...contentEnterMotion}>
               {renderTabContent(activeTab, true)}
@@ -422,10 +394,10 @@ export const SettingsPane = ({
           </main>
         </div>
 
-        {/* 移动端布局 */}
+        {/* Mobile layout */}
         <div className="flex lg:hidden flex-1 flex-col min-h-0 min-w-0 overflow-y-auto [scrollbar-gutter:stable] px-4 py-4">
           {activeMobileTab === null ? (
-            /* 分类主菜单 */
+            /* Category menu */
             <div className="grid gap-2">
               <div className="overflow-hidden rounded-2xl border border-slate-200 bg-card">
                 <button
@@ -485,7 +457,7 @@ export const SettingsPane = ({
               </div>
             </div>
           ) : (
-            /* 详情页面 */
+            /* Detail page */
             <m.div key={activeMobileTab} className="grid gap-4" {...contentEnterMotion}>
               {renderTabContent(activeMobileTab, false)}
             </m.div>

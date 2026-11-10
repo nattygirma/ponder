@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { FontLoadIcon } from "./FontLoadFeedback";
 import type { FontLoadStatus } from "@/lib/font-load-state";
 import { useTranslation } from "react-i18next";
-import { FONT_CATALOG, isRemoteNoteImageFont, shouldLoadFontPreview } from "@edgeever/shared/font-catalog";
-import { LEGACY_BODY_FONTS } from "@edgeever/shared/font-resources";
-import { loadCatalogFont, loadBodyFont, type BodyFontId } from "@edgeever/shared/font-loader";
+import { FONT_CATALOG, isRemoteNoteImageFont, shouldLoadFontPreview } from "@ponder/shared/font-catalog";
+import { LEGACY_BODY_FONTS } from "@ponder/shared/font-resources";
+import { loadCatalogFont, loadBodyFont, type BodyFontId } from "@ponder/shared/font-loader";
 
 /** Radix mounts hidden items too; previews only request fonts for visible menu rows. */
 export const FontLabel = ({ label, fontId, fontFamily, registrationFamily, enabled, visibleOnly = false, loadFont, status, onStatusChange, retryKey = 0 }: {
@@ -23,7 +23,7 @@ export const FontLabel = ({ label, fontId, fontFamily, registrationFamily, enabl
   const [progress, setProgress] = useState<{ key: string; status: FontLoadStatus }>({ key: "", status: "idle" });
   const ref = useRef<HTMLSpanElement>(null);
   const [readyKey, setReadyKey] = useState("");
-  const family = fontFamily ?? (fontId ? `"${registrationFamily ?? (isRemoteNoteImageFont(fontId) ? FONT_CATALOG[fontId].family : LEGACY_BODY_FONTS[fontId].family)}", "EdgeEver Offline Sans", sans-serif` : undefined);
+  const family = fontFamily ?? (fontId ? `"${registrationFamily ?? (isRemoteNoteImageFont(fontId) ? FONT_CATALOG[fontId].family : LEGACY_BODY_FONTS[fontId].family)}", "Ponder Offline Sans", sans-serif` : undefined);
   const key = `${fontId ?? ""}:${family ?? ""}:${label}:${retryKey}`;
   const canLoad = enabled && shouldLoadFontPreview(fontId, !visibleOnly);
   useEffect(() => {

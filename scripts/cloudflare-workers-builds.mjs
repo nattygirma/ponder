@@ -36,11 +36,11 @@ const localValues = existsSync(resolve(".env.local"))
   : new Map();
 
 const value = (name) => process.env[name]?.trim() || localValues.get(name)?.trim() || "";
-const instanceKey = value("EDGE_EVER_INSTANCE").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
-const instanceValue = (name) => (instanceKey ? value(`EDGE_EVER_${instanceKey}_${name}`) : "") || value(`EDGE_EVER_${name}`);
+const instanceKey = value("PONDER_INSTANCE").replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
+const instanceValue = (name) => (instanceKey ? value(`PONDER_${instanceKey}_${name}`) : "") || value(`PONDER_${name}`);
 
 const gitRepository = () => {
-  const configured = value("EDGE_EVER_GITHUB_REPOSITORY");
+  const configured = value("PONDER_GITHUB_REPOSITORY");
   if (/^[^/\s]+\/[^/\s]+$/.test(configured)) {
     const [owner, repository] = configured.split("/");
     return { owner, repository };
@@ -55,17 +55,17 @@ const gitRepository = () => {
   const match = remote.match(/github\.com[/:]([^/]+)\/([^/#\s]+?)(?:\.git)?$/i);
   if (!match) {
     throw new Error(
-      "Cannot identify the GitHub repository. Set EDGE_EVER_GITHUB_REPOSITORY=owner/repository or configure origin.",
+      "Cannot identify the GitHub repository. Set PONDER_GITHUB_REPOSITORY=owner/repository or configure origin.",
     );
   }
   return { owner: match[1], repository: match[2] };
 };
 
 // Keep the generic token as a silent fallback for existing installations and CI.
-const cfToken = value("EDGE_EVER_BUILDS_API_TOKEN") || value("CLOUDFLARE_API_TOKEN");
+const cfToken = value("PONDER_BUILDS_API_TOKEN") || value("CLOUDFLARE_API_TOKEN");
 const accountId = value("CLOUDFLARE_ACCOUNT_ID");
 const workerName = instanceValue("WORKER_NAME");
-const pagesProjectName = value("EDGE_EVER_PAGES_PROJECT_NAME");
+const pagesProjectName = value("PONDER_PAGES_PROJECT_NAME");
 
 const request = async (method, path, body) => {
   if (dryRun) return undefined;
@@ -113,10 +113,10 @@ const buildVariables = () => {
   ];
   const entries = [];
 
-  if (instanceKey) entries.push(["EDGE_EVER_INSTANCE", instanceKey]);
+  if (instanceKey) entries.push(["PONDER_INSTANCE", instanceKey]);
   for (const name of deploymentNames) {
-    const scoped = instanceKey ? `EDGE_EVER_${instanceKey}_${name}` : "";
-    const key = scoped && merged.get(scoped)?.trim() ? scoped : `EDGE_EVER_${name}`;
+    const scoped = instanceKey ? `PONDER_${instanceKey}_${name}` : "";
+    const key = scoped && merged.get(scoped)?.trim() ? scoped : `PONDER_${name}`;
     const current = merged.get(key)?.trim() || "";
     if (current) entries.push([key, current]);
   }
@@ -131,8 +131,8 @@ const triggerPayload = (workerTag, repoConnectionUuid, buildTokenUuid) => ({
   external_script_id: workerTag,
   repo_connection_uuid: repoConnectionUuid,
   build_token_uuid: buildTokenUuid,
-  trigger_name: "Deploy EdgeEver production",
-  build_command: "bun install --frozen-lockfile && EDGE_EVER_DEPLOYMENT_TRIGGER=main_push EDGE_EVER_DEPLOYMENT_METHOD=cloudflare_workers_builds bun run build:cloudflare",
+  trigger_name: "Deploy Ponder production",
+  build_command: "bun install --frozen-lockfile && PONDER_DEPLOYMENT_TRIGGER=main_push PONDER_DEPLOYMENT_METHOD=cloudflare_workers_builds bun run build:cloudflare",
   deploy_command: "bun run deploy:cloudflare-builds",
   root_directory: "/",
   branch_includes: ["main"],
@@ -182,12 +182,12 @@ const selectBuildToken = async (buildTokens, existingTrigger) => {
 
   // Keep accepting the old environment variable so existing installations do
   // not break, but do not expose Cloudflare's internal UUID in the new setup UX.
-  const legacyBuildTokenUuid = value("EDGE_EVER_BUILDS_BUILD_TOKEN_UUID");
+  const legacyBuildTokenUuid = value("PONDER_BUILDS_BUILD_TOKEN_UUID");
   if (legacyBuildTokenUuid) {
     const legacyToken = tokens.find((token) => token.build_token_uuid === legacyBuildTokenUuid);
     if (legacyToken) return legacyToken;
     throw new Error(
-      "The API token configured by the legacy EDGE_EVER_BUILDS_BUILD_TOKEN_UUID setting no longer exists. Remove that setting and rerun the command.",
+      "The API token configured by the legacy PONDER_BUILDS_BUILD_TOKEN_UUID setting no longer exists. Remove that setting and rerun the command.",
     );
   }
 
@@ -231,10 +231,10 @@ const selectBuildToken = async (buildTokens, existingTrigger) => {
 
 const setup = async () => {
   if (!accountId) throw new Error("Missing CLOUDFLARE_ACCOUNT_ID.");
-  if (!workerName) throw new Error("Missing EDGE_EVER_WORKER_NAME.");
+  if (!workerName) throw new Error("Missing PONDER_WORKER_NAME.");
   if (!cfToken) {
     throw new Error(
-      "Missing EDGE_EVER_BUILDS_API_TOKEN. It must be a User API Token with Workers Builds Configuration: Edit and Workers Scripts: Read.",
+      "Missing PONDER_BUILDS_API_TOKEN. It must be a User API Token with Workers Builds Configuration: Edit and Workers Scripts: Read.",
     );
   }
 

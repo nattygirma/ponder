@@ -6,14 +6,14 @@ import { openBlockSource } from "./markdown-block-start";
 import type { TiptapDoc, TiptapNode, TiptapTextNode } from "./content";
 import { parseImageAlignment } from "./image-alignment";
 
-export const IMAGE_GALLERY_NODE_TYPE = "edgeeverImageGallery" as const;
+export const IMAGE_GALLERY_NODE_TYPE = "ponderImageGallery" as const;
 export const IMAGE_GALLERY_LAYOUTS = ["auto", "2", "3", "1"] as const;
 export const IMAGE_GALLERY_FITS = ["width", "height"] as const;
 export type ImageGalleryFit = (typeof IMAGE_GALLERY_FITS)[number];
 export const resolveImageGalleryFit = (value: unknown): ImageGalleryFit =>
   value === "height" ? "height" : "width";
 /** In-document src used while a mobile upload has not finished. */
-export const TRANSIENT_IMAGE_UPLOAD_PREFIX = "edgeever-image-upload://";
+export const TRANSIENT_IMAGE_UPLOAD_PREFIX = "ponder-image-upload://";
 
 export const isTransientImageUploadSource = (source: unknown) =>
   typeof source === "string" && source.startsWith(TRANSIENT_IMAGE_UPLOAD_PREFIX);
@@ -98,14 +98,14 @@ export const ImageGallery = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: "div[data-edgeever-image-gallery]" }];
+    return [{ tag: "div[data-ponder-image-gallery]" }];
   },
 
   renderHTML({ node, HTMLAttributes }) {
     return [
       "div",
       mergeAttributes(HTMLAttributes, {
-        "data-edgeever-image-gallery": "true",
+        "data-ponder-image-gallery": "true",
         "data-image-count": String(node.childCount),
       }),
       0,
@@ -116,7 +116,7 @@ export const ImageGallery = Node.create({
     const images = helpers.renderChildren(node.content ?? [], "\n\n");
     if (resolveImageGalleryFit(node.attrs?.fit) === "width") return images;
     const layout = resolveImageGalleryLayout(node.attrs?.layout);
-    return `<!-- edgeever:image-gallery fit=height layout=${layout} -->\n\n${images}\n\n<!-- /edgeever:image-gallery -->`;
+    return `<!-- ponder:image-gallery fit=height layout=${layout} -->\n\n${images}\n\n<!-- /ponder:image-gallery -->`;
   },
 
   parseMarkdown(token, helpers) {
@@ -134,10 +134,10 @@ export const ImageGallery = Node.create({
     name: IMAGE_GALLERY_NODE_TYPE,
     level: "block",
     start(source: string) {
-      return openBlockSource(source).indexOf("<!-- edgeever:image-gallery ");
+      return openBlockSource(source).indexOf("<!-- ponder:image-gallery ");
     },
     tokenize(source: string, _tokens, lexer) {
-      const match = /^<!-- edgeever:image-gallery fit=(width|height) layout=(auto|1|2|3) -->\s*\n([\s\S]*?)\n<!-- \/edgeever:image-gallery -->/.exec(source);
+      const match = /^<!-- ponder:image-gallery fit=(width|height) layout=(auto|1|2|3) -->\s*\n([\s\S]*?)\n<!-- \/ponder:image-gallery -->/.exec(source);
       if (!match) return undefined;
       return {
         type: IMAGE_GALLERY_NODE_TYPE,
@@ -200,7 +200,7 @@ const hasUsableImageSource = (node: TiptapNode | TiptapTextNode) =>
  * the same undoable edit as the node-view, keyboard or range change.
  */
 export const createImageGalleryCleanupPlugin = () => new Plugin({
-  key: new PluginKey("edgeever-image-gallery-cleanup"),
+  key: new PluginKey("ponder-image-gallery-cleanup"),
   appendTransaction(transactions, _oldState, state) {
     if (!transactions.some((transaction) => transaction.docChanged)) return null;
 

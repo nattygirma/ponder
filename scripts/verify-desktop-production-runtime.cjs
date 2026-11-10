@@ -34,13 +34,13 @@ async function main() {
   const npmCli = join(dirname(resolveDependency("npm")), "bin/npm-cli.js");
   const npmRequire = createRequire(npmCli);
   const tar = npmRequire("tar");
-  const root = mkdtempSync(join(tmpdir(), "edgeever-packaged-npm-"));
+  const root = mkdtempSync(join(tmpdir(), "ponder-packaged-npm-"));
   try {
     const fixture = join(root, "fixture/package");
     mkdirSync(fixture, { recursive: true });
     writeFileSync(join(fixture, "index.js"), "module.exports = 42;\n");
     for (const version of ["1.0.0", "1.0.1"]) {
-      writeFileSync(join(fixture, "package.json"), JSON.stringify({ name: "edgeever-packaging-fixture", version, main: "index.js" }));
+      writeFileSync(join(fixture, "package.json"), JSON.stringify({ name: "ponder-packaging-fixture", version, main: "index.js" }));
       const tarball = join(root, `fixture-${version}.tgz`);
       await tar.c({ gzip: true, cwd: join(root, "fixture"), file: tarball }, ["package"]);
       execFileSync(nodeExecutable, [npmCli, "install", "--prefix", join(root, "installed"),
@@ -51,7 +51,7 @@ async function main() {
         timeout: 60_000,
         stdio: "pipe",
       });
-      const installed = join(root, "installed/node_modules/edgeever-packaging-fixture");
+      const installed = join(root, "installed/node_modules/ponder-packaging-fixture");
       assert.equal(JSON.parse(readFileSync(join(installed, "package.json"), "utf8")).version, version);
       assert.equal(require(join(installed, "index.js")), 42);
     }

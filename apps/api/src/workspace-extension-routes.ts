@@ -2,7 +2,7 @@ import {
   WorkspaceExtensionUpsertSchema,
   type WorkspaceExtension,
   type WorkspaceExtensionSourceKind,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { audit } from "./audit";

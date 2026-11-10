@@ -4,9 +4,9 @@
   "entries": [
     {
       "id": "org.edgeever.tasks",
-      "name": "EdgeEver Tasks",
+      "name": "Ponder Tasks",
       "description": "Collects Markdown tasks across notes and links every task back to its source.",
-      "author": "EdgeEver",
+      "author": "Ponder",
       "publisher": "edgeever",
       "category": "Productivity",
       "repositoryUrl": "https://github.com/tianma-if/edgeever-tasks",
@@ -25,9 +25,9 @@
     },
     {
       "id": "org.edgeever.plugins.ai-rss",
-      "name": "EdgeEver AI RSS",
-      "description": "AI-generated daily digests from curated RSS and Atom feeds, saved directly to EdgeEver notes.",
-      "author": "EdgeEver",
+      "name": "Ponder AI RSS",
+      "description": "AI-generated daily digests from curated RSS and Atom feeds, saved directly to Ponder notes.",
+      "author": "Ponder",
       "publisher": "edgeever",
       "category": "News & AI",
       "repositoryUrl": "https://github.com/tianma-if/edgeever-ai-rss",

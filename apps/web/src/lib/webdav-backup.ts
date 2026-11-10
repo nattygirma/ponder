@@ -18,14 +18,14 @@ export type WebDavBackupSchedule = {
   lastAttemptAt: string | null;
 };
 
-const STORAGE_KEY = "edgeever.webdav-backup-config";
-const PASSWORD_STORAGE_KEY = "edgeever.webdav-backup-password";
-const SCHEDULE_STORAGE_KEY = "edgeever.webdav-backup-schedule";
+const STORAGE_KEY = "ponder.webdav-backup-config";
+const PASSWORD_STORAGE_KEY = "ponder.webdav-backup-password";
+const SCHEDULE_STORAGE_KEY = "ponder.webdav-backup-schedule";
 
 export const DEFAULT_WEBDAV_BACKUP_CONFIG: WebDavBackupConfig = {
   url: "",
   username: "",
-  remotePath: "/EdgeEver/backups",
+  remotePath: "/Ponder/backups",
 };
 
 export const DEFAULT_WEBDAV_BACKUP_SCHEDULE: WebDavBackupSchedule = {
@@ -145,7 +145,7 @@ export const uploadWebDavBackup = async (
   const client = createWebDavClient(normalized, password);
   await client.createDirectory(normalized.remotePath, { recursive: true });
 
-  const filename = `edgeever-${timestamp.toISOString().replace(/[:.]/g, "-")}.zip`;
+  const filename = `ponder-${timestamp.toISOString().replace(/[:.]/g, "-")}.zip`;
   const remotePath = `${normalized.remotePath.replace(/\/$/, "")}/${filename}`;
   // The webdav client JSON-serializes Blob/File bodies, so send raw bytes.
   const uploaded = await client.putFileContents(remotePath, await archive.arrayBuffer(), {

@@ -99,6 +99,12 @@ describe("pending linked-note selection and list reconciliation", () => {
     expect(h.state().selectedMemoId).toBe(firstC.id);
   });
 
+  test("a note opened from a link on load isn't replaced by the list's first note", async () => {
+    const h = await mount({ initialMemoId: null });
+    await h.openTarget();
+    expect(h.state().selectedMemoId).toBe(target.id);
+  });
+
   test("an empty destination clears the old linked note from the editor", async () => {
     const h = await mount();
     await h.openTarget();

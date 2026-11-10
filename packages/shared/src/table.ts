@@ -69,7 +69,7 @@ export type TableSummaryPreview = {
   fieldNames: string[];
 };
 
-const TABLE_MARKER = "edgeever-table-v1";
+const TABLE_MARKER = "ponder-table-v1";
 const TABLE_COMMENT = new RegExp(`<!--\\s*${TABLE_MARKER}:([\\s\\S]*?)\\s*-->`);
 const FIELD_NAME_LIMIT = 80;
 const OPTION_LIMIT = 40;
@@ -171,7 +171,7 @@ const parseField = (value: unknown): TableField | null => {
   if (!isRecord(value) || typeof value.id !== "string" || !value.id || value.id.length > 80) return null;
   if (!TABLE_FIELD_TYPES.includes(value.type as TableFieldType)) return null;
   const type = value.type as TableFieldType;
-  const field: TableField = { id: value.id, name: cleanName(value.name, "字段"), type };
+  const field: TableField = { id: value.id, name: cleanName(value.name, "Field"), type };
   if (type === "select") field.options = cleanOptions(value.options);
   return field;
 };
@@ -249,7 +249,7 @@ const markdownCell = (field: TableField, value: TableCellValue) => {
 };
 
 export const tableFallbackMarkdown = (document: TableDocument) => {
-  const header = document.fields.map((field) => markdownCell({ ...field, type: "text" }, field.name) || "字段");
+  const header = document.fields.map((field) => markdownCell({ ...field, type: "text" }, field.name) || "Field");
   const divider = header.map(() => "---");
   const rows = document.records.map((record) => document.fields.map((field) => markdownCell(field, record.cells[field.id] ?? null)));
   return [header, divider, ...rows].map((row) => `| ${row.join(" | ")} |`).join("\n");
@@ -262,20 +262,20 @@ export const createDefaultTableDocument = (labels: TableSeedLabels = {}): TableD
   const nameId = "fld_name";
   const statusId = "fld_status";
   const dateId = "fld_date";
-  const notStarted = labels.notStarted ?? "未开始";
-  const inProgress = labels.inProgress ?? "进行中";
-  const done = labels.done ?? "完成";
+  const notStarted = labels.notStarted ?? "Not started";
+  const inProgress = labels.inProgress ?? "In progress";
+  const done = labels.done ?? "Done";
   return {
     schemaVersion: TABLE_SCHEMA_VERSION,
     fields: [
-      { id: nameId, name: labels.name ?? "名称", type: "text" },
-      { id: statusId, name: labels.status ?? "状态", type: "select", options: [notStarted, inProgress, done] },
-      { id: dateId, name: labels.date ?? "日期", type: "date" },
+      { id: nameId, name: labels.name ?? "Name", type: "text" },
+      { id: statusId, name: labels.status ?? "Status", type: "select", options: [notStarted, inProgress, done] },
+      { id: dateId, name: labels.date ?? "Date", type: "date" },
     ],
     records: [{
       id: "rec_sample",
       cells: {
-        [nameId]: labels.sample ?? "示例记录",
+        [nameId]: labels.sample ?? "Sample record",
         [statusId]: notStarted,
         [dateId]: "",
       },

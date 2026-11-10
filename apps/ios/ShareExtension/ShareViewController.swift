@@ -3,9 +3,9 @@ import UniformTypeIdentifiers
 
 /// Lightweight share extension: text, web URLs, and images → App Group → open main app.
 class ShareViewController: UIViewController {
-    private let appGroupId = "group.org.edgeever.mobile"
-    private let hostScheme = "edgeever"
-    private let payloadKey = "edgeever.share.payload"
+    private let appGroupId = "group.io.appkeep.ponder.mobile"
+    private let hostScheme = "ponder"
+    private let payloadKey = "ponder.share.payload"
     private let imageDirectoryName = "incoming-share-images"
 
     override func viewDidLoad() {

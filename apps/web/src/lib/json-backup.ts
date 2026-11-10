@@ -1,14 +1,14 @@
-import { createEdgeEverZipStream } from "@edgeever/shared/backup-archive";
-import type { JsonBackupSource, EdgeEverZipProgress } from "@edgeever/shared/backup-archive";
-export * from "@edgeever/shared/backup-archive";
+import { createPonderZipStream } from "@ponder/shared/backup-archive";
+import type { JsonBackupSource, PonderZipProgress } from "@ponder/shared/backup-archive";
+export * from "@ponder/shared/backup-archive";
 
 const ZIP_MIME_TYPE = "application/zip";
 const MAX_BUFFERED_ZIP_BYTES = 128 * 1024 * 1024;
 
-export class EdgeEverZipMemoryLimitError extends Error {
+export class PonderZipMemoryLimitError extends Error {
   constructor() {
     super("This backup is too large for an in-memory export. Use a browser that supports streaming file saves.");
-    this.name = "EdgeEverZipMemoryLimitError";
+    this.name = "PonderZipMemoryLimitError";
   }
 }
 
@@ -23,7 +23,7 @@ const bufferedZipBlob = async (stream: ReadableStream<Uint8Array>) => {
       total += next.value.byteLength;
       if (total > MAX_BUFFERED_ZIP_BYTES) {
         await reader.cancel();
-        throw new EdgeEverZipMemoryLimitError();
+        throw new PonderZipMemoryLimitError();
       }
       const copy = new Uint8Array(next.value.byteLength);
       copy.set(next.value);
@@ -40,31 +40,31 @@ type StreamingFileHandle = {
   getFile?: () => Promise<File>;
 };
 
-export const saveEdgeEverZip = async (
+export const savePonderZip = async (
   source: JsonBackupSource,
-  version: { edgeeverVersion: string; buildId: string },
-  onProgress?: (progress: EdgeEverZipProgress) => void,
+  version: { ponderVersion: string; buildId: string },
+  onProgress?: (progress: PonderZipProgress) => void,
 ) => {
-  const filename = `edgeever-export-${new Date().toISOString().slice(0, 10)}.zip`;
+  const filename = `ponder-export-${new Date().toISOString().slice(0, 10)}.zip`;
   const savePicker = (window as Window & {
     showSaveFilePicker?: (options: { suggestedName: string }) => Promise<StreamingFileHandle>;
   }).showSaveFilePicker;
   if (savePicker) {
     const handle = await savePicker.call(window, { suggestedName: filename });
-    const stream = await createEdgeEverZipStream(source, version, onProgress);
+    const stream = await createPonderZipStream(source, version, onProgress);
     await stream.pipeTo(await handle.createWritable());
     return { filename, streamed: true as const };
   }
 
-  const stream = await createEdgeEverZipStream(source, version, onProgress);
-  downloadEdgeEverZip(await bufferedZipBlob(stream), filename);
+  const stream = await createPonderZipStream(source, version, onProgress);
+  downloadPonderZip(await bufferedZipBlob(stream), filename);
   return { filename, streamed: false as const };
 };
 
-export const createEdgeEverZipTemporaryFile = async (
+export const createPonderZipTemporaryFile = async (
   source: JsonBackupSource,
-  version: { edgeeverVersion: string; buildId: string },
-  onProgress?: (progress: EdgeEverZipProgress) => void,
+  version: { ponderVersion: string; buildId: string },
+  onProgress?: (progress: PonderZipProgress) => void,
 ) => {
   const storage = navigator.storage as StorageManager & {
     getDirectory?: () => Promise<{
@@ -73,14 +73,14 @@ export const createEdgeEverZipTemporaryFile = async (
     }>;
   };
   if (!storage.getDirectory) {
-    const stream = await createEdgeEverZipStream(source, version, onProgress);
+    const stream = await createPonderZipStream(source, version, onProgress);
     return { file: await bufferedZipBlob(stream), cleanup: async () => {} };
   }
 
   const root = await storage.getDirectory();
-  const name = `edgeever-backup-${crypto.randomUUID()}.zip`;
+  const name = `ponder-backup-${crypto.randomUUID()}.zip`;
   const handle = await root.getFileHandle(name, { create: true });
-  const stream = await createEdgeEverZipStream(source, version, onProgress);
+  const stream = await createPonderZipStream(source, version, onProgress);
   try {
     await stream.pipeTo(await handle.createWritable());
     if (!handle.getFile) throw new Error("The temporary backup file is unavailable");
@@ -94,9 +94,9 @@ export const createEdgeEverZipTemporaryFile = async (
   }
 };
 
-export const downloadEdgeEverZip = (
+export const downloadPonderZip = (
   blob: Blob,
-  filename = `edgeever-export-${new Date().toISOString().slice(0, 10)}.zip`,
+  filename = `ponder-export-${new Date().toISOString().slice(0, 10)}.zip`,
 ) => {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");

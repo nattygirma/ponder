@@ -9,10 +9,10 @@ import { join } from "node:path";
 import { createClient } from "webdav";
 import { OffsiteBackup } from "../apps/desktop/src/main/backup-offsite.mjs";
 
-const URL = process.env.EDGEEVER_WEBDAV_URL ?? "http://127.0.0.1:18080";
-const LIMITED_URL = process.env.EDGEEVER_WEBDAV_LIMITED_URL ?? "http://127.0.0.1:18081";
-const USER = process.env.EDGEEVER_WEBDAV_USER ?? "tester";
-const PASSWORD = process.env.EDGEEVER_WEBDAV_PASSWORD ?? "test-pass-123";
+const URL = process.env.PONDER_WEBDAV_URL ?? "http://127.0.0.1:18080";
+const LIMITED_URL = process.env.PONDER_WEBDAV_LIMITED_URL ?? "http://127.0.0.1:18081";
+const USER = process.env.PONDER_WEBDAV_USER ?? "tester";
+const PASSWORD = process.env.PONDER_WEBDAV_PASSWORD ?? "test-pass-123";
 const SET = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee";
 const secureStorage = {
   isEncryptionAvailable: () => true, isAsyncEncryptionAvailable: async () => true,
@@ -20,7 +20,7 @@ const secureStorage = {
 };
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
-const root = await mkdtemp(join(tmpdir(), "edgeever-webdav-it-"));
+const root = await mkdtemp(join(tmpdir(), "ponder-webdav-it-"));
 const backups = join(root, "backups");
 await mkdir(join(root, "private", "scheduled-backups"), { recursive: true });
 await mkdir(join(backups, SET), { recursive: true });
@@ -49,7 +49,7 @@ try {
   await offsite.save({ enabled: true, url: URL, username: USER, folder }, PASSWORD);
 
   await step("plain and encrypted archives upload byte-for-byte without leftover .part files", async () => {
-    for (const [name, size] of [["edgeever-backup-1.zip", 3 * 1024 * 1024], ["edgeever-backup-2.edgeever.enc", 512 * 1024]]) {
+    for (const [name, size] of [["ponder-backup-1.zip", 3 * 1024 * 1024], ["ponder-backup-2.ponder.enc", 512 * 1024]]) {
       const { entry, bytes } = await archive(name, size);
       offsite.enqueue(entry, 5); await settle();
       assert.equal(offsite.status().error, null, JSON.stringify(offsite.status().error));

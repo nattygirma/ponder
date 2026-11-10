@@ -24,17 +24,17 @@ describe("desktop release workflow", () => {
     expect(desktopPackageVerifier.match(/listAsarFiles\(asarPath, executable\)/g)).toHaveLength(3);
   });
   test("keeps the installed application and automatic update identity stable", () => {
-    expect(desktopBuilderConfig).toContain("appId: org.edgeever.desktop");
+    expect(desktopBuilderConfig).toContain("appId: io.appkeep.ponder.desktop");
     expect(desktopBuilderConfig).toContain([
       "publish:",
       "  provider: github",
       "  owner: tianma-if",
-      "  repo: edgeever",
+      "  repo: ponder",
       "  releaseType: release",
     ].join("\n"));
-    expect(desktopBuilderConfig).toContain("schemes:\n      - edgeever");
-    expect(desktopBuilderConfig).not.toContain("edgeever-app");
-    expect(desktopBuilderConfig).toContain("PlugIns/EdgeEverShare.appex");
+    expect(desktopBuilderConfig).toContain("schemes:\n      - ponder");
+    expect(desktopBuilderConfig).not.toContain("ponder-app");
+    expect(desktopBuilderConfig).toContain("PlugIns/PonderShare.appex");
     expect(desktopBuilderConfig).toContain("sign: ./scripts/sign-share-extension.cjs");
     expect(desktopBuilderConfig).not.toContain("afterSign:");
     const shareSigner = readFileSync(new URL("../apps/desktop/scripts/sign-share-extension.cjs", import.meta.url), "utf8");
@@ -95,7 +95,7 @@ describe("desktop release workflow", () => {
   test("still builds and verifies each architecture-specific installer", () => {
     expect(step("Build architecture-specific Rust sidecar")).not.toContain("if: matrix.shared_validation");
     expect(step("Package desktop installer")).not.toContain("if: matrix.shared_validation");
-    expect(step("Package desktop installer")).toContain("EDGE_EVER_DESKTOP_ARCH: ${{ matrix.arch }}");
+    expect(step("Package desktop installer")).toContain("PONDER_DESKTOP_ARCH: ${{ matrix.arch }}");
     expect(step("Verify desktop installer")).not.toContain("if: matrix.shared_validation");
     expect(step("Verify packaged macOS cross-version startup")).toContain("needs.release-plan.outputs.previous_tag");
     expect(step("Verify packaged macOS cross-version startup")).toContain("verify:desktop-cross-version-startup");
@@ -117,16 +117,16 @@ describe("desktop release workflow", () => {
   test("reports timings after builds without instrumenting native build steps", () => {
     expect(workflow).toContain("name: Report desktop build timings");
     expect(workflow).toContain("--platform desktop");
-    expect(workflow).toContain("name: edgeever-desktop-build-timings");
+    expect(workflow).toContain("name: ponder-desktop-build-timings");
     expect(mobileWorkflow).toContain("name: Report Android build timings");
     expect(mobileWorkflow).toContain("--platform android");
-    expect(mobileWorkflow).toContain("name: edgeever-android-build-timings");
+    expect(mobileWorkflow).toContain("name: ponder-android-build-timings");
     expect(mobileWorkflow).not.toContain("Build signed release APK for GitHub Release\n        run: time");
   });
 
   test("builds an unsigned Windows x64 Preview and audits its signed update metadata", () => {
     expect(workflow).toContain("name: Windows x64 unsigned Preview");
-    expect(workflow).toContain("EDGE_EVER_DESKTOP_TARGET: win");
+    expect(workflow).toContain("PONDER_DESKTOP_TARGET: win");
     expect(workflow).toContain("Get-AuthenticodeSignature");
     expect(workflow).toContain("create-windows-update-metadata.mjs");
     expect(workflow).toContain("allow-missing-windows-signature");
@@ -140,9 +140,9 @@ describe("desktop release workflow", () => {
     expect(workflow).toContain("verify:packaged-desktop-startup");
     expect(step("Verify packaged Windows private protocol file flows")).toContain("verify:desktop-protocol-e2e");
     expect(step("Verify packaged Windows note windows")).toContain("verify:desktop-note-window-e2e");
-    expect(protocolE2eVerifier).toContain('origin !== "edgeever-app://app"');
-    expect(protocolE2eVerifier).toContain('fetch("edgeever-staged://" + pending.id)');
-    expect(protocolE2eVerifier).toContain('const url = "edgeever-resource://resource/${cachedResourceId}"');
+    expect(protocolE2eVerifier).toContain('origin !== "ponder-app://app"');
+    expect(protocolE2eVerifier).toContain('fetch("ponder-staged://" + pending.id)');
+    expect(protocolE2eVerifier).toContain('const url = "ponder-resource://resource/${cachedResourceId}"');
     expect(protocolE2eVerifier).toContain('DOM.setFileInputFiles');
     expect(protocolE2eVerifier).toContain("renderer.bootstrap-ready");
     expect(protocolE2eVerifier).toContain("objectId");
@@ -150,9 +150,9 @@ describe("desktop release workflow", () => {
     expect(protocolE2eVerifier).toContain('Browser.setDownloadBehavior');
     expect(packagedStartupVerifier).toContain('new Set(["renderer.origin-ready", "sidecar.ready", "renderer.bootstrap-ready"])');
     expect(packagedStartupVerifier).toContain('"renderer.origin-ready"');
-    expect(packagedStartupVerifier).toContain('startsWith("edgeever-app://app/")');
+    expect(packagedStartupVerifier).toContain('startsWith("ponder-app://app/")');
     expect(desktopPackageVerifier).toContain("isVisualCppRuntimeDll");
-    expect(desktopPackageVerifier).toContain("EdgeEverShare.appex");
+    expect(desktopPackageVerifier).toContain("PonderShare.appex");
     expect(desktopPackageVerifier).toContain("com\\.apple\\.share-services");
     expect(cargoConfig).toContain('target.x86_64-pc-windows-msvc');
     expect(cargoConfig).toContain('target-feature=+crt-static');
@@ -177,9 +177,9 @@ describe("desktop release workflow", () => {
     expect(workflow).toContain("runs-on: ubuntu-22.04");
     expect(linuxJob).toContain("name: Install AppImage runtime dependencies");
     expect(linuxJob).toContain("sudo apt-get install --yes libfuse2");
-    expect(workflow).toContain("EDGE_EVER_DESKTOP_TARGET: linux");
+    expect(workflow).toContain("PONDER_DESKTOP_TARGET: linux");
     expect(desktopBuilderConfig).toContain(
-      "artifactName: EdgeEver-${version}-linux-x64.${ext}",
+      "artifactName: Ponder-${version}-linux-x64.${ext}",
     );
     expect(workflow).toContain("name: Run packaged Linux sidecar integration tests");
     expect(workflow).toContain("name: Verify packaged Linux first launch");
@@ -192,7 +192,7 @@ describe("desktop release workflow", () => {
     expect(step("Verify real Linux AppImage automatic update")).toContain("verify-linux-appimage-update.mjs");
     expect(step("Verify real Linux AppImage automatic update")).toContain("xvfb-run -a");
     expect(step("Build Linux automatic update predecessor")).toContain('gh release download "$PREVIOUS_TAG"');
-    expect(step("Build Linux automatic update predecessor")).toContain("EdgeEver-linux-update-source.AppImage");
+    expect(step("Build Linux automatic update predecessor")).toContain("Ponder-linux-update-source.AppImage");
     expect(workflow).toContain("name: Audit Linux Preview asset");
     expect(linuxAuditJob).toContain("name: Check out source");
     expect(linuxAuditJob).toContain("uses: actions/checkout@v5");

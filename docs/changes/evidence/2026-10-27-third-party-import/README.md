@@ -1,7 +1,5 @@
 # Third-party import acceptance conclusions
 
-[简体中文](README.zh-CN.md)
-
 ## Actual imports from three sources
 
 The Web Settings entry and earlier isolated native runtimes passed the authored source fixtures below. Paths, bodies, tags, original timestamps and full attachment bytes read back correctly; images and PDFs are readable.
@@ -97,7 +95,7 @@ Implementation-baseline large-resource measurements use a separate profile per c
 All three cases end with zero temporary resource chunks. Generate large fixtures when needed rather than committing them:
 
 ```sh
-bun tests/fixtures/note-import/generate-large.mjs /tmp/edgeever-note-import-large
+bun tests/fixtures/note-import/generate-large.mjs /tmp/ponder-note-import-large
 ```
 
 ## Reproduce affected checks

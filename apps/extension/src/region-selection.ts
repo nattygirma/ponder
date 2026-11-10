@@ -4,10 +4,10 @@ import { platformElementHidden, platformHtmlMarkdown, platformReadableCopy } fro
 // Wrapper normalization and parent/child history adapted from MaoXian Web
 // Clipper, src/js/content/ui.js (e69fbf9c), Copyright (c) 2018 Mika, MIT.
 // See ../THIRD_PARTY_NOTICES.md. No source-page elements are modified.
-const excluded = "html,head,script,style,template,iframe,object,embed,canvas,svg,video,audio,form,input,textarea,select,button,#edgeever-region-picker,#edgeever-clipper-toast";
+const excluded = "html,head,script,style,template,iframe,object,embed,canvas,svg,video,audio,form,input,textarea,select,button,#ponder-region-picker,#ponder-clipper-toast";
 
 export const selectableRegion = (element: Element | null): element is HTMLElement => {
-  if (!element || element.matches(excluded) || element.closest("#edgeever-region-picker,#edgeever-clipper-toast") || platformElementHidden(element)) return false;
+  if (!element || element.matches(excluded) || element.closest("#ponder-region-picker,#ponder-clipper-toast") || platformElementHidden(element)) return false;
   const box = element.getBoundingClientRect();
   return box.width > 0 && box.height > 0 && !!(element.textContent?.trim() || element.matches("img") || element.querySelector("img"));
 };
@@ -61,7 +61,7 @@ export class RegionSelection {
 export const regionMarkdown = (element: Element, pageUrl: string): string => {
   if (!element.isConnected || platformElementHidden(element)) return "";
   const copy = platformReadableCopy(element);
-  copy.querySelectorAll("#edgeever-region-picker,#edgeever-clipper-toast").forEach(node => node.remove());
+  copy.querySelectorAll("#ponder-region-picker,#ponder-clipper-toast").forEach(node => node.remove());
   // Inert parsing keeps conversion from activating copied scripts or images.
   return platformHtmlMarkdown(createDocument(copy.outerHTML).body, pageUrl);
 };

@@ -8,7 +8,7 @@ const environment = { storage: { db: { prepare: () => ({ bind: (a,b) => {
   return { all: async () => ({ results: [provider] }) };
 } }) } } };
 const request = (url = target, method = "POST", signal) => new Request("https://notes.example/api/v1/ai/provider-relay", {
-  method: "POST", headers: { "x-edgeever-ai-target": url, "x-edgeever-ai-method": method, "x-edgeever-ai-headers": JSON.stringify({ authorization: "Bearer model-key", "content-type": "application/json", cookie: "session=private", "x-admin": "must-not-forward" }) },
+  method: "POST", headers: { "x-ponder-ai-target": url, "x-ponder-ai-method": method, "x-ponder-ai-headers": JSON.stringify({ authorization: "Bearer model-key", "content-type": "application/json", cookie: "session=private", "x-admin": "must-not-forward" }) },
   body: JSON.stringify({ model: "test", messages: [] }), signal,
 });
 const makeApp = (fetchProvider, kind = "user") => {

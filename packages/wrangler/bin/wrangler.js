@@ -6,8 +6,8 @@ import { createRequire } from "node:module";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  edgeEverDeploymentEnvironment,
-  shouldRunEdgeEverDeployment,
+  ponderDeploymentEnvironment,
+  shouldRunPonderDeployment,
 } from "../dispatch.mjs";
 
 const args = process.argv.slice(2);
@@ -35,21 +35,21 @@ const run = (executable, commandArgs, options = {}) => {
   process.exit(result.status ?? 1);
 };
 
-if (shouldRunEdgeEverDeployment(args, process.env, repositoryConfig)) {
+if (shouldRunPonderDeployment(args, process.env, repositoryConfig)) {
   console.error(
-    "[info] Cloudflare used its default deploy command; routing it through EdgeEver's validated deployment pipeline.",
+    "[info] Cloudflare used its default deploy command; routing it through Ponder's validated deployment pipeline.",
   );
   run("bun", ["run", "deploy"], {
-    env: edgeEverDeploymentEnvironment(),
+    env: ponderDeploymentEnvironment(),
   });
 }
 
 const require = createRequire(import.meta.url);
-const officialPackagePath = require.resolve("edgeever-wrangler-cli/package.json");
+const officialPackagePath = require.resolve("ponder-wrangler-cli/package.json");
 const officialCliPath = resolve(dirname(officialPackagePath), "bin/wrangler.js");
 run("node", [officialCliPath, ...args], {
   env: {
     ...process.env,
-    EDGE_EVER_WRANGLER_BYPASS_SHIM: "1",
+    PONDER_WRANGLER_BYPASS_SHIM: "1",
   },
 });

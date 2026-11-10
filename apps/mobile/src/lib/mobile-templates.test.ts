@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { localizeMemoTemplateGalleryItem, MEMO_TEMPLATE_GALLERY } from "@edgeever/shared/memo-template-gallery";
+import { localizeMemoTemplateGalleryItem, MEMO_TEMPLATE_GALLERY } from "@ponder/shared/memo-template-gallery";
 import {
   createMemoSeedHasContent,
   galleryEntryToMobileSelectableTemplate,

@@ -11,7 +11,7 @@ import {
   MIND_MAP_CONNECTOR_NAME,
   mindMapConnector,
   type DiagramDocument,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 Graph.registerConnector(MIND_MAP_CONNECTOR_NAME, mindMapConnector, true);
 
@@ -22,7 +22,7 @@ export const ReadOnlyX6Diagram = ({
   controls = false,
 }: {
   diagram: DiagramDocument;
-  locale: "zh-CN" | "en-US" | "ja" | "pl" | "ru";
+  locale: "en-US" | "ja" | "pl" | "ru";
   theme: "light" | "dark";
   controls?: boolean;
 }) => {
@@ -97,21 +97,21 @@ export const ReadOnlyX6Diagram = ({
   }, [diagram, locale, theme]);
 
   return (
-    <section className={`edgeever-x6-document${fullscreen ? " edgeever-x6-fullscreen" : ""}`}>
+    <section className={`ponder-x6-document${fullscreen ? " ponder-x6-fullscreen" : ""}`}>
       <style>{`
-        .edgeever-x6-document, .edgeever-diagram-reader-host {
+        .ponder-x6-document, .ponder-diagram-reader-host {
           display: flex;
           flex-direction: column;
           min-height: min(78vh, 760px);
           height: min(78vh, 760px);
           padding: 8px 12px 16px;
         }
-        .edgeever-diagram-reader-controls { flex: 0 0 auto; }
-        .edgeever-x6-document.edgeever-x6-fullscreen {
+        .ponder-diagram-reader-controls { flex: 0 0 auto; }
+        .ponder-x6-document.ponder-x6-fullscreen {
           position: fixed; inset: 0; z-index: 60; height: 100dvh; min-height: 100dvh;
           background: ${theme === "dark" ? DIAGRAM_CANVAS_DARK : DIAGRAM_CANVAS_LIGHT};
         }
-        .edgeever-x6-diagram {
+        .ponder-x6-diagram {
           flex: 1 1 auto;
           width: 100%;
           height: auto;
@@ -122,8 +122,8 @@ export const ReadOnlyX6Diagram = ({
           background: ${theme === "dark" ? DIAGRAM_CANVAS_DARK : DIAGRAM_CANVAS_LIGHT};
           touch-action: none;
         }
-        .edgeever-x6-diagram .x6-graph-svg { overflow: hidden; }
-        .edgeever-x6-diagram .x6-node { cursor: pointer; }
+        .ponder-x6-diagram .x6-graph-svg { overflow: hidden; }
+        .ponder-x6-diagram .x6-node { cursor: pointer; }
       `}</style>
       {controls && <div className="flex shrink-0 justify-end gap-2 pb-2">
         <ButtonTooltip title={t("notebookSite.fit")}><Button variant="outline" size="sm" onClick={() => { graphRef.current?.zoomToFit({ maxScale: 1, padding: 28 }); graphRef.current?.centerContent(); }}>{t("notebookSite.fit")}</Button></ButtonTooltip>
@@ -131,7 +131,7 @@ export const ReadOnlyX6Diagram = ({
       </div>}
       <div
         aria-label={diagram.kind === "mind-map" ? t("diagram.mindMap") : diagram.kind === "architecture" ? t("diagram.architecture") : t("diagram.flowchart")}
-        className="edgeever-x6-diagram"
+        className="ponder-x6-diagram"
         data-diagram-kind={diagram.kind}
         key={diagram.kind}
         ref={containerRef}

@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { MemoTemplate } from "@edgeever/shared";
-import { listMemoTemplateGallery } from "@edgeever/shared/memo-template-gallery";
-import { localizeDefaultMemoTemplate } from "@edgeever/shared/memo-template-seeds";
-import type { createEdgeEverClient } from "@edgeever/client";
+import type { MemoTemplate } from "@ponder/shared";
+import { listMemoTemplateGallery } from "@ponder/shared/memo-template-gallery";
+import { localizeDefaultMemoTemplate } from "@ponder/shared/memo-template-seeds";
+import type { createPonderClient } from "@ponder/client";
 import { Modal, Pressable, ScrollView, View } from "react-native";
 import { ActivityIndicator, FileText, LayoutTemplate, X } from "./icons";
 import { Text } from "./LocalizedText";
@@ -17,7 +17,7 @@ import {
 import { useMobileLocale } from "../lib/mobile-locale";
 import { styles } from "../screens/workspace-styles";
 
-type MobileClient = ReturnType<typeof createEdgeEverClient>;
+type MobileClient = ReturnType<typeof createPonderClient>;
 
 /**
  * Template picker.
@@ -98,28 +98,28 @@ export const MobileTemplatePickerModal = ({
         <View style={styles.actionSheetHandle} />
         <View style={styles.listActionSheetHeader}>
           <View style={styles.listActionSheetHeaderText}>
-            <Text numberOfLines={1} style={styles.actionSheetTitle}>{translate("从模板新建")}</Text>
+            <Text numberOfLines={1} style={styles.actionSheetTitle}>{translate("New from template")}</Text>
             <Text numberOfLines={2} style={styles.actionSheetSubtitle}>
-              {translate("选择一个模板快速开始。所有模板都可以在网页端修改或删除。")}
+              {translate("Choose a template to get started. Every template can be edited or deleted on the web.")}
             </Text>
           </View>
-          <Pressable accessibilityLabel={translate("关闭")} accessibilityRole="button" onPress={onClose} style={styles.sheetCloseButton}>
+          <Pressable accessibilityLabel={translate("Close")} accessibilityRole="button" onPress={onClose} style={styles.sheetCloseButton}>
             <X color="#0f172a" size={18} />
           </Pressable>
         </View>
 
         <ScrollView contentContainerStyle={styles.listActionSheetContent} style={styles.listActionSheetScroll} keyboardShouldPersistTaps="handled">
-          <Text style={styles.actionSheetSectionTitle}>{translate("模板")}</Text>
+          <Text style={styles.actionSheetSectionTitle}>{translate("Template")}</Text>
           {isLoadingSaved ? (
             <View style={styles.templatePickerLoading}>
               <ActivityIndicator color="#0f172a" size="small" />
-              <Text style={styles.mutedText}>{translate("正在加载模板")}</Text>
+              <Text style={styles.mutedText}>{translate("Loading templates")}</Text>
             </View>
           ) : null}
           {!isLoadingSaved && savedTemplatesQuery.isError ? (
             <View style={styles.templatePickerErrorBlock}>
               <Text style={styles.templatePickerHint}>
-                {translate("模板暂时无法加载，请稍后重试。")}
+                {translate("Templates could not load. Please try again later.")}
               </Text>
               {savedLoadErrorMessage ? (
                 <Text style={styles.templatePickerErrorDetail} numberOfLines={3}>
@@ -131,19 +131,19 @@ export const MobileTemplatePickerModal = ({
                 onPress={() => void savedTemplatesQuery.refetch()}
                 style={styles.templatePickerRetryButton}
               >
-                <Text style={styles.templatePickerRetryText}>{translate("重试")}</Text>
+                <Text style={styles.templatePickerRetryText}>{translate("Retry")}</Text>
               </Pressable>
             </View>
           ) : null}
           {!isLoadingSaved && !savedTemplatesQuery.isError && savedTemplates.length === 0 ? (
             <Text style={styles.templatePickerHint}>
-              {translate("暂无模板。可在网页端新建模板，或将常用笔记另存为模板。")}
+              {translate("No templates yet. Create one or save a note as a template on the web.")}
             </Text>
           ) : null}
           {savedTemplates.map((template) => (
             <TemplateRow key={template.id} onPress={() => handleSelect(template)} template={template} />
           ))}
-          <Text style={styles.actionSheetSectionTitle}>{translate("模板库")}</Text>
+          <Text style={styles.actionSheetSectionTitle}>{translate("Template Gallery")}</Text>
           {galleryTemplates.map((template) => (
             <TemplateRow key={template.id} onPress={() => handleSelect(template)} template={template} />
           ))}
@@ -186,10 +186,10 @@ export const MobileCreateChoiceModal = ({
           <View style={styles.actionSheetHandle} />
           <View style={styles.listActionSheetHeader}>
             <View style={styles.listActionSheetHeaderText}>
-              <Text numberOfLines={1} style={styles.actionSheetTitle}>{translate("新建笔记")}</Text>
-              <Text numberOfLines={1} style={styles.actionSheetSubtitle}>{translate("选择创建方式")}</Text>
+              <Text numberOfLines={1} style={styles.actionSheetTitle}>{translate("New note")}</Text>
+              <Text numberOfLines={1} style={styles.actionSheetSubtitle}>{translate("Choose how to create")}</Text>
             </View>
-            <Pressable accessibilityLabel={translate("关闭")} accessibilityRole="button" onPress={onClose} style={styles.sheetCloseButton}>
+            <Pressable accessibilityLabel={translate("Close")} accessibilityRole="button" onPress={onClose} style={styles.sheetCloseButton}>
               <X color="#0f172a" size={18} />
             </Pressable>
           </View>
@@ -207,8 +207,8 @@ export const MobileCreateChoiceModal = ({
                 <FileText color="#0f172a" size={18} />
               </View>
               <View style={styles.templateChoiceText}>
-                <Text style={styles.templateChoiceTitle}>{translate("空白笔记")}</Text>
-                <Text style={styles.templateChoiceDescription}>{translate("从空白页开始记录")}</Text>
+                <Text style={styles.templateChoiceTitle}>{translate("Blank note")}</Text>
+                <Text style={styles.templateChoiceDescription}>{translate("Start with an empty page")}</Text>
               </View>
             </Pressable>
             <Pressable
@@ -224,8 +224,8 @@ export const MobileCreateChoiceModal = ({
                 <LayoutTemplate color="#0f172a" size={18} />
               </View>
               <View style={styles.templateChoiceText}>
-                <Text style={styles.templateChoiceTitle}>{translate("从模板新建")}</Text>
-                <Text style={styles.templateChoiceDescription}>{translate("使用会议纪要、周报等预设结构")}</Text>
+                <Text style={styles.templateChoiceTitle}>{translate("New from template")}</Text>
+                <Text style={styles.templateChoiceDescription}>{translate("Use meeting notes, weekly reviews, and more")}</Text>
               </View>
             </Pressable>
           </View>

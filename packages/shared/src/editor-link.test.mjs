@@ -2,15 +2,15 @@ import { describe, expect, test } from "bun:test";
 import { getExtensionField, getSchema } from "@tiptap/core";
 import { EditorState, TextSelection } from "@tiptap/pm/state";
 import StarterKit from "@tiptap/starter-kit";
-import { EdgeEverLink } from "./editor-link.ts";
+import { PonderLink } from "./editor-link.ts";
 
 const schema = getSchema([
   StarterKit.configure({ link: false }),
-  EdgeEverLink,
+  PonderLink,
 ]);
 
-describe("EdgeEverLink", () => {
-  function pastedLinks(text, extension = EdgeEverLink) {
+describe("PonderLink", () => {
+  function pastedLinks(text, extension = PonderLink) {
     const rules = getExtensionField(extension, "addPasteRules", {
       name: "link",
       options: extension.options,
@@ -62,14 +62,14 @@ describe("EdgeEverLink", () => {
   });
 
   test("retains configured URL validation after removing prose", () => {
-    expect(pastedLinks("先看refero.design", EdgeEverLink.configure({
+    expect(pastedLinks("先看refero.design", PonderLink.configure({
       shouldAutoLink: url => !url.startsWith("refero"),
     }))).toEqual([]);
   });
 
   test("preserves explicit Markdown link labels", () => {
     const text = "[我让他先去refero.design](https://example.com)";
-    expect(pastedLinks(text, EdgeEverLink.configure({ markdownLinks: true }))).toEqual([
+    expect(pastedLinks(text, PonderLink.configure({ markdownLinks: true }))).toEqual([
       { text, index: 0, href: "https://example.com" },
     ]);
   });
@@ -108,7 +108,7 @@ describe("EdgeEverLink", () => {
   });
 
   test("retains TipTap's automatic linking features", () => {
-    expect(EdgeEverLink.options.autolink).toBe(true);
-    expect(EdgeEverLink.options.linkOnPaste).toBe(true);
+    expect(PonderLink.options.autolink).toBe(true);
+    expect(PonderLink.options.linkOnPaste).toBe(true);
   });
 });

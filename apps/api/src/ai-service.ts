@@ -13,7 +13,7 @@ import type {
   AiTranscriptionSettings,
   AiTargetLanguage,
   AiTone,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import {
   AI_GENERATION_MAX_OUTPUT_TOKENS,
   createAiGenerationResultBoundary,
@@ -21,7 +21,7 @@ import {
   getDefaultAiPromptSeed,
   isAiTextAttachment,
   normalizeAiGenerationText,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 import type { ModelMessage, UserContent } from "ai";
 import { AppError } from "./app-error";
@@ -33,7 +33,7 @@ export {
   createAiGenerationStreamNormalizer,
   normalizeAiGenerationText,
 };
-export type { AiGenerationResultBoundary, AiPreparedGeneration } from "@edgeever/shared";
+export type { AiGenerationResultBoundary, AiPreparedGeneration } from "@ponder/shared";
 
 export type AiProviderConfigRow = {
   id: string;
@@ -78,38 +78,38 @@ export const resolveCredentialEncryptionKey = (value: string | undefined) => {
 };
 
 export type AiCredentialEnvironment = {
-  EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY?: string;
-  EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS?: string;
-  EDGE_EVER_STORAGE_ENCRYPTION_KEY?: string;
-  EDGE_EVER_AUTH_PASSWORD?: string;
-  EDGE_EVER_AUTH_PASSWORD_HASH?: string;
-  EDGE_EVER_AUTH_PASSWORD_FALLBACK?: string;
+  PONDER_CREDENTIALS_ENCRYPTION_KEY?: string;
+  PONDER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS?: string;
+  PONDER_STORAGE_ENCRYPTION_KEY?: string;
+  PONDER_AUTH_PASSWORD?: string;
+  PONDER_AUTH_PASSWORD_HASH?: string;
+  PONDER_AUTH_PASSWORD_FALLBACK?: string;
 };
 
 const uniqueKeys = (values: Array<string | undefined>) => Array.from(new Set(values.filter(Boolean) as string[]));
 const deriveAiCredentialKey = (value: string | undefined) => value
-  ? `edgeever:ai-credentials:v1:${value}`
+  ? `ponder:ai-credentials:v1:${value}`
   : undefined;
 
 /**
- * Authentication is already required by a normal EdgeEver deployment, so its
+ * Authentication is already required by a normal Ponder deployment, so its
  * stable deployment secret is the zero-configuration credential-encryption
  * root. A dedicated key is an optional advanced override. The legacy storage
  * key remains in the decryption ring for AI credentials saved before v1.15.
  */
 export const resolveAiCredentialEncryptionKeys = (environment: AiCredentialEnvironment) => uniqueKeys([
-  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY)),
-  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_AUTH_PASSWORD)),
-  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_AUTH_PASSWORD_HASH)),
-  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS)),
-  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_AUTH_PASSWORD_FALLBACK)),
-  resolveCredentialEncryptionKey(environment.EDGE_EVER_STORAGE_ENCRYPTION_KEY),
+  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_CREDENTIALS_ENCRYPTION_KEY)),
+  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_AUTH_PASSWORD)),
+  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_AUTH_PASSWORD_HASH)),
+  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS)),
+  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_AUTH_PASSWORD_FALLBACK)),
+  resolveCredentialEncryptionKey(environment.PONDER_STORAGE_ENCRYPTION_KEY),
 ]);
 
 export const resolvePrimaryAiCredentialEncryptionKey = (environment: AiCredentialEnvironment) => [
-  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY)),
-  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_AUTH_PASSWORD)),
-  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_AUTH_PASSWORD_HASH)),
+  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_CREDENTIALS_ENCRYPTION_KEY)),
+  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_AUTH_PASSWORD)),
+  deriveAiCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_AUTH_PASSWORD_HASH)),
 ].find(Boolean);
 
 export const decryptAiCredential = async (
@@ -478,14 +478,14 @@ export const getDefaultAiDirectTarget = async (
  */
 export const aiActionInstructions: Record<Exclude<AiAction, "translate" | "change-tone" | "custom">, string> = {
   summarize: getDefaultAiPromptSeed("summarize")!.instruction,
-  "extract-key-points": "提取笔记中最重要的要点，用简洁的 Markdown 列表输出。保持原语言，不要添加原文没有的信息。",
+  "extract-key-points": "Extract the most important points from the note as a concise Markdown list. Keep the original language and add nothing that is not in the source.",
   "extract-todos": getDefaultAiPromptSeed("extract-todos")!.instruction,
-  "rewrite-proofread": "改写并校对完整笔记。修正拼写、语法、标点、清晰度与结构，不改变原意。保持原语言与 Markdown 格式。只返回完整修订稿。",
+  "rewrite-proofread": "Rewrite and proofread the full note. Fix spelling, grammar, punctuation, clarity, and structure without changing the meaning. Keep the original language and Markdown formatting. Return only the full revised text.",
   "improve-writing": getDefaultAiPromptSeed("improve-writing")!.instruction,
-  "fix-spelling-grammar": "只修正拼写、语法与标点。不要改变语气、结构或含义。保持原语言与 Markdown 格式。只返回修正后的内容。",
+  "fix-spelling-grammar": "Fix only spelling, grammar, and punctuation. Do not change tone, structure, or meaning. Keep the original language and Markdown formatting. Return only the corrected content.",
   "make-shorter": getDefaultAiPromptSeed("make-shorter")!.instruction,
-  "make-longer": "扩写内容，补充有用的说明与更顺畅的过渡，但不要编造事实。保持原语言与有用的 Markdown 格式。只返回扩写后的内容。",
-  "simplify-language": "用清晰、平实、更好懂的语言改写内容。保持原意、原语言与有用的 Markdown 格式。只返回简化后的内容。",
+  "make-longer": "Expand the content with useful explanation and smoother transitions, without inventing facts. Keep the original language and useful Markdown formatting. Return only the expanded content.",
+  "simplify-language": "Rewrite the content in clear, plain, easier language. Keep the meaning, the original language, and useful Markdown formatting. Return only the simplified content.",
   "continue-writing": getDefaultAiPromptSeed("continue-writing")!.instruction,
 };
 

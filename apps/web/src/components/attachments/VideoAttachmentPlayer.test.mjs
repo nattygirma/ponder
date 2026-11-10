@@ -16,6 +16,6 @@ describe("VideoAttachmentPlayer", () => {
     expect(markup).toContain("playsInline");
     expect(markup).toContain('src="/api/v1/resources/video-1/blob"');
     expect(markup).toContain('aria-label="walkthrough.mp4"');
-    expect(markup).toContain("data-edgeever-video-player");
+    expect(markup).toContain("data-ponder-video-player");
   });
 });

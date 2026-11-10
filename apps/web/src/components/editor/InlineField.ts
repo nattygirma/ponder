@@ -8,7 +8,7 @@ import {
   type InlineFieldTranslate,
 } from "@/lib/inline-fields";
 
-const INLINE_FIELD_PLUGIN_KEY = new PluginKey("edgeever-inline-field");
+const INLINE_FIELD_PLUGIN_KEY = new PluginKey("ponder-inline-field");
 
 const collectInlineFieldDecorations = (state: EditorState, translate: InlineFieldTranslate) => {
   const decorations: Decoration[] = [];

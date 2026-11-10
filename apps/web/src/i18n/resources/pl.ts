@@ -1,1 +1,1 @@
-export { pl } from "@edgeever/shared/i18n/pl";
+export { pl } from "@ponder/shared/i18n/pl";

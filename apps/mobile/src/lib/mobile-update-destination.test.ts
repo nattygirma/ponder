@@ -25,7 +25,7 @@ test("opens the app listing directly in Google Play without invoking a generic U
     },
   });
 
-  expect(openedApplicationIds).toEqual(["org.edgeever.mobile"]);
+  expect(openedApplicationIds).toEqual(["io.appkeep.ponder.mobile"]);
   expect(openedUrls).toEqual([]);
   expect(result).toEqual({ status: "opened" });
 });

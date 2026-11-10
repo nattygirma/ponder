@@ -51,7 +51,7 @@ const installation = () => {
       VALUES ('nb_trips', '${WORKSPACE_ID}', NULL, 'Trips', 'trips', 7),
              ('nb_other', '${OTHER_WORKSPACE_ID}', NULL, 'Theirs', 'inbox', 0);
   `);
-  const resourcesDirectory = mkdtempSync(join(tmpdir(), "edgeever-trash-"));
+  const resourcesDirectory = mkdtempSync(join(tmpdir(), "ponder-trash-"));
   cleanups.push(() => {
     sqlite.close();
     rmSync(resourcesDirectory, { recursive: true, force: true });
@@ -170,7 +170,7 @@ describe("moving notes to trash", () => {
     const note = await createNote(target);
     const filesBefore = target.storedFiles();
     expect(filesBefore).toHaveLength(2);
-    expect(await listedIds(target, "?q=tent")).toEqual([note.memo.id]);
+    expect(await listedIds(target, "?q=Pack%20the")).toEqual([note.memo.id]);
 
     const response = await trash(target, note.memo.id);
 
@@ -186,7 +186,7 @@ describe("moving notes to trash", () => {
     expect(await target.readObject(note.objectKeys[1])).toEqual(Buffer.from("Trip plan file"));
 
     expect(await listedIds(target)).not.toContain(note.memo.id);
-    expect(await listedIds(target, "?q=tent")).toEqual([]);
+    expect(await listedIds(target, "?q=Pack%20the")).toEqual([]);
     expect(await listedIds(target, "?trash=1")).toEqual([note.memo.id]);
     expect((await target.request(`/api/v1/memos/${note.memo.id}`)).status).toBe(404);
     const inTrash = await target.request(`/api/v1/memos/${note.memo.id}?includeDeleted=1`);
@@ -241,7 +241,7 @@ describe("restoring notes from trash", () => {
     expect(await target.readObject(note.objectKeys[0])).toEqual(note.imageBytes);
     expect(await target.readObject(note.objectKeys[1])).toEqual(Buffer.from("Trip plan file"));
     expect(memoRowCounts(target.sqlite, note.memo.id)).toMatchObject({ memo_revisions: 1, memo_search_documents: 1 });
-    expect(await listedIds(target, "?q=tent")).toEqual([note.memo.id]);
+    expect(await listedIds(target, "?q=Pack%20the")).toEqual([note.memo.id]);
     expect(await listedIds(target, "?tag=travel")).toEqual([note.memo.id]);
     expect(await listedIds(target, "?trash=1")).toEqual([]);
     // The public share link is not recreated.

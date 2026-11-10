@@ -4,66 +4,66 @@ import Layout from "@/layouts/Layout.astro";
 ---
 
 <Layout
-  title="隐私政策"
-  description="EdgeEver 移动 App 与网页裁剪插件隐私政策。"
+  title="Privacy Policy"
+  description="Privacy policy for the Ponder mobile app and web clipper."
 >
   <Container>
     <main class="mx-auto max-w-3xl py-12 text-slate-700 md:py-20">
       <article class="rounded-lg border border-slate-200 bg-white p-8 shadow-sm md:p-10">
-        <h1 class="text-3xl font-bold text-slate-950">EdgeEver 隐私政策</h1>
-        <p class="mt-3 text-sm text-slate-500">生效日期：2026 年 7 月 18 日</p>
+        <h1 class="text-3xl font-bold text-slate-950">Ponder Privacy Policy</h1>
+        <p class="mt-3 text-sm text-slate-500">Effective: July 18, 2026</p>
 
         <div class="mt-8 space-y-8 leading-7">
           <section>
-            <h2 class="text-xl font-bold text-slate-900">适用范围</h2>
-            <p class="mt-3">本政策适用于 EdgeEver iOS 与 Android 移动 App，以及 EdgeEver Web Clipper。EdgeEver 是开源、自托管的笔记工具；用户自行选择并运营所连接的 EdgeEver 实例。</p>
+            <h2 class="text-xl font-bold text-slate-900">Scope</h2>
+            <p class="mt-3">This policy applies to the Ponder iOS and Android mobile apps and Ponder Web Clipper. Ponder is an open-source, self-hosted notes application. Users choose and operate the Ponder instance they connect to.</p>
           </section>
 
           <section>
-            <h2 class="text-xl font-bold text-slate-900">处理的数据</h2>
+            <h2 class="text-xl font-bold text-slate-900">Data handled</h2>
             <ul class="mt-3 list-disc space-y-2 pl-6">
-              <li>移动 App 会处理用户主动提供的 EdgeEver 实例地址、用户名和密码，以登录用户指定的实例；登录后获得的会话凭据保存在设备安全存储中。</li>
-              <li>笔记本、笔记、标签及附件会在用户设备和自托管实例之间传输。移动 App 会在设备的 SQLite 数据库和本地存储中保留必要的数据镜像、草稿、同步队列与偏好设置，以支持快速读取和离线编辑。</li>
-              <li>Web Clipper 会在用户主动保存时处理当前页面标题、网址、选中内容或提取的正文，并发送到用户配置的 EdgeEver 实例。实例地址、API Token 和默认笔记本设置保存在浏览器的本地扩展存储中。</li>
+              <li>The mobile app processes the Ponder instance URL, username, and password that the user provides to sign in. The resulting session credential is stored in secure device storage.</li>
+              <li>Notebooks, notes, tags, and attachments are transferred between the device and the user's self-hosted instance. The mobile app keeps the necessary local SQLite mirror, drafts, sync queue, and preferences to provide fast access and offline editing.</li>
+              <li>The Web Clipper processes the current page title, URL, selected content, or extracted article body only when the user chooses to save it. Its instance URL, API token, and default notebook settings are kept in the browser's local extension storage.</li>
             </ul>
           </section>
 
           <section>
-            <h2 class="text-xl font-bold text-slate-900">数据如何使用和传输</h2>
-            <p class="mt-3">移动 App 与 Web Clipper 均直接连接用户指定的 EdgeEver 实例。项目维护者不运营用于转发或集中保存用户笔记、凭据或剪藏内容的服务，也不会接收、查看或出售这些数据。</p>
-            <p class="mt-3">产品不包含广告、分析、追踪或遥测功能，不与广告平台、数据经纪商或其他第三方共享数据。</p>
+            <h2 class="text-xl font-bold text-slate-900">Use and transmission</h2>
+            <p class="mt-3">The mobile app and Web Clipper connect directly to the Ponder instance selected by the user. The project maintainers operate no relay or centralized service that receives or stores users' notes, credentials, or clipped content.</p>
+            <p class="mt-3">The products contain no advertising, analytics, tracking, or telemetry. Data is not sold or shared with advertising platforms, data brokers, or other third parties.</p>
           </section>
 
           <section>
-            <h2 class="text-xl font-bold text-slate-900">权限与文件访问</h2>
+            <h2 class="text-xl font-bold text-slate-900">Permissions and file access</h2>
             <ul class="mt-3 list-disc space-y-2 pl-6">
-              <li><strong>网络访问</strong>：用于登录并同步用户指定的 EdgeEver 实例。</li>
-              <li><strong>文件访问</strong>：仅在用户主动选择导入、导出或上传附件时，通过系统文件选择器访问用户选择的文件。</li>
-              <li><strong>activeTab</strong>：仅在用户主动点击插件并保存时访问当前标签页。</li>
-              <li><strong>scripting</strong>：在当前页面运行内容提取脚本。</li>
-              <li><strong>storage</strong>：在本地保存实例地址、API Token 和默认笔记本设置。</li>
-              <li><strong>可选主机权限</strong>：只为用户配置的 EdgeEver 实例申请网络访问权限。</li>
+              <li><strong>Network access</strong>: signs in to and synchronizes with the Ponder instance selected by the user.</li>
+              <li><strong>File access</strong>: uses the system file picker only when the user chooses to import, export, or upload an attachment.</li>
+              <li><strong>activeTab</strong>: accesses the current tab only after the user invokes the extension to save it.</li>
+              <li><strong>scripting</strong>: runs the content extraction script in the current page.</li>
+              <li><strong>storage</strong>: stores the instance URL, API token, and default notebook settings locally.</li>
+              <li><strong>Optional host permissions</strong>: grants network access only to the Ponder instance configured by the user.</li>
             </ul>
           </section>
 
           <section>
-            <h2 class="text-xl font-bold text-slate-900">安全与保留</h2>
-            <p class="mt-3">建议始终使用 HTTPS EdgeEver 实例并妥善保管账号与 API Token。本地数据会保留到用户在 App 中退出登录、清除应用数据或卸载 App；插件设置会保留到用户修改、清除扩展数据或卸载插件。云端笔记及附件由用户自己的实例保存，用户可在该实例中编辑或删除。</p>
+            <h2 class="text-xl font-bold text-slate-900">Security and retention</h2>
+            <p class="mt-3">Users should use an HTTPS Ponder instance and protect their account and API token. Local app data remains until the user signs out, clears app data, or uninstalls the app. Extension settings remain until the user changes them, clears extension data, or uninstalls the extension. Cloud notes and attachments are retained by the user's own instance and can be edited or deleted there.</p>
           </section>
 
           <section>
             <h2 class="text-xl font-bold text-slate-900">Chrome Web Store Limited Use</h2>
-            <p class="mt-3">通过 Chrome API 获取的信息仅用于提供上述面向用户的网页剪藏功能。对这些信息的使用遵守 Chrome Web Store User Data Policy，包括 Limited Use 要求。</p>
+            <p class="mt-3">Information received from Chrome APIs is used only to provide the user-facing web clipping feature described above. Its use complies with the Chrome Web Store User Data Policy, including the Limited Use requirements.</p>
           </section>
 
           <section>
-            <h2 class="text-xl font-bold text-slate-900">Firefox 数据传输声明</h2>
-            <p class="mt-3">Firefox 版本会按 Mozilla 的数据分类声明认证信息、浏览活动和网页内容。具体包括发送到用户自选 EdgeEver 实例的 API Token、当前页面网址以及用户主动选择保存的网页内容。项目维护者不会接收或保留这些数据。</p>
+            <h2 class="text-xl font-bold text-slate-900">Firefox data-transmission disclosure</h2>
+            <p class="mt-3">The Firefox package declares authentication information, browsing activity, and website content under Mozilla's data taxonomy. These cover the API token, current page URL, and user-selected page content sent to the Ponder instance chosen by the user. The project maintainers do not receive or retain this data.</p>
           </section>
 
           <section>
-            <h2 class="text-xl font-bold text-slate-900">联系我们</h2>
-            <p class="mt-3">如对本政策或数据处理方式有疑问，请通过 <a class="text-teal-700 underline" href="https://github.com/tianma-if/edgeever/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a> 联系项目维护者。</p>
+            <h2 class="text-xl font-bold text-slate-900">Contact</h2>
+            <p class="mt-3">For questions about this policy or Ponder's data practices, contact the project maintainers through <a class="text-teal-700 underline" href="https://github.com/tianma-if/edgeever/issues" target="_blank" rel="noopener noreferrer">GitHub Issues</a>.</p>
           </section>
         </div>
       </article>

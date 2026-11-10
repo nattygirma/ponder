@@ -1,6 +1,6 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 
-export const EMPTY_EXTERNAL_LINK_NODE_TYPE = "edgeeverEmptyExternalLink" as const;
+export const EMPTY_EXTERNAL_LINK_NODE_TYPE = "ponderEmptyExternalLink" as const;
 
 const safeHref = (value: unknown) => {
   if (typeof value !== "string") return "";
@@ -24,7 +24,7 @@ export const EmptyExternalLink = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: "a[data-edgeever-empty-link]" }];
+    return [{ tag: "a[data-ponder-empty-link]" }];
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -35,9 +35,9 @@ export const EmptyExternalLink = Node.create({
         href: href || undefined,
         target: "_blank",
         rel: "noopener noreferrer",
-        "data-edgeever-empty-link": "true",
+        "data-ponder-empty-link": "true",
         "aria-label": href ? `Open link: ${href}` : "Open link",
-        class: "edgeever-empty-external-link",
+        class: "ponder-empty-external-link",
       }),
       "↗",
     ];

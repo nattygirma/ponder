@@ -1,6 +1,6 @@
 # Keep note ordering after editing
 
-[简体中文](2026-11-01-memo-sort-after-save.zh-CN.md) · [Issue #750](https://github.com/tianma-if/edgeever/issues/750)
+[Issue #750](https://github.com/tianma-if/edgeever/issues/750)
 
 ## Problem and outcome
 

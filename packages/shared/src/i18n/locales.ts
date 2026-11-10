@@ -1,10 +1,9 @@
-export const supportedLocales = ["zh-CN", "en-US", "ja", "pl", "ru"] as const;
+export const supportedLocales = ["en-US", "ja", "pl", "ru"] as const;
 
 export type SupportedLocale = (typeof supportedLocales)[number];
 
 /** English names for instructions to AI models, such as "Reply in Polish". */
 export const localeEnglishNames: Record<SupportedLocale, string> = {
-  "zh-CN": "Simplified Chinese",
   "en-US": "English",
   ja: "Japanese",
   pl: "Polish",
@@ -12,7 +11,7 @@ export const localeEnglishNames: Record<SupportedLocale, string> = {
 };
 
 /** Used when there is no locale evidence (legacy callers, missing headers). */
-export const defaultLocale: SupportedLocale = "zh-CN";
+export const defaultLocale: SupportedLocale = "en-US";
 
 /** Used when locale evidence exists but is not a shipped UI language. */
 export const unmatchedLocale: SupportedLocale = "en-US";
@@ -23,10 +22,6 @@ export const matchSupportedLocale = (locale: string | null | undefined): Support
   }
 
   const normalized = locale.trim().replaceAll("_", "-").toLowerCase();
-
-  if (normalized === "zh" || normalized.startsWith("zh-")) {
-    return "zh-CN";
-  }
 
   if (normalized === "en" || normalized.startsWith("en-")) {
     return "en-US";

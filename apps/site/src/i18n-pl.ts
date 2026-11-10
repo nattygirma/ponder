@@ -4,13 +4,13 @@ export const plSiteTagline =
 export const plSiteCopy = {
   layout: {
     defaultDescription:
-      "EdgeEver to otwartoźródłowa, natywnie wspierająca AI baza wiedzy i nowoczesna przestrzeń do notatek. Klasyczny układ trzech paneli (drzewo katalogów · lista notatek · edytor) na macOS, Windows, Linux, iOS, Android i w Web Clipper, z natywną współpracą z lokalnymi agentami ACP, paskiem bocznym towarzysza i notatkami z diagramami. Działa w darmowym planie Cloudflare albo w Dockerze.",
-    defaultTitle: `EdgeEver - ${plSiteTagline}`,
-    imageAlt: "Zrzut ekranu aplikacji do notatek EdgeEver",
+      "Ponder to otwartoźródłowa, natywnie wspierająca AI baza wiedzy i nowoczesna przestrzeń do notatek. Klasyczny układ trzech paneli (drzewo katalogów · lista notatek · edytor) na macOS, Windows, Linux, iOS, Android i w Web Clipper, z natywną współpracą z lokalnymi agentami ACP, paskiem bocznym towarzysza i notatkami z diagramami. Działa w darmowym planie Cloudflare albo w Dockerze.",
+    defaultTitle: `Ponder - ${plSiteTagline}`,
+    imageAlt: "Zrzut ekranu aplikacji do notatek Ponder",
     ogLocale: "pl_PL",
   },
   nav: {
-    homeAria: "Strona główna EdgeEver",
+    homeAria: "Strona główna Ponder",
     features: "Funkcje",
     guides: "Poradniki",
     deploy: "Wdrożenie",
@@ -46,12 +46,12 @@ export const plSiteCopy = {
     clipper: "Web Clipper",
     windows: "Windows",
     linux: "Linux",
-    imageAlt: "Podgląd EdgeEver",
+    imageAlt: "Podgląd Ponder",
     badgeText:
       "💡 Wszystkie platformy: macOS, Windows, Linux, iOS, Android, Web Clipper · Natywna współpraca z MCP i ACP · Darmowy plan Cloudflare i Docker",
   },
   bento: {
-    eyebrow: "WHY EDGEEVER",
+    eyebrow: "WHY PONDER",
     heading: "Zbudowany od nowa z myślą o samodzielnym hostingu wiedzy i pracy z AI",
     subheading:
       "Bez reklam, limitów urządzeń i drogich subskrypcji. Każdy szczegół służy szybkiemu, otwartemu i prywatnemu „drugiemu mózgowi”.",
@@ -67,12 +67,12 @@ export const plSiteCopy = {
       folder3: "03_Archive_Notes",
       folder4: "↳ 2026_Reading",
       listTitle: "Notatki (18)",
-      note1Title: "EdgeEver Architecture",
+      note1Title: "Ponder Architecture",
       note1Sub: "Cloudflare Workers / Docker & SQLite...",
       note2Title: "Połączenie z lokalnym agentem ACP",
       note2Sub: "Codex / Antigravity lokalnie...",
-      editorTitle: "EdgeEver Architecture",
-      editorBody: "EdgeEver łączy klasyczny trzypanelowy układ ze współpracą z agentami AI i elastycznymi opcjami wdrożenia.",
+      editorTitle: "Ponder Architecture",
+      editorBody: "Ponder łączy klasyczny trzypanelowy układ ze współpracą z agentami AI i elastycznymi opcjami wdrożenia.",
       editorSaveTag: "Zapisano automatycznie w SQLite",
     },
     card2: {
@@ -110,7 +110,7 @@ export const plSiteCopy = {
       title: "Aplikacje na wszystkie platformy i bezstratna kopia ZIP",
       desc: "Dostępny na macOS, Windows, Linux, natywnym iOS (SwiftUI), Androidzie i w pełnym Web Clipper. Bezstratny eksport ZIP i standardowa baza SQLite dają pełną kontrolę nad danymi.",
       subBadge: "Wiele platform + ZIP",
-      archiveTitle: "edgeever-backup.zip",
+      archiveTitle: "ponder-backup.zip",
       archiveSub: "Markdown + załączniki + historia wersji",
     },
   },
@@ -237,7 +237,7 @@ export const plSiteCopy = {
         points: [
           "Bez limitu urządzeń: samodzielnie hostowane API eliminuje ograniczenia typu „logowanie na maksymalnie 2 urządzeniach”.",
           "Aplikacja na macOS: Electron + Rust sidecar + SQLite – błyskawiczne działanie lokalne, współpraca przez ACP i synchronizacja offline.",
-          "Windows x64: lokalne SQLite, opcja „Wyślij do EdgeEver” w menu kontekstowym Eksploratora i automatyczne aktualizacje.",
+          "Windows x64: lokalne SQLite, opcja „Wyślij do Ponder” w menu kontekstowym Eksploratora i automatyczne aktualizacje.",
           "Natywne aplikacje mobilne: iOS w SwiftUI (w App Store) i Android (w Google Play oraz jako APK z GitHub) z cofnij/ponów i przechwytywaniem z WeChat.",
           "Rozszerzenie Web Clipper: oficjalne rozszerzenia dla Chrome, Edge i Firefox – całe artykuły, obrazy z menu kontekstowego, posty z X i zaznaczenia.",
         ],
@@ -255,20 +255,20 @@ export const plSiteCopy = {
     ],
   },
   guides: {
-    eyebrow: "EdgeEver Guides",
+    eyebrow: "Ponder Guides",
     heading: "Wdrażaj, migruj i zaprzęgnij agentów AI do pracy",
     description:
-      "Najszybsza droga do EdgeEver: wdróż własną instancję, przenieś istniejące archiwum Evernote, a potem podłącz przepływy pracy AI oparte na MCP.",
+      "Najszybsza droga do Ponder: wdróż własną instancję, przenieś istniejące archiwum Evernote, a potem podłącz przepływy pracy AI oparte na MCP.",
     items: [
       {
-        title: "Wybierz sposób wdrożenia EdgeEver",
+        title: "Wybierz sposób wdrożenia Ponder",
         summary: "Użyj agenta AI lub ręcznej konfiguracji dla Cloudflare albo uruchom instalator Dockera w jednej linii na VPS lub NAS.",
         href: "/blog/ai-agent-deploy-cloudflare",
         cta: "Przeczytaj poradnik wdrożenia",
       },
       {
         title: "Migracja z Evernote",
-        summary: "Użyj EdgeEver MCP, evernote-backup i skryptu importu ENEX, aby przenieść starą bibliotekę notatek do własnej instancji.",
+        summary: "Użyj Ponder MCP, evernote-backup i skryptu importu ENEX, aby przenieść starą bibliotekę notatek do własnej instancji.",
         href: "/blog/evernote-migration-guide",
         cta: "Przeczytaj poradnik migracji",
       },

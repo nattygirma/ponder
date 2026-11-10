@@ -1,7 +1,7 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
-const E2E_USERNAME = process.env.EDGE_EVER_E2E_USERNAME || "admin";
-const E2E_PASSWORD = process.env.EDGE_EVER_E2E_PASSWORD || "admin123";
+const E2E_USERNAME = process.env.PONDER_E2E_USERNAME || "admin";
+const E2E_PASSWORD = process.env.PONDER_E2E_PASSWORD || "admin123";
 
 const login = async (request: APIRequestContext) => {
   const response = await request.post("/api/v1/auth/login", {
@@ -12,11 +12,11 @@ const login = async (request: APIRequestContext) => {
 
 test("keeps the global attachment manager independent from the selected note", async ({ page }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "附件", exact: true }).click();
+  await page.getByRole("button", { name: "Attachments", exact: true }).click();
 
-  await expect(page.getByRole("heading", { name: "附件管理", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Attachment manager", exact: true })).toBeVisible();
   await expect(page.getByText("当前关联笔记")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "上传附件", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Upload attachment", exact: true })).toHaveCount(0);
 });
 
 test("deletes an attachment from the manager and accepts an idempotent retry", async ({ page, request }) => {
@@ -53,14 +53,14 @@ test("deletes an attachment from the manager and accepts an idempotent retry", a
     resourceId = (await uploadResponse.json() as { resource: { id: string } }).resource.id;
 
     await page.goto("/");
-    await page.getByRole("button", { name: "附件", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "附件管理", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Attachments", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Attachment manager", exact: true })).toBeVisible();
     await expect(page.getByText(filename, { exact: true })).toBeVisible();
 
-    await page.getByRole("button", { name: `删除附件 ${filename}`, exact: true }).click();
+    await page.getByRole("button", { name: `Delete attachment ${filename}`, exact: true }).click();
     const confirmation = page.getByRole("dialog");
-    await expect(confirmation.getByRole("heading", { name: "删除附件", exact: true })).toBeVisible();
-    await confirmation.getByRole("button", { name: "删除", exact: true }).click();
+    await expect(confirmation.getByRole("heading", { name: "Delete attachment", exact: true })).toBeVisible();
+    await confirmation.getByRole("button", { name: "Delete", exact: true }).click();
 
     await expect(page.getByText(filename, { exact: true })).toHaveCount(0);
     const retryResponse = await request.delete(`/api/v1/resources/${resourceId}`);

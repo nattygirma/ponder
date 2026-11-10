@@ -10,7 +10,7 @@ import {
 import { hashPassword } from "./auth-crypto";
 import { registerPublicShareRoutes } from "./share-routes";
 import { renderNotebookSitePage } from "./notebook-site-page";
-import { PUBLIC_PAGE_ROBOTS } from "@edgeever/shared/public-page-headers";
+import { PUBLIC_PAGE_ROBOTS } from "@ponder/shared/public-page-headers";
 
 const databases = [];
 afterEach(() => databases.splice(0).forEach((db) => db.close()));
@@ -83,10 +83,10 @@ const fixture = (legacyHash) => {
   for (const file of migrations.filter((file) => file > "migrations/0069_share_password_encryption.sql"))
     db.exec(readFileSync(file, "utf8"));
   const environment = {
-    EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "test-share-master-key",
+    PONDER_CREDENTIALS_ENCRYPTION_KEY: "test-share-master-key",
     storage: createSelfHostedStorageAdapter(
       db,
-      "/tmp/edgeever-notebook-share-unused",
+      "/tmp/ponder-notebook-share-unused",
     ),
   };
   let blobReads = 0;
@@ -338,7 +338,7 @@ describe("public notebook site controls", () => {
     f.db.run("UPDATE memos SET title = ? WHERE id = 'memo_child'", ["无标题笔记"]);
     const untitledHtml = await (await render("/s/docs/memo_child")).text();
     expect(untitledHtml).not.toContain("无标题笔记");
-    expect(untitledHtml).toMatch(/<title>[^<]+ · EdgeEver<\/title>/);
+    expect(untitledHtml).toMatch(/<title>[^<]+ · Ponder<\/title>/);
     await manage(f, "/memos/memo_child", { excluded: true });
     const hidden = await render("/s/docs/memo_child");
     expect(hidden.status).toBe(404);
@@ -734,19 +734,19 @@ test("workspace login cannot bypass the notebook password; an unlock grant is st
       [user, user, createHash("sha256").update(user).digest("hex"), new Date(Date.now()+3600000).toISOString()]);
   }
   for (const path of ["", "/memos/memo_child", "/resources/res_memo_child/blob"]) {
-    expect((await f.request(path, { headers: { Cookie: "edgeever_session=owner" } })).status).toBe(403);
-    expect((await f.request(path, { headers: { Cookie: "edgeever_session=other" } })).status).toBe(403);
+    expect((await f.request(path, { headers: { Cookie: "ponder_session=owner" } })).status).toBe(403);
+    expect((await f.request(path, { headers: { Cookie: "ponder_session=other" } })).status).toBe(403);
     expect((await f.request(path, { headers: { Authorization: "Bearer owner" } })).status).toBe(403);
   }
   const password = (await enabled.json()).share.password;
   const unlocked = await f.request("/unlock", {
-    method: "POST", headers: { "content-type": "application/json", Cookie: "edgeever_session=owner" },
+    method: "POST", headers: { "content-type": "application/json", Cookie: "ponder_session=owner" },
     body: JSON.stringify({ password }),
   });
   expect(unlocked.status).toBe(200);
   const cookie = unlocked.headers.get("set-cookie").split(";")[0];
   for (const path of ["", "/memos/memo_child", "/resources/res_memo_child/blob"]) {
-    expect((await f.request(path, { headers: { Cookie: `edgeever_session=owner; ${cookie}` } })).status).toBe(200);
+    expect((await f.request(path, { headers: { Cookie: `ponder_session=owner; ${cookie}` } })).status).toBe(200);
   }
 });
 
@@ -788,13 +788,13 @@ describe("notebook share password recovery", () => {
     }
     expect((await (await f.app.request("/api/v1/notebooks/foreign/share", {}, f.environment)).json()).share).toBeNull();
     // Lost key prevents recovery, but hash-based access is still usable.
-    const previous = f.environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY;
-    f.environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY = "different-key";
+    const previous = f.environment.PONDER_CREDENTIALS_ENCRYPTION_KEY;
+    f.environment.PONDER_CREDENTIALS_ENCRYPTION_KEY = "different-key";
     expect((await (await f.app.request(ownerPath, {}, f.environment)).json()).share.password).toBeUndefined();
     expect((await f.request("/unlock", {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password: share.password }),
     })).status).toBe(200);
-    f.environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = previous;
+    f.environment.PONDER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS = previous;
     expect((await (await f.app.request(ownerPath, {}, f.environment)).json()).share.password).toBe(share.password);
     await change(f, false);
     expect(f.db.query("SELECT password_encrypted FROM notebook_shares").get().password_encrypted).toBeNull();
@@ -822,7 +822,7 @@ describe("notebook share password recovery", () => {
 
 test("missing deployment keys reject regeneration without changing the existing password", async () => {
   const f = fixture(await hashPassword("existing12"));
-  delete f.environment.EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY;
+  delete f.environment.PONDER_CREDENTIALS_ENCRYPTION_KEY;
   f.app.onError((error, c) => c.json({ error: { code: error.code } }, error.status ?? 500));
   const before = f.db.query("SELECT password_hash, password_encrypted FROM notebook_shares").get();
   const response = await f.app.request("/api/v1/notebooks/root/share", {

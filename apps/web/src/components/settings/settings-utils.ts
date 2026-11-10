@@ -95,7 +95,7 @@ export const getMcpRemoteServerUrl = () => {
   return `${window.location.origin}/mcp`;
 };
 
-export const getEdgeEverBaseUrl = () => {
+export const getPonderBaseUrl = () => {
   if (typeof window === "undefined") {
     return "https://your-domain.example";
   }
@@ -107,7 +107,7 @@ export const buildMcpRemoteConfig = (token: string) =>
   JSON.stringify(
     {
       mcpServers: {
-        edgeever: {
+        ponder: {
           url: getMcpRemoteServerUrl(),
           headers: {
             Authorization: `Bearer ${token}`,

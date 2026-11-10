@@ -16,16 +16,16 @@ describe("personal Cloudflare deployment workflow", () => {
   });
 
   test("uses the isolated personal instance resources", () => {
-    expect(workflow).toContain("EDGE_EVER_TIANMA_WORKER_NAME");
-    expect(workflow).toContain("EDGE_EVER_TIANMA_D1_DATABASE_ID");
-    expect(workflow).toContain("EDGE_EVER_TIANMA_R2_BUCKET_NAME");
-    expect(workflow).toContain("EDGE_EVER_TIANMA_CUSTOM_DOMAIN");
-    expect(workflow).not.toContain("EDGE_EVER_DEMO_");
+    expect(workflow).toContain("PONDER_TIANMA_WORKER_NAME");
+    expect(workflow).toContain("PONDER_TIANMA_D1_DATABASE_ID");
+    expect(workflow).toContain("PONDER_TIANMA_R2_BUCKET_NAME");
+    expect(workflow).toContain("PONDER_TIANMA_CUSTOM_DOMAIN");
+    expect(workflow).not.toContain("PONDER_DEMO_");
   });
 
   test("deploys with Release metadata and verifies the live version", () => {
-    expect(workflow).toContain("EDGE_EVER_DEPLOYMENT_TRIGGER: ${{ github.event_name == 'release' && 'github_release' || 'manual' }}");
-    expect(workflow).toContain("EDGE_EVER_RELEASED_AT: ${{ steps.release.outputs.published_at }}");
+    expect(workflow).toContain("PONDER_DEPLOYMENT_TRIGGER: ${{ github.event_name == 'release' && 'github_release' || 'manual' }}");
+    expect(workflow).toContain("PONDER_RELEASED_AT: ${{ steps.release.outputs.published_at }}");
     expect(workflow).toContain("run: bun run deploy");
     expect(workflow).toContain('new URL("/api/release"');
     expect(workflow).toContain("actualVersion !== expectedVersion");

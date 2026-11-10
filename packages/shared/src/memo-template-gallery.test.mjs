@@ -6,7 +6,7 @@ import {
 } from "./memo-template-gallery.ts";
 import { DEFAULT_MEMO_TEMPLATE_SEEDS } from "./memo-template-seeds.ts";
 
-const locales = ["zh-CN", "en-US", "ja", "pl", "ru"];
+const locales = ["en-US", "ja", "pl", "ru"];
 
 describe("memo template gallery", () => {
   test("offers unique templates that do not overlap the default seeds", () => {
@@ -40,7 +40,7 @@ describe("memo template gallery", () => {
       tags: ["template", "daily-journal"],
     });
     expect(localizeMemoTemplateGalleryItem(journal, "ko-KR").name).toBe("Daily Journal");
-    expect(localizeMemoTemplateGalleryItem(journal, null).name).toBe("每日日志");
+    expect(localizeMemoTemplateGalleryItem(journal, null).name).toBe("Daily Journal");
   });
 
   test("lists the whole gallery in the requested language", () => {

@@ -2,7 +2,7 @@ import baseManifest from "./manifest.base.json";
 
 export type ExtensionTarget = "chromium" | "firefox";
 
-export const FIREFOX_ADDON_ID = "web-clipper@edgeever.org";
+export const FIREFOX_ADDON_ID = "web-clipper@appkeep.io";
 export const FIREFOX_MIN_VERSION = "140.0";
 export const FIREFOX_ANDROID_MIN_VERSION = "142.0";
 

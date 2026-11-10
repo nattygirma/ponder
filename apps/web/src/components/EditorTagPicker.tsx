@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { CircleAlert, Check, ChevronDown, Loader2, Tag, TagPlus, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { normalizeTags, type TagSummary } from "@edgeever/shared";
+import { normalizeTags, type TagSummary } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -147,19 +147,19 @@ export const EditorTagPicker = ({ contentMarkdown, disabled, loadTags, title, va
 
   return (
     <>
-      <div className="edgeever-editor-tag-picker flex min-w-7 max-w-full flex-1 items-center gap-1 overflow-hidden">
+      <div className="ponder-editor-tag-picker flex min-w-7 max-w-full flex-1 items-center gap-1 overflow-hidden">
         <TooltipProvider delayDuration={0} skipDelayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
                 type="button"
                 disabled={disabled}
-                className="edgeever-editor-tag-trigger flex h-7 min-w-7 flex-1 overflow-hidden max-w-[32rem] items-center gap-1 rounded-md border border-transparent px-1.5 text-left text-xs text-slate-500 outline-none transition hover:border-slate-200 hover:bg-slate-50 focus-visible:border-slate-300 focus-visible:ring-2 focus-visible:ring-slate-400/25 disabled:opacity-50 sm:gap-1.5 sm:px-2"
+                className="ponder-editor-tag-trigger flex h-7 min-w-7 flex-1 overflow-hidden max-w-[32rem] items-center gap-1 rounded-md border border-transparent px-1.5 text-left text-xs text-slate-500 outline-none transition hover:border-slate-200 hover:bg-slate-50 focus-visible:border-slate-300 focus-visible:ring-2 focus-visible:ring-slate-400/25 disabled:opacity-50 sm:gap-1.5 sm:px-2"
                 aria-label={t("editor.tagPicker.open")}
                 onClick={() => setOpen(true)}
               >
-                <Tag className="edgeever-editor-metadata-icon h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="edgeever-editor-tag-content flex min-w-0 items-center gap-1 overflow-hidden">
+                <Tag className="ponder-editor-metadata-icon h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span className="ponder-editor-tag-content flex min-w-0 items-center gap-1 overflow-hidden">
                   {selectedTags.length > 0 ? (
                     <>
                       {selectedTags.slice(0, 3).map((tag) => (
@@ -178,7 +178,7 @@ export const EditorTagPicker = ({ contentMarkdown, disabled, loadTags, title, va
                     <span className="min-w-0 truncate text-slate-500">{t("editor.tagPlaceholder")}</span>
                   )}
                 </span>
-                <ChevronDown className="edgeever-editor-tag-chevron h-3.5 w-3.5 shrink-0 text-slate-400" />
+                <ChevronDown className="ponder-editor-tag-chevron h-3.5 w-3.5 shrink-0 text-slate-400" />
               </button>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="max-w-[min(24rem,calc(100vw-2rem))] break-words">
@@ -196,10 +196,10 @@ export const EditorTagPicker = ({ contentMarkdown, disabled, loadTags, title, va
                 type="button"
                 disabled={disabled || suggesting || selectedTags.length >= 24 || (!title.trim() && !contentMarkdown.trim())}
                 className={aiStatus.kind === "error"
-                  ? "edgeever-editor-tag-ai inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-rose-700 outline-none transition hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-rose-500/20 disabled:opacity-50"
+                  ? "ponder-editor-tag-ai inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-rose-700 outline-none transition hover:bg-rose-50 focus-visible:ring-2 focus-visible:ring-rose-500/20 disabled:opacity-50"
                   : aiStatus.kind === "success"
-                    ? "edgeever-editor-tag-ai inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-900 outline-none transition focus-visible:ring-2 focus-visible:ring-slate-400/30 disabled:opacity-50"
-                    : "edgeever-editor-tag-ai inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-600 outline-none transition hover:bg-slate-100 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-slate-400/30 disabled:opacity-50"}
+                    ? "ponder-editor-tag-ai inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-100 text-slate-900 outline-none transition focus-visible:ring-2 focus-visible:ring-slate-400/30 disabled:opacity-50"
+                    : "ponder-editor-tag-ai inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-slate-600 outline-none transition hover:bg-slate-100 hover:text-slate-950 focus-visible:ring-2 focus-visible:ring-slate-400/30 disabled:opacity-50"}
                 aria-label={aiDescription}
                 onClick={() => void generateAndApplyTags()}
               >

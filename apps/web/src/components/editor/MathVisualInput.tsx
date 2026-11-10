@@ -49,7 +49,7 @@ export const MathVisualInput = ({
       const markInputSlots = () => {
         field.shadowRoot?.querySelectorAll("span[data-atom-id]").forEach((element) => {
           if (element.children.length === 0 && element.textContent === "\u25a2") {
-            element.classList.add("edgeever-math-input-slot");
+            element.classList.add("ponder-math-input-slot");
           }
         });
       };
@@ -111,7 +111,7 @@ export const MathVisualInput = ({
   }, [value, ready]);
 
   return (
-    <div className="edgeever-math-visual-input space-y-2">
+    <div className="ponder-math-visual-input space-y-2">
       {!ready && <p role="status" className="text-xs text-slate-500">{loadingLabel}</p>}
       <div ref={hostRef} />
       {hint && <p role="status" className="text-xs leading-5 text-slate-500">{hint}</p>}

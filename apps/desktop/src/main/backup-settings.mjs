@@ -24,10 +24,10 @@ export const nextBackupAt = (lastSuccessAt, interval) => {
 
 export const backupFileName = (value, encrypted) => {
   if (typeof value !== "string") throw backupError("backup_name_invalid", "Enter a backup name.");
-  const name = value.trim().replace(/(?:\.edgeever\.enc|\.zip)$/i, "");
+  const name = value.trim().replace(/(?:\.ponder\.enc|\.zip)$/i, "");
   const hasControlCharacter = Array.from(name).some((character) => character.charCodeAt(0) < 32);
   if (!name || hasControlCharacter || /[<>:"/\\|?*]/.test(name) || /[. ]$/.test(name) || /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(name)) {
     throw backupError("backup_name_invalid", "Use a filename without paths or reserved characters.");
   }
-  return `${name}${encrypted ? ".edgeever.enc" : ".zip"}`;
+  return `${name}${encrypted ? ".ponder.enc" : ".zip"}`;
 };

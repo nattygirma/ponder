@@ -16,7 +16,7 @@ export const buildMacUpdateMetadata = ({
 }) => {
   assert.match(version, /^\d+\.\d+\.\d+$/, `Invalid desktop version: ${version}`);
   const files = MAC_ARCHES.map((arch) => {
-    const url = `EdgeEver-${version}-mac-${arch}.zip`;
+    const url = `Ponder-${version}-mac-${arch}.zip`;
     const path = join(outputDirectory, url);
     return {
       url,

@@ -33,7 +33,7 @@ Run A–C for every fixture, and D for fixtures with rich-only structures. Asser
 |---|---|
 | Plain text | `Alpha [ ] & Bravo`, literal `&amp;`, brackets that could form a link, backslashes, dollar signs, spaces and consecutive blank lines, CRLF, Chinese, and emoji |
 | Markdown structures | Headings, emphasis, links and destinations, inline and fenced code, blockquotes, nested lists, task state, GFM tables, Mermaid, math, and `details` |
-| EdgeEver content | Images and galleries, file and PDF attachments, plugin embeds, merge dividers, task lists or multiple paragraphs inside a rich table cell, and rich-only attributes |
+| Ponder content | Images and galleries, file and PDF attachments, plugin embeds, merge dividers, task lists or multiple paragraphs inside a rich table cell, and rich-only attributes |
 | Input and switching | Chinese and English IME composition, paste, undo/redo, caret at punctuation and formatting boundaries, selections, rapid repeated switching, and long notes |
 
 Automation must cover conversion and snapshot assertions, save and reopen, and actual browser typing and caret placement. Issue #469 was reported on Windows 10 / Chrome 154 / zh-TW; reproduce on that environment or an equivalent Windows Chrome environment with documented differences before closing it. Changes to the storage format, migrations, or cross-version reading also require a real old-version → new-version note test. Record pass / fail / unverified, platform, and version for each case. Do not report an unverified case as passing.

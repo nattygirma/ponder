@@ -4,13 +4,13 @@ export const jaSiteTagline =
 export const jaSiteCopy = {
   layout: {
     defaultDescription:
-      "EdgeEver はオープンソースで AI ネイティブな、セルフホスト型のノートと知識ベースです。クラシックな三ペイン（ツリー階層・ノート一覧・エディタ）の高い作業効率を活かしつつ、ローカル ACP Agent 連携、伴走サイドバー、図解ノート、マルチ端末同期を備え、macOS、Windows、Linux、iOS、Android、ブラウザ Clipper に対応。Cloudflare の無料枠または Docker で同じアプリを動かせます。",
-    defaultTitle: `EdgeEver - ${jaSiteTagline}`,
-    imageAlt: "EdgeEver ノートアプリのスクリーンショット",
+      "Ponder はオープンソースで AI ネイティブな、セルフホスト型のノートと知識ベースです。クラシックな三ペイン（ツリー階層・ノート一覧・エディタ）の高い作業効率を活かしつつ、ローカル ACP Agent 連携、伴走サイドバー、図解ノート、マルチ端末同期を備え、macOS、Windows、Linux、iOS、Android、ブラウザ Clipper に対応。Cloudflare の無料枠または Docker で同じアプリを動かせます。",
+    defaultTitle: `Ponder - ${jaSiteTagline}`,
+    imageAlt: "Ponder ノートアプリのスクリーンショット",
     ogLocale: "ja_JP",
   },
   nav: {
-    homeAria: "EdgeEver ホーム",
+    homeAria: "Ponder ホーム",
     features: "機能",
     guides: "ガイド",
     deploy: "導入",
@@ -46,12 +46,12 @@ export const jaSiteCopy = {
     clipper: "Web Clipper",
     windows: "Windows",
     linux: "Linux",
-    imageAlt: "EdgeEver のプレビュー",
+    imageAlt: "Ponder のプレビュー",
     badgeText:
       "💡 対応: macOS、Windows、Linux、iOS、Android、Web Clipper · ネイティブ MCP & ACP 連携 · Cloudflare 無料枠と Docker",
   },
   bento: {
-    eyebrow: "WHY EDGEEVER",
+    eyebrow: "WHY PONDER",
     heading: "セルフホストの知識管理と AI のために作り直した",
     subheading:
       "広告、端末数の制限、高いサブスクはやめましょう。速さ、開放性、自分で守れるプライバシーを前提にしています。",
@@ -67,12 +67,12 @@ export const jaSiteCopy = {
       folder3: "03_Archive_Notes",
       folder4: "↳ 2026_Reading",
       listTitle: "ノート (18)",
-      note1Title: "EdgeEver Architecture",
+      note1Title: "Ponder Architecture",
       note1Sub: "Cloudflare Workers / Docker & SQLite...",
       note2Title: "ローカル ACP Agent 連携",
       note2Sub: "Codex / Antigravity 協調...",
-      editorTitle: "EdgeEver Architecture",
-      editorBody: "EdgeEver はクラシックな三ペインに、AI Agent 連携と柔軟な導入を足したものです。",
+      editorTitle: "Ponder Architecture",
+      editorBody: "Ponder はクラシックな三ペインに、AI Agent 連携と柔軟な導入を足したものです。",
       editorSaveTag: "SQLite に自動保存",
     },
     card2: {
@@ -110,7 +110,7 @@ export const jaSiteCopy = {
       title: "全プラットフォームと欠損のない ZIP バックアップ",
       desc: "macOS、Windows、Linux、ネイティブ iOS、Android、高機能 Web Clipper に対応。欠損のない ZIP 書き出しと標準 SQLite でデータを完全に掌握できます。",
       subBadge: "マルチ端末 + ZIP",
-      archiveTitle: "edgeever-backup.zip",
+      archiveTitle: "ponder-backup.zip",
       archiveSub: "Markdown + 添付 + 版履歴",
     },
   },
@@ -237,7 +237,7 @@ export const jaSiteCopy = {
         points: [
           "端末数の上限なし: 自前 API なので「2 台まで」のような制限はありません。",
           "macOS デスクトップ: Electron + Rust sidecar + SQLite。ローカルは速く、ACP 連携とオフライン同期に対応。",
-          "Windows x64: ローカル SQLite、エクスプローラー右クリック「EdgeEver に送信」、自動更新。",
+          "Windows x64: ローカル SQLite、エクスプローラー右クリック「Ponder に送信」、自動更新。",
           "モバイル: SwiftUI の iOS（App Store）と Android（Google Play と GitHub APK）。取り消し・やり直し対応。",
           "全機能 Web Clipper: Chrome、Edge、Firefox 公式拡張。ページ全体、画像、X 投稿、テキストを取り込み。",
         ],
@@ -255,20 +255,20 @@ export const jaSiteCopy = {
     ],
   },
   guides: {
-    eyebrow: "EdgeEver Guides",
+    eyebrow: "Ponder Guides",
     heading: "導入、移行、AI Agent を動かす",
     description:
       "最短経路は、自分のインスタンスを立て、既存の Evernote を移し、MCP で AI ワークフローをつなぐことです。",
     items: [
       {
-        title: "EdgeEver の導入方法を選ぶ",
+        title: "Ponder の導入方法を選ぶ",
         summary: "Cloudflare は AI Agent か手動セットアップ。VPS や NAS なら Docker の一行インストーラ。",
         href: "/blog/ai-agent-deploy-cloudflare",
         cta: "導入ガイドを読む",
       },
       {
         title: "Evernote から移行する",
-        summary: "EdgeEver MCP、evernote-backup、ENEX 取り込みで、古いライブラリを自前インスタンスへ。",
+        summary: "Ponder MCP、evernote-backup、ENEX 取り込みで、古いライブラリを自前インスタンスへ。",
         href: "/blog/evernote-migration-guide",
         cta: "移行ガイドを読む",
       },

@@ -1,5 +1,5 @@
-import { nodePublicFetch } from "@edgeever/public-network/node";
-import { PUBLIC_NETWORK_TIMEOUT_MS, publicRequestHeaders, publicResponseHeaders, readPublicBody, validatePublicUrl } from "@edgeever/public-network/policy";
+import { nodePublicFetch } from "@ponder/public-network/node";
+import { PUBLIC_NETWORK_TIMEOUT_MS, publicRequestHeaders, publicResponseHeaders, readPublicBody, validatePublicUrl } from "@ponder/public-network/policy";
 
 export function createPluginPublicNetworkRuntime({ fetchPublic = nodePublicFetch, timeoutMs = PUBLIC_NETWORK_TIMEOUT_MS, maxConcurrent = 4 } = {}) {
   const active = new Map();
@@ -20,7 +20,7 @@ export function createPluginPublicNetworkRuntime({ fetchPublic = nodePublicFetch
           else controller.signal.addEventListener("abort", () => reject(controller.signal.reason), { once: true });
         });
         const response = await Promise.race([
-          fetchPublic(url.href, { method, headers: { ...headers, "User-Agent": "EdgeEver-Plugins/1.0" }, redirect: "manual", signal: controller.signal }),
+          fetchPublic(url.href, { method, headers: { ...headers, "User-Agent": "Ponder-Plugins/1.0" }, redirect: "manual", signal: controller.signal }),
           aborted,
         ]);
         const bytes = await readPublicBody(response, controller.signal);

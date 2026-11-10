@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { Notebook } from "@edgeever/shared";
-import type { ImportFormat, ImportIssue } from "@edgeever/shared/note-import/types";
+import type { Notebook } from "@ponder/shared";
+import type { ImportFormat, ImportIssue } from "@ponder/shared/note-import/types";
 import type { NoteImportController, NoteImportSnapshot } from "@/lib/note-import/controller";
 import { EVERNOTE_MIGRATION_BLOG_URL } from "@/lib/routes";
 
@@ -44,7 +44,7 @@ export const ThirdPartyImportDialog = ({ controller, state, onOpenMemo }: { cont
           <label className="grid gap-2 text-sm"><span>{t("noteImport.source")}</span>
             <Select value={state.format} onValueChange={value => controller.setFormat(value as ImportFormat)}>
               <SelectTrigger aria-label={t("noteImport.source")}><SelectValue /></SelectTrigger>
-              <SelectContent><SelectItem value="evernote">Evernote / 印象笔记</SelectItem><SelectItem value="obsidian">Obsidian</SelectItem><SelectItem value="joplin">Joplin</SelectItem></SelectContent>
+              <SelectContent><SelectItem value="evernote">Evernote</SelectItem><SelectItem value="obsidian">Obsidian</SelectItem><SelectItem value="joplin">Joplin</SelectItem></SelectContent>
             </Select>
           </label>
           <div className="flex flex-wrap gap-2">

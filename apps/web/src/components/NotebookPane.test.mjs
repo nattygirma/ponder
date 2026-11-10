@@ -20,8 +20,8 @@ test("keeps the desktop create-note control compact with one neutral outline", (
   expect(source).toContain('data-[state=open]:bg-workspace-selection data-[state=open]:text-slate-950');
   expect(source).toContain('t("diagram.moreTypes")');
   expect(source).toContain('group-data-[state=open]:rotate-180');
-  expect(source).toContain("edgeever-create-memo-split__more-label");
-  expect(css).toContain(".edgeever-create-memo-split__more-label");
+  expect(source).toContain("ponder-create-memo-split__more-label");
+  expect(css).toContain(".ponder-create-memo-split__more-label");
   expect(css).toContain("@container (max-width: 11.749rem)");
   expect(source).not.toContain('focus-visible:ring-inset focus-visible:ring-emerald-500');
   expect(source).not.toContain('title={t("notebookPane.newMemo")}');
@@ -93,10 +93,10 @@ describe("NotebookPane sidebar collapse", () => {
     const css = readFileSync(new URL("../styles/globals.css", import.meta.url), "utf8");
 
     expect(workspace).toContain("desktopNotebookSidebarCollapsed");
-    expect(workspace).toContain("edgeever-workspace-grid--sidebar-collapsed");
-    expect(workspace).toContain('id="edgeever-notebook-sidebar"');
+    expect(workspace).toContain("ponder-workspace-grid--sidebar-collapsed");
+    expect(workspace).toContain('id="ponder-notebook-sidebar"');
     expect(workspace).toContain("collapsed={desktopNotebookSidebarCollapsed}");
-    expect(css).toContain(".edgeever-workspace-grid--sidebar-collapsed");
+    expect(css).toContain(".ponder-workspace-grid--sidebar-collapsed");
     expect(css).toContain("var(--notebook-sidebar-width)");
     expect(css).toContain("--notebook-sidebar-width: 3.5rem;");
   });
@@ -115,7 +115,7 @@ describe("NotebookPane tree expansion persistence", () => {
   });
 
   test("lets the notebooks heading collapse the list without touching each branch", () => {
-    const catalogs = ["en-US", "zh-CN", "ja", "pl", "ru"].map((locale) =>
+    const catalogs = ["en-US", "ja", "pl", "ru"].map((locale) =>
       readFileSync(new URL(`../../../../packages/shared/src/i18n/${locale}.ts`, import.meta.url), "utf8"),
     );
 
@@ -139,7 +139,7 @@ describe("NotebookPane client downloads", () => {
     expect(source).toContain('t("pwa.sidebarMac") || "macOS"');
     expect(source).toContain('t("pwa.sidebarWindows") || "Windows"');
     expect(source).toContain('t("pwa.sidebarLinux") || "Linux"');
-    expect(source).not.toContain("!window.edgeeverDesktop?.isAvailable");
+    expect(source).not.toContain("!window.ponderDesktop?.isAvailable");
   });
 
   test("labels Windows and Linux by package format instead of a preview badge", () => {
@@ -176,7 +176,7 @@ const CLICK_GUARD = `                      aria-disabled="true"
 describe("NotebookTreeItem inbox delete affordance", () => {
   test("explains why the starter Inbox notebook has no working delete action", () => {
     const treeItemSource = readFileSync(new URL("./NotebookTreeItem.tsx", import.meta.url), "utf8");
-    const catalogs = ["en-US", "zh-CN", "ja", "pl"].map((locale) =>
+    const catalogs = ["en-US", "ja", "pl"].map((locale) =>
       readFileSync(new URL(`../../../../packages/shared/src/i18n/${locale}.ts`, import.meta.url), "utf8"),
     );
 

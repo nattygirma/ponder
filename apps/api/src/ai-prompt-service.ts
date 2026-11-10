@@ -5,7 +5,7 @@ import {
   type AiPromptParameterKind,
   type AiPromptResultMode,
   type AiPromptTemplate,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import type { DatabaseAdapter } from "./storage-contract";
 
 export type AiPromptTemplateRow = {

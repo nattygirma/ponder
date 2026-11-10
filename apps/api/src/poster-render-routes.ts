@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { zValidator } from '@hono/zod-validator';
 import { bodyLimit } from 'hono/body-limit';
 import type { Hono } from 'hono';
-import { PosterDocumentSchema, parsePosterDocument, serializePosterDocument } from '@edgeever/shared';
+import { PosterDocumentSchema, parsePosterDocument, serializePosterDocument } from '@ponder/shared';
 import type { AppEnv } from './api-context';
 import { getWorkspaceId, requireUser, getAuditActor, getActorLabel } from './request-auth';
 import { apiError } from './http-errors';

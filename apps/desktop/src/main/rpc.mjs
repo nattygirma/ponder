@@ -15,7 +15,7 @@ export class SidecarRpcClient {
     const input = createInterface({ input: child.stdout });
     input.on("line", (line) => this.#handleLine(line));
     child.on("exit", (code, signal) => {
-      const error = new Error(`EdgeEver sidecar exited (${code ?? signal ?? "unknown"})`);
+      const error = new Error(`Ponder sidecar exited (${code ?? signal ?? "unknown"})`);
       for (const { reject } of this.#pending.values()) reject(error);
       this.#pending.clear();
       this.#ready?.reject(error);
@@ -34,7 +34,7 @@ export class SidecarRpcClient {
     if (message.event === "ready") {
       if (message.protocolVersion !== SIDECAR_PROTOCOL_VERSION) {
         const error = new Error(
-          `Unsupported EdgeEver sidecar protocol: expected ${SIDECAR_PROTOCOL_VERSION}, received ${message.protocolVersion ?? "unknown"}`,
+          `Unsupported Ponder sidecar protocol: expected ${SIDECAR_PROTOCOL_VERSION}, received ${message.protocolVersion ?? "unknown"}`,
         );
         this.#readyError = error;
         this.#ready?.reject(error);

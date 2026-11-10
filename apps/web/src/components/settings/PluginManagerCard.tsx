@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import type { EdgeEverPluginHost, InstalledExtension, RegisteredPluginCommand } from "@/lib/plugins/plugin-host";
+import type { PonderPluginHost, InstalledExtension, RegisteredPluginCommand } from "@/lib/plugins/plugin-host";
 import { PluginCatalogCard } from "@/components/plugins/PluginCatalogCard";
 import { loadDisplayPluginMarketplace } from "@/lib/plugins/community-registry";
 import {
@@ -27,14 +27,13 @@ import { applyPluginUpdate, checkPluginUpdates, type PluginUpdateInfo } from "@/
 import { PluginUpdateDialog } from "@/components/plugins/PluginUpdateDialog";
 import { PluginSettingsSection } from "@/components/plugins/PluginSettingsSection";
 import { buildPluginCatalogItems, getPluginCatalogDescription, getPluginCatalogName, getPluginCatalogSourceKey } from "@/lib/plugins/plugin-catalog";
-import type { MarketplaceEntry, MarketplaceRevocation } from "@edgeever/plugin-api";
+import type { MarketplaceEntry, MarketplaceRevocation } from "@ponder/plugin-api";
 import { getPluginDetailPage, getPluginDetailPath, hasPluginSettings, isPluginCardCommand, type PluginDetailPage } from "@/lib/plugins/plugin-navigation";
-import type { ScheduledTask } from "@edgeever/shared";
+import type { ScheduledTask } from "@ponder/shared";
 import { api, getOrCreateClientDeviceId } from "@/lib/api";
 import { BETA_BADGE_CLASSNAME } from "@/lib/workspace-ui";
 import { ScheduledTaskRunHistoryDialog } from "@/components/execution/ScheduledTaskRunHistoryDialog";
 import { AppConfirmDialog } from "@/components/dialogs/ConfirmDialogs";
-import { prefersChineseContent } from "@/lib/bilingual-content-locale";
 import {
   acknowledgePluginTrustWarning,
   hasAcknowledgedPluginTrustWarning,
@@ -47,7 +46,7 @@ const PLUGIN_CARD_GRID_CLASS_NAME = "grid grid-cols-1 gap-2 sm:grid-cols-2 xl:gr
 const LegacyManualScheduledTasksSection = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const deviceId = window.edgeeverDesktop?.isAvailable ? getOrCreateClientDeviceId() : null;
+  const deviceId = window.ponderDesktop?.isAvailable ? getOrCreateClientDeviceId() : null;
   const [message, setMessage] = useState<string | null>(null);
   const [historyTask, setHistoryTask] = useState<ScheduledTask | null>(null);
   const tasksQuery = useQuery({
@@ -166,7 +165,7 @@ const PluginDetailView = ({
   commands: RegisteredPluginCommand[];
   extension: InstalledExtension;
   marketplaceEntry?: MarketplaceEntry;
-  host: EdgeEverPluginHost;
+  host: PonderPluginHost;
   pendingId: string | null;
   update?: PluginUpdateInfo;
   onRunCommand: (command: RegisteredPluginCommand) => void;
@@ -296,7 +295,7 @@ export const PluginManagerCard = ({
   selectedPluginId,
   requestedPage = null,
 }: {
-  host: EdgeEverPluginHost;
+  host: PonderPluginHost;
   onClosePlugin?: () => void;
   onOpenPlugin?: (pluginId: string) => void;
   selectedPluginId?: string | null;
@@ -304,12 +303,8 @@ export const PluginManagerCard = ({
 }) => {
   const { t, i18n } = useTranslation();
   const queryClient = useQueryClient();
-  const developerDocsUrl = prefersChineseContent(i18n.resolvedLanguage)
-    ? "https://github.com/tianma-if/edgeever/blob/main/docs/plugin-development.zh-CN.md"
-    : "https://github.com/tianma-if/edgeever/blob/main/docs/plugin-development.md";
-  const communityReadmeUrl = prefersChineseContent(i18n.resolvedLanguage)
-    ? `${COMMUNITY_PLUGINS_REPOSITORY_URL}/blob/main/README.zh-CN.md`
-    : COMMUNITY_PLUGINS_README_URL;
+  const developerDocsUrl = "https://github.com/tianma-if/edgeever/blob/main/docs/plugin-development.md";
+  const communityReadmeUrl = COMMUNITY_PLUGINS_README_URL;
   const snapshot = useSyncExternalStore(host.subscribe, host.getSnapshot, host.getSnapshot);
   const [manifestUrl, setManifestUrl] = useState("");
   const [pendingId, setPendingId] = useState<string | null>(null);

@@ -8,7 +8,7 @@ import react from "@astrojs/react";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://edgeever.org",
+  site: "https://appkeep.io",
   server: {
     port: 4321,
     host: "127.0.0.1"
@@ -17,9 +17,8 @@ export default defineConfig({
     mdx(),
     sitemap({
       i18n: {
-        defaultLocale: "zh-CN",
+        defaultLocale: "en",
         locales: {
-          "zh-CN": "zh-CN",
           en: "en-US",
           ja: "ja",
           pl: "pl",
@@ -30,18 +29,26 @@ export default defineConfig({
     react(),
   ],
   redirects: {
+    "/en": "/",
+    "/en/blog": "/blog",
+    "/en/blog/[slug]": "/blog/[slug]",
+    "/en/contact": "/contact",
+    "/en/data-deletion": "/data-deletion",
+    "/en/docker-deploy": "/docker-deploy",
+    "/en/guides/advanced-play": "/guides/advanced-play",
+    "/en/guides/best-practices": "/guides/best-practices",
+    "/en/manual-deploy": "/manual-deploy",
+    "/en/privacy": "/privacy",
+    "/en/self-hosted-evernote-alternative": "/self-hosted-evernote-alternative",
     "/guides/evernote-migration": "/blog/evernote-migration-guide",
     "/guides/memos-migration": "/blog/memos-migration-guide",
     "/guides/notion-migration": "/blog/notion-migration-guide",
-    "/en/guides/evernote-migration": "/en/blog/evernote-migration-guide",
-    "/en/guides/memos-migration": "/en/blog/memos-migration-guide",
-    "/en/guides/notion-migration": "/en/blog/notion-migration-guide",
-    "/ja/guides/evernote-migration": "/en/blog/evernote-migration-guide",
-    "/ja/guides/memos-migration": "/en/blog/memos-migration-guide",
-    "/ja/guides/notion-migration": "/en/blog/notion-migration-guide",
-    "/pl/guides/evernote-migration": "/en/blog/evernote-migration-guide",
-    "/pl/guides/memos-migration": "/en/blog/memos-migration-guide",
-    "/pl/guides/notion-migration": "/en/blog/notion-migration-guide",
+    "/ja/guides/evernote-migration": "/blog/evernote-migration-guide",
+    "/ja/guides/memos-migration": "/blog/memos-migration-guide",
+    "/ja/guides/notion-migration": "/blog/notion-migration-guide",
+    "/pl/guides/evernote-migration": "/blog/evernote-migration-guide",
+    "/pl/guides/memos-migration": "/blog/memos-migration-guide",
+    "/pl/guides/notion-migration": "/blog/notion-migration-guide",
   },
   vite: {
     plugins: [tailwindcss()],

@@ -1,68 +1,68 @@
 ---
 draft: false
-title: "从印象笔记迁移到自托管笔记应用：EdgeEver ENEX 完整指南"
-snippet: "通过 ENEX、evernote-backup 与 EdgeEver MCP，完整迁移笔记、附件、时间信息和嵌套笔记本。"
+title: "How to migrate from Evernote to a self-hosted notes app: Ponder ENEX guide"
+snippet: "Use ENEX, evernote-backup, and Ponder MCP to preserve notes, attachments, timestamps, and nested notebooks."
 image: {
     src: "/images/evernote-migration.jpg",
-    alt: "从印象笔记迁移到 EdgeEver"
+    alt: "Migrating from Evernote to Ponder"
 }
 publishDate: "2026-07-02 01:00"
 category: "Migration"
-author: "EdgeEver Team"
+author: "Ponder Team"
 tags: [evernote, migration, self-hosted, mcp]
 ---
 
-> EdgeEver 与印象笔记、Evernote 无关联。本指南仅用于说明用户如何将自己拥有的数据迁移到 EdgeEver。印象笔记和 Evernote 是其各自权利人的商标。
+> Ponder is not affiliated with, endorsed by, or sponsored by Evernote. This guide only explains how users can migrate data they own into Ponder. Evernote is a trademark of its respective owner.
 
-我们推荐使用 AI 编程助手（如 Antigravity、Claude Code、Cursor 等）自动执行迁移。核心仓库迁移指南说明：该方案已完成内存流式优化与空文本预处理，能应对数 GB 级别超大笔记库，并保留创建/修改时间与嵌套笔记本目录层级。
+We recommend using an AI coding assistant, such as Antigravity, Claude Code, Cursor, or a similar tool, to automate the migration. The migration guide in the core repository notes that the approach includes streaming memory optimization and empty-text preprocessing, supports very large note libraries, and preserves created/updated timestamps plus nested notebook hierarchy.
 
-如果还在比较「自托管印象笔记替代方案」，可先看 [EdgeEver 品类说明](/self-hosted-evernote-alternative)，再按下面步骤搬家。
+If you are still comparing self-hosted Evernote alternatives, start with the [Ponder category page](/self-hosted-evernote-alternative), then follow the steps below.
 
-### 常见问题
+### FAQ
 
-- **会保留笔记本、附件和时间吗？** 文档化流程会保留创建/修改时间与嵌套笔记本层级。导入后请抽查带图片的笔记。
-- **必须用 AI 助手吗？** 推荐，但不是唯一路径。也可以下载 `scripts/import-evernote-enex-via-mcp.mjs`，按脚本注释手动执行。
-- **和印象笔记官方有关系吗？** 没有。本指南只处理你自己拥有的数据。
+- **Does this keep notebooks, attachments, and timestamps?** The documented flow preserves created/updated timestamps and nested notebook hierarchy. Spot-check notes with images after import.
+- **Do I have to use an AI assistant?** It is recommended, not required. You can download `scripts/import-evernote-enex-via-mcp.mjs` and follow the comments at the top of the script.
+- **Is Ponder affiliated with Evernote?** No. This guide only covers data you already own.
 
 ---
 
-### 步骤 1：配置并安装 EdgeEver MCP 服务
+### Step 1: Configure and install the Ponder MCP service
 
-1. 点击网页端左下角的 **设置（Settings）** 图标。
-2. 在 **API & MCP 授权** 卡片生成 Token 后，点击 **复制完整 MCP 配置** 按钮。
-3. 把复制的 JSON 配置直接发送给你的 AI 编程助手，让它帮你配置到当前 AI 客户端中：
+1. Open the **Settings** area from the lower-left corner of the web app.
+2. Generate a token from the **API & MCP authorization** card, then click **Copy full MCP config**.
+3. Send the copied JSON configuration directly to your AI coding assistant and ask it to add the MCP server to your current AI client:
 
 ```text
-你是 AI 编程助手。这是我的 EdgeEver MCP 服务配置 JSON。请帮我把这个 MCP 服务直接配置到我当前使用的 AI 编辑器/客户端（如 Claude Code, Cursor, Cline 等）的 MCP 服务器配置文件中：
+You are my AI coding assistant. This is my Ponder MCP service configuration JSON. Please configure this MCP service directly in the MCP server configuration file for the AI editor/client I am currently using, such as Claude Code, Cursor, Cline, or a similar tool:
 
-<在此处粘贴刚才复制的 JSON 配置内容>
+<paste the JSON configuration here>
 ```
 
 ---
 
-### 步骤 2：使用 AI 助手拉取并导入笔记
+### Step 2: Let the AI assistant export and import your notes
 
-当 AI 助手配置好 MCP 后，复制以下 Prompt 发送给它，让它自动拉取印象笔记数据并导入：
+After the assistant has configured MCP, copy the prompt below and send it to the assistant so it can export your Evernote data and import it into Ponder:
 
 ```text
-你是 AI 编程助手。请帮我把本地的印象笔记全量迁移到我当前部署的 EdgeEver 实例中：
-1. 检查并使用 `pipx install evernote-backup` 自动安装备份工具。
-2. 提示我输入印象笔记的用户名和密码并初始化数据库（指定 china 后端），随后同步数据并导出到 `./evernote-export` 目录。
-3. 从 GitHub 下载最新版迁移脚本：`https://raw.githubusercontent.com/tianma-if/edgeever/main/scripts/import-evernote-enex-via-mcp.mjs` 到本地。
-4. 安装脚本所需的本地图片压缩库 `sharp` 和 `fast-xml-parser` 依赖。
-5. 使用先前配置的 URL 和 Token 运行该脚本完成迁移（脚本会自动进行 WebP 图片转换）：
-   - 全量迁移：`bun import-evernote-enex-via-mcp.mjs --input "./evernote-export" --yes`
-   - 指定迁移某些笔记本：追加 `--include "笔记本A,笔记本B"` 参数。
+You are my AI coding assistant. Please migrate my local Evernote data into my currently deployed Ponder instance:
+1. Check for and install the backup tool with `pipx install evernote-backup`.
+2. Ask me for my Evernote username and password, initialize the database with the China backend if needed, sync the data, and export it to `./evernote-export`.
+3. Download the latest migration script from GitHub: `https://raw.githubusercontent.com/tianma-if/edgeever/main/scripts/import-evernote-enex-via-mcp.mjs`.
+4. Install the local image compression and XML parsing dependencies required by the script: `sharp` and `fast-xml-parser`.
+5. Use the previously configured URL and token to run the script and complete the migration. The script will automatically convert images to WebP:
+   - Full migration: `bun import-evernote-enex-via-mcp.mjs --input "./evernote-export" --yes`
+   - To import only specific notebooks, append `--include "Notebook A,Notebook B"`.
 
-请告诉我你需要什么信息（如账号密码），收到后直接并发自动执行上述步骤。
+Tell me what information you need, such as account credentials, and then run the steps concurrently where possible.
 ```
 
-> 手动模式备用：如果不使用 AI 助手，也可以前往 GitHub 仓库 [EdgeEver GitHub](https://github.com/tianma-if/edgeever) 下载 `scripts/import-evernote-enex-via-mcp.mjs` 脚本，并按脚本头部注释执行。
+> Manual fallback: if you do not use an AI assistant, open the [Ponder GitHub repository](https://github.com/tianma-if/edgeever), download `scripts/import-evernote-enex-via-mcp.mjs`, and follow the instructions in the script header.
 
 ---
 
-### 步骤 3：在网页端验证导入结果
+### Step 3: Verify the import in the web app
 
-1. 导入完成后，回到 EdgeEver 网页端并刷新页面。
-2. 检查左侧栏，确认印象笔记原有的「笔记本组（堆叠）」层级结构已还原。
-3. 打开几篇包含多张图片的笔记，验证其中的图片是否已成功在编辑器中加载并能清晰显示。
+1. After import completes, return to the Ponder web app and refresh the page.
+2. Check the left sidebar and confirm that the original Evernote notebook stack hierarchy has been restored.
+3. Open a few image-heavy notes and confirm that the images load clearly in the editor.

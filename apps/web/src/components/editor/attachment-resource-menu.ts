@@ -1,14 +1,14 @@
 import { flip, offset, shift, type ComputePositionConfig } from "@floating-ui/react-dom";
-import { getAttachmentFilenameFromLabel, getResourceIdFromUrl } from "@edgeever/shared";
+import { getAttachmentFilenameFromLabel, getResourceIdFromUrl } from "@ponder/shared";
 
 /** File/PDF cards own in-card download and open-external controls. */
-export const ATTACHMENT_CARD_SELECTOR = ".edgeever-file-viewer, .edgeever-pdf-viewer";
-export const ATTACHMENT_TOOLBAR_SELECTOR = "[data-edgeever-resource-toolbar]";
+export const ATTACHMENT_CARD_SELECTOR = ".ponder-file-viewer, .ponder-pdf-viewer";
+export const ATTACHMENT_TOOLBAR_SELECTOR = "[data-ponder-resource-toolbar]";
 export const ATTACHMENT_ACTION_SELECTOR = ".pdf-viewer-action";
 export const ATTACHMENT_FILE_NAME_ATTR = "data-file-name";
 export const ATTACHMENT_FILE_URL_ATTR = "data-file-url";
 const ATTACHMENT_LINK_SELECTOR =
-  'a.edgeever-attachment-link, a[href*="/api/v1/resources/"], a[href^="edgeever-resource://"]';
+  'a.ponder-attachment-link, a[href*="/api/v1/resources/"], a[href^="ponder-resource://"]';
 
 /** Keep rename/delete outside the toolbar so they do not cover in-card actions or their tooltips. */
 export const attachmentResourceMenuPosition: Partial<ComputePositionConfig> = {
@@ -79,5 +79,5 @@ export const isInsideAttachmentHoverRegion = (
   if (!(related instanceof Node)) return false;
   if (origin.card?.contains(related)) return true;
   if (!origin.card && origin.link.contains(related)) return true;
-  return related instanceof Element && Boolean(related.closest("[data-edgeever-resource-menu]"));
+  return related instanceof Element && Boolean(related.closest("[data-ponder-resource-menu]"));
 };

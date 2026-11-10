@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { rotateDiagnosticLog } from "./diagnostic-log.mjs";
 
 test("diagnostic logs rotate after reaching the size limit", async () => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-diagnostic-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-diagnostic-"));
   const path = join(directory, "desktop.log");
   await writeFile(path, "x".repeat(11));
 

@@ -23,7 +23,7 @@ function setup(options = {}) {
   databases.push(sqlite);
   for (const file of globSync("migrations/*.sql").sort()) sqlite.exec(readFileSync(file, "utf8"));
   sqlite.query("INSERT INTO workspaces(id, name) VALUES (?, 'Test')").run(scope.workspaceId);
-  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-companion-attachment-test-unused");
+  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-companion-attachment-test-unused");
   const db = storage.db;
   const auth = { kind: "user", actorType: "user", actorId: scope.ownerId, workspaceId: scope.workspaceId, scopes: [], role: "member" };
   let modelLoads = 0;

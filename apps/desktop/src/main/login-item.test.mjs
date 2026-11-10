@@ -17,7 +17,7 @@ import {
   startupLoginItemPlan,
 } from "./login-item.mjs";
 
-const exePath = "C:\\Users\\Example\\AppData\\Local\\Programs\\EdgeEver\\EdgeEver.exe";
+const exePath = "C:\\Users\\Example\\AppData\\Local\\Programs\\Ponder\\Ponder.exe";
 
 const windowsItem = (overrides = {}) => ({
   name: LOGIN_ITEM_NAME,
@@ -75,7 +75,7 @@ describe("login item startup plan", () => {
       platform: "win32",
       packaged: true,
       saved: { openAtLogin: true, launchMode: "tray" },
-      os: { launchItems: [windowsItem({ path: "C:\\Old\\EdgeEver.exe", args: [] })] },
+      os: { launchItems: [windowsItem({ path: "C:\\Old\\Ponder.exe", args: [] })] },
       executablePath: exePath,
     });
     expect(stale.action).toBe("apply");
@@ -135,27 +135,27 @@ describe("login item startup plan", () => {
       packaged: true,
       saved: { openAtLogin: true, launchMode: "tray" },
       os: { openAtLogin: false, status: "not-registered" },
-      executablePath: "/Applications/EdgeEver.app/Contents/MacOS/EdgeEver",
+      executablePath: "/Applications/Ponder.app/Contents/MacOS/Ponder",
     })).toMatchObject({ action: "persist-off", openAtLogin: false });
     expect(startupLoginItemPlan({
       platform: "darwin",
       packaged: true,
       saved: { openAtLogin: true, launchMode: "window" },
       os: { openAtLogin: true, status: "requires-approval" },
-      executablePath: "/Applications/EdgeEver.app/Contents/MacOS/EdgeEver",
+      executablePath: "/Applications/Ponder.app/Contents/MacOS/Ponder",
     })).toMatchObject({ action: "none", status: "requires-approval", openAtLogin: true });
     expect(startupLoginItemPlan({
       platform: "darwin",
       packaged: true,
       saved: { openAtLogin: true, launchMode: "window" },
       os: { openAtLogin: false, status: "not-found" },
-      executablePath: "/Applications/EdgeEver.app/Contents/MacOS/EdgeEver",
+      executablePath: "/Applications/Ponder.app/Contents/MacOS/Ponder",
     }).action).toBe("apply");
     expect(loginItemArgs("window")).toEqual([]);
     expect(loginItemUpdatePayload({
       openAtLogin: true,
       launchMode: "tray",
-      executablePath: "/Applications/EdgeEver.app/Contents/MacOS/EdgeEver",
+      executablePath: "/Applications/Ponder.app/Contents/MacOS/Ponder",
       platform: "darwin",
     })).toEqual({ openAtLogin: true });
   });
@@ -174,33 +174,33 @@ describe("login item startup plan", () => {
       packaged: true,
       saved: { openAtLogin: true, launchMode: "tray" },
       os: null,
-      executablePath: "/app/EdgeEver.AppImage",
+      executablePath: "/app/Ponder.AppImage",
     }).supported).toBe(false);
   });
 });
 
 describe("hidden login launch", () => {
   test("opens the main window after login, including an older hidden launch", () => {
-    expect(shouldStartHidden({ argv: ["EdgeEver.exe", START_HIDDEN_ARG], launchMode: "tray" })).toBe(false);
+    expect(shouldStartHidden({ argv: ["Ponder.exe", START_HIDDEN_ARG], launchMode: "tray" })).toBe(false);
     expect(shouldStartHidden({
-      argv: ["EdgeEver.exe"],
+      argv: ["Ponder.exe"],
       wasOpenedAtLogin: true,
       launchMode: "tray",
     })).toBe(false);
     expect(shouldStartHidden({
-      argv: ["EdgeEver.exe"],
+      argv: ["Ponder.exe"],
       wasOpenedAtLogin: true,
       launchMode: "window",
     })).toBe(false);
     expect(shouldStartHidden({
-      argv: ["EdgeEver.exe", START_HIDDEN_ARG, "--share-file", "D:\\Notes\\a.md"],
+      argv: ["Ponder.exe", START_HIDDEN_ARG, "--share-file", "D:\\Notes\\a.md"],
       opensContent: commandLineOpensContent(
-        ["EdgeEver.exe", START_HIDDEN_ARG, "--share-file", "D:\\Notes\\a.md"],
+        ["Ponder.exe", START_HIDDEN_ARG, "--share-file", "D:\\Notes\\a.md"],
         { isAssociatedFile: (value) => value.endsWith(".md") },
       ),
     })).toBe(false);
-    expect(commandLineOpensContent(["EdgeEver.exe", "edgeever://memo/1"])).toBe(true);
-    expect(commandLineOpensContent(["EdgeEver.exe", "--share-file"])).toBe(false);
+    expect(commandLineOpensContent(["Ponder.exe", "ponder://memo/1"])).toBe(true);
+    expect(commandLineOpensContent(["Ponder.exe", "--share-file"])).toBe(false);
   });
 });
 
@@ -295,7 +295,7 @@ describe("login item controller", () => {
     expect(harness.calls).toEqual([]);
     expect(harness.controller.wasOpenedAtLogin()).toBe(true);
     expect(shouldStartHidden({
-      argv: ["EdgeEver"],
+      argv: ["Ponder"],
       wasOpenedAtLogin: harness.controller.wasOpenedAtLogin(),
       launchMode: state.launchMode,
     })).toBe(false);
@@ -322,7 +322,7 @@ describe("desktop login item wiring", () => {
     expect(settings).toContain("bridge.setLoginItem(patch)");
     expect(preferences).toContain("<LoginItemSettingsItem />");
     expect(installer).toContain("Software\\Microsoft\\Windows\\CurrentVersion\\Run");
-    expect(installer).toContain("DeleteRegValue HKCU \"Software\\Microsoft\\Windows\\CurrentVersion\\Run\" \"EdgeEver\"");
-    expect(installer).toContain("DeleteRegValue HKCU \"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run\" \"EdgeEver\"");
+    expect(installer).toContain("DeleteRegValue HKCU \"Software\\Microsoft\\Windows\\CurrentVersion\\Run\" \"Ponder\"");
+    expect(installer).toContain("DeleteRegValue HKCU \"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\StartupApproved\\Run\" \"Ponder\"");
   });
 });

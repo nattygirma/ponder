@@ -20,7 +20,7 @@ const OWN_SUBJECT_AFTER = new RegExp(
   `(?:${DIAGRAM_KIND_SOURCE})(?:\\s*[，,]?\\s*)?(?:关于|有关|主题是|主题为|来介绍|用来介绍|介绍一下|about|of|on|for)\\s*([^，。,.!！?？\\n]{1,40})`,
   "iu",
 );
-// 整理成 / 画成 / 做成 keep the open note. They are not a separately named subject.
+// Phrases that mean "turn this into" keep the open note. They are not a separately named subject.
 const OPERATE_ON_OPEN_NOTE = new RegExp(
   `(?:整理|转换|转|画|做|总结|归纳|提炼|换成|变成)成\\s*(?:一[个张份])?\\s*(?:${DIAGRAM_KIND_SOURCE})`,
   "iu",
@@ -57,8 +57,8 @@ const substantiveTopic = (value: string | undefined) => {
   return topic;
 };
 
-// True only when the user names a subject of their own, such as 「一个 AI 大模型的思维导图」.
-// 「生成思维导图」 or 「整理成思维导图」 has no separate subject, so the open note stays in scope.
+// True only when the user names a subject of their own, such as "a mind map of large AI models".
+// "Generate a mind map" or "turn this into a mind map" has no separate subject, so the open note stays in scope.
 export const diagramRequestHasOwnSubject = (message: string) => {
   if (!explicitDiagramKind(message) || messageRefersToOpenNote(message) || OPERATE_ON_OPEN_NOTE.test(message)) return false;
   const before = substantiveTopic(message.match(OWN_SUBJECT_BEFORE)?.[1]);

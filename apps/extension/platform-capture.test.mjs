@@ -33,7 +33,7 @@ const capture = async ({ fixture = "xiaoyuzhou", url = xUrl, expectedUrl = url, 
   const result = new Promise((resolve) => { done = resolve; });
   runInNewContext(bundle, {
     window, document: doc, location, URL,
-    __edgeeverPlatformClipPayload: { requestId: "capture-1", url: expectedUrl, sourceUrl, selectionFirst },
+    __ponderPlatformClipPayload: { requestId: "capture-1", url: expectedUrl, sourceUrl, selectionFirst },
     setTimeout: (callback) => setTimeout(callback, 30), clearTimeout, setInterval, clearInterval,
     MutationObserver: class {
       constructor(callback) { notify = callback; }

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import releaseSummary from "../../../release-summary.json";
-import { fetchEdgeEverApp } from "./index";
+import { fetchPonderApp } from "./index";
 
 const executionContext = {
   passThroughOnException() {},
@@ -9,7 +9,7 @@ const executionContext = {
 
 describe("instance release metadata", () => {
   test("exposes the deployed release and localized changes without authentication", async () => {
-    const response = await fetchEdgeEverApp(
+    const response = await fetchPonderApp(
       new Request("https://notes.example.com/api/release"),
       {},
       executionContext,

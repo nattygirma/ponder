@@ -6,8 +6,8 @@ import { join } from "node:path";
 import { once } from "node:events";
 import { Zip, ZipDeflate, ZipPassThrough, strToU8 } from "fflate";
 
-const E2E_USERNAME = process.env.EDGE_EVER_E2E_USERNAME || "admin";
-const E2E_PASSWORD = process.env.EDGE_EVER_E2E_PASSWORD || "admin123";
+const E2E_USERNAME = process.env.PONDER_E2E_USERNAME || "admin";
+const E2E_PASSWORD = process.env.PONDER_E2E_PASSWORD || "admin123";
 const MIB = 1024 * 1024;
 const RESOURCE_SPECS = [
   { suffix: "a", byteSize: 600 * MIB + 3, fill: 0x5a, tail: new Uint8Array([0x11, 0x22, 0x33]) },
@@ -27,8 +27,8 @@ const addJsonFile = (zip: Zip, path: string, value: unknown) => {
 };
 
 const createLargeBackup = async () => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-large-zip-e2e-"));
-  const archivePath = join(directory, "edgeever-600-mib-attachment.zip");
+  const directory = await mkdtemp(join(tmpdir(), "ponder-large-zip-e2e-"));
+  const archivePath = join(directory, "ponder-600-mib-attachment.zip");
   const output = createWriteStream(archivePath, { highWaterMark: MIB });
   let needsDrain = false;
   const finished = once(output, "finish");
@@ -136,10 +136,10 @@ const createLargeBackup = async () => {
     zip.add(markdown);
     markdown.push(strToU8(`# ${title}\n\n${memo.contentMarkdown}\n`), true);
     addJsonFile(zip, "manifest.json", {
-      format: "edgeever-zip",
+      format: "ponder-zip",
       formatVersion: 2,
       schemaVersion: 1,
-      edgeeverVersion: "e2e",
+      ponderVersion: "e2e",
       buildId: `e2e-${marker}`,
       exportedAt: timestamp,
       includesTrash: false,
@@ -155,7 +155,7 @@ const createLargeBackup = async () => {
   }
 };
 
-test("imports a 600 MiB attachment from an EdgeEver ZIP through streaming multipart restore", async ({ page }) => {
+test("imports a 600 MiB attachment from a Ponder ZIP through streaming multipart restore", async ({ page }) => {
   test.setTimeout(300_000);
   const fixture = await createLargeBackup();
   const restoredPartNumbers: number[] = [];
@@ -170,21 +170,21 @@ test("imports a 600 MiB attachment from an EdgeEver ZIP through streaming multip
     });
 
     await page.goto("/");
-    await page.getByRole("button", { name: "个人中心", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "我的", exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "备份与迁移", exact: true }).click();
-    await expect(page.getByText("导入与导出", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Profile", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Me", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Backup & Migration", exact: true }).click();
+    await expect(page.getByText("Import and export", { exact: true })).toBeVisible();
 
     const chooserPromise = page.waitForEvent("filechooser");
-    await page.getByRole("button", { name: "导入 EdgeEver ZIP", exact: true }).click();
+    await page.getByRole("button", { name: "Import Ponder ZIP", exact: true }).click();
     const chooser = await chooserPromise;
     await chooser.setFiles(fixture.archivePath);
 
-    const confirmation = page.getByRole("dialog", { name: "导入 EdgeEver ZIP" });
+    const confirmation = page.getByRole("dialog", { name: "Import Ponder ZIP" });
     await expect(confirmation).toBeVisible({ timeout: 120_000 });
     await expect(confirmation).toContainText("1 篇笔记和 1 个资源");
-    await confirmation.getByRole("button", { name: "确认导入", exact: true }).click();
-    await expect(page.getByText("EdgeEver ZIP 导入完成。", { exact: true })).toBeVisible({ timeout: 180_000 });
+    await confirmation.getByRole("button", { name: "Confirm import", exact: true }).click();
+    await expect(page.getByText("Ponder ZIP imported successfully.", { exact: true })).toBeVisible({ timeout: 180_000 });
 
     expect(restoredPartNumbers).toHaveLength(76);
     expect(restoredPartNumbers.filter((part) => part === 1)).toHaveLength(1);

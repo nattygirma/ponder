@@ -143,7 +143,7 @@ export async function executeRealAcpHandshake(commandSpec, { timeoutMs = 25_000 
           fs: { readTextFile: false, writeTextFile: false },
           terminal: false,
         },
-        clientInfo: { name: "edgeever-e2e-verifier", version: "1.100.0" },
+        clientInfo: { name: "ponder-e2e-verifier", version: "1.100.0" },
       },
     }) + "\n";
 
@@ -201,14 +201,14 @@ async function computeSha256(filePath) {
  * Runs the full real Linux E2E verification workflow.
  */
 export async function runRealAcpAdapterCrossVersionVerification({
-  cacheDir = path.join(tmpdir(), "edgeever-e2e-cache"),
+  cacheDir = path.join(tmpdir(), "ponder-e2e-cache"),
   log = console.log,
 } = {}) {
   assert.equal(process.platform, "linux", "Verification requires Linux host");
   assert.equal(process.arch, "x64", "Verification requires x86_64 CPU architecture");
 
   const startTime = Date.now();
-  const root = mkdtempSync(path.join(tmpdir(), "edgeever-acp-real-e2e-"));
+  const root = mkdtempSync(path.join(tmpdir(), "ponder-acp-real-e2e-"));
   const record = {
     platform: "linux",
     arch: "x64",

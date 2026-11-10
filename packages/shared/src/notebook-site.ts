@@ -31,7 +31,7 @@ export const readNotebookSiteSettings = (raw?: string | null): NotebookSiteSetti
   return NotebookSiteSettingsSchema.parse({});
 };
 
-const collator = new Intl.Collator("zh-CN", { numeric: true, sensitivity: "base" });
+const collator = new Intl.Collator("en-US", { numeric: true, sensitivity: "base" });
 export const compareNotebookSiteTitles = (a: { id: string; title?: string | null; name?: string }, b: { id: string; title?: string | null; name?: string }) =>
   collator.compare(a.title ?? a.name ?? "", b.title ?? b.name ?? "") || a.id.localeCompare(b.id);
 

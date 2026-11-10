@@ -14,7 +14,7 @@ afterEach(() => {
 describe("native desktop runtime detection", () => {
   test("detects the native desktop bridge", () => {
     globalThis.window = {
-      edgeeverDesktop: { isAvailable: true },
+      ponderDesktop: { isAvailable: true },
     };
 
     expect(isNativeDesktopRuntime()).toBe(true);

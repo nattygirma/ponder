@@ -1,5 +1,5 @@
-import type { MemoTemplate } from "@edgeever/shared";
-import type { MemoTemplateGalleryEntry } from "@edgeever/shared/memo-template-gallery";
+import type { MemoTemplate } from "@ponder/shared";
+import type { MemoTemplateGalleryEntry } from "@ponder/shared/memo-template-gallery";
 
 export type MobileCreateMemoSeed = {
   title: string;

@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { readWebStartupGraph } from "./web-startup-graph.mjs";
 
 test("counts eager imports and re-exports even without preload hints, while preserving lazy boundaries", () => {
-  const root = mkdtempSync(join(tmpdir(), "edgeever-startup-"));
+  const root = mkdtempSync(join(tmpdir(), "ponder-startup-"));
   try {
     writeFileSync(join(root, "index.html"), '<script type="module" src="/app.js"></script>');
     const files = {

@@ -72,7 +72,7 @@ const startSourceSite = async (title: string) => {
 
 const prepareExtension = () => {
   execFileSync("bun", ["run", "build:extension"], { cwd: repositoryRoot, stdio: "pipe" });
-  const directory = mkdtempSync(join(tmpdir(), "edgeever-web-clipper-"));
+  const directory = mkdtempSync(join(tmpdir(), "ponder-web-clipper-"));
   cpSync(join(repositoryRoot, "apps/extension/dist"), directory, { recursive: true });
   // Automation cannot click the toolbar button (activeTab) or accept the
   // instance permission prompt, so this copy is granted the local hosts the
@@ -102,7 +102,7 @@ test.describe("web clipper page images", () => {
     const title = `Web clipper image check ${Date.now()}`;
     site = await startSourceSite(title);
     extensionDirectory = prepareExtension();
-    userDataDirectory = mkdtempSync(join(tmpdir(), "edgeever-web-clipper-profile-"));
+    userDataDirectory = mkdtempSync(join(tmpdir(), "ponder-web-clipper-profile-"));
 
     const tokenResponse = await request.post("/api/v1/api-tokens", {
       data: { name: "web-clipper-e2e", scopes: ["read:memos", "write:memos", "read:resources", "write:resources", "read:notebooks"] },

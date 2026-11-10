@@ -1,10 +1,10 @@
 {
-  "name": "@edgeever/api",
+  "name": "@ponder/api",
   "version": "0.1.3",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@edgeever/public-network": "workspace:*",
+    "@ponder/public-network": "workspace:*",
     "content-type": "3.1.1"
   }
 }

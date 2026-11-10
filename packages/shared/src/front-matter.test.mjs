@@ -21,14 +21,14 @@ describe("note properties", () => {
   });
 
   test("maps title and tags without accepting IDs or arbitrary system metadata", () => {
-    expect(getMappedNoteProperties({ title: " Note ", tags: "#one, two one", edgeever_id: "foreign" })).toEqual({ title: "Note", tags: ["one", "two"] });
+    expect(getMappedNoteProperties({ title: " Note ", tags: "#one, two one", ponder_id: "foreign" })).toEqual({ title: "Note", tags: ["one", "two"] });
     expect(getMappedNoteProperties({ title: 12, tags: ["valid", 4] })).toEqual({});
   });
 
   test("merges export metadata into one header while preserving the body and custom fields", () => {
-    const exported = mergeMarkdownFrontMatter(markdown, { title: "Current note", tags: ["new"], edgeever_id: "current" });
+    const exported = mergeMarkdownFrontMatter(markdown, { title: "Current note", tags: ["new"], ponder_id: "current" });
     const split = splitMarkdownFrontMatter(exported);
-    expect(split.values).toMatchObject({ title: "Current note", tags: ["new"], author: ["Alice", "Bob"], nested: { custom: true }, edgeever_id: "current" });
+    expect(split.values).toMatchObject({ title: "Current note", tags: ["new"], author: ["Alice", "Bob"], nested: { custom: true }, ponder_id: "current" });
     expect(split.body).toBe(splitMarkdownFrontMatter(markdown).body);
     expect(exported.match(/^---$/gm)).toHaveLength(2);
   });
@@ -63,14 +63,14 @@ describe("note properties", () => {
   });
 
   test("recovers properties saved by an old codec as a regular code fence", () => {
-    const oldMarkdown = `\`\`\`edgeever-frontmatter\n${header}\n\`\`\`\n\nBody`;
+    const oldMarkdown = `\`\`\`ponder-frontmatter\n${header}\n\`\`\`\n\nBody`;
     const doc = markdownToDoc(oldMarkdown);
     expect(getFrontMatterSource(doc)).toBe(header);
     expect(docToMarkdown(doc)).toStartWith(`---\n${header}\n---`);
     expect(resolveMemoContentDoc(doc, oldMarkdown)).toEqual(doc);
     const exported = mergeMarkdownFrontMatter(oldMarkdown, { title: "Current title" });
     expect(splitMarkdownFrontMatter(exported).values.author).toEqual(["Alice", "Bob"]);
-    expect(exported).not.toContain("```edgeever-frontmatter");
+    expect(exported).not.toContain("```ponder-frontmatter");
   });
 
   test("keeps richer JSON body attributes when properties are present", () => {

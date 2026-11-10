@@ -1,10 +1,10 @@
 import type { FontLoadStatus } from "@/lib/font-load-state";
 import { useFontPreviewStatus } from "@/lib/use-font-preview-status";
 import { FontLoadFeedback } from "@/components/FontLoadFeedback";
-import { FONT_CATALOG, FONT_IDS } from "@edgeever/shared/font-catalog";
-import { updateNoteImagePreference } from "@edgeever/shared/note-image-preferences";
-import { prepareNoteImageAssets } from "@edgeever/shared/note-image-fonts";
-import { noteImageAssetUrls } from "@edgeever/shared/note-image-assets";
+import { FONT_CATALOG, FONT_IDS } from "@ponder/shared/font-catalog";
+import { updateNoteImagePreference } from "@ponder/shared/note-image-preferences";
+import { prepareNoteImageAssets } from "@ponder/shared/note-image-fonts";
+import { noteImageAssetUrls } from "@ponder/shared/note-image-assets";
 import { Check, Copy, Download, LoaderCircle, Palette, Share2, Type } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -31,7 +31,7 @@ import {
   type NoteImageTheme,
   type PreparedNoteImage,
 } from "@/lib/note-image-export";
-import { NOTE_IMAGE_BUNDLED_FONTS, NOTE_IMAGE_TEMPLATE_TYPOGRAPHY, resolveTheme, NOTE_IMAGE_THEME_OPTIONS, buildNoteImageCardMarkup, escapeCardHtml, generateCardCss } from "@edgeever/shared/note-image-card";
+import { NOTE_IMAGE_BUNDLED_FONTS, NOTE_IMAGE_TEMPLATE_TYPOGRAPHY, resolveTheme, NOTE_IMAGE_THEME_OPTIONS, buildNoteImageCardMarkup, escapeCardHtml, generateCardCss } from "@ponder/shared/note-image-card";
 import { getHtmlImageEmbedNoticeKind } from "@/lib/note-html-export";
 import { readNoteImagePreferences, writeNoteImagePreferences, type NoteImagePreferences } from "@/lib/note-image-preference";
 import { cn } from "@/lib/utils";
@@ -103,7 +103,7 @@ const NoteImageThemePreview = ({
     html, body { margin: 0; padding: 0; overflow: hidden; }
     ${assetCss}
     ${generateCardCss({ theme, fontStyle, fontSize: "lg", cardWidth: "compact" })}
-    .edgeever-image-wrapper { min-height: 600px; }
+    .ponder-image-wrapper { min-height: 600px; }
     </style></head><body>${buildNoteImageCardMarkup({
       theme,
       title,

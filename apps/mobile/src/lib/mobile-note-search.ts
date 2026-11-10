@@ -7,7 +7,7 @@ export type MobileNoteSearchMatch = {
   to: number;
 };
 
-export const MOBILE_NOTE_SEARCH_HIGHLIGHT_PLUGIN_KEY = new PluginKey("edgeever-mobile-note-search-highlight");
+export const MOBILE_NOTE_SEARCH_HIGHLIGHT_PLUGIN_KEY = new PluginKey("ponder-mobile-note-search-highlight");
 
 export const getMobileNoteSearchMatches = (
   doc: Editor["state"]["doc"],
@@ -63,8 +63,8 @@ export const createMobileNoteSearchHighlightPlugin = (options: {
         state.doc,
         matches.map((match, index) => Decoration.inline(match.from, match.to, {
           class: index === activeIndex
-            ? "edgeever-search-match edgeever-search-match-active"
-            : "edgeever-search-match",
+            ? "ponder-search-match ponder-search-match-active"
+            : "ponder-search-match",
         }))
       );
     },

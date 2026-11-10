@@ -62,7 +62,7 @@ function Verification() {
     try {
       const expected = FONT_CATALOG[font].family;
       if (![...document.fonts].some(face => face.family === expected && face.status === "loaded" && fontSubsetContains(face.unicodeRange, new Set([0x9f98])))) throw new Error("Source-only character was not loaded");
-      const codeNodes = document.querySelectorAll(".ProseMirror code, .ProseMirror pre, .ProseMirror .edgeever-code-source, .cm-scroller, .cm-content");
+      const codeNodes = document.querySelectorAll(".ProseMirror code, .ProseMirror pre, .ProseMirror .ponder-code-source, .cm-scroller, .cm-content");
       if (codeNodes.length < 7 || [...codeNodes].some(node => !getComputedStyle(node).fontFamily.includes(expected))) throw new Error("A code surface did not follow Maple");
       const before = markdown;
       const x: number[] = [];
@@ -96,11 +96,11 @@ function Verification() {
       <p>选中状态：{status}</p>
       <FontLabel label={sample} fontId={font} enabled onStatusChange={setStatus} />
     </div>}
-    {["default", "wechat-green"].map(theme => <section key={theme} className="edgeever-editor" data-editor-theme={theme}>
+    {["default", "wechat-green"].map(theme => <section key={theme} className="ponder-editor" data-editor-theme={theme}>
       <h2>{theme} · 富文本代码</h2>
-      <div className="ProseMirror"><p>正文与行内代码 <code>{sample}</code></p><pre><code>{sample}</code></pre><pre className="edgeever-code-source">graph TD; A --&gt; B</pre></div>
+      <div className="ProseMirror"><p>正文与行内代码 <code>{sample}</code></p><pre><code>{sample}</code></pre><pre className="ponder-code-source">graph TD; A --&gt; B</pre></div>
     </section>)}
-    <section className="edgeever-editor" style={{ height: 220 }}>
+    <section className="ponder-editor" style={{ height: 220 }}>
       <h2>Markdown 源码</h2>
       <MarkdownSourceEditor ref={source} memoId="maple-font-test" value={markdown} onChange={setMarkdown} themeName="github-light" ariaLabel="字体测试源码" />
     </section>

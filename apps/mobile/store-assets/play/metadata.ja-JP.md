@@ -1,4 +1,4 @@
-# EdgeEver Google Play metadata (ja-JP)
+# Ponder Google Play metadata (ja-JP)
 
 Paste into Play Console → Main store listing → Japanese (Japan).
 Do not ship this locale through `bun run publish:stores`; listing copy is
@@ -6,7 +6,7 @@ console metadata, not a store binary.
 
 ## Title
 
-EdgeEver
+Ponder
 
 ## Short description
 
@@ -14,9 +14,9 @@ EdgeEver
 
 ## Full description
 
-EdgeEver は、すばやく書き留め、整理し、どの端末からでも安定して開ける、オープンソースのセルフホスト型ノートワークスペースです。
+Ponder は、すばやく書き留め、整理し、どの端末からでも安定して開ける、オープンソースのセルフホスト型ノートワークスペースです。
 
-アプリをご自身の EdgeEver インスタンスに直接接続し、データの置き場所を自分で管理できます。
+アプリをご自身の Ponder インスタンスに直接接続し、データの置き場所を自分で管理できます。
 
 • ノートブック、ノート、タグ、添付ファイルを閲覧
 • 端末内のノートミラーをすぐ検索
@@ -29,4 +29,4 @@ EdgeEver は、すばやく書き留め、整理し、どの端末からでも�
 
 広告、解析、追跡、テレメトリーはありません。アプリはあなたが選んだインスタンスに直接接続します。プロジェクトの運営者は、ノートを受け取ったり保存したりする中継サーバーを運用していません。
 
-利用にはセルフホストした EdgeEver インスタンスが必要です。詳しい案内と導入手順は edgeever.org をご覧ください。
+利用にはセルフホストした Ponder インスタンスが必要です。詳しい案内と導入手順は appkeep.io をご覧ください。

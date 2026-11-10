@@ -9,7 +9,7 @@
 /** @typedef {{ type: string; length: number; offset: number }} IcnsEntry */
 
 /**
- * Types that a modern EdgeEver macOS app icon must include so Finder and Dock
+ * Types that a modern Ponder macOS app icon must include so Finder and Dock
  * can pick an appropriate bitmap at every scale.
  *
  * Note: current `iconutil` emits `ic04`/`ic05` for the smallest slots, while

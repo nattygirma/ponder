@@ -1,12 +1,12 @@
 import { dirname, join } from "node:path";
 
-export const SHARE_EXTENSION_BUNDLE_ID = "org.edgeever.desktop.share";
+export const SHARE_EXTENSION_BUNDLE_ID = "io.appkeep.ponder.desktop.share";
 
 export const macShareExtensionPath = (executablePath) =>
-  join(dirname(executablePath), "..", "PlugIns", "EdgeEverShare.appex");
+  join(dirname(executablePath), "..", "PlugIns", "PonderShare.appex");
 
 // macOS leaves a newly installed share extension disabled. The host app has to
-// elect it, or WeChat's share sheet never lists EdgeEver for that user.
+// elect it, or WeChat's share sheet never lists Ponder for that user.
 export const enableMacShareExtension = async ({
   platform,
   packaged,

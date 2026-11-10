@@ -10,14 +10,14 @@ if (!executablePath || !existsSync(executablePath) || !statSync(executablePath).
   throw new Error(`Packaged desktop executable is missing: ${executablePath || "<not provided>"}`);
 }
 
-const userDataDirectory = mkdtempSync(join(tmpdir(), "edgeever-packaged-startup-"));
+const userDataDirectory = mkdtempSync(join(tmpdir(), "ponder-packaged-startup-"));
 const diagnosticLogPath = join(userDataDirectory, "logs", "desktop.log");
 const output = [];
 let processError = null;
 const child = spawn(executablePath, [`--user-data-dir=${userDataDirectory}`], {
   env: {
     ...process.env,
-    EDGE_EVER_DISABLE_AUTO_UPDATE: "1",
+    PONDER_DISABLE_AUTO_UPDATE: "1",
   },
   stdio: ["ignore", "pipe", "pipe"],
   windowsHide: true,
@@ -27,7 +27,7 @@ child.on("error", (error) => { processError = error; });
 child.stdout.on("data", (chunk) => output.push(chunk.toString()));
 child.stderr.on("data", (chunk) => output.push(chunk.toString()));
 
-const timeoutMs = Number(process.env.EDGE_EVER_DESKTOP_STARTUP_TIMEOUT_MS) || 45_000;
+const timeoutMs = Number(process.env.PONDER_DESKTOP_STARTUP_TIMEOUT_MS) || 45_000;
 const deadline = Date.now() + timeoutMs;
 let startupReady = false;
 let lastLog = "";
@@ -89,7 +89,7 @@ try {
     throw new Error(`Packaged desktop did not complete renderer origin migration: ${JSON.stringify(originEntry)}`);
   }
   const rendererEntry = observedEntries.find((entry) =>
-    entry.event === "renderer.loaded" && String(entry.url || "").startsWith("edgeever-app://app/"));
+    entry.event === "renderer.loaded" && String(entry.url || "").startsWith("ponder-app://app/"));
   if (!rendererEntry) {
     throw new Error(`Packaged desktop did not load from the private app protocol.\n\nDiagnostic log:\n${lastLog}`);
   }

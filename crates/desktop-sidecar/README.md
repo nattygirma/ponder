@@ -1,4 +1,4 @@
-# EdgeEver desktop sidecar
+# Ponder desktop sidecar
 
 The sidecar is a private local process owned by the Electron main process. It
 communicates over newline-delimited JSON-RPC on stdin/stdout and owns the

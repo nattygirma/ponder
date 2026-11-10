@@ -28,12 +28,12 @@ afterEach(() => {
 });
 
 describe("web locale resolution", () => {
-  test("keeps Chinese and English browser languages on their shipped locales", () => {
+  test("resolves English and unsupported Chinese browser languages to English", () => {
     setNavigatorLanguages(["zh-TW", "en-US"]);
-    expect(getBrowserLocale()).toBe("zh-CN");
+    expect(getBrowserLocale()).toBe("en-US");
     setNavigatorLanguages(["en-GB"]);
     expect(getBrowserLocale()).toBe("en-US");
-    expect(normalizeLocale("zh-Hans")).toBe("zh-CN");
+    expect(normalizeLocale("zh-Hans")).toBeNull();
   });
 
   test("keeps Japanese browser languages on the shipped ja locale", () => {
@@ -51,18 +51,18 @@ describe("web locale resolution", () => {
     expect(getBrowserLocale()).toBe("ru");
   });
 
-  test("falls unmatched browser languages back to English instead of Chinese", () => {
+  test("falls unmatched browser languages back to English", () => {
     setNavigatorLanguages(["fr-FR", "de-DE"]);
     expect(getBrowserLocale()).toBe("en-US");
     setNavigatorLanguages(["ko-KR"]);
     expect(getInitialLocale()).toBe("en-US");
-    expect(defaultLocale).toBe("zh-CN");
+    expect(defaultLocale).toBe("en-US");
   });
 
   test("uses the first supported language in the browser preference list", () => {
     setNavigatorLanguages(["ja-JP", "zh-CN"]);
     expect(getBrowserLocale()).toBe("ja");
     setNavigatorLanguages(["fr-FR", "zh-CN"]);
-    expect(getBrowserLocale()).toBe("zh-CN");
+    expect(getBrowserLocale()).toBe("en-US");
   });
 });

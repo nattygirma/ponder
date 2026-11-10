@@ -61,9 +61,9 @@ export const resolvePaperEditorTheme = (theme: string | null | undefined) => {
   return { layout: theme, palette: PAPER_EDITOR_THEME_PALETTES[theme] };
 };
 
-export const PUBLISH_LAYOUT_STORAGE_KEY = "edgeever.publish-layout";
-export const PUBLISH_PALETTE_STORAGE_KEY = "edgeever.publish-palette";
-export const PUBLISH_LAYOUT_CHANGED_EVENT = "edgeever:publish-layout-changed";
+export const PUBLISH_LAYOUT_STORAGE_KEY = "ponder.publish-layout";
+export const PUBLISH_PALETTE_STORAGE_KEY = "ponder.publish-palette";
+export const PUBLISH_LAYOUT_CHANGED_EVENT = "ponder:publish-layout-changed";
 
 export type PublishPalette = {
   id: PublishPaletteId;
@@ -956,10 +956,10 @@ export const buildPublishStyles = (
 };
 
 const THEME_BLOCK_LABELS: Record<string, string> = {
-  intro: "引言",
-  "key-point": "重点观点",
-  callout: "提示",
-  chapter: "章节",
+  intro: "Introduction",
+  "key-point": "Key point",
+  callout: "Note",
+  chapter: "Chapter",
 };
 
 const themeBlockStyles = (
@@ -1509,7 +1509,7 @@ const decorateHeadings = (
   const chrome = PUBLISH_LAYOUT_CHROME[layout];
   const phone = surface === "phone";
   const headings = Array.from(root.querySelectorAll<HTMLElement>("h1, h2, h3, h4, h5, h6")).filter((heading) => {
-    if (heading.closest("table, pre, [data-edgeever-theme-block]")) return false;
+    if (heading.closest("table, pre, [data-ponder-theme-block]")) return false;
     if (heading.closest("[data-ee-publish-heading]")) return false;
     return true;
   });
@@ -1561,7 +1561,7 @@ const decorateQuotes = (
   const chrome = PUBLISH_LAYOUT_CHROME[layout];
   const phone = surface === "phone";
   root.querySelectorAll<HTMLElement>("blockquote").forEach((quote) => {
-    if (quote.closest("[data-ee-publish-quote], table, pre, [data-edgeever-theme-block]")) return;
+    if (quote.closest("[data-ee-publish-quote], table, pre, [data-ponder-theme-block]")) return;
     const wrapper = wrapBlock(quote, "data-ee-publish-quote", chrome.quote);
     wrapper.style.cssText = css({
       margin: phone ? "0 0 14px" : "0 0 28px",
@@ -1701,13 +1701,13 @@ const applyThemeBlocks = (
   palette: PublishPalette,
   surface: PublishSurface = "desktop",
 ) => {
-  root.querySelectorAll<HTMLElement>("[data-edgeever-theme-block]").forEach((block) => {
+  root.querySelectorAll<HTMLElement>("[data-ponder-theme-block]").forEach((block) => {
     const kind = block.getAttribute("data-theme-block-kind") || "intro";
     const styles = themeBlockStyles(kind, palette, layout, surface);
     block.style.cssText = `${styles.block}${block.style.cssText}`;
     const label = root.ownerDocument.createElement("p");
     label.setAttribute("data-ee-publish-chrome", "true");
-    label.textContent = THEME_BLOCK_LABELS[kind] || "主题组件";
+    label.textContent = THEME_BLOCK_LABELS[kind] || "Themed component";
     label.style.cssText = styles.label;
     block.insertBefore(label, block.firstChild);
   });
@@ -1750,7 +1750,7 @@ export const applyPublishLayout = (
       "padding: 0; background: transparent; color: inherit; font-family: Menlo, Consolas, monospace; font-size: 13px; white-space: pre-wrap;";
   });
 
-  root.querySelectorAll<HTMLElement>("hr[data-edgeever-merge-divider], hr.edgeever-merge-divider").forEach((divider) => {
+  root.querySelectorAll<HTMLElement>("hr[data-ponder-merge-divider], hr.ponder-merge-divider").forEach((divider) => {
     divider.style.cssText = css({
       margin: "1.75em 0",
       border: "0",

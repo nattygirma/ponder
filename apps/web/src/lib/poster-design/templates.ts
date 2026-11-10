@@ -18,7 +18,7 @@ import {
   type PosterDocument,
   type PosterElement,
   type PosterPaintGradient,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { TEMPLATES, sourceOf, templatesFor } from "./vendor/qiaomu/templates";
 import { BadgeBox } from "./vendor/qiaomu/badge";
 import { resolvePair, usePairing } from "./vendor/qiaomu/typeset";

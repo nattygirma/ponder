@@ -1,7 +1,7 @@
 const COMMUNITY_REGISTRY_MAX_BYTES = 1024 * 1024;
 const COMMUNITY_REGISTRY_SIGNATURE_MAX_BYTES = 2048;
 
-export const COMMUNITY_REGISTRY_SIGNATURE_HEADER = "x-edgeever-community-registry-signature";
+export const COMMUNITY_REGISTRY_SIGNATURE_HEADER = "x-ponder-community-registry-signature";
 
 export const resolveCommunityRegistryUrl = (value: string | undefined) => {
   const trimmed = value?.trim() ?? "";
@@ -82,10 +82,10 @@ export const fetchCommunityRegistryRelease = async ({
     signal: AbortSignal.timeout(timeoutMs),
   };
   const [registryResponse, signatureResponse] = await Promise.all([
-    request(url.href, { ...init, headers: { Accept: "application/json", "User-Agent": "EdgeEver" } }),
+    request(url.href, { ...init, headers: { Accept: "application/json", "User-Agent": "Ponder" } }),
     request(signatureUrl.href, {
       ...init,
-      headers: { Accept: "text/plain, application/octet-stream", "User-Agent": "EdgeEver" },
+      headers: { Accept: "text/plain, application/octet-stream", "User-Agent": "Ponder" },
     }),
   ]);
   const registryBytes = await readBoundedBody(registryResponse, COMMUNITY_REGISTRY_MAX_BYTES, "Community registry");

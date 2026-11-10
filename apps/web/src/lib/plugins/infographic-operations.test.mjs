@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { applyInfographicOperations, StructuredNoteError } from "@edgeever/shared";
+import { applyInfographicOperations, StructuredNoteError } from "@ponder/shared";
 import { infographicSyntaxAdapter as adapter } from "./infographic-syntax-adapter";
 
 const document = () => ({ schemaVersion: 1, syntax: `infographic list-grid-simple

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta
@@ -13,7 +13,7 @@
     <meta name="format-detection" content="telephone=no" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <title>编辑笔记 - EdgeEver</title>
+    <title>Edit note - Ponder</title>
     <style>
       #mobile-editor-bootstrap {
         min-height: 100dvh;
@@ -86,26 +86,15 @@
     <script>
       (() => {
         const slowLoadDelayMs = 8000;
-        const english = navigator.language.toLowerCase().startsWith("en");
-        const labels = english
-          ? {
-              loading: "Opening editor…",
-              loadingDetail: "Your note is safe. This may take a moment on a slow connection.",
-              delayed: "The editor is taking longer than expected to open.",
-              failed: "The editor could not start.",
-              failedDetail: "Check your connection, then retry or return to the note list.",
-              back: "Back",
-              retry: "Retry",
-            }
-          : {
-              loading: "正在打开编辑器…",
-              loadingDetail: "笔记内容是安全的，网络较慢时可能需要稍等片刻。",
-              delayed: "编辑器启动时间较长，请检查网络连接。",
-              failed: "编辑器未能启动",
-              failedDetail: "请检查网络后重试，或先返回笔记列表。",
-              back: "返回",
-              retry: "重试",
-            };
+        const labels = {
+          loading: "Opening editor…",
+          loadingDetail: "Your note is safe. This may take a moment on a slow connection.",
+          delayed: "The editor is taking longer than expected to open.",
+          failed: "The editor could not start.",
+          failedDetail: "Check your connection, then retry or return to the note list.",
+          back: "Back",
+          retry: "Retry",
+        };
         let mounted = false;
         let slowLoadTimer = 0;
 
@@ -153,7 +142,7 @@
           }
         };
 
-        window.edgeeverMobileEditorBootstrap = {
+        window.ponderMobileEditorBootstrap = {
           markMounted() {
             mounted = true;
             window.clearTimeout(slowLoadTimer);
@@ -176,11 +165,11 @@
       <main id="mobile-editor-bootstrap" data-state="loading" role="status" aria-live="polite">
         <section class="mobile-editor-bootstrap-card">
           <div class="mobile-editor-bootstrap-spinner" aria-hidden="true"></div>
-          <h1 id="mobile-editor-bootstrap-title" class="mobile-editor-bootstrap-title">正在打开编辑器…</h1>
-          <p id="mobile-editor-bootstrap-detail" class="mobile-editor-bootstrap-detail">笔记内容是安全的，网络较慢时可能需要稍等片刻。</p>
+          <h1 id="mobile-editor-bootstrap-title" class="mobile-editor-bootstrap-title">Opening editor…</h1>
+          <p id="mobile-editor-bootstrap-detail" class="mobile-editor-bootstrap-detail">Your note is safe. This may take a moment on a slow connection.</p>
           <div class="mobile-editor-bootstrap-actions">
-            <button id="mobile-editor-bootstrap-back" class="mobile-editor-bootstrap-action" type="button">返回</button>
-            <button id="mobile-editor-bootstrap-retry" class="mobile-editor-bootstrap-action" data-primary="true" type="button" hidden>重试</button>
+            <button id="mobile-editor-bootstrap-back" class="mobile-editor-bootstrap-action" type="button">Back</button>
+            <button id="mobile-editor-bootstrap-retry" class="mobile-editor-bootstrap-action" data-primary="true" type="button" hidden>Retry</button>
           </div>
         </section>
       </main>

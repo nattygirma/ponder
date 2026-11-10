@@ -4,7 +4,7 @@ import {
   resolveSupportedLocaleFromCandidates,
   supportedLocales as sharedSupportedLocales,
   type SupportedLocale as SharedSupportedLocale,
-} from "@edgeever/shared/i18n/locales";
+} from "@ponder/shared/i18n/locales";
 
 export const supportedLocales = sharedSupportedLocales;
 
@@ -13,11 +13,10 @@ export type AppLocalePreference = "system" | SupportedLocale;
 
 export const defaultLocale: SupportedLocale = sharedDefaultLocale;
 
-export const localeStorageKey = "edgeever.locale.preference";
-const legacyLocaleStorageKey = "edgeever.locale";
+export const localeStorageKey = "ponder.locale.preference";
+const legacyLocaleStorageKey = "ponder.locale";
 
 export const localeLabels: Record<SupportedLocale, string> = {
-  "zh-CN": "简体中文",
   "en-US": "English",
   ja: "日本語",
   pl: "Polski",

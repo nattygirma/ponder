@@ -3,7 +3,7 @@ import { mkdir, readFile, realpath, readdir, rmdir, rm, stat, writeFile } from "
 import { basename, dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { WeChatArchiveError, wechatChatNoteFromArchive } from "./wechat-chat-archive.mjs";
 
-export const WECHAT_INCOMING_DIRECTORY_NAME = "EdgeEver Incoming";
+export const WECHAT_INCOMING_DIRECTORY_NAME = "Ponder Incoming";
 export const SHARE_IMPORT_FILE_ID = "file";
 export const MAX_SHARE_IMPORT_BYTES = 512 * 1024 * 1024;
 const SAFE_ID = /^[A-Za-z0-9_-]{1,80}$/;
@@ -68,7 +68,7 @@ export const wechatImportFilePath = (value) => {
   } catch {
     return null;
   }
-  if (url.protocol !== "edgeever:" || (url.hostname !== "wechat-import" && url.hostname !== "share-import")) return null;
+  if (url.protocol !== "ponder:" || (url.hostname !== "wechat-import" && url.hostname !== "share-import")) return null;
   const filePath = url.searchParams.get("path");
   if (!filePath || !isAbsolute(filePath) || filePath.includes("\0")) return null;
   return filePath;
@@ -79,7 +79,7 @@ const incomingDirectory = (downloadsPath) => join(downloadsPath, WECHAT_INCOMING
 // Keep the marker beside the incoming file, including when the temp directory
 // is cleared. Hidden markers are never treated as shared attachments.
 const failureMarkerPath = (sourcePath) => join(dirname(sourcePath),
-  `.edgeever-import-failed-${createHash("sha256").update(basename(sourcePath)).digest("hex")}`);
+  `.ponder-import-failed-${createHash("sha256").update(basename(sourcePath)).digest("hex")}`);
 
 const assertIncomingFile = async (filePath, downloadsPath) => {
   const root = incomingDirectory(downloadsPath);
@@ -244,7 +244,7 @@ export const createWeChatShareController = ({
         return;
       }
       const importId = randomUUID();
-      const directory = join(tempPath(), "edgeever-wechat-import", importId);
+      const directory = join(tempPath(), "ponder-wechat-import", importId);
       preparedDirectory = directory;
       await mkdir(directory, { recursive: true });
       const media = new Map();
@@ -367,7 +367,7 @@ export const createWeChatShareController = ({
         if (!file.isFile() || file.name.startsWith(".") || file.name.toLowerCase().endsWith(".partial")) continue;
         const sourcePath = join(directory, file.name);
         if (await stat(failureMarkerPath(sourcePath)).then(() => true, () => false)) continue;
-        const url = new URL(file.name.toLowerCase().endsWith(".zip") ? "edgeever://wechat-import" : "edgeever://share-import");
+        const url = new URL(file.name.toLowerCase().endsWith(".zip") ? "ponder://wechat-import" : "ponder://share-import");
         url.searchParams.set("path", sourcePath);
         await importFromProtocolUrl(url.href);
       }

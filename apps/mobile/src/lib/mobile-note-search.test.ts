@@ -18,25 +18,25 @@ describe("mobile note search", () => {
     const strong = schema.marks.strong.create();
     const doc = schema.node("doc", null, [
       schema.node("paragraph", null, [
-        schema.text("Edge"),
-        schema.text("Ever", [strong]),
-        schema.text(" edgeever"),
+        schema.text("Pon"),
+        schema.text("der", [strong]),
+        schema.text(" ponder"),
       ]),
     ]);
 
-    expect(getMobileNoteSearchMatches(doc, "edgeever")).toEqual([
-      { from: 1, to: 9 },
-      { from: 10, to: 18 },
+    expect(getMobileNoteSearchMatches(doc, "ponder")).toEqual([
+      { from: 1, to: 7 },
+      { from: 8, to: 14 },
     ]);
   });
 
   test("does not create a match across block boundaries", () => {
     const doc = schema.node("doc", null, [
-      schema.node("paragraph", null, schema.text("edge")),
-      schema.node("paragraph", null, schema.text("ever")),
+      schema.node("paragraph", null, schema.text("pon")),
+      schema.node("paragraph", null, schema.text("der")),
     ]);
 
-    expect(getMobileNoteSearchMatches(doc, "edgeever")).toEqual([]);
+    expect(getMobileNoteSearchMatches(doc, "ponder")).toEqual([]);
   });
 
   test("wraps previous and next navigation", () => {

@@ -3,15 +3,15 @@ import { getSchema } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 import {
-  createEdgeEverMarkdownManager,
+  createPonderMarkdownManager,
   docToMarkdown,
   IMAGE_GALLERY_NODE_TYPE,
   markdownToDoc,
   MERGE_DIVIDER_MARKDOWN_MARKER,
   MERGE_DIVIDER_NODE_TYPE,
   MergeDivider as SharedMergeDivider,
-} from "@edgeever/shared";
-import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
+} from "@ponder/shared";
+import { createPonderMathematics } from "@ponder/shared/mathematics";
 import { createIosImageGallery, ImageGallery, MergeDivider } from "./document-nodes.ts";
 
 const galleryDoc = {
@@ -26,8 +26,8 @@ const galleryDoc = {
   }],
 };
 
-const iosMarkdownManager = createEdgeEverMarkdownManager({
-  mathematics: createEdgeEverMathematics(),
+const iosMarkdownManager = createPonderMarkdownManager({
+  mathematics: createPonderMathematics(),
   starterKit: { codeBlock: false, link: false },
   gallery: createIosImageGallery(() => "en-US"),
   pdf: false,

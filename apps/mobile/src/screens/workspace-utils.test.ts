@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { MemoSummary, Notebook } from "@edgeever/shared";
+import type { MemoSummary, Notebook } from "@ponder/shared";
 import {
   filterCollapsedNotebookOptions,
   formatMemoDetailDate,
@@ -48,7 +48,7 @@ describe("mobile workspace utilities", () => {
 
   test("normalizes tags, markdown preview text, and search matches", () => {
     expect(parseTags(" one，two, one\nthree ")).toEqual(["one", "two", "three"]);
-    expect(markdownToLocalText("## Hello [EdgeEver](https://edgeever.org) ![logo](logo.png)")).toBe("Hello EdgeEver");
+    expect(markdownToLocalText("## Hello [Ponder](https://appkeep.io) ![logo](logo.png)")).toBe("Hello Ponder");
     expect(getTextSearchMatches("One one none", "one")).toEqual([
       { start: 0, end: 3 },
       { start: 4, end: 7 },
@@ -62,11 +62,11 @@ describe("mobile workspace utilities", () => {
   });
 
   test("treats explicit locale preferences as the resolved UI locale", () => {
-    expect(getResolvedMobileLocale("zh-CN")).toBe("zh-CN");
+    expect(getResolvedMobileLocale("zh-CN")).toBe("en-US");
     expect(getResolvedMobileLocale("en-US")).toBe("en-US");
     expect(getResolvedMobileLocale("pl")).toBe("pl");
     expect(getResolvedMobileLocale("ru")).toBe("ru");
-    expect(isEnglishMobileLocale("zh-CN")).toBe(false);
+    expect(isEnglishMobileLocale("zh-CN")).toBe(true);
     expect(isEnglishMobileLocale("en-US")).toBe(true);
   });
 

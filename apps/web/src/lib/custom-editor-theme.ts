@@ -63,7 +63,7 @@ export const localizeStoredCustomThemeName = (
   return name;
 };
 
-export const CUSTOM_EDITOR_THEME_FILE_SCHEMA = "edgeever.editor-theme";
+export const CUSTOM_EDITOR_THEME_FILE_SCHEMA = "ponder.editor-theme";
 export const CUSTOM_EDITOR_THEME_FILE_VERSION = 1;
 export const MAX_CUSTOM_EDITOR_THEME_FILE_BYTES = 64 * 1024;
 export const MAX_CUSTOM_EDITOR_THEME_CSS_LENGTH = 8 * 1024;
@@ -178,5 +178,5 @@ export const customEditorThemeFileName = (name: string) => {
     .replace(/\s+/g, " ")
     .replace(/[. ]+$/g, "")
     .slice(0, 80) || "custom-theme";
-  return `EdgeEver-${safeName}.json`;
+  return `Ponder-${safeName}.json`;
 };

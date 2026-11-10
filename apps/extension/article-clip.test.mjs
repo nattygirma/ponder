@@ -377,8 +377,8 @@ test('the compiled Jike pointer listener marks only the card under the context-m
  const w=createWindow(readFileSync(new URL('./fixtures/platforms/jike-feed.html',import.meta.url),'utf8'),jikeFeedUrl);
  runInNewContext(bundleTestScripts(['social-target'])[0],{document:w.document,location:w.location,URL,Element:w.Element,Node:w.Node});
  const cards=w.document.querySelectorAll('.post-item-li'),event=w.document.createEvent('Event');event.initEvent('contextmenu',true,true);cards[1].querySelector('.text').dispatchEvent(event);
- expect(w.document.querySelectorAll('[data-edgeever-social-target]')).toHaveLength(1);expect(cards[1].getAttribute('data-edgeever-social-target')).toBe('https://m.okjike.com/originalPosts/6ace942f756bbb66581c3f96');
- cards[0].querySelector('.text').dispatchEvent(event);expect(cards[1].hasAttribute('data-edgeever-social-target')).toBe(false);
+ expect(w.document.querySelectorAll('[data-ponder-social-target]')).toHaveLength(1);expect(cards[1].getAttribute('data-ponder-social-target')).toBe('https://m.okjike.com/originalPosts/6ace942f756bbb66581c3f96');
+ cards[0].querySelector('.text').dispatchEvent(event);expect(cards[1].hasAttribute('data-ponder-social-target')).toBe(false);
 });
 
 test('article metadata retains source date precision and normalized own headlines',async()=>{
@@ -510,7 +510,7 @@ const webFeed=async(name="jike-web-feed",pageUrl=jikeWebFeedUrl)=>{
 };
 
 test('Jike Web feed reads the selected current host props without Fiber/alternate or body permalinks',async()=>{
- const {d,cards,state}=await webFeed();cards[0].setAttribute('data-edgeever-jike-selected','');
+ const {d,cards,state}=await webFeed();cards[0].setAttribute('data-ponder-jike-selected','');
  cards[0].__reactFiber$fixture={memoizedProps:{data:jikeWebPosts[1]},alternate:{memoizedProps:{data:jikeWebPosts[1]}}};
  const s=state();expect(s.post.id).toBe(jikeWebPosts[0].id);expect(Object.keys(s.post.user)).toEqual(['username']);
  expect(Object.keys(s.post)).not.toContain('readTrackInfo');expect(s.post.id).not.toBe('6ad1c239141b85b29238482b');
@@ -526,7 +526,7 @@ test('Jike Web feed reads the selected current host props without Fiber/alternat
 });
 
 for(const failure of ['missing-props','ambiguous-post','unsupported-type','hidden-card','recycled-id','changed-author','changed-body'])test(`Jike Web feed ${failure} refuses stale or unbound content`,async()=>{
- const{d,cards,state}=await webFeed(),id=jikeWebPosts[0].id,target=platformTarget('https://m.okjike.com/originalPosts/'+id);cards[0].setAttribute('data-edgeever-jike-selected','');expect(state().post.id).toBe(id);
+ const{d,cards,state}=await webFeed(),id=jikeWebPosts[0].id,target=platformTarget('https://m.okjike.com/originalPosts/'+id);cards[0].setAttribute('data-ponder-jike-selected','');expect(state().post.id).toBe(id);
  cards[0].querySelector('[class*="_expandButton_"]').remove();
  if(failure==='missing-props')delete cards[0].__reactProps$fixture;
  if(failure==='ambiguous-post')cards[0].__reactProps$fixture.children=[{props:{data:jikeWebPosts[0]}},{props:{data:jikeWebPosts[1]}}];
@@ -541,9 +541,9 @@ for(const failure of ['missing-props','ambiguous-post','unsupported-type','hidde
 });
 
 test('Jike Web feed current props track a recycled card even when its DOM marker and content remain unchanged',async()=>{
- const{cards,state}=await webFeed(),id=jikeWebPosts[0].id;cards[0].setAttribute('data-edgeever-jike-selected','');expect(state().post.id).toBe(id);
+ const{cards,state}=await webFeed(),id=jikeWebPosts[0].id;cards[0].setAttribute('data-ponder-jike-selected','');expect(state().post.id).toBe(id);
  cards[0].__reactProps$fixture.children.props.data={...jikeWebPosts[0],id:'6715e824d9dc81724c2ec74d'};
- expect(cards[0].getAttribute('data-edgeever-jike-id')).toBe(id);expect(state(id)).toBeNull();
+ expect(cards[0].getAttribute('data-ponder-jike-id')).toBe(id);expect(state(id)).toBeNull();
  expect(state().post.id).toBe('6715e824d9dc81724c2ec74d');
 });
 
@@ -552,12 +552,12 @@ test('the Jike Web pointer listener selects one own card without guessing identi
  const w=createWindow(readFileSync(new URL('./fixtures/platforms/jike-web-feed.html',import.meta.url),'utf8'),jikeWebFeedUrl);
  runInNewContext(bundleTestScripts(['social-target'])[0],{document:w.document,location:w.location,URL,Element:w.Element,Node:w.Node});
  const cards=[...w.document.querySelectorAll('[data-clickable-feedback]')].filter(c=>c.querySelector('header')&&c.querySelector('[class*="_contentWrapper_"]'));const event=w.document.createEvent('Event');event.initEvent('contextmenu',true,true);
- cards[0].querySelector('[class*="_contentWrapper_"]').dispatchEvent(event);expect(cards[0].hasAttribute('data-edgeever-jike-selected')).toBe(true);expect(w.document.querySelectorAll('[data-edgeever-social-target]')).toHaveLength(0);
- cards[1].querySelector('[class*="_contentWrapper_"]').dispatchEvent(event);expect(cards[0].hasAttribute('data-edgeever-jike-selected')).toBe(false);expect(cards[1].hasAttribute('data-edgeever-jike-selected')).toBe(true);
+ cards[0].querySelector('[class*="_contentWrapper_"]').dispatchEvent(event);expect(cards[0].hasAttribute('data-ponder-jike-selected')).toBe(true);expect(w.document.querySelectorAll('[data-ponder-social-target]')).toHaveLength(0);
+ cards[1].querySelector('[class*="_contentWrapper_"]').dispatchEvent(event);expect(cards[0].hasAttribute('data-ponder-jike-selected')).toBe(false);expect(cards[1].hasAttribute('data-ponder-jike-selected')).toBe(true);
 });
 
 for(const mismatch of [false,true])test(`Jike Web single-image feed verifies gallery identity before using the declared original (mismatch=${mismatch})`,async()=>{
- const url='https://web.okjike.com/topic/63579abb6724cc583b9bba9a/square',{d,cards,state}=await webFeed('jike-web-feed-image',url);cards[0].setAttribute('data-edgeever-jike-selected','');const s=state(),target=platformTarget('https://m.okjike.com/originalPosts/'+s.post.id);
+ const url='https://web.okjike.com/topic/63579abb6724cc583b9bba9a/square',{d,cards,state}=await webFeed('jike-web-feed-image',url);cards[0].setAttribute('data-ponder-jike-selected','');const s=state(),target=platformTarget('https://m.okjike.com/originalPosts/'+s.post.id);
  if(mismatch)cards[0].querySelector('img[data-anonymous-gallery="true"]').setAttribute('src','https://cdnv2.ruguoapp.com/other.png?imageMogr2/thumbnail/400x');
  const r=readJike(d,url,target,s);
  if(mismatch)expect(r).toEqual({ok:false,reason:'incomplete'});
@@ -613,7 +613,7 @@ test('Medium nested quote code and pre paragraph identity preserve language and 
 for(const invalid of ['old-post','missing-props','stale-marker'])test(`Jike Web detail rejects ${invalid} identity under a same-author new route`,()=>{
  const d=fixture('jike-web-detail'),card=d.querySelector('[class*="_postCard_"]'),url=jikeWebUrl.replace('64c9dd9a2edae6abdc610605','6715e824d9dc81724c2ec74d');
  if(invalid==='missing-props')delete card.__reactProps$fixture;
- if(invalid==='stale-marker')card.setAttribute('data-edgeever-jike-id','6715e824d9dc81724c2ec74d');
+ if(invalid==='stale-marker')card.setAttribute('data-ponder-jike-id','6715e824d9dc81724c2ec74d');
  expect(detailState(d,url,'6715e824d9dc81724c2ec74d')).toBeNull();
  expect(readJike(d,url)).toEqual({ok:false,reason:'changed'});
 });

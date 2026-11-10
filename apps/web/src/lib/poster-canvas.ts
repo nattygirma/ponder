@@ -17,7 +17,7 @@ import {
   type PosterDocument,
   type PosterElement,
   type PosterPaintGradient,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { BadgeBox } from "./poster-design/vendor/qiaomu/badge";
 import { loadPosterFont } from "./poster-design/fonts";
 import { grain } from "./poster-design/vendor/qiaomu/kit";
@@ -129,7 +129,7 @@ export const posterObject = async (
       ...options,
       width: element.width,
       fontSize: element.fontSize,
-      fontFamily: `${element.fontFamily}, "EdgeEver Offline Sans", sans-serif`,
+      fontFamily: `${element.fontFamily}, "Ponder Offline Sans", sans-serif`,
       fontWeight: element.fontWeight,
       fontStyle: element.fontStyle ?? "normal",
       underline: element.underline ?? false,

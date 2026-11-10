@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { isSharePasswordError, PublicSharePasswordForm, PublicShareArticle } from "./PublicSharePage";
 import { PublicNotebookSite } from "./PublicNotebookSite";
 import { withEnvironmentTitlePrefix } from "@/lib/environment-title";
-import { PUBLIC_PAGE_ROBOTS } from "@edgeever/shared/public-page-headers";
+import { PUBLIC_PAGE_ROBOTS } from "@ponder/shared/public-page-headers";
 
 export const PublicNotebookSharePage = () => {
   const { t } = useTranslation();
@@ -62,10 +62,10 @@ export const PublicNotebookSharePage = () => {
     document.head.appendChild(robots);
     const previous = document.title;
     document.title = withEnvironmentTitlePrefix(
-      `${note?.title?.trim() || share?.name || t("sharing.notebookTitle")} · EdgeEver`,
+      `${note?.title?.trim() || share?.name || t("sharing.notebookTitle")} · Ponder`,
       {
         development: import.meta.env.DEV,
-        profile: __EDGEEVER_DEVELOPMENT_PROFILE__,
+        profile: __PONDER_DEVELOPMENT_PROFILE__,
       },
     );
     return () => {

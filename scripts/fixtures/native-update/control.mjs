@@ -3,10 +3,10 @@ import { appendFileSync, existsSync, readFileSync, unlinkSync } from "node:fs";
 import { verifyWindowsUpdateMetadata, WINDOWS_UPDATE_KEY_ID } from "./windows-update-trust.mjs";
 
 export const verifierLog = (event, details = {}) => {
-  appendFileSync(process.env.EDGE_EVER_UPDATE_VERIFIER_LOG, `${JSON.stringify({ at: new Date().toISOString(), event, ...details })}\n`);
+  appendFileSync(process.env.PONDER_UPDATE_VERIFIER_LOG, `${JSON.stringify({ at: new Date().toISOString(), event, ...details })}\n`);
 };
 export const verifierWindowsMetadata = async ({ version, updateInfo }) => {
-  const base = `${process.env.EDGE_EVER_UPDATE_VERIFIER_FEED}/release/${version}/`;
+  const base = `${process.env.PONDER_UPDATE_VERIFIER_FEED}/release/${version}/`;
   const [manifest, signature] = await Promise.all([
     fetch(`${base}latest-windows.json`), fetch(`${base}latest-windows.json.sig`),
   ]);
@@ -15,13 +15,13 @@ export const verifierWindowsMetadata = async ({ version, updateInfo }) => {
     manifestBytes: Buffer.from(await manifest.arrayBuffer()),
     signatureBytes: Buffer.from(await signature.arrayBuffer()),
     expectedVersion: version, updateInfo,
-    trustedPublicKeys: { [WINDOWS_UPDATE_KEY_ID]: readFileSync(process.env.EDGE_EVER_UPDATE_VERIFIER_PUBLIC_KEY, "utf8") },
+    trustedPublicKeys: { [WINDOWS_UPDATE_KEY_ID]: readFileSync(process.env.PONDER_UPDATE_VERIFIER_PUBLIC_KEY, "utf8") },
   });
 };
 export const attachVerifier = ({ app, updater, controller }) => {
   verifierLog("boot", { version: app.getVersion(), executable: process.execPath, pid: process.pid });
   let busy = false;
-  const path = process.env.EDGE_EVER_UPDATE_VERIFIER_COMMAND;
+  const path = process.env.PONDER_UPDATE_VERIFIER_COMMAND;
   const timer = setInterval(async () => {
     if (busy || !existsSync(path)) return;
     busy = true;

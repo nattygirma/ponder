@@ -207,7 +207,7 @@
       "subject": "light_dark_system",
       "decision": "keep_reuse",
       "evidenceType": "source_inspection",
-      "rationale": "Reuse ThemeProvider and edgeever.theme; no second preference system."
+      "rationale": "Reuse ThemeProvider and ponder.theme; no second preference system."
     },
     {
       "id": "R03",

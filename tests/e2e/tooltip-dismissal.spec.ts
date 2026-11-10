@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.setItem("edgeever.locale.preference", "en-US"));
+  await page.addInitScript(() => localStorage.setItem("ponder.locale.preference", "en-US"));
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto("/");
 });

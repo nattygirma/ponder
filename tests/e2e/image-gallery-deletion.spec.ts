@@ -5,7 +5,7 @@ test("deleting gallery images unwraps the last one and then removes it (#707, #7
   const fixturePath = fileURLToPath(new URL("./fixtures/image-gallery-deletion.html", import.meta.url));
   await page.goto(`/@fs${fixturePath}`);
   const images = page.getByRole("button", { name: "Delete image", exact: true });
-  const gallery = page.locator("[data-edgeever-image-gallery]");
+  const gallery = page.locator("[data-ponder-image-gallery]");
   await expect(images).toHaveCount(2);
   await images.first().click();
   await expect(images).toHaveCount(1);

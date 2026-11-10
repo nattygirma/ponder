@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { DesktopBackupSelection, DesktopBackupStatus } from "@edgeever/shared";
+import type { DesktopBackupSelection, DesktopBackupStatus } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";

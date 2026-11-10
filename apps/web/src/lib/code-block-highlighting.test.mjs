@@ -4,7 +4,7 @@ import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { EditorState } from "@tiptap/pm/state";
-import { FRONT_MATTER_LANGUAGE } from "@edgeever/shared";
+import { FRONT_MATTER_LANGUAGE } from "@ponder/shared";
 
 const textOf = (node) => node.type === "text" ? node.value : (node.children ?? []).map(textOf).join("");
 const elementsOf = (node) => (node.type === "element" ? 1 : 0) + (node.children ?? []).reduce((n, child) => n + elementsOf(child), 0);
@@ -13,7 +13,7 @@ describe("editor code block highlighting", () => {
   test("unknown and render-only languages keep exact text without guessed syntax", () => {
     const lowlight = createCodeBlockLowlight();
     // JavaScript-looking content would receive decorations under auto detection.
-    const source = 'const value = { name: "edgeever", count: 123 };\n'.repeat(200);
+    const source = 'const value = { name: "ponder", count: 123 };\n'.repeat(200);
     for (const language of ["unknown-702", "mermaid", FRONT_MATTER_LANGUAGE]) {
       expect(lowlight.registered(language)).toBe(false);
       const tree = lowlight.highlightAuto(source);

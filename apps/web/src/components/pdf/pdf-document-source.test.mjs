@@ -21,30 +21,30 @@ describe("PDF document sources", () => {
 
   test("recovers leaked desktop resource URLs in the web runtime", async () => {
     const current = globalThis.window;
-    const previousBridge = current?.edgeeverDesktop;
-    if (current) current.edgeeverDesktop = undefined;
+    const previousBridge = current?.ponderDesktop;
+    if (current) current.ponderDesktop = undefined;
     try {
-      await expect(loadPdfDocumentSource("edgeever-resource://resource/res_web")).resolves.toEqual({
+      await expect(loadPdfDocumentSource("ponder-resource://resource/res_web")).resolves.toEqual({
         url: "/api/v1/resources/res_web/blob",
       });
     } finally {
-      if (current) current.edgeeverDesktop = previousBridge;
+      if (current) current.ponderDesktop = previousBridge;
     }
   });
 
   test("loads synced desktop resources through the native bridge", async () => {
-    const source = await loadPdfDocumentSource("edgeever-resource://resource/res_123", bridge);
+    const source = await loadPdfDocumentSource("ponder-resource://resource/res_123", bridge);
     expect(source).toEqual({ data: new Uint8Array([1, 7]) });
   });
 
   test("loads staged desktop resources before sync completes", async () => {
-    const source = await loadPdfDocumentSource("edgeever-staged://stage_123", bridge);
+    const source = await loadPdfDocumentSource("ponder-staged://stage_123", bridge);
     expect(source).toEqual({ data: new Uint8Array([2, 9]) });
   });
 
   test("does not mutate or transfer the bridge-owned byte array", async () => {
     const bytes = new Uint8Array([4, 5, 6]);
-    const source = await loadPdfDocumentSource("edgeever-resource://resource/res_copy", {
+    const source = await loadPdfDocumentSource("ponder-resource://resource/res_copy", {
       ...bridge,
       readResource: async () => ({ type: "application/pdf", bytes }),
     });

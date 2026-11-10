@@ -27,7 +27,7 @@ describe("print PDF outline", () => {
   test("nests body headings under the note title and records where they sit", () => {
     const { document } = parseHTML("<!doctype html><body></body>");
     document.body.innerHTML = `
-      <div class="pagedjs_page"><h1>欢迎使用 EdgeEver</h1><h2>概览</h2><h2>海报</h2><h3>排版定制</h3></div>
+      <div class="pagedjs_page"><h1>欢迎使用 Ponder</h1><h2>概览</h2><h2>海报</h2><h3>排版定制</h3></div>
       <div class="pagedjs_page"><h2 data-split-from="1">海报</h2><h2>表达力</h2></div>
     `;
     for (const page of document.querySelectorAll(".pagedjs_page")) page.getBoundingClientRect = rect(0, 1000);
@@ -40,7 +40,7 @@ describe("print PDF outline", () => {
 
     expect(collectPrintOutline(document)).toEqual([
       {
-        title: "欢迎使用 EdgeEver",
+        title: "欢迎使用 Ponder",
         pageIndex: 0,
         topRatio: 0.04,
         children: [
@@ -62,13 +62,13 @@ describe("print PDF outline", () => {
     pdf.addPage([100, 200]);
     pdf.addPage([100, 200]);
     addPdfOutline(pdf, [{
-      title: "欢迎使用 EdgeEver",
+      title: "欢迎使用 Ponder",
       pageIndex: 0,
       topRatio: 0,
       children: [{ title: "表达力", pageIndex: 1, topRatio: 0.25, children: [] }],
     }]);
     const saved = await PDFDocument.load(await pdf.save());
-    expect(outlineTitles(saved)).toEqual(["欢迎使用 EdgeEver", "表达力"]);
+    expect(outlineTitles(saved)).toEqual(["欢迎使用 Ponder", "表达力"]);
     const outlines = saved.context.lookup(saved.catalog.get(PDFName.of("Outlines")));
     expect(outlines.get(PDFName.of("Count")).asNumber()).toBe(2);
   });

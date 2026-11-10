@@ -1,8 +1,8 @@
-import type { AiDiscoveredModel, AiProviderConfig } from "@edgeever/shared";
+import type { AiDiscoveredModel, AiProviderConfig } from "@ponder/shared";
 
 export const AI_MODEL_DISCOVERY_FRESH_MS = 24 * 60 * 60_000;
 const RETRY_DELAY_MS = 60 * 60_000;
-const CACHE_PREFIX = "edgeever.ai-model-discovery.v1:";
+const CACHE_PREFIX = "ponder.invalid-model-discovery.v1:";
 type ProviderIdentity = Pick<AiProviderConfig, "id" | "provider" | "baseUrl">;
 export type DiscoveryCache = { models: AiDiscoveredModel[]; updatedAt: number };
 type CacheStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;

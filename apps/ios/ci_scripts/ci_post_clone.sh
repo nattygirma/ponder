@@ -7,7 +7,7 @@
 # Docs: docs/ios-xcode-cloud.md
 set -euo pipefail
 
-echo "==> EdgeEver Xcode Cloud post-clone"
+echo "==> Ponder Xcode Cloud post-clone"
 
 # Resolve monorepo paths. CI_PRIMARY_REPOSITORY_PATH is the Git clone root.
 REPO_ROOT="${CI_PRIMARY_REPOSITORY_PATH:-}"
@@ -58,8 +58,8 @@ bash "$IOS_ROOT/Scripts/build-editor-bundle.sh"
 echo "==> Running xcodegen generate"
 xcodegen generate
 
-if [ ! -f "$IOS_ROOT/EdgeEver.xcodeproj/project.pbxproj" ]; then
-  echo "error: EdgeEver.xcodeproj missing after xcodegen" >&2
+if [ ! -f "$IOS_ROOT/Ponder.xcodeproj/project.pbxproj" ]; then
+  echo "error: Ponder.xcodeproj missing after xcodegen" >&2
   exit 1
 fi
 

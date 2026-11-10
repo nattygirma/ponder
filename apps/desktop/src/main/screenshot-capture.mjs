@@ -265,4 +265,4 @@ export const captureRegionScreenToNote = async (input) => {
 };
 
 export const writeScreenshotTempPath = (root = tmpdir()) =>
-  join(root, `edgeever-screenshot-${Date.now()}-${Math.random().toString(16).slice(2)}.png`);
+  join(root, `ponder-screenshot-${Date.now()}-${Math.random().toString(16).slice(2)}.png`);

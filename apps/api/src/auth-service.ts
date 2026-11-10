@@ -1,8 +1,6 @@
-import type { Context } from "hono";
 import { getCookie, setCookie } from "hono/cookie";
-import { hasBootstrapCredential, isSupportedPasswordHash, verifyBootstrapPassword } from "./auth-bootstrap";
-import { hashPassword, randomToken, SESSION_TOKEN_BYTES, verifyPassword } from "./auth-crypto";
-import type { LoginAttemptKey } from "./auth-login-limiter";
+import { appKeepIdentity, appKeepUserId, ensureAppKeepUser, isAppKeepHosted } from "./appkeep-identity";
+import { randomToken, SESSION_TOKEN_BYTES } from "./auth-crypto";
 import { resolveSessionDeviceId } from "./auth-session-devices";
 import {
   isDatabaseNotReadyError,
@@ -16,9 +14,7 @@ import { AppError } from "./app-error";
 import type { UserRow } from "./auth-routes";
 import { createId, isoNow, parseJsonArray } from "./entity-utils";
 import { sha256 } from "./hash-utils";
-import { apiError } from "./http-errors";
 import type { DatabaseAdapter } from "./storage-contract";
-import type { InstanceUserRow } from "./user-routes";
 import { ensureUserWorkspace } from "./workspace-provisioning";
 import { ensureWorkspaceExampleSeed } from "./workspace-example-seed";
 
@@ -31,9 +27,11 @@ type SessionRow = {
   last_seen_at: string | null;
   workspace_id: string | null;
   role: "owner" | "member" | null;
+  team_workspace_id: string | null;
+  team_role: "owner" | "member" | "viewer" | null;
 };
 
-const SESSION_COOKIE = "edgeever_session";
+const SESSION_COOKIE = "ponder_session";
 const DEFAULT_SESSION_TTL_DAYS = 400;
 const MAX_SESSION_TTL_DAYS = 400;
 const SESSION_LAST_SEEN_UPDATE_INTERVAL_MS = 60 * 60 * 1000;
@@ -53,15 +51,12 @@ export const getInstanceAuthMode = async (
     );
   }
 
-  const allowUnauthenticated = isUnauthenticatedAccessEnabled(env.EDGE_EVER_ALLOW_UNAUTHENTICATED);
-  const bootstrapCredentialConfigured = hasBootstrapCredential(
-    env.EDGE_EVER_AUTH_PASSWORD,
-    env.EDGE_EVER_AUTH_PASSWORD_HASH,
-  );
+  const allowUnauthenticated = isUnauthenticatedAccessEnabled(env.PONDER_ALLOW_UNAUTHENTICATED);
+  const platformSignIn = isAppKeepHosted(env);
 
   if (!verifyDatabase) {
     if (allowUnauthenticated) return "disabled";
-    if (bootstrapCredentialConfigured) return "required";
+    if (platformSignIn) return "required";
   }
 
   let user: { id: string } | null;
@@ -80,114 +75,10 @@ export const getInstanceAuthMode = async (
 
   return resolveInstanceAuthMode({
     allowUnauthenticated,
-    hasBootstrapCredential: bootstrapCredentialConfigured,
+    platformSignIn,
     hasEnabledUser: Boolean(user),
   });
 };
-
-export const getLoginAttemptKeys = async (c: AppContext, username: string): Promise<LoginAttemptKey[]> => {
-  const keys: LoginAttemptKey[] = [{ scope: "username", key: await sha256(username.trim()) }];
-  const clientIp = getClientIp(c);
-
-  if (clientIp) {
-    keys.push({ scope: "ip", key: await sha256(clientIp) });
-  }
-
-  return keys;
-};
-
-const getClientIp = (c: Context) => {
-  const cloudflareIp = c.req.header("CF-Connecting-IP")?.trim();
-  if (cloudflareIp) return cloudflareIp;
-
-  const realIp = c.req.header("X-Real-IP")?.trim();
-  if (realIp) return realIp;
-
-  const forwardedIp = c.req.header("X-Forwarded-For")?.split(",", 1)[0]?.trim();
-  return forwardedIp || null;
-};
-
-export const tooManyLoginAttempts = (c: Context, retryAfterSeconds: number) => {
-  c.header("Retry-After", String(retryAfterSeconds));
-  return apiError(c, "login_rate_limited", "Too many login attempts. Try again later.", 429);
-};
-
-export const verifyLogin = async (env: Bindings, username: string, password: string): Promise<UserRow | null> => {
-  const normalizedUsername = username.trim();
-  const existingUser = await getUserByUsername(env.storage.db, normalizedUsername);
-
-  if (existingUser) {
-    if (await verifyPassword(password, existingUser.password_hash)) {
-      return existingUser;
-    }
-
-    if (!isSupportedPasswordHash(existingUser.password_hash)) {
-      throw new AppError(
-        "password_hash_invalid",
-        "This account has an invalid password hash. Reset it with the EdgeEver password reset command.",
-        503,
-      );
-    }
-
-    return null;
-  }
-
-  const configuredHash = env.EDGE_EVER_AUTH_PASSWORD_HASH?.trim();
-  const configuredPassword = env.EDGE_EVER_AUTH_PASSWORD;
-
-  if (!configuredHash && !configuredPassword) {
-    return null;
-  }
-
-  const configuredUsername = env.EDGE_EVER_AUTH_USERNAME?.trim() || "admin";
-
-  if (normalizedUsername !== configuredUsername) {
-    return null;
-  }
-
-  const passwordMatches = await verifyBootstrapPassword(
-    password,
-    configuredPassword,
-    configuredHash,
-    verifyPassword,
-  );
-
-  if (!passwordMatches) {
-    return null;
-  }
-
-  const now = isoNow();
-  const userId = createId("usr");
-  const passwordHash = await hashPassword(password);
-
-  await env.storage.db.prepare(
-    `INSERT OR IGNORE INTO users (id, username, password_hash, display_name, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?)`
-  )
-    .bind(userId, normalizedUsername, passwordHash, normalizedUsername, now, now)
-    .run();
-
-  return getUserByUsername(env.storage.db, normalizedUsername);
-};
-
-const getUserByUsername = async (db: DatabaseAdapter, username: string) =>
-  db
-    .prepare(
-      `SELECT id, username, password_hash, display_name, is_disabled
-       FROM users
-       WHERE username = ? AND is_disabled = 0`
-    )
-    .bind(username)
-    .first<UserRow>();
-
-export const getInstanceUser = (db: DatabaseAdapter, userId: string) =>
-  db.prepare(
-    `SELECT u.id, u.username, u.password_hash, u.display_name, u.is_disabled,
-            u.last_login_at, u.created_at, wm.role
-     FROM users u
-     INNER JOIN workspace_members wm ON wm.user_id = u.id
-     WHERE u.id = ?`
-  ).bind(userId).first<InstanceUserRow>();
 
 export const createSession = async (c: AppContext, user: UserRow, requestedDeviceId?: string) => {
   const token = randomToken(SESSION_TOKEN_BYTES);
@@ -252,7 +143,9 @@ const authenticateBearerToken = async (c: AppContext, touch: boolean): Promise<A
     return null;
   }
 
-  const sessionAuth = await authenticateSessionToken(c, token, touch);
+  // On AppKeep a session only counts next to AppKeep's sign-in, so a saved
+  // session token can't outlive someone's access to the account.
+  const sessionAuth = isAppKeepHosted(c.env) ? null : await authenticateSessionToken(c, token, touch);
 
   if (sessionAuth) {
     return sessionAuth;
@@ -287,7 +180,7 @@ const authenticateBearerToken = async (c: AppContext, touch: boolean): Promise<A
   }
 
   await ensureWorkspaceExampleSeed(c.env, row.workspace_id).catch((error) => {
-    console.error("EdgeEver example seed failed", error);
+    console.error("Ponder example seed failed", error);
   });
 
   return {
@@ -307,10 +200,11 @@ const authenticateSessionToken = async (c: AppContext, token: string, touch: boo
   const now = isoNow();
   const row = await c.env.storage.db.prepare(
     `SELECT s.id, s.user_id, u.username, u.display_name, s.expires_at, s.last_seen_at,
-            wm.workspace_id, wm.role
+            wm.workspace_id, wm.role, tm.workspace_id AS team_workspace_id, tm.role AS team_role
      FROM sessions s
      INNER JOIN users u ON u.id = s.user_id
      LEFT JOIN workspace_members wm ON wm.user_id = s.user_id
+     LEFT JOIN team_members tm ON tm.user_id = s.user_id AND tm.workspace_id = s.active_workspace_id
      WHERE s.token_hash = ?
        AND s.revoked_at IS NULL
        AND s.expires_at > ?
@@ -341,7 +235,7 @@ const authenticateSessionToken = async (c: AppContext, token: string, touch: boo
     : await ensureUserWorkspace(c.env.storage.db, row.user_id, row.username, c.req.header("accept-language"));
 
   await ensureWorkspaceExampleSeed(c.env, workspace.workspaceId).catch((error) => {
-    console.error("EdgeEver example seed failed", error);
+    console.error("Ponder example seed failed", error);
   });
 
   return {
@@ -351,13 +245,35 @@ const authenticateSessionToken = async (c: AppContext, token: string, touch: boo
     username: row.username,
     displayName: row.display_name,
     scopes: [],
-    workspaceId: workspace.workspaceId,
+    workspaceId: row.team_workspace_id ?? workspace.workspaceId,
     role: workspace.role,
+    teamRole: row.team_workspace_id && row.team_role ? row.team_role : undefined,
     sessionId: row.id,
   };
 };
 
+// A request can authenticate more than once, before its cookie reaches the browser.
+const issuedAppKeepTokens = new WeakMap<Request, string>();
+
+const authenticateAppKeepSession = async (c: AppContext, touch: boolean): Promise<AuthContext | null> => {
+  const identity = appKeepIdentity(c.env, c.req.raw.headers);
+  if (!identity) return null;
+
+  const token = issuedAppKeepTokens.get(c.req.raw) ?? getCookie(c, SESSION_COOKIE);
+  let auth = token ? await authenticateSessionToken(c, token, touch) : null;
+  if (auth?.actorId !== appKeepUserId(identity)) {
+    const user = await ensureAppKeepUser(c.env.storage.db, identity);
+    const session = await createSession(c, user);
+    issuedAppKeepTokens.set(c.req.raw, session.token);
+    setSessionCookie(c, session.token, session.maxAge);
+    auth = await authenticateSessionToken(c, session.token, touch);
+  }
+  return auth && { ...auth, role: identity.canManageApp ? "owner" : "member" };
+};
+
 export const authenticateSession = async (c: AppContext, touch: boolean): Promise<AuthContext | null> => {
+  if (isAppKeepHosted(c.env)) return authenticateAppKeepSession(c, touch);
+
   const token = getCookie(c, SESSION_COOKIE);
 
   if (!token) {
@@ -379,6 +295,6 @@ export const getBearerToken = (c: AppContext) => {
 };
 
 const getSessionMaxAge = (env: Bindings) => {
-  const days = clampNumber(Number(env.EDGE_EVER_SESSION_TTL_DAYS ?? DEFAULT_SESSION_TTL_DAYS), 1, MAX_SESSION_TTL_DAYS);
+  const days = clampNumber(Number(env.PONDER_SESSION_TTL_DAYS ?? DEFAULT_SESSION_TTL_DAYS), 1, MAX_SESSION_TTL_DAYS);
   return days * 24 * 60 * 60;
 };

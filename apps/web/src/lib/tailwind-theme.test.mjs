@@ -22,7 +22,7 @@ describe("tailwind theme tokens", () => {
     expect(css).toContain("--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05)");
     expect(css).toContain("--blur-sm: 4px");
     expect(css).toContain(".focus-visible\\:outline-none:focus-visible");
-    expect(css).toContain(".edgeever-reveal-on-touch");
+    expect(css).toContain(".ponder-reveal-on-touch");
     expect(css).toContain(".divide-slate-200 > :not(:last-child)");
   });
 

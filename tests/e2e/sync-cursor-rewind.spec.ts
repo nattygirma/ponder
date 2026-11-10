@@ -9,7 +9,7 @@ type LocalMemoRecord = {
 
 const readLocalMemo = (page: Page, memoId: string) => page.evaluate(
   (targetMemoId) => new Promise<LocalMemoRecord | null>((resolve, reject) => {
-    const openRequest = indexedDB.open("edgeever-local");
+    const openRequest = indexedDB.open("ponder-local");
     openRequest.onerror = () => reject(openRequest.error);
     openRequest.onsuccess = () => {
       const database = openRequest.result;
@@ -27,7 +27,7 @@ const readLocalMemo = (page: Page, memoId: string) => page.evaluate(
 
 const makeMirrorStale = (page: Page, memo: LocalMemoRecord, staleTitle: string) => page.evaluate(
   ({ localMemo, title }) => new Promise<void>((resolve, reject) => {
-    const openRequest = indexedDB.open("edgeever-local");
+    const openRequest = indexedDB.open("ponder-local");
     openRequest.onerror = () => reject(openRequest.error);
     openRequest.onsuccess = () => {
       const database = openRequest.result;
@@ -67,8 +67,8 @@ test("rebuilds a stale browser mirror when the server cursor rewinds", async ({ 
 
   try {
     await page.goto("/");
-    await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-    await page.getByPlaceholder("搜索笔记").fill(serverTitle);
+    await page.getByRole("button", { name: "All notes", exact: true }).click();
+    await page.getByPlaceholder("Search notes").fill(serverTitle);
     await expect(page.locator(`[data-memo-id="${memoId}"]`)).toContainText(serverTitle);
     await expect.poll(async () => (await readLocalMemo(page, memoId))?.title ?? null).toBe(serverTitle);
 
@@ -80,8 +80,8 @@ test("rebuilds a stale browser mirror when the server cursor rewinds", async ({ 
     await page.reload();
 
     await expect.poll(async () => (await readLocalMemo(page, memoId))?.title ?? null).toBe(serverTitle);
-    await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-    await page.getByPlaceholder("搜索笔记").fill(serverTitle);
+    await page.getByRole("button", { name: "All notes", exact: true }).click();
+    await page.getByPlaceholder("Search notes").fill(serverTitle);
     await expect(page.locator(`[data-memo-id="${memoId}"]`)).toContainText(serverTitle);
     await expect(page.getByText(staleTitle, { exact: true })).toHaveCount(0);
   } finally {

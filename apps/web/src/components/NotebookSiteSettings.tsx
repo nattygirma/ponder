@@ -1,5 +1,5 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { getMemoDisplayTitle, readNotebookSiteSettings, type NotebookShare } from "@edgeever/shared";
+import { getMemoDisplayTitle, readNotebookSiteSettings, type NotebookShare } from "@ponder/shared";
 import { useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { api, ApiRequestError, getConfiguredDesktopApiBaseUrl } from "@/lib/api";

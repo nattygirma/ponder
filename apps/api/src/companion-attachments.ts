@@ -8,7 +8,7 @@ import {
   type AiProvider,
   type CompanionModelContentPart,
   type CompanionTurnAttachmentMeta,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { AppError } from "./app-error";
 import type { CompanionScope } from "./companion-service";
 import type { DatabaseAdapter } from "./storage-contract";

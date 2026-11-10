@@ -6,7 +6,7 @@ import {
   type Resource,
   type ResourceListItem,
   type ResourceStorageSummary,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { format as formatContentType, parse as parseContentType } from "content-type";
 import { auditStatement } from "./audit";
 import type { AppContext, AuditActor, Bindings } from "./api-context";
@@ -20,7 +20,7 @@ import type { DatabaseAdapter } from "./storage-contract";
 export const MAX_IMAGE_UPLOAD_BYTES = 100 * 1024 * 1024;
 export const MAX_ATTACHMENT_UPLOAD_BYTES = 1024 * 1024 * 1024;
 
-export { SUPPORTED_IMAGE_MIME_TYPES } from "@edgeever/shared";
+export { SUPPORTED_IMAGE_MIME_TYPES } from "@ponder/shared";
 
 export type ResourceRow = {
   id: string;

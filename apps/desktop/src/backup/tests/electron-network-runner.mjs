@@ -37,7 +37,7 @@ app.whenReady().then(async () => {
       workers.push({ get pid() { return worker.pid; }, exited });
       return worker;
     } } : {}),
-    version: { edgeeverVersion: "2.16.1", buildId: "network-acceptance" },
+    version: { ponderVersion: "2.16.1", buildId: "network-acceptance" },
     onDiagnostic: (event, detail) => console.error(JSON.stringify({ event, ...detail })),
   });
   const context = baseUrl => ({ baseUrl, accountId: "local", token: "fixture-bearer" });

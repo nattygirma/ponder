@@ -657,7 +657,7 @@ test("omits the cover when the image upload fails and never hotlinks the thumbna
   expect(memos[0].contentMarkdown).toContain("caption");
   expect(memos[0].videoTranscript).toBeUndefined();
   expect(uploaded[0].videoTranscript).toBeUndefined();
-  expect(memos[0].contentMarkdown).not.toContain("edgeever-video-v1");
+  expect(memos[0].contentMarkdown).not.toContain("ponder-video-v1");
 });
 
 test("saves a video without captions as a source note without queuing transcription", async () => {
@@ -687,7 +687,7 @@ test("saves a video without captions as a source note without queuing transcript
   expect(memos[0].videoTranscript).toBeUndefined();
   expect(memos[0].contentMarkdown).toContain("这一集没有可用字幕");
   expect(memos[0].contentMarkdown).toContain(`https://www.youtube.com/watch?v=${CURRENT_ID}`);
-  expect(memos[0].contentMarkdown).not.toContain("edgeever-video-v1");
+  expect(memos[0].contentMarkdown).not.toContain("ponder-video-v1");
 });
 
 test("keeps the video menu hosts away from the other page commands", () => {
@@ -729,24 +729,13 @@ test("keeps the video menu hosts away from the other page commands", () => {
 });
 
 test("ships the video-note phrases in the extension locales", () => {
-  const zh = messages("zh_CN");
-  expect(zh.saveVideoNoteToEdgeEver.message).toBe("保存视频笔记到 EdgeEver");
-  expect(zh.videoNoteSaved.message).toBe("已保存视频笔记");
-  expect(zh.videoTranscriptSaved.message).toBe("已保存字幕，总结未生成");
-  expect(zh.videoTranscriptNeedScope.message).toBe("已保存字幕，总结未生成。请在设置中为 Token 加上 ai:generate，并配置默认模型。");
-  expect(zh.videoTranscriptNeedModel.message).toBe("已保存字幕，总结未生成。请先配置默认模型。");
-  expect(zh.videoTranscriptTooLong.message).toBe("已保存字幕。这篇太长，没有生成总结。");
-  expect(zh.videoInfoSaved.message).toBe("已保存视频信息");
-  expect(zh.videoPageUnsupported.message).toBe("暂不支持这个页面");
-  expect(zh.videoNotRead.message).toBe("没有读到这个视频");
-  expect(zh.videoNoCaptions.message).toBe("这一集没有可用字幕");
   const pl = messages("pl");
-  expect(pl.saveVideoNoteToEdgeEver.message).toBe("Zapisz notatkę z wideo w EdgeEver");
+  expect(pl.saveVideoNoteToPonder.message).toBe("Zapisz notatkę z wideo w Ponder");
   expect(pl.videoSummaryHeading.message).toBe("Podsumowanie");
   expect(pl.videoTranscriptHeading.message).toBe("Transkrypcja");
   for (const locale of ["en", "ja", "pl"]) {
     const catalog = messages(locale);
-    for (const key of ["saveVideoNoteToEdgeEver", "videoNoteSaved", "videoTranscriptSaved", "videoPageUnsupported", "videoNotRead"]) {
+    for (const key of ["saveVideoNoteToPonder", "videoNoteSaved", "videoTranscriptSaved", "videoPageUnsupported", "videoNotRead"]) {
       expect(catalog[key].message.length).toBeGreaterThan(0);
     }
   }

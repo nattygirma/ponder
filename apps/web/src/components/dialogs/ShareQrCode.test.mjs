@@ -57,10 +57,10 @@ describe("share link QR code", () => {
   });
 
   test("names the downloaded file after the share address", () => {
-    expect(shareQrCodeFileName("https://notes.example/share/meeting-notes", "png")).toBe("edgeever-share-qr-meeting-notes.png");
-    expect(shareQrCodeFileName("https://notes.example/share/notebook/abc_DEF-1", "svg")).toBe("edgeever-share-qr-abc_DEF-1.svg");
-    expect(shareQrCodeFileName("https://notes.example/s/%3Cx%3E", "png")).toBe("edgeever-share-qr-3Cx3E.png");
-    expect(shareQrCodeFileName("not a url", "png")).toBe("edgeever-share-qr.png");
+    expect(shareQrCodeFileName("https://notes.example/share/meeting-notes", "png")).toBe("ponder-share-qr-meeting-notes.png");
+    expect(shareQrCodeFileName("https://notes.example/share/notebook/abc_DEF-1", "svg")).toBe("ponder-share-qr-abc_DEF-1.svg");
+    expect(shareQrCodeFileName("https://notes.example/s/%3Cx%3E", "png")).toBe("ponder-share-qr-3Cx3E.png");
+    expect(shareQrCodeFileName("not a url", "png")).toBe("ponder-share-qr.png");
   });
 
   test("exports 1024 physical pixels at different screen densities without resizing the source", async () => {

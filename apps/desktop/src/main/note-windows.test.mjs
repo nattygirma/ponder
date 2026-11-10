@@ -73,7 +73,7 @@ describe("note window registry", () => {
   test("validates note ids and builds the window URL on the app entry", () => {
     expect(isValidNoteWindowMemoId("memo_01HZ-abc")).toBe(true);
     for (const value of ["", "../x", "a b", "a/b", "x".repeat(129), null, 42]) expect(isValidNoteWindowMemoId(value)).toBe(false);
-    expect(noteWindowUrl("edgeever-app://app/index.html", "memo_1")).toBe("edgeever-app://app/index.html?noteWindow=memo_1");
+    expect(noteWindowUrl("ponder-app://app/index.html", "memo_1")).toBe("ponder-app://app/index.html?noteWindow=memo_1");
     expect(noteWindowUrl("http://127.0.0.1:5173", "memo_1")).toBe("http://127.0.0.1:5173/?noteWindow=memo_1");
   });
 

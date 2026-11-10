@@ -1,4 +1,4 @@
-import { resolveResourceUploadMimeType, ResourceUpdateSchema, type MemoDetail, type Resource } from "@edgeever/shared";
+import { resolveResourceUploadMimeType, ResourceUpdateSchema, type MemoDetail, type Resource } from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import { auditStatement } from "./audit";

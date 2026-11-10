@@ -1,8 +1,8 @@
 import { mergeAttributes, Node } from "@tiptap/core";
 import { openBlockSource } from "./markdown-block-start";
 
-export const PLUGIN_EMBED_NODE_TYPE = "edgeeverPluginEmbed" as const;
-export const PLUGIN_EMBED_MARKDOWN_LANGUAGE = "edgeever-plugin-embed" as const;
+export const PLUGIN_EMBED_NODE_TYPE = "ponderPluginEmbed" as const;
+export const PLUGIN_EMBED_MARKDOWN_LANGUAGE = "ponder-plugin-embed" as const;
 
 export type PluginEmbedAttributes = {
   id: string;
@@ -45,7 +45,7 @@ export const normalizePluginEmbedAttributes = (value: unknown): PluginEmbedAttri
 export const pluginEmbedToMarkdown = (attributes: PluginEmbedAttributes) =>
   `\`\`\`${PLUGIN_EMBED_MARKDOWN_LANGUAGE}\n${JSON.stringify(attributes)}\n\`\`\``;
 
-const FENCE_PATTERN = /^```edgeever-plugin-embed[ \t]*\n([^\n]+)\n```(?:\n|$)/;
+const FENCE_PATTERN = /^```ponder-plugin-embed[ \t]*\n([^\n]+)\n```(?:\n|$)/;
 
 export const PluginEmbed = Node.create({
   name: PLUGIN_EMBED_NODE_TYPE,
@@ -67,7 +67,7 @@ export const PluginEmbed = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: 'figure[data-type="edgeever-plugin-embed"]' }];
+    return [{ tag: 'figure[data-type="ponder-plugin-embed"]' }];
   },
 
   renderHTML({ HTMLAttributes }) {
@@ -77,8 +77,8 @@ export const PluginEmbed = Node.create({
     return [
       "figure",
       mergeAttributes(HTMLAttributes, {
-        "data-type": "edgeever-plugin-embed",
-        class: "edgeever-plugin-embed",
+        "data-type": "ponder-plugin-embed",
+        class: "ponder-plugin-embed",
         contenteditable: "false",
       }),
       ["figcaption", {}, title],

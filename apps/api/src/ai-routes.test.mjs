@@ -6,7 +6,7 @@ import {
   AI_ACTIONS,
   AiGenerateSchema,
   AiTagSuggestionsRequestSchema,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { registerAiRoutes } from "./ai-routes.ts";
 
 const auth = {
@@ -28,7 +28,7 @@ const environment = {
     },
     resources: {},
   },
-  EDGE_EVER_AUTH_PASSWORD: "x".repeat(32),
+  PONDER_AUTH_PASSWORD: "x".repeat(32),
 };
 
 class SqliteD1PreparedStatement {
@@ -82,7 +82,7 @@ const createDatabaseEnvironment = () => {
     sqlite,
     environment: {
       storage: { db: new SqliteD1Database(sqlite), resources: {} },
-      EDGE_EVER_AUTH_PASSWORD: "x".repeat(32),
+      PONDER_AUTH_PASSWORD: "x".repeat(32),
     },
   };
 };
@@ -729,7 +729,7 @@ describe("speech transcription settings routes", () => {
 
   test("fails closed when no credential encryption key is configured", async () => {
     const { sqlite, environment: databaseEnvironment } = createDatabaseEnvironment();
-    const { EDGE_EVER_AUTH_PASSWORD: _password, ...withoutKey } = databaseEnvironment;
+    const { PONDER_AUTH_PASSWORD: _password, ...withoutKey } = databaseEnvironment;
     const response = await createApp().request(
       "/api/v1/ai/transcription-providers",
       jsonRequest("POST", transcriptionSettings),
@@ -976,7 +976,7 @@ describe("AI model provider settings routes", () => {
 
   test("rejects provider creation without an encryption key", async () => {
     const { sqlite, environment: databaseEnvironment } = createDatabaseEnvironment();
-    const { EDGE_EVER_AUTH_PASSWORD: _password, ...withoutKey } = databaseEnvironment;
+    const { PONDER_AUTH_PASSWORD: _password, ...withoutKey } = databaseEnvironment;
     const response = await createApp().request("/api/v1/ai/providers", jsonRequest("POST", validSettings), withoutKey);
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: { code: "ai_encryption_key_missing" } });
@@ -1321,7 +1321,7 @@ describe("AI settings storage failures", () => {
     const { sqlite, environment: databaseEnvironment } = createDatabaseEnvironment();
     const provider = (await createProvider(app, databaseEnvironment)).providers[0];
     const speech = (await createTranscriptionProvider(app, databaseEnvironment)).providers[0];
-    const { EDGE_EVER_AUTH_PASSWORD: _password, ...withoutKey } = databaseEnvironment;
+    const { PONDER_AUTH_PASSWORD: _password, ...withoutKey } = databaseEnvironment;
     const { initialModelId: _model, ...providerFields } = validSettings;
 
     const providerUpdate = await app.request(

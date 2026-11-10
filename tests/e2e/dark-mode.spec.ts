@@ -1,9 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const installDarkTheme = (page: Page) => page.addInitScript(() => {
-  localStorage.setItem("edgeever.theme", "dark");
-  localStorage.setItem("edgeever.editor-theme", "custom-default");
-  localStorage.setItem("edgeever.custom-editor-themes", JSON.stringify([{
+  localStorage.setItem("ponder.theme", "dark");
+  localStorage.setItem("ponder.editor-theme", "custom-default");
+  localStorage.setItem("ponder.custom-editor-themes", JSON.stringify([{
     id: "custom-default",
     name: "Dark mode audit",
     light: {
@@ -86,21 +86,21 @@ test.describe("dark mode visual contracts", () => {
     await expect(page.locator(".ProseMirror")).toBeVisible();
     expect(await auditVisibleTextContrast(page)).toEqual([]);
 
-    const titleInput = page.getByPlaceholder("无标题笔记", { exact: true });
+    const titleInput = page.getByPlaceholder("Untitled note", { exact: true });
     await titleInput.focus();
     await expect(titleInput).toBeFocused();
     expect(await auditVisibleTextContrast(page)).toEqual([]);
 
-    await page.getByRole("button", { name: "个人中心", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "我的", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Profile", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Me", exact: true })).toBeVisible();
     expect(await auditVisibleTextContrast(page)).toEqual([]);
   });
 
   test("notebook move picker keeps highlighted options dark and selected labels clean", async ({ page }) => {
     await page.goto("/");
-    const selectMemosButton = page.getByRole("button", { name: "选择笔记", exact: true });
+    const selectMemosButton = page.getByRole("button", { name: "Select note", exact: true });
     if (await selectMemosButton.isDisabled()) {
-      await page.getByRole("button", { name: "手动同步笔记", exact: true }).click();
+      await page.getByRole("button", { name: "Sync notes manually", exact: true }).click();
     }
     await expect(selectMemosButton).toBeEnabled({ timeout: 20_000 });
     await selectMemosButton.click();
@@ -134,7 +134,7 @@ test.describe("dark mode visual contracts", () => {
     try {
       await page.goto(`/share/${encodeURIComponent(body.share.token)}`);
       await expect(page.locator("html")).toHaveClass(/dark/);
-      await expect(page.locator(".edgeever-public-share .ProseMirror")).toBeVisible();
+      await expect(page.locator(".ponder-public-share .ProseMirror")).toBeVisible();
       expect(await auditVisibleTextContrast(page)).toEqual([]);
     } finally {
       await page.request.delete(`/api/v1/memos/${memoId}/share`);

@@ -1,15 +1,15 @@
 /** Every change must explicitly declare resolved issues, or opt out with `none`. */
 export const parseChangeIssues = (values, changeCount) => {
   if (values.length !== changeCount) {
-    throw new Error('Each change requires --change-issue "<number>:en|zh,..." or --change-issue none.');
+    throw new Error('Each change requires --change-issue "<number>:en,..." or --change-issue none.');
   }
   const issues = new Map();
   for (const value of values) {
     if (value === "none") continue;
     for (const entry of value.split(",")) {
-      const match = entry.trim().match(/^([1-9]\d*):(en|zh)$/);
+      const match = entry.trim().match(/^([1-9]\d*):(en)$/);
       if (!match || !Number.isSafeInteger(Number(match[1]))) {
-        throw new Error(`Invalid --change-issue: ${entry}; use <number>:en|zh or none.`);
+        throw new Error(`Invalid --change-issue: ${entry}; use <number>:en or none.`);
       }
       const number = Number(match[1]);
       const language = match[2];
@@ -31,11 +31,9 @@ export const validateResolvedIssues = (issues, getIssue) => {
   }
 };
 
-export const issueReleaseComment = ({ tag, url, language }) => {
-  const marker = `<!-- edgeever-release-issue:${tag} -->`;
-  return `${marker}\n${language === "zh"
-    ? `本问题已在 [${tag}](${url}) 发布，发布后的必要审计已通过。`
-    : `Released in [${tag}](${url}). Required post-publication audits passed.`}`;
+export const issueReleaseComment = ({ tag, url }) => {
+  const marker = `<!-- ponder-release-issue:${tag} -->`;
+  return `${marker}\nReleased in [${tag}](${url}). Required post-publication audits passed.`;
 };
 
 /** A durable successful-audit receipt is required, including on a retry. */

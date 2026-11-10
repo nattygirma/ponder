@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
 import { createMobileNoteImagePreferenceStore } from './note-image-preferences';
-import { DEFAULT_NOTE_IMAGE_PREFERENCES } from '@edgeever/shared/note-image-preferences';
+import { DEFAULT_NOTE_IMAGE_PREFERENCES } from '@ponder/shared/note-image-preferences';
 
 const changed = {
   ...DEFAULT_NOTE_IMAGE_PREFERENCES, theme: 'book', fontStyle: 'serif', fontSize: 'md',

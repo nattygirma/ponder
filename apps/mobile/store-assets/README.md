@@ -1,6 +1,6 @@
 # Mobile store assets
 
-This directory contains the current EdgeEver store listing artwork, screenshots,
+This directory contains the current Ponder store listing artwork, screenshots,
 and metadata.
 
 Listing copy is pasted in App Store Connect and Play Console. It is not uploaded
@@ -27,7 +27,7 @@ Reuse the existing screenshots.
 
 ### App Store Connect
 
-1. Open the EdgeEver app → App Information.
+1. Open the Ponder app → App Information.
 2. Add the **Japanese** (`ja`) localization if it is missing.
 3. Paste `app-store/metadata.ja.md` into name, subtitle, promotional text,
    description, keywords, URLs, and the current version's What's New.

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { Database } from "bun:sqlite";
-import { fetchEdgeEverApp } from "../apps/api/src/index.ts";
+import { fetchPonderApp } from "../apps/api/src/index.ts";
 import { createSelfHostedStorageAdapter } from "../apps/api/src/self-hosted-storage-adapter.ts";
 import { _electron as electron, expect } from "@playwright/test";
 import { mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
@@ -8,7 +8,7 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 assert.ok(process.argv[2], "Pass the locally built desktop executable as the first argument.");
-const directory = await mkdtemp(join(tmpdir(), "edgeever-desktop-appearance-"));
+const directory = await mkdtemp(join(tmpdir(), "ponder-desktop-appearance-"));
 let application;
 let server;
 let database;
@@ -20,11 +20,11 @@ try {
   database.query("INSERT OR IGNORE INTO workspaces(id,name,is_personal) VALUES ('ws_default','Personal',1)").run();
   const environment = {
     storage: createSelfHostedStorageAdapter(database, join(directory, "resources")),
-    EDGE_EVER_ALLOW_UNAUTHENTICATED: "true",
-    EDGE_EVER_RUNTIME: "self-hosted-bun",
+    PONDER_ALLOW_UNAUTHENTICATED: "true",
+    PONDER_RUNTIME: "self-hosted-bun",
   };
   server = Bun.serve({ hostname: "127.0.0.1", port: 0,
-    fetch: request => fetchEdgeEverApp(request, environment, { waitUntil() {}, passThroughOnException() {} }),
+    fetch: request => fetchPonderApp(request, environment, { waitUntil() {}, passThroughOnException() {} }),
   });
   const created = await fetch(`http://127.0.0.1:${server.port}/api/v1/notebooks`, {
     method: "POST", headers: { "Content-Type": "application/json" },
@@ -37,22 +37,22 @@ try {
   application = await electron.launch({
     executablePath: resolve(process.argv[2]),
     args: [`--user-data-dir=${directory}`],
-    env: { ...process.env, EDGE_EVER_DISABLE_AUTO_UPDATE: "1" },
+    env: { ...process.env, PONDER_DISABLE_AUTO_UPDATE: "1" },
     timeout: 30000,
   });
   // Startup can briefly open a renderer-origin migration window before the main window.
   let page;
   const deadline = Date.now() + 30000;
   while (Date.now() < deadline) {
-    page = application.windows().find(window => window.url().startsWith("edgeever-app://app/index.html"));
+    page = application.windows().find(window => window.url().startsWith("ponder-app://app/index.html"));
     if (page) break;
     await new Promise(resolveWait => setTimeout(resolveWait, 100));
   }
   assert.ok(page, "The packaged main window must open");
   const errors = [];
   page.on("pageerror", error => errors.push(error.message));
-  await page.waitForSelector('[data-edgeever-renderer-ready="true"]', { state: "attached" });
-  await page.evaluate(() => localStorage.setItem("edgeever.locale.preference", "en-US"));
+  await page.waitForSelector('[data-ponder-renderer-ready="true"]', { state: "attached" });
+  await page.evaluate(() => localStorage.setItem("ponder.locale.preference", "en-US"));
   await page.reload();
   await expect(page.getByRole("button", { name: "New notebook", exact: true })).toBeVisible({ timeout: 20000 });
   await page.reload();
@@ -79,7 +79,7 @@ try {
   await page.reload();
   await expect(row.locator('svg:has(circle[cx="12"][cy="13"][r="8"])')).toBeVisible();
   const stored = await page.evaluate(async id => {
-    const { notebooks } = await window.edgeeverDesktop.sidecarRequest("notebook.list");
+    const { notebooks } = await window.ponderDesktop.sidecarRequest("notebook.list");
     return notebooks.find(book => book.id === id);
   }, notebook.id);
   for (const [key, value] of Object.entries({ icon: "alarm-clock", color: "#2563eb", textColor: "#dc2626", isBold: true, iconInverted: false, rowInverted: true })) {

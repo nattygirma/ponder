@@ -1,4 +1,4 @@
-import { TagRenameSchema } from "@edgeever/shared";
+import { TagRenameSchema } from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import type { AppEnv } from "./api-context";

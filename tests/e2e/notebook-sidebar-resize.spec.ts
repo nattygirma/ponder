@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
-const NOTEBOOK_SIDEBAR_WIDTH_STORAGE_KEY = "edgeever.notebookSidebarWidth";
-const E2E_WEB_URL = process.env.EDGE_EVER_E2E_WEB_URL ?? "/";
+const NOTEBOOK_SIDEBAR_WIDTH_STORAGE_KEY = "ponder.notebookSidebarWidth";
+const E2E_WEB_URL = process.env.PONDER_E2E_WEB_URL ?? "/";
 
 test("resizes the notebook pane from a fully clickable drag handle", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -9,8 +9,8 @@ test("resizes the notebook pane from a fully clickable drag handle", async ({ pa
   await page.evaluate((storageKey) => window.localStorage.removeItem(storageKey), NOTEBOOK_SIDEBAR_WIDTH_STORAGE_KEY);
   await page.reload();
 
-  const sidebar = page.locator("#edgeever-notebook-sidebar");
-  const handle = page.getByRole("separator", { name: "调整笔记本栏宽度" });
+  const sidebar = page.locator("#ponder-notebook-sidebar");
+  const handle = page.getByRole("separator", { name: "Resize notebook pane" });
   await expect(sidebar).toBeVisible();
   await expect(handle).toBeVisible();
   await expect(handle).toHaveCSS("touch-action", "none");
@@ -34,7 +34,7 @@ test("resizes the notebook pane from a fully clickable drag handle", async ({ pa
   expect(await page.evaluate((storageKey) => window.localStorage.getItem(storageKey), NOTEBOOK_SIDEBAR_WIDTH_STORAGE_KEY)).toBe(String(resizedWidth));
 
   await page.reload();
-  await expect(page.getByRole("separator", { name: "调整笔记本栏宽度" })).toHaveAttribute("aria-valuenow", String(resizedWidth));
+  await expect(page.getByRole("separator", { name: "Resize notebook pane" })).toHaveAttribute("aria-valuenow", String(resizedWidth));
 });
 
 test("keyboard resizing starts from the displayed notebook pane width", async ({ page }) => {
@@ -46,7 +46,7 @@ test("keyboard resizing starts from the displayed notebook pane width", async ({
   );
   await page.reload();
 
-  const handle = page.getByRole("separator", { name: "调整笔记本栏宽度" });
+  const handle = page.getByRole("separator", { name: "Resize notebook pane" });
   await expect(handle).toHaveAttribute("aria-valuenow", "204");
   await handle.focus();
   await page.keyboard.press("ArrowLeft");

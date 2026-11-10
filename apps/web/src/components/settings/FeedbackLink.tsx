@@ -1,4 +1,4 @@
-import { buildGitHubFeedbackUrl } from "@edgeever/shared";
+import { buildGitHubFeedbackUrl } from "@ponder/shared";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, LoaderCircle, MessageSquare } from "lucide-react";
 import { useMemo } from "react";
@@ -10,7 +10,7 @@ import { getShareableWebSystemInfoItems } from "./SystemInfoCard";
 
 export const FeedbackLink = ({ className }: { className?: string }) => {
   const { t, i18n } = useTranslation();
-  const instanceUrl = window.edgeeverDesktop?.isAvailable === true
+  const instanceUrl = window.ponderDesktop?.isAvailable === true
     ? getConfiguredDesktopApiBaseUrl()
     : window.location.origin;
   const healthQuery = useQuery({

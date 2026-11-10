@@ -1,6 +1,6 @@
-import { posterDesignTemplate } from "@edgeever/shared";
+import { posterDesignTemplate } from "@ponder/shared";
 /**
- * Layouts drawn from the formats that dominate the Gaoding (稿定设计) recommended feed for Xiaohongshu and WeChat, kept to the
+ * Layouts drawn from the formats that dominate the Gaoding recommended feed for Xiaohongshu and WeChat, kept to the
  * ones that live on type and flat shapes alone (no stock photo, no illustration), redrawn to the design rules: one focal
  * headline, flat colour, no outlined type, no starbursts. Helpers come from templates.ts and are only used inside build().
  */
@@ -38,7 +38,7 @@ export const GAODING: Template[] = [
     build(i) {
       const p = palette(i, { bg: '#f2f2ef', bg2: '#f2f2ef', ink: '#111111', sub: '#4b4b4b', accent: '#e8432b', accentInk: '#ffffff' });
       const { u, m, w, h } = metrics(i); const side = w / h > 1.25; const bar = Math.max(56, 88 * u); const sw = Math.max(4, 6 * u); const off = Math.max(8, 14 * u);
-      const tag = (i.badge?.trim() || (i.zh ? '每日新鲜事' : 'daily')).replace(/^#|#$/g, '');
+      const tag = (i.badge?.trim() || 'daily').replace(/^#|#$/g, '');
       const bx = m, by = bar + m * 0.9; const bw = side ? w * 0.6 - m : w - m * 2 - off * 2; const bh = side ? h - by - m - off * 2 : h * 0.5;
       const pad = Math.max(m * 0.6, 34 * u); const tw = bw - pad * 2;
       const size = fitTitle(i.title, tw, bh - pad * 2, 200 * u, 36, 1.08); const th = textHeight(i.title, tw, size, 1.08);
@@ -103,7 +103,7 @@ export const GAODING: Template[] = [
         grain(w, h, 0.04, 163),
         brushBlock(x0 - size * 0.1, ty + (lines.length - 1) * step + size * 0.22, Math.min(w - x0, lineW(last, size) + size * 0.25), size * 0.95, p.accent, lines.length),
         ray(0), ray(1), ray(2),
-        pill(i.badge?.trim() || (i.zh ? '建议收藏!' : 'Save this!'), x0 + tagS * 0.4, ty - tagH, p.accent, p.accentInk, tagS * 1.3, { qcRole: 'badge', angle: -8, radius: 0.3 }),
+        pill(i.badge?.trim() || 'Save this!', x0 + tagS * 0.4, ty - tagH, p.accent, p.accentInk, tagS * 1.3, { qcRole: 'badge', angle: -8, radius: 0.3 }),
         textbox(i.title, x0, ty, tw, { qcRole: 'title', fontSize: size, fill: p.ink, fontWeight: 'bold', lineHeight: lh, charSpacing: -18 }),
         ...(checks.length ? row : sub(i, x0, ty + th + 30 * u, tw, subS, p.sub, { fontWeight: 'bold' })),
       ) };
@@ -124,7 +124,7 @@ export const GAODING: Template[] = [
         rect(cx + 14 * u, cy + 18 * u, cw, ch, '#dfe6ff', { rx: 18 * u, ry: 18 * u }),
         rect(cx, cy, cw, ch, '#ffffff', { rx: 18 * u, ry: 18 * u, shadow: new Shadow({ color: 'rgba(0,20,90,0.25)', blur: 40 * u, offsetX: 0, offsetY: 16 * u }) }),
         ...rings,
-        meta((i.badge?.trim() || (i.zh ? '今日' : 'TODAY')).toUpperCase(), cx + pad, cy + head * 0.75, tw * 0.6, Math.max(16, 22 * u), p.accent, { qcRole: 'badge' }),
+        meta((i.badge?.trim() || 'TODAY').toUpperCase(), cx + pad, cy + head * 0.75, tw * 0.6, Math.max(16, 22 * u), p.accent, { qcRole: 'badge' }),
         textbox(i.title, cx + pad, ty, tw, { qcRole: 'title', fontSize: size, fill: p.ink, fontWeight: 'bold', lineHeight: 1.08, textAlign: 'center' }),
         ...sub(i, cx + pad, ty + th + 30 * u, tw, subS, p.sub, { textAlign: 'center' }),
       ) };
@@ -169,7 +169,7 @@ export const GAODING: Template[] = [
         grain(w, h, 0.06, 179), ...rings, tag,
         ...(kick ? [textbox(kick, x0, top, tw, { qcRole: 'subtitle', fontSize: ks, fill: p.sub, lineHeight: 1.2 })] : []),
         textbox(i.title, x0, top + kh, tw, { qcRole: 'title', fontSize: size, fill: p.ink, fontWeight: 'bold', lineHeight: 1.08 }),
-        textbox(i.zh ? '右滑查看  ››››' : 'Swipe  ››››', x0, h - m - foot * 1.4, w * 0.5, { fontSize: foot, fill: p.ink, fontWeight: 'bold', lineHeight: 1 }),
+        textbox('Swipe  ››››', x0, h - m - foot * 1.4, w * 0.5, { fontSize: foot, fill: p.ink, fontWeight: 'bold', lineHeight: 1 }),
       ) };
     },
   },

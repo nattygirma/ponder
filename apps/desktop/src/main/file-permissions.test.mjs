@@ -13,7 +13,7 @@ afterEach(async () => {
 
 describe("desktop private file permissions", () => {
   test("restricts directories and files on POSIX hosts", async () => {
-    directory = await mkdtemp(join(tmpdir(), "edgeever-permissions-"));
+    directory = await mkdtemp(join(tmpdir(), "ponder-permissions-"));
     const nested = join(directory, "private");
     const file = join(nested, "payload.bin");
     await mkdir(nested);

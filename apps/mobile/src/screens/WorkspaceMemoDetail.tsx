@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { DEFAULT_MEMO_TITLE, parseDiagramDocument, type MemoDetail, type Notebook, type TiptapDoc } from "@edgeever/shared";
+import { DEFAULT_MEMO_TITLE, parseDiagramDocument, type MemoDetail, type Notebook, type TiptapDoc } from "@ponder/shared";
 import {
   NOTE_IMAGE_THEMES,
   NOTE_IMAGE_THEME_OPTIONS,
@@ -8,7 +8,7 @@ import {
   type NoteImageFontStyle,
   type NoteImageFontSize,
   type NoteImageCardWidth,
-} from "@edgeever/shared/note-image-card";
+} from "@ponder/shared/note-image-card";
 import * as Clipboard from "expo-clipboard";
 import { Directory, File, Paths } from "expo-file-system";
 import * as FileSystem from "expo-file-system/legacy";
@@ -165,7 +165,7 @@ const loadAuthenticatedImageDataUrl = (
 };
 
 const alertProtectedImageLoadFailure = (
-  locale: "zh-CN" | "en-US" | "ja" | "pl" | "ru",
+  locale: "en-US" | "ja" | "pl" | "ru",
   failure: ProtectedResourceLoadFailure
 ) => {
   const statusLabel = failure.status != null ? String(failure.status) : getMobileCatalog(locale).mobile.common.networkError;
@@ -638,7 +638,7 @@ export const MemoDetailModal = ({
       await updateMutation.mutateAsync({ memo, payload: { notebookId: viewerNotebookId, tags: viewerTags } });
       setViewerTagsOpen(false);
     } catch (error) {
-      Alert.alert("保存失败", error instanceof Error ? error.message : "请重试");
+      Alert.alert("Save failed", error instanceof Error ? error.message : "Please try again");
     } finally {
       setMetadataSaving(false);
     }
@@ -741,14 +741,14 @@ export const MemoDetailModal = ({
     ? `${searchMatchCount > 0 ? activeMatchIndex + 1 : 0}/${searchMatchCount}`
     : "0/0";
   const syncStatusLabel = isSaving || syncStatus === "syncing"
-    ? "保存中"
+    ? "Saving"
     : syncStatus === "conflict"
-      ? "同步冲突"
+      ? "Sync conflict"
       : syncStatus === "error"
-        ? "同步失败"
+        ? "Sync failed"
         : syncStatus === "pending"
-          ? "待同步"
-          : "已同步";
+          ? "Pending sync"
+          : "Synced";
   const syncStatusInteractive = syncStatus === "conflict" || syncStatus === "error" || syncStatus === "pending";
   const handleSyncStatusPress = () => {
     if (!memo) {
@@ -761,11 +761,11 @@ export const MemoDetailModal = ({
     if (syncStatus === "error" || syncStatus === "pending") {
       const detail = syncError?.trim()
         || (syncStatus === "pending"
-          ? "本地改动还在等待上传到云端。可立即重试同步。"
-          : "本地改动未能上传到云端。可立即重试同步。");
+          ? "Local changes are waiting to upload. You can retry sync now."
+          : "Local changes could not upload. You can retry sync now.");
       Alert.alert(syncStatusLabel, detail, [
-        { text: "取消", style: "cancel" },
-        { text: "立即同步", onPress: onRetrySync },
+        { text: "Cancel", style: "cancel" },
+        { text: "Sync now", onPress: onRetrySync },
       ]);
     }
   };
@@ -979,7 +979,7 @@ export const MemoDetailModal = ({
     if (!event.requestId || event.requestId !== imageExportRequestRef.current) return;
     if (event.type === "font-status") { setImageFontStatus(event.status); return; }
     if (event.type === "progress") {
-      console.info(`[EdgeEverImageExport] ${event.stage}=${event.elapsedMs ?? 0}ms`);
+      console.info(`[PonderImageExport] ${event.stage}=${event.elapsedMs ?? 0}ms`);
       setImageExportStage(event.stage);
       return;
     }
@@ -996,7 +996,7 @@ export const MemoDetailModal = ({
     try {
       // A fresh URI prevents Android's decoded-image cache from displaying an
       // earlier export when different notes share the same download filename.
-      const directory = new Directory(Paths.cache, "edgeever-note-exports", event.requestId);
+      const directory = new Directory(Paths.cache, "ponder-note-exports", event.requestId);
       if (!directory.exists) directory.create({ idempotent: true, intermediates: true });
       const file = new File(encodeMobileNoteImageFileUri(Paths.join(directory, event.filename)));
       if (file.exists) file.delete();
@@ -1178,33 +1178,33 @@ export const MemoDetailModal = ({
         >
         {isEditing ? (
           <View style={styles.createMemoHeader}>
-            <Pressable accessibilityLabel="返回" accessibilityRole="button" disabled={editor.uploading} onPress={() => void editor.requestClose()} style={styles.createMemoBackButton}>
+            <Pressable accessibilityLabel="Back" accessibilityRole="button" disabled={editor.uploading} onPress={() => void editor.requestClose()} style={styles.createMemoBackButton}>
               <ChevronLeft color={editor.uploading ? "#cbd5e1" : "#0f172a"} size={30} />
             </Pressable>
             <View style={styles.createMemoHeaderActions}>
               <Text numberOfLines={1} style={[styles.createMemoStatus, styles.richEditorHeaderStatus, editor.saveEmphasized && styles.createMemoStatusActive, editor.error && styles.richEditorStatusError]}>{editor.saveLabel}</Text>
               <Pressable
-                accessibilityLabel="完成编辑"
+                accessibilityLabel="Finish editing"
                 accessibilityRole="button"
                 disabled={editor.uploading || !editor.ready}
                 onPress={() => void editor.requestClose()}
                 style={[styles.createMemoDoneButton, (editor.uploading || !editor.ready) && styles.createMemoDoneButtonDisabled]}
               >
-                <Text style={[styles.createMemoDoneText, (editor.uploading || !editor.ready) && styles.createMemoDoneTextDisabled]}>完成</Text>
+                <Text style={[styles.createMemoDoneText, (editor.uploading || !editor.ready) && styles.createMemoDoneTextDisabled]}>Done</Text>
               </Pressable>
             </View>
           </View>
         ) : (
         <View style={styles.detailHeader}>
-          <Pressable accessibilityLabel="返回列表" accessibilityRole="button" onPress={onClose} style={styles.detailHeaderButton}>
+          <Pressable accessibilityLabel="Back to list" accessibilityRole="button" onPress={onClose} style={styles.detailHeaderButton}>
             <ChevronLeft color="#475569" size={21} />
           </Pressable>
           <View style={detailLayoutStyles.headerTitleSlot}>
             {titleCollapsed && !searchOpen && memo ? (
               !memo.isDeleted && !locksRichTextEdit ? (
                 <Pressable
-                  accessibilityHint="进入编辑并聚焦标题"
-                  accessibilityLabel={`编辑笔记标题：${memoTitle}`}
+                  accessibilityHint="Starts editing and moves focus to the title"
+                  accessibilityLabel={`Edit note title: ${memoTitle}`}
                   accessibilityRole="button"
                   onPress={() => {
                     beginEditorStartup();
@@ -1222,9 +1222,9 @@ export const MemoDetailModal = ({
             <Pressable
               accessibilityHint={
                 syncStatus === "conflict"
-                  ? "查看并处理同步冲突"
+                  ? "Review and resolve the sync conflict"
                   : syncStatusInteractive
-                    ? "查看同步状态并立即重试"
+                    ? "View sync status and retry now"
                     : undefined
               }
               accessibilityLabel={syncStatusLabel}
@@ -1246,8 +1246,8 @@ export const MemoDetailModal = ({
             </Pressable>
             {memo && !memo.isDeleted ? (
               <Pressable
-                accessibilityLabel="选择笔记标签"
-                accessibilityHint="点选已有标签，或输入名称创建新标签"
+                accessibilityLabel="Choose note tags"
+                accessibilityHint="Select existing tags or enter a name to create a new one"
                 accessibilityRole="button"
                 disabled={isSaving}
                 hitSlop={6}
@@ -1259,7 +1259,7 @@ export const MemoDetailModal = ({
             ) : null}
             {memo && !memo.isDeleted ? (
               <Pressable
-                accessibilityLabel="搜索当前笔记"
+                accessibilityLabel="Search current note"
                 accessibilityRole="button"
                 onPress={() => setSearchOpen(true)}
                 style={styles.detailHeaderIconButton}
@@ -1268,7 +1268,7 @@ export const MemoDetailModal = ({
               </Pressable>
             ) : null}
             {memo ? (
-              <Pressable accessibilityLabel="笔记操作" accessibilityRole="button" onPress={() => setActionsOpen(true)} style={styles.detailHeaderIconButton}>
+              <Pressable accessibilityLabel="Note actions" accessibilityRole="button" onPress={() => setActionsOpen(true)} style={styles.detailHeaderIconButton}>
                 <MoreHorizontal color="#475569" size={21} />
               </Pressable>
             ) : null}
@@ -1279,33 +1279,33 @@ export const MemoDetailModal = ({
         {!isEditing && syncStatus === "conflict" && memo ? (
           <View style={styles.conflictBanner}>
             <Text style={styles.conflictBannerText}>
-              云端笔记已在其他标签页、设备，或离线期间被更新。可先复制本地草稿，再采用云端版本后继续编辑。
+              The cloud note was updated in another tab, on another device, or while you were offline. Copy your local draft, then use the cloud version before editing again.
             </Text>
             {syncError ? <Text style={styles.conflictBannerText}>{syncError}</Text> : null}
             <View style={styles.conflictBannerActions}>
               <Pressable
-                accessibilityLabel="采用云端并重新加载"
+                accessibilityLabel="Use cloud and reload"
                 accessibilityRole="button"
                 onPress={() => onAdoptCloudVersion(memo)}
                 style={styles.conflictBannerPrimaryButton}
               >
-                <Text style={styles.conflictBannerPrimaryButtonText}>采用云端并重新加载</Text>
+                <Text style={styles.conflictBannerPrimaryButtonText}>Use cloud and reload</Text>
               </Pressable>
               <Pressable
-                accessibilityLabel="复制本地草稿"
+                accessibilityLabel="Copy local draft"
                 accessibilityRole="button"
                 onPress={() => onCopyLocalDraft(memo)}
                 style={styles.conflictBannerSecondaryButton}
               >
-                <Text style={styles.conflictBannerSecondaryButtonText}>复制本地草稿</Text>
+                <Text style={styles.conflictBannerSecondaryButtonText}>Copy local draft</Text>
               </Pressable>
               <Pressable
-                accessibilityLabel="查看并处理同步冲突"
+                accessibilityLabel="Review and resolve the sync conflict"
                 accessibilityRole="button"
                 onPress={() => onResolveSyncConflict(memo)}
                 style={styles.conflictBannerSecondaryButton}
               >
-                <Text style={styles.conflictBannerSecondaryButtonText}>更多</Text>
+                <Text style={styles.conflictBannerSecondaryButtonText}>More</Text>
               </Pressable>
             </View>
           </View>
@@ -1315,26 +1315,26 @@ export const MemoDetailModal = ({
           <View style={syncStatus === "error" ? styles.syncErrorBanner : styles.syncPendingBanner}>
             <Text style={syncStatus === "error" ? styles.syncErrorBannerText : styles.syncPendingBannerText}>
               {syncStatus === "error"
-                ? (syncError?.trim() || "本地改动未能上传到云端。内容仍保存在本机，可立即重试。")
-                : (syncError?.trim() || "本地改动待上传。下拉刷新或点此可立即同步。")}
+                ? (syncError?.trim() || "Local changes could not upload. They remain on this device and you can retry now.")
+                : (syncError?.trim() || "Local changes are pending upload. Pull to refresh or tap to sync now.")}
             </Text>
             <View style={styles.conflictBannerActions}>
               <Pressable
-                accessibilityLabel="立即同步"
+                accessibilityLabel="Sync now"
                 accessibilityRole="button"
                 onPress={onRetrySync}
                 style={syncStatus === "error" ? styles.syncErrorBannerPrimaryButton : styles.syncPendingBannerPrimaryButton}
               >
-                <Text style={styles.conflictBannerPrimaryButtonText}>立即同步</Text>
+                <Text style={styles.conflictBannerPrimaryButtonText}>Sync now</Text>
               </Pressable>
               {syncStatus === "error" ? (
                 <Pressable
-                  accessibilityLabel="复制本地草稿"
+                  accessibilityLabel="Copy local draft"
                   accessibilityRole="button"
                   onPress={() => onCopyLocalDraft(memo)}
                   style={styles.syncErrorBannerSecondaryButton}
                 >
-                  <Text style={styles.syncErrorBannerSecondaryButtonText}>复制本地草稿</Text>
+                  <Text style={styles.syncErrorBannerSecondaryButtonText}>Copy local draft</Text>
                 </Pressable>
               ) : null}
             </View>
@@ -1362,13 +1362,13 @@ export const MemoDetailModal = ({
                   value={editor.title}
                 />
                 <View style={[styles.createMemoMetaRow, styles.richStandaloneMetaRow]}>
-                  <Pressable accessibilityLabel="所在笔记本" accessibilityRole="button" onPress={() => editor.setNotebookPickerOpen(true)} style={styles.createMemoNotebookButton}>
+                  <Pressable accessibilityLabel="Notebook" accessibilityRole="button" onPress={() => editor.setNotebookPickerOpen(true)} style={styles.createMemoNotebookButton}>
                     <Text numberOfLines={1} style={styles.createMemoNotebookText}>{editor.notebookLabel}</Text>
                     <ChevronDown color="#64748b" size={14} />
                   </Pressable>
-                  <Pressable accessibilityLabel="选择笔记标签" accessibilityRole="button" onPress={() => editor.setTagPickerOpen(true)} style={[styles.createMemoTagsButton, styles.richStandaloneTagsInput]}>
+                  <Pressable accessibilityLabel="Choose note tags" accessibilityRole="button" onPress={() => editor.setTagPickerOpen(true)} style={[styles.createMemoTagsButton, styles.richStandaloneTagsInput]}>
                     <Text numberOfLines={1} style={[styles.createMemoTagsInput, !editor.tagsText && styles.createMemoTagsPlaceholder]}>
-                      {editor.tagsText || "添加标签"}
+                      {editor.tagsText || "Add tags"}
                     </Text>
                     <ChevronDown color="#94a3b8" size={14} />
                   </Pressable>
@@ -1384,15 +1384,15 @@ export const MemoDetailModal = ({
                     title={editor.title}
                   />
                 </View>
-                {editor.draftRestored ? <Text style={styles.richEditorDraftNotice}>已恢复上次未完成的本地草稿</Text> : null}
+                {editor.draftRestored ? <Text style={styles.richEditorDraftNotice}>Restored your unfinished local draft</Text> : null}
                 {editor.error ? <Text style={styles.richEditorInlineError}>{editor.error}</Text> : null}
               </View>
             ) : titleCollapsed && !searchOpen ? null : (
             <View style={detailLayoutStyles.meta}>
               {!memo.isDeleted && !locksRichTextEdit ? (
                 <Pressable
-                  accessibilityHint="进入编辑并聚焦标题"
-                  accessibilityLabel="编辑笔记标题"
+                  accessibilityHint="Starts editing and moves focus to the title"
+                  accessibilityLabel="Edit note title"
                   accessibilityRole="button"
                   onPress={() => {
                     beginEditorStartup();
@@ -1425,8 +1425,8 @@ export const MemoDetailModal = ({
                 </View>
                 ) : (
                 <Pressable
-                  accessibilityHint="更改笔记所属笔记本"
-                  accessibilityLabel="所在笔记本"
+                  accessibilityHint="Change the note's notebook"
+                  accessibilityLabel="Notebook"
                   accessibilityRole="button"
                   disabled={isSaving}
                   hitSlop={8}
@@ -1444,7 +1444,7 @@ export const MemoDetailModal = ({
                     matchOffset={metadataSearchMatches.title.length}
                     matches={metadataSearchMatches.tags}
                     style={[styles.detailTagsInline, memo.tags.length === 0 && styles.detailTagsPlaceholder]}
-                    text={memoTagsText || "添加标签，用逗号分隔"}
+                    text={memoTagsText || "Add tags, separated by commas"}
                   />
                 </View>
               </View>
@@ -1453,7 +1453,7 @@ export const MemoDetailModal = ({
                 <View style={styles.noteSearchPanel}>
                   <Search color="#64748b" size={16} />
                   <TextInput
-                    accessibilityLabel="在当前笔记内搜索"
+                    accessibilityLabel="Search in current note"
                     autoCapitalize="none"
                     autoCorrect={false}
                     onChangeText={(value) => {
@@ -1462,7 +1462,7 @@ export const MemoDetailModal = ({
                       setActiveMatchIndex(0);
                     }}
                     onSubmitEditing={() => moveSearchMatch(1)}
-                    placeholder="搜索"
+                    placeholder="Search"
                     placeholderTextColor="#94a3b8"
                     returnKeyType="search"
                     style={styles.noteSearchInput}
@@ -1475,7 +1475,7 @@ export const MemoDetailModal = ({
                     {searchMatchLabel}
                   </Text>
                   <Pressable
-                    accessibilityLabel="上一个搜索结果"
+                    accessibilityLabel="Previous search result"
                     accessibilityRole="button"
                     disabled={searchMatchCount === 0}
                     hitSlop={4}
@@ -1485,7 +1485,7 @@ export const MemoDetailModal = ({
                     <ChevronUp color={searchMatchCount === 0 ? "#cbd5e1" : "#0f172a"} size={18} />
                   </Pressable>
                   <Pressable
-                    accessibilityLabel="下一个搜索结果"
+                    accessibilityLabel="Next search result"
                     accessibilityRole="button"
                     disabled={searchMatchCount === 0}
                     hitSlop={4}
@@ -1495,7 +1495,7 @@ export const MemoDetailModal = ({
                     <ChevronDown color={searchMatchCount === 0 ? "#cbd5e1" : "#0f172a"} size={18} />
                   </Pressable>
                   <Pressable
-                    accessibilityLabel="关闭搜索"
+                    accessibilityLabel="Close search"
                     accessibilityRole="button"
                     hitSlop={4}
                     onPress={closeNoteSearch}
@@ -1558,12 +1558,12 @@ export const MemoDetailModal = ({
           </View>
         ) : (
           <View style={styles.centerState}>
-            <Text style={styles.errorText}>笔记加载失败</Text>
+            <Text style={styles.errorText}>Could not load the note</Text>
           </View>
         )}
         {memo && !memo.isDeleted && !locksRichTextEdit && !isEditing ? (
           <Pressable
-            accessibilityLabel="编辑笔记"
+            accessibilityLabel="Edit note"
             accessibilityRole="button"
             onPress={() => {
               beginEditorStartup();
@@ -1633,13 +1633,13 @@ export const MemoDetailModal = ({
                 />
                 {memo.isDeleted ? (
                   <>
-                    <DetailActionSheetItem icon={<Search color="#0f172a" size={18} />} label="搜索当前笔记" onPress={() => closeActionsAndRun(() => {
+                    <DetailActionSheetItem icon={<Search color="#0f172a" size={18} />} label="Search current note" onPress={() => closeActionsAndRun(() => {
                       setSearchOpen(true);
                     })} />
-                    <DetailActionSheetItem icon={<History color="#0f172a" size={18} />} label="版本历史" onPress={() => closeActionsAndRun(() => onOpenRevisions(memo))} />
-                    <DetailActionSheetItem disabled={isRestoring} icon={<RotateCcw color="#0f172a" size={18} />} label={isRestoring ? "恢复中" : "恢复笔记"} onPress={() => closeActionsAndRun(() => onRestore(memo))} />
+                    <DetailActionSheetItem icon={<History color="#0f172a" size={18} />} label="Version history" onPress={() => closeActionsAndRun(() => onOpenRevisions(memo))} />
+                    <DetailActionSheetItem disabled={isRestoring} icon={<RotateCcw color="#0f172a" size={18} />} label={isRestoring ? "Restoring" : "Restore notes"} onPress={() => closeActionsAndRun(() => onRestore(memo))} />
                     <View style={styles.listActionDivider} />
-                    <DetailActionSheetItem danger disabled={isDeleting} icon={<Trash2 color="#b91c1c" size={18} />} label={isDeleting ? "删除中" : "彻底删除"} onPress={() => closeActionsAndRun(() => onDelete(memo))} />
+                    <DetailActionSheetItem danger disabled={isDeleting} icon={<Trash2 color="#b91c1c" size={18} />} label={isDeleting ? "Deleting" : "Delete permanently"} onPress={() => closeActionsAndRun(() => onDelete(memo))} />
                   </>
                 ) : null}
               </Pressable>
@@ -1730,7 +1730,7 @@ export const MemoDetailModal = ({
                   <MobileNoteImageFontPicker
                     selected={imageShareFontStyle}
                     theme={imageShareTheme}
-                    chinese={resolvedLocale === "zh-CN"}
+                    chinese={false}
                     copy={{
                       fontStyles: getMobileCatalog(resolvedLocale).editor.imageShare.fontStyles,
                       templateFonts: getMobileCatalog(resolvedLocale).editor.imageShare.templateFonts,
@@ -2020,7 +2020,7 @@ export const MemoDetailModal = ({
             disabled={metadataSaving}
             headerContent={(
               <Pressable
-                accessibilityLabel="所在笔记本"
+                accessibilityLabel="Notebook"
                 accessibilityRole="button"
                 disabled={metadataSaving}
                 onPress={() => {
@@ -2038,10 +2038,10 @@ export const MemoDetailModal = ({
             footerContent={(
               <View style={detailLayoutStyles.metadataActions}>
                 <Pressable accessibilityRole="button" disabled={metadataSaving} onPress={() => setViewerTagsOpen(false)} style={[styles.createMemoDoneButton, detailLayoutStyles.metadataCancel]}>
-                  <Text style={[styles.createMemoDoneText, detailLayoutStyles.metadataCancelText]}>取消</Text>
+                  <Text style={[styles.createMemoDoneText, detailLayoutStyles.metadataCancelText]}>Cancel</Text>
                 </Pressable>
                 <Pressable accessibilityRole="button" disabled={metadataSaving || isSaving} onPress={() => void saveViewerMetadata()} style={[styles.createMemoDoneButton, (metadataSaving || isSaving) && styles.createMemoDoneButtonDisabled]}>
-                  <Text style={[styles.createMemoDoneText, (metadataSaving || isSaving) && styles.createMemoDoneTextDisabled]}>{metadataSaving ? "保存中" : "保存"}</Text>
+                  <Text style={[styles.createMemoDoneText, (metadataSaving || isSaving) && styles.createMemoDoneTextDisabled]}>{metadataSaving ? "Saving" : "Save"}</Text>
                 </Pressable>
               </View>
             )}

@@ -4,7 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import { EditorState } from "@tiptap/pm/state";
 import { history, undo, redo } from "@tiptap/pm/history";
-import { ImageGallery, IMAGE_GALLERY_NODE_TYPE } from "@edgeever/shared";
+import { ImageGallery, IMAGE_GALLERY_NODE_TYPE } from "@ponder/shared";
 import { isImageInGallery } from "./image-editing-context";
 
 const schema = getSchema([StarterKit, Image, ImageGallery]);

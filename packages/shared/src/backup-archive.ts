@@ -1,4 +1,4 @@
-import { EDGEEVER_ZIP_FORMAT, EDGEEVER_ZIP_FORMAT_VERSION, JsonBackupManifestSchema, JsonBackupAiPromptSchema, JsonBackupMemoSchema, JsonBackupNotebookSchema, type JsonBackupManifest, type JsonBackupAiPrompt, type JsonBackupMemo, type JsonBackupNotebook, type JsonBackupResource, type JsonBackupRevision } from "./backup";
+import { PONDER_ZIP_FORMAT, PONDER_ZIP_FORMAT_VERSION, JsonBackupManifestSchema, JsonBackupAiPromptSchema, JsonBackupMemoSchema, JsonBackupNotebookSchema, type JsonBackupManifest, type JsonBackupAiPrompt, type JsonBackupMemo, type JsonBackupNotebook, type JsonBackupResource, type JsonBackupRevision } from "./backup";
 import type { MemoDetail, Notebook, Resource } from "./types";
 import { Reader, ZipReader, ZipWriter, Uint8ArrayReader, type CreateReadableOptions } from "@zip.js/zip.js/index-native.js";
 import { buildNoteMarkdown, buildNotebookExportPaths, getExportResourceExtension, replaceExportResourceUrl, sanitizeExportPathSegment, uniqueExportName } from "./backup-markdown";
@@ -7,12 +7,12 @@ const strFromU8 = (value: Uint8Array) => new TextDecoder().decode(value);
 const ZIP_MIME_TYPE = "application/zip";
 const ZIP_ENTRY_CHUNK_BYTES = 1024 * 1024;
 
-export type EdgeEverZipProgress = {
+export type PonderZipProgress = {
   completed: number;
   total: number;
 };
 
-export type EdgeEverZipImportErrorCode =
+export type PonderZipImportErrorCode =
   | "invalidZip"
   | "missingManifest"
   | "unsupportedFormat"
@@ -23,12 +23,12 @@ export type EdgeEverZipImportErrorCode =
   | "incompleteData"
   | "incompleteResources";
 
-export class EdgeEverZipImportError extends Error {
-  code: EdgeEverZipImportErrorCode;
+export class PonderZipImportError extends Error {
+  code: PonderZipImportErrorCode;
 
-  constructor(code: EdgeEverZipImportErrorCode, cause?: unknown) {
+  constructor(code: PonderZipImportErrorCode, cause?: unknown) {
     super(code, { cause });
-    this.name = "EdgeEverZipImportError";
+    this.name = "PonderZipImportError";
     this.code = code;
   }
 }
@@ -69,7 +69,7 @@ type JsonRestoreTarget = {
   restorePrompts: (prompts: JsonBackupAiPrompt[]) => Promise<unknown>;
 };
 
-export type ParsedEdgeEverZip = {
+export type ParsedPonderZip = {
   manifest: JsonBackupManifest;
   notebooks: JsonBackupNotebook[];
   memos: JsonBackupMemo[];
@@ -94,10 +94,10 @@ const toBackupNotebook = (notebook: Notebook): JsonBackupNotebook => ({
   createdAt: notebook.createdAt, updatedAt: notebook.updatedAt,
 });
 
-export const createEdgeEverZipStream = async (
+export const createPonderZipStream = async (
   source: JsonBackupSource,
-  version: { edgeeverVersion: string; buildId: string },
-  onProgress?: (progress: EdgeEverZipProgress) => void,
+  version: { ponderVersion: string; buildId: string },
+  onProgress?: (progress: PonderZipProgress) => void,
 ) => {
   const [{ notebooks }, { prompts }] = await Promise.all([source.listNotebooks(), source.listPrompts()]);
   const output = new TransformStream<Uint8Array, Uint8Array>();
@@ -176,7 +176,7 @@ export const createEdgeEverZipStream = async (
         cursor = page.nextCursor ?? undefined;
       }
       const manifest: JsonBackupManifest = {
-        format: EDGEEVER_ZIP_FORMAT, formatVersion: EDGEEVER_ZIP_FORMAT_VERSION, schemaVersion: 1,
+        format: PONDER_ZIP_FORMAT, formatVersion: PONDER_ZIP_FORMAT_VERSION, schemaVersion: 1,
         ...version, exportedAt: new Date().toISOString(), includesTrash: false,
         counts: { notebooks: backupNotebooks.length, memos: source.onManifest ? completed : total, revisions: revisionCount, resources: resourceCount, prompts: prompts.length },
       };
@@ -192,15 +192,15 @@ export const createEdgeEverZipStream = async (
   return readable;
 };
 
-export const createEdgeEverZip = async (
+export const createPonderZip = async (
   source: JsonBackupSource,
-  version: { edgeeverVersion: string; buildId: string },
-  onProgress?: (progress: EdgeEverZipProgress) => void,
-) => new Response(await createEdgeEverZipStream(source, version, onProgress), { headers: { "Content-Type": ZIP_MIME_TYPE } }).blob();
+  version: { ponderVersion: string; buildId: string },
+  onProgress?: (progress: PonderZipProgress) => void,
+) => new Response(await createPonderZipStream(source, version, onProgress), { headers: { "Content-Type": ZIP_MIME_TYPE } }).blob();
 
 const rejectInvalidZip = (error?: unknown): never => {
-  if (error instanceof EdgeEverZipImportError) throw error;
-  throw new EdgeEverZipImportError("invalidZip", error);
+  if (error instanceof PonderZipImportError) throw error;
+  throw new PonderZipImportError("invalidZip", error);
 };
 
 class ArchiveRangeReader extends Reader<Blob> {
@@ -280,13 +280,13 @@ const concatZipChunks = (chunks: Uint8Array[], total: number) => {
 
 export type ArchiveDigestFactory = () => { update: (chunk: Uint8Array) => void; digest: () => string };
 
-const scanEdgeEverZip = async (blob: Blob, onProgress?: (percentage: number) => void, createDigest?: ArchiveDigestFactory) => {
+const scanPonderZip = async (blob: Blob, onProgress?: (percentage: number) => void, createDigest?: ArchiveDigestFactory) => {
   const signature = new Uint8Array(await blob.slice(0, 4).arrayBuffer());
   const signatureValue = signature.length === 4
     ? signature[0] | (signature[1] << 8) | (signature[2] << 16) | (signature[3] << 24)
     : 0;
   if (signatureValue !== 0x04034b50 && signatureValue !== 0x06054b50) {
-    throw new EdgeEverZipImportError("invalidZip");
+    throw new PonderZipImportError("invalidZip");
   }
   const entrySizes = new Map<string, number>();
   const structuredEntries = new Map<string, Uint8Array>();
@@ -295,7 +295,7 @@ const scanEdgeEverZip = async (blob: Blob, onProgress?: (percentage: number) => 
 
   await streamZipEntries(blob, (file) => {
     if (entrySizes.has(file.name)) {
-      throw new EdgeEverZipImportError("invalidZip", new Error(`Duplicate ZIP entry: ${file.name}`));
+      throw new PonderZipImportError("invalidZip", new Error(`Duplicate ZIP entry: ${file.name}`));
     }
     entrySizes.set(file.name, -1);
     const structured = isStructuredZipEntry(file.name);
@@ -307,7 +307,7 @@ const scanEdgeEverZip = async (blob: Blob, onProgress?: (percentage: number) => 
         byteSize += chunk.byteLength;
         const limit = structured ? MAX_ZIP_METADATA_ENTRY_BYTES : MAX_ZIP_ENTRY_BYTES;
         if (byteSize > limit) {
-          throw new EdgeEverZipImportError(structured ? "invalidData" : "incompleteResources");
+          throw new PonderZipImportError(structured ? "invalidData" : "incompleteResources");
         }
         digest?.update(chunk);
         if (structured) {
@@ -336,14 +336,14 @@ const scanEdgeEverZip = async (blob: Blob, onProgress?: (percentage: number) => 
 const parseJsonEntry = (
   entries: Map<string, Uint8Array>,
   path: string,
-  missingCode: EdgeEverZipImportErrorCode = "missingData",
+  missingCode: PonderZipImportErrorCode = "missingData",
 ) => {
   const data = entries.get(path);
-  if (!data) throw new EdgeEverZipImportError(missingCode);
+  if (!data) throw new PonderZipImportError(missingCode);
   try {
     return JSON.parse(strFromU8(data)) as unknown;
   } catch (error) {
-    throw new EdgeEverZipImportError(path === "manifest.json" ? "invalidManifest" : "invalidData", error);
+    throw new PonderZipImportError(path === "manifest.json" ? "invalidManifest" : "invalidData", error);
   }
 };
 
@@ -359,35 +359,44 @@ const sortNotebooksForRestore = (notebooks: JsonBackupNotebook[]) => {
   return [...notebooks].sort((left, right) => depth(left) - depth(right));
 };
 
-export const parseEdgeEverZip = async (
+// Backups made before the product was renamed carry the old format marker and version key.
+const upgradeLegacyManifest = (manifest: Record<string, unknown>): Record<string, unknown> => {
+  if (manifest.format !== "edgeever-zip") {
+    return manifest;
+  }
+  const { edgeeverVersion, ...rest } = manifest;
+  return { ...rest, format: PONDER_ZIP_FORMAT, ponderVersion: rest.ponderVersion ?? edgeeverVersion };
+};
+
+export const parsePonderZip = async (
   blob: Blob,
   onProgress?: (percentage: number) => void,
   createDigest?: ArchiveDigestFactory,
-): Promise<ParsedEdgeEverZip> => {
-  const { entrySizes, structuredEntries, digests } = await scanEdgeEverZip(blob, onProgress, createDigest);
+): Promise<ParsedPonderZip> => {
+  const { entrySizes, structuredEntries, digests } = await scanPonderZip(blob, onProgress, createDigest);
   const manifestValue = parseJsonEntry(structuredEntries, "manifest.json", "missingManifest");
   if (!manifestValue || typeof manifestValue !== "object") {
-    throw new EdgeEverZipImportError("invalidManifest");
+    throw new PonderZipImportError("invalidManifest");
   }
-  const manifestRecord = manifestValue as Record<string, unknown>;
-  if (manifestRecord.format !== EDGEEVER_ZIP_FORMAT) {
-    throw new EdgeEverZipImportError("unsupportedFormat");
+  const manifestRecord = upgradeLegacyManifest(manifestValue as Record<string, unknown>);
+  if (manifestRecord.format !== PONDER_ZIP_FORMAT) {
+    throw new PonderZipImportError("unsupportedFormat");
   }
-  if (manifestRecord.formatVersion !== 1 && manifestRecord.formatVersion !== EDGEEVER_ZIP_FORMAT_VERSION) {
-    throw new EdgeEverZipImportError("unsupportedVersion");
+  if (manifestRecord.formatVersion !== 1 && manifestRecord.formatVersion !== PONDER_ZIP_FORMAT_VERSION) {
+    throw new PonderZipImportError("unsupportedVersion");
   }
-  const manifestResult = JsonBackupManifestSchema.safeParse(manifestValue);
+  const manifestResult = JsonBackupManifestSchema.safeParse(manifestRecord);
   if (!manifestResult.success) {
-    throw new EdgeEverZipImportError("invalidManifest", manifestResult.error);
+    throw new PonderZipImportError("invalidManifest", manifestResult.error);
   }
   const manifest = manifestResult.data;
   const notebooksValue = parseJsonEntry(structuredEntries, "notebooks.json");
   if (!Array.isArray(notebooksValue)) {
-    throw new EdgeEverZipImportError("invalidData");
+    throw new PonderZipImportError("invalidData");
   }
   const notebooksResult = JsonBackupNotebookSchema.array().safeParse(notebooksValue);
   if (!notebooksResult.success) {
-    throw new EdgeEverZipImportError("invalidData", notebooksResult.error);
+    throw new PonderZipImportError("invalidData", notebooksResult.error);
   }
   const notebooks = sortNotebooksForRestore(notebooksResult.data);
   const promptsValue = manifest.formatVersion >= 2
@@ -395,7 +404,7 @@ export const parseEdgeEverZip = async (
     : [];
   const promptsResult = JsonBackupAiPromptSchema.array().safeParse(promptsValue);
   if (!promptsResult.success) {
-    throw new EdgeEverZipImportError("invalidData", promptsResult.error);
+    throw new PonderZipImportError("invalidData", promptsResult.error);
   }
   const prompts = promptsResult.data as JsonBackupAiPrompt[];
   const memoPaths = [...structuredEntries.keys()].filter((path) => /^memos\/[^/]+\.json$/.test(path)).sort();
@@ -403,7 +412,7 @@ export const parseEdgeEverZip = async (
   for (const path of memoPaths) {
     const memoResult = JsonBackupMemoSchema.safeParse(parseJsonEntry(structuredEntries, path));
     if (!memoResult.success) {
-      throw new EdgeEverZipImportError("invalidData", memoResult.error);
+      throw new PonderZipImportError("invalidData", memoResult.error);
     }
     memos.push(memoResult.data as JsonBackupMemo);
   }
@@ -421,12 +430,12 @@ export const parseEdgeEverZip = async (
     || manifest.counts.memos !== markdownCount
     || (manifest.counts.prompts ?? 0) !== prompts.length
   ) {
-    throw new EdgeEverZipImportError("incompleteData");
+    throw new PonderZipImportError("incompleteData");
   }
 
   const revisionCount = memos.reduce((count, memo) => count + memo.revisions.length, 0);
   if (manifest.counts.revisions !== revisionCount) {
-    throw new EdgeEverZipImportError("incompleteData");
+    throw new PonderZipImportError("incompleteData");
   }
   if (
     manifest.counts.resources !== resources.length
@@ -439,19 +448,19 @@ export const parseEdgeEverZip = async (
       || (createDigest && resource.sha256 !== null && resource.sha256 !== digests.get(resource.archivePath))
     ))
   ) {
-    throw new EdgeEverZipImportError("incompleteResources");
+    throw new PonderZipImportError("incompleteResources");
   }
 
   return { manifest, notebooks, memos, prompts, archive: blob };
 };
 
 /** The new desktop path validates relationships before any target write. */
-export const validateBackupRelationships = (backup: ParsedEdgeEverZip) => {
+export const validateBackupRelationships = (backup: ParsedPonderZip) => {
   const notebooks = new Map(backup.notebooks.map((item) => [item.id, item]));
   const memos = new Set(backup.memos.map((item) => item.memo.id));
   const revisions = new Set<string>();
   const resources = new Set<string>();
-  const invalid = () => { throw new EdgeEverZipImportError("invalidData"); };
+  const invalid = () => { throw new PonderZipImportError("invalidData"); };
   if (notebooks.size !== backup.notebooks.length || memos.size !== backup.memos.length) invalid();
   for (const notebook of backup.notebooks) {
     const ancestors = new Set([notebook.id]);
@@ -475,10 +484,10 @@ export const validateBackupRelationships = (backup: ParsedEdgeEverZip) => {
   }
 };
 
-export const restoreEdgeEverZip = async (
-  backup: ParsedEdgeEverZip,
+export const restorePonderZip = async (
+  backup: ParsedPonderZip,
   target: JsonRestoreTarget,
-  onProgress?: (progress: EdgeEverZipProgress) => void
+  onProgress?: (progress: PonderZipProgress) => void
 ) => {
   const total = backup.notebooks.length
     + backup.memos.length
@@ -527,7 +536,7 @@ export const restoreEdgeEverZip = async (
           if (byteSize > resource.byteSize) {
             const sink = await getSink();
             await sink.abort();
-            throw new EdgeEverZipImportError("incompleteResources");
+            throw new PonderZipImportError("incompleteResources");
           }
           const sink = await getSink();
           activeSinks.add(sink);
@@ -539,7 +548,7 @@ export const restoreEdgeEverZip = async (
           if (byteSize !== resource.byteSize) {
             await sink.abort();
             activeSinks.delete(sink);
-            throw new EdgeEverZipImportError("incompleteResources");
+            throw new PonderZipImportError("incompleteResources");
           }
           await sink.close();
           activeSinks.delete(sink);
@@ -554,16 +563,16 @@ export const restoreEdgeEverZip = async (
     throw error;
   }
   if (restoredPaths.size !== resourcesByPath.size) {
-    throw new EdgeEverZipImportError("incompleteResources");
+    throw new PonderZipImportError("incompleteResources");
   }
 };
 
-export const restoreEdgeEverZipAndRefresh = async (
-  backup: ParsedEdgeEverZip,
+export const restorePonderZipAndRefresh = async (
+  backup: ParsedPonderZip,
   target: JsonRestoreTarget,
   refreshWorkspace: () => Promise<void>,
-  onProgress?: (progress: EdgeEverZipProgress) => void
+  onProgress?: (progress: PonderZipProgress) => void
 ) => {
-  await restoreEdgeEverZip(backup, target, onProgress);
+  await restorePonderZip(backup, target, onProgress);
   await refreshWorkspace();
 };

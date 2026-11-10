@@ -9,7 +9,7 @@
 #     ~/.appstoreconnect/private_keys/AuthKey_<KEY_ID>.p8
 #
 # Usage:
-#   bash Scripts/upload-app-store-ipa.sh /path/to/EdgeEver.ipa
+#   bash Scripts/upload-app-store-ipa.sh /path/to/Ponder.ipa
 #   bash Scripts/upload-app-store-ipa.sh /path/to/app-store.zip   # zip from Cloud
 set -euo pipefail
 
@@ -43,7 +43,7 @@ trap cleanup EXIT
 if [[ "$INPUT" == *.ipa ]]; then
   IPA="$INPUT"
 elif [[ "$INPUT" == *.zip ]]; then
-  WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/edgeever-ipa.XXXXXX")"
+  WORKDIR="$(mktemp -d "${TMPDIR:-/tmp}/ponder-ipa.XXXXXX")"
   unzip -q -o "$INPUT" -d "$WORKDIR"
   IPA="$(find "$WORKDIR" -name '*.ipa' | head -1 || true)"
   if [[ -z "$IPA" ]]; then
@@ -61,7 +61,7 @@ fi
 
 echo "IPA=$IPA ($(wc -c <"$IPA" | tr -d ' ') bytes)"
 # Show version stamp for operator confirmation
-TMP_UNPACK="$(mktemp -d "${TMPDIR:-/tmp}/edgeever-ipa-info.XXXXXX")"
+TMP_UNPACK="$(mktemp -d "${TMPDIR:-/tmp}/ponder-ipa-info.XXXXXX")"
 unzip -q -o "$IPA" -d "$TMP_UNPACK" || true
 PLIST="$(find "$TMP_UNPACK" -path '*/Payload/*.app/Info.plist' | head -1 || true)"
 if [[ -n "$PLIST" ]]; then

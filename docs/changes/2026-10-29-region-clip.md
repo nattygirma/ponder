@@ -1,6 +1,6 @@
 # Select a webpage region to clip
 
-[简体中文](2026-10-29-region-clip.zh-CN.md) · [Issue #703](https://github.com/tianma-if/edgeever/issues/703)
+[Issue #703](https://github.com/tianma-if/edgeever/issues/703)
 
 ## Problem and outcome
 

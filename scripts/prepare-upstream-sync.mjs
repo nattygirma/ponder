@@ -111,13 +111,13 @@ function resolveCustomizedMergeBase(cwd, baseCommit, targetCommit) {
     [
       "log",
       "-1",
-      "--grep=^EdgeEver-Upstream-Commit: ",
+      "--grep=^Ponder-Upstream-Commit: ",
       "--format=%B",
       baseCommit,
     ],
     { cwd },
   ).stdout;
-  const recordedRevision = message.match(/^EdgeEver-Upstream-Commit:\s*(\S+)\s*$/m)?.[1];
+  const recordedRevision = message.match(/^Ponder-Upstream-Commit:\s*(\S+)\s*$/m)?.[1];
   if (recordedRevision) {
     const recordedCommit = runGit(
       ["rev-parse", "--verify", `${recordedRevision}^{commit}`],
@@ -151,7 +151,7 @@ function prepareCustomizedMerge(cwd, baseCommit, targetCommit) {
       "-p",
       mergeBase,
       "-m",
-      "temporary EdgeEver customized sync base",
+      "temporary Ponder customized sync base",
     ],
     { cwd },
   ).stdout.trim();

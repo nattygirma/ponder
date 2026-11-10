@@ -7,8 +7,8 @@ type Prompt = {
   instruction: string;
 };
 
-const E2E_USERNAME = process.env.EDGE_EVER_E2E_USERNAME || "admin";
-const E2E_PASSWORD = process.env.EDGE_EVER_E2E_PASSWORD || "admin123";
+const E2E_USERNAME = process.env.PONDER_E2E_USERNAME || "admin";
+const E2E_PASSWORD = process.env.PONDER_E2E_PASSWORD || "admin123";
 
 const login = async (request: APIRequestContext) => {
   const response = await request.post("/api/v1/auth/login", {
@@ -20,7 +20,7 @@ const login = async (request: APIRequestContext) => {
 const ensureAuthenticatedPage = async (page: Page) => {
   await login(page.request);
   await page.goto("/");
-  await expect(page.getByRole("button", { name: "个人中心", exact: true })).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByRole("button", { name: "Profile", exact: true })).toBeVisible({ timeout: 20_000 });
 };
 
 const mockAiGeneration = async (
@@ -69,12 +69,12 @@ const openPromptLibrary = async (page: Page) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await login(page.request);
   await page.goto("/");
-  const profileButton = page.getByRole("button", { name: "我的", exact: true });
+  const profileButton = page.getByRole("button", { name: "Me", exact: true });
   await expect(profileButton).toBeVisible({ timeout: 20_000 });
   await profileButton.click();
-  await expect(page.getByRole("heading", { name: "我的", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "指令", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "指令库", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Me", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Prompts", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Prompt library", exact: true })).toBeVisible();
   await page.setViewportSize({ width: 1280, height: 720 });
 };
 
@@ -83,14 +83,14 @@ const openMemoAssistant = async (page: Page, memoId: string, notebookName: strin
   await page.getByRole("button", { name: new RegExp(notebookName) }).click();
   await page.locator(`[data-memo-id="${memoId}"]`).locator("button").first().click();
   await expect(page.locator(".ProseMirror[contenteditable='true']")).toBeVisible();
-  await page.getByRole("button", { name: "打开 AI 写作助手", exact: true }).click();
-  const dialog = page.getByRole("dialog", { name: "AI 笔记助手" });
+  await page.getByRole("button", { name: "Open AI writing assistant", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "AI note assistant" });
   await expect(dialog).toBeVisible();
   return dialog;
 };
 
 const selectAction = async (dialog: ReturnType<Page["getByRole"]>, optionName: string) => {
-  await dialog.getByRole("combobox", { name: "处理方式" }).click();
+  await dialog.getByRole("combobox", { name: "Action" }).click();
   await dialog.page().getByRole("option", { name: optionName, exact: true }).click();
 };
 
@@ -150,13 +150,13 @@ test.describe("AI custom prompts", () => {
 
   test("keeps secondary content out of AI integration settings", async ({ page }) => {
     await ensureAuthenticatedPage(page);
-    await page.getByRole("button", { name: "个人中心", exact: true }).click();
-    await page.getByRole("button", { name: "模型与代理", exact: true }).click();
+    await page.getByRole("button", { name: "Profile", exact: true }).click();
+    await page.getByRole("button", { name: "Models and agents", exact: true }).click();
 
-    await expect(page.getByRole("heading", { name: "AI 模型服务", exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "API Token 与 MCP 配置", exact: true })).toBeVisible();
-    await expect(page.getByRole("heading", { name: "AI 指令", exact: true })).toHaveCount(0);
-    await expect(page.getByRole("heading", { name: "进阶玩法", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "AI model services", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "API tokens & MCP configuration", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "AI prompts", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Advanced plays", exact: true })).toHaveCount(0);
   });
 
   test("opens the inline composer from /ai and the configurable shortcut", async ({ page }) => {
@@ -170,10 +170,10 @@ test.describe("AI custom prompts", () => {
     await editor.click();
     await page.keyboard.press("End");
     await page.keyboard.type(" /ai");
-    const composer = page.getByRole("dialog", { name: "AI 笔记助手" });
+    const composer = page.getByRole("dialog", { name: "AI note assistant" });
     await expect(composer).toBeVisible();
     await expect(editor).not.toContainText("/ai");
-    await composer.getByRole("button", { name: "关闭" }).click();
+    await composer.getByRole("button", { name: "Close" }).click();
     await expect(composer).toBeHidden();
 
     await page.keyboard.press("Control+j");
@@ -237,7 +237,7 @@ test.describe("AI custom prompts", () => {
     await page.getByRole("button", { name: new RegExp(notebookName) }).click();
     await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
     await expect(page.locator(".ProseMirror[contenteditable='true']")).toBeVisible();
-    await page.getByPlaceholder("无标题笔记", { exact: true }).fill("");
+    await page.getByPlaceholder("Untitled note", { exact: true }).fill("");
 
     let customRequest: Record<string, unknown> | null = null;
     let translatedRequest: Record<string, unknown> | null = null;
@@ -298,20 +298,20 @@ test.describe("AI custom prompts", () => {
       });
     });
 
-    await page.getByRole("button", { name: "打开 AI 写作助手", exact: true }).click();
-    const assistant = page.getByRole("dialog", { name: "AI 笔记助手" });
+    await page.getByRole("button", { name: "Open AI writing assistant", exact: true }).click();
+    const assistant = page.getByRole("dialog", { name: "AI note assistant" });
     await expect(assistant).toBeVisible();
-    await assistant.getByRole("button", { name: "生成", exact: true }).click();
+    await assistant.getByRole("button", { name: "Generate", exact: true }).click();
     const result = assistant.getByTestId("ai-assistant-result");
-    await expect(result.getByRole("alert")).toHaveText("请输入你希望 AI 执行的指令。");
-    await expect(result).not.toContainText("生成结果将显示在这里。");
+    await expect(result.getByRole("alert")).toHaveText("Enter an instruction for AI.");
+    await expect(result).not.toContainText("The generated result will appear here.");
     await expect(assistant).not.toContainText("contentMarkdown");
 
-    const instruction = assistant.getByRole("textbox", { name: "告诉 AI 你想怎么处理" });
+    const instruction = assistant.getByRole("textbox", { name: "Tell AI what to do" });
     await instruction.fill("写一首诗");
-    await selectAction(assistant, "全文翻译");
-    await expect(assistant.getByRole("textbox", { name: "输入要处理的内容" })).toHaveValue("写一首诗");
-    await assistant.getByRole("button", { name: "生成", exact: true }).click();
+    await selectAction(assistant, "Translate");
+    await expect(assistant.getByRole("textbox", { name: "Content to process" })).toHaveValue("写一首诗");
+    await assistant.getByRole("button", { name: "Generate", exact: true }).click();
     await expect(result).toHaveText("Write a poem.");
     expect(translatedRequest).toMatchObject({
       action: "translate",
@@ -321,9 +321,9 @@ test.describe("AI custom prompts", () => {
     });
     expect(translatedRequest).not.toHaveProperty("instruction");
 
-    const refinement = assistant.getByRole("textbox", { name: "继续调整" });
+    const refinement = assistant.getByRole("textbox", { name: "Keep refining" });
     await refinement.fill("更自然");
-    await assistant.getByRole("button", { name: "调整", exact: true }).click();
+    await assistant.getByRole("button", { name: "Refine", exact: true }).click();
     await expect(result).toHaveText("Compose a poem.");
     await expect(refinement).toHaveValue("更自然");
     expect(refinedRequest).toMatchObject({
@@ -337,10 +337,10 @@ test.describe("AI custom prompts", () => {
     expect(refinedRequest?.instruction).toContain("Original processing instruction:");
     expect(refinedRequest?.instruction).toContain("Follow-up request:\n更自然");
 
-    await assistant.getByRole("button", { name: "清除结果", exact: true }).click();
-    await assistant.getByRole("button", { name: "自定义指令", exact: true }).click();
+    await assistant.getByRole("button", { name: "Clear result", exact: true }).click();
+    await assistant.getByRole("button", { name: "Custom prompt", exact: true }).click();
     await expect(instruction).toHaveValue("写一首诗");
-    await assistant.getByRole("button", { name: "生成", exact: true }).click();
+    await assistant.getByRole("button", { name: "Generate", exact: true }).click();
     await expect(assistant.getByText("你好！祝你今天一切顺利。", { exact: true })).toBeVisible();
     expect(customRequest).toMatchObject({
       action: "custom",
@@ -362,10 +362,10 @@ test.describe("AI custom prompts", () => {
     await page.keyboard.press("End");
     await page.keyboard.press("Enter");
     await page.keyboard.type("/");
-    const slashMenu = page.getByLabel("插入功能菜单");
+    const slashMenu = page.getByLabel("Insert menu");
     await expect(slashMenu).toBeVisible();
-    await expect(slashMenu.getByText("基本区块", { exact: true })).toBeVisible();
-    await expect(slashMenu.getByText("标题 1", { exact: true })).toBeVisible();
+    await expect(slashMenu.getByText("Basic blocks", { exact: true })).toBeVisible();
+    await expect(slashMenu.getByText("Heading 1", { exact: true })).toBeVisible();
 
     await page.keyboard.press("ArrowDown");
     await page.keyboard.press("Enter");
@@ -374,14 +374,14 @@ test.describe("AI custom prompts", () => {
 
     await page.keyboard.type("/");
     await expect(slashMenu).toBeVisible();
-    await slashMenu.getByText("用 AI 处理", { exact: true }).click();
+    await slashMenu.getByText("Ask AI", { exact: true }).click();
     await expect(slashMenu).toBeHidden();
     await expect(editor).not.toContainText("/");
-    const assistant = page.getByRole("dialog", { name: "AI 笔记助手" });
+    const assistant = page.getByRole("dialog", { name: "AI note assistant" });
     await expect(assistant).toBeVisible();
-    const customInstructionButton = assistant.getByRole("button", { name: "自定义指令", exact: true });
-    const actionSelect = assistant.getByRole("combobox", { name: "处理方式" });
-    const generateButton = assistant.getByRole("button", { name: "生成", exact: true });
+    const customInstructionButton = assistant.getByRole("button", { name: "Custom prompt", exact: true });
+    const actionSelect = assistant.getByRole("combobox", { name: "Action" });
+    const generateButton = assistant.getByRole("button", { name: "Generate", exact: true });
     await expect(customInstructionButton).toBeVisible();
     const [actionSelectBox, customInstructionBox, generateBox] = await Promise.all([
       actionSelect.boundingBox(),
@@ -404,7 +404,7 @@ test.describe("AI custom prompts", () => {
       return range.getClientRects().length;
     });
     expect(customInstructionLineCount).toBe(1);
-    await assistant.getByRole("combobox", { name: "处理方式" }).click();
+    await assistant.getByRole("combobox", { name: "Action" }).click();
     await expect(assistant).toBeVisible();
     const actionListbox = page.getByRole("listbox");
     await expect(actionListbox).toBeVisible();
@@ -422,8 +422,8 @@ test.describe("AI custom prompts", () => {
       assistant.evaluate((element) => Number.parseInt(getComputedStyle(element).zIndex, 10)),
     ]);
     expect(listboxZIndex).toBeGreaterThan(assistantZIndex);
-    await expect(page.getByRole("option", { name: "自定义指令", exact: true })).toBeVisible();
-    await page.getByRole("option", { name: "自定义指令", exact: true }).click();
+    await expect(page.getByRole("option", { name: "Custom prompt", exact: true })).toBeVisible();
+    await page.getByRole("option", { name: "Custom prompt", exact: true }).click();
     await expect(assistant).toBeVisible();
   });
 
@@ -439,7 +439,7 @@ test.describe("AI custom prompts", () => {
     await page.keyboard.press("Enter");
     const emptyParagraph = editor.locator("p").last();
     await expect(emptyParagraph).toHaveClass(/is-empty/);
-    await expect(emptyParagraph).toHaveAttribute("data-placeholder", "空格唤起 AI · / 命令 · @ 引用");
+    await expect(emptyParagraph).toHaveAttribute("data-placeholder", "space for AI · / commands · @ notes");
     const renderedPlaceholder = await emptyParagraph.evaluate((element) => {
       const style = getComputedStyle(element, "::before");
       return {
@@ -448,16 +448,16 @@ test.describe("AI custom prompts", () => {
         visibility: style.visibility,
       };
     });
-    expect(renderedPlaceholder.content).toContain("空格唤起 AI · / 命令 · @ 引用");
+    expect(renderedPlaceholder.content).toContain("space for AI · / commands · @ notes");
     expect(renderedPlaceholder.display).not.toBe("none");
     expect(renderedPlaceholder.visibility).not.toBe("hidden");
 
     await page.keyboard.press("Space");
-    const assistant = page.getByRole("dialog", { name: "AI 笔记助手" });
+    const assistant = page.getByRole("dialog", { name: "AI note assistant" });
     await expect(assistant).toBeVisible();
     await expect(emptyParagraph).toBeEmpty();
 
-    await assistant.getByRole("button", { name: "关闭" }).click();
+    await assistant.getByRole("button", { name: "Close" }).click();
     await emptyParagraph.click();
     await page.keyboard.type("正常 输入");
     await expect(assistant).toBeHidden();
@@ -471,25 +471,25 @@ test.describe("AI custom prompts", () => {
     await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
     await expect(page.locator(".ProseMirror[contenteditable='true']")).toBeVisible();
 
-    await page.getByRole("button", { name: "个人中心", exact: true }).click();
-    await expect(page.getByRole("heading", { name: "我的", exact: true })).toBeVisible();
-    const shortcutSwitch = page.getByRole("switch", { name: "空白段落按 Space 是否唤起 AI" });
+    await page.getByRole("button", { name: "Profile", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Me", exact: true })).toBeVisible();
+    const shortcutSwitch = page.getByRole("switch", { name: "Open AI with Space in an empty block" });
     await expect(shortcutSwitch).toBeChecked();
     await shortcutSwitch.click();
     await expect(shortcutSwitch).not.toBeChecked();
-    await expect.poll(() => page.evaluate(() => localStorage.getItem("edgeever.editor.aiSpaceShortcutEnabled")))
+    await expect.poll(() => page.evaluate(() => localStorage.getItem("ponder.editor.aiSpaceShortcutEnabled")))
       .toBe("false");
 
-    await page.getByRole("button", { name: "返回上一页", exact: true }).click();
+    await page.getByRole("button", { name: "Go back", exact: true }).click();
     const editor = page.locator(".ProseMirror[contenteditable='true']");
     await expect(editor).toBeVisible();
     await focusParagraphEnd(editor);
     await page.keyboard.press("Enter");
     const emptyParagraph = editor.locator("p").last();
-    await expect(emptyParagraph).toHaveAttribute("data-placeholder", "/ 命令 · @ 引用");
+    await expect(emptyParagraph).toHaveAttribute("data-placeholder", "/ commands · @ notes");
 
     await page.keyboard.press("Space");
-    await expect(page.getByRole("dialog", { name: "AI 笔记助手" })).toBeHidden();
+    await expect(page.getByRole("dialog", { name: "AI note assistant" })).toBeHidden();
     await expect.poll(() => emptyParagraph.evaluate((element) => element.textContent)).toBe(" ");
   });
 
@@ -511,7 +511,7 @@ test.describe("AI custom prompts", () => {
     });
 
     const dialog = await openMemoAssistant(page, memo.id, notebookName);
-    await selectAction(dialog, "自定义指令");
+    await selectAction(dialog, "Custom prompt");
     await dialog.locator("textarea").fill("总结附件内容。");
     await dialog.locator('input[type="file"]').setInputFiles({
       name: "brief.txt",
@@ -519,7 +519,7 @@ test.describe("AI custom prompts", () => {
       buffer: Buffer.from("temporary context", "utf8"),
     });
     await expect(dialog.getByText("brief.txt", { exact: true })).toBeVisible();
-    await dialog.getByRole("button", { name: "生成", exact: true }).click();
+    await dialog.getByRole("button", { name: "Generate", exact: true }).click();
     await expect(dialog.getByText("附件摘要", { exact: true })).toBeVisible();
 
     expect(submittedBody).toMatchObject({
@@ -546,12 +546,12 @@ test.describe("AI custom prompts", () => {
     await ensureAuthenticatedPage(page);
     await page.getByRole("button", { name: new RegExp(notebookName) }).click();
     await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
-    await page.getByRole("button", { name: "打开 AI 写作助手", exact: true }).click();
+    await page.getByRole("button", { name: "Open AI writing assistant", exact: true }).click();
 
-    const dialog = page.getByRole("dialog", { name: "AI 笔记助手" });
+    const dialog = page.getByRole("dialog", { name: "AI note assistant" });
     const textarea = dialog.locator("textarea");
     await textarea.fill("写个宋词");
-    const generateButton = dialog.getByRole("button", { name: "生成", exact: true });
+    const generateButton = dialog.getByRole("button", { name: "Generate", exact: true });
     await expect(generateButton).toBeEnabled();
     await expect(generateButton.locator("kbd")).toHaveText("↵");
 
@@ -586,13 +586,13 @@ test.describe("AI custom prompts", () => {
     const instruction = "把笔记提炼成三条要点，使用 Markdown 列表。";
 
     await openPromptLibrary(page);
-    await page.getByRole("button", { name: "新建指令", exact: true }).click();
-    const editor = page.locator("form").filter({ has: page.getByRole("heading", { name: "新建指令", exact: true }) });
+    await page.getByRole("button", { name: "New prompt", exact: true }).click();
+    const editor = page.locator("form").filter({ has: page.getByRole("heading", { name: "New prompt", exact: true }) });
     await expect(editor).toBeVisible();
-    await editor.getByPlaceholder("例如：周报提炼 / 会议待办").fill(promptName);
-    await editor.getByPlaceholder("简要说明何时使用这条指令").fill("e2e settings create");
+    await editor.getByPlaceholder("For example: Weekly digest / Meeting tasks").fill(promptName);
+    await editor.getByPlaceholder("When to use this prompt").fill("e2e settings create");
     await editor.locator("textarea").fill(instruction);
-    await editor.getByRole("button", { name: "创建", exact: true }).click();
+    await editor.getByRole("button", { name: "Created", exact: true }).click();
     await expect(editor).toBeHidden();
     await expect(page.getByText(promptName, { exact: true })).toBeVisible();
 
@@ -605,7 +605,7 @@ test.describe("AI custom prompts", () => {
     const memo = await createMemo(page, `e2e-ai-prompt-list-${Date.now()}`, "本周完成功能开发，下周准备发布。");
     const dialog = await openMemoAssistant(page, memo.id, notebookName);
     await selectAction(dialog, promptName);
-    await expect(dialog.getByRole("combobox", { name: "处理方式" })).toHaveText(promptName);
+    await expect(dialog.getByRole("combobox", { name: "Action" })).toHaveText(promptName);
   });
 
   test("saves a freeform custom prompt as a reusable prompt", async ({ page, request }) => {
@@ -615,16 +615,16 @@ test.describe("AI custom prompts", () => {
     await mockAiGeneration(page, "- 3 月 1 日：接口联调完成（张三）");
 
     const dialog = await openMemoAssistant(page, memo.id, notebookName);
-    await selectAction(dialog, "自定义指令");
+    await selectAction(dialog, "Custom prompt");
     await dialog.locator("textarea").fill(instruction);
-    await dialog.getByRole("button", { name: "保存为指令", exact: true }).click();
+    await dialog.getByRole("button", { name: "Save as prompt", exact: true }).click();
 
-    const saveDialog = page.getByRole("dialog", { name: "保存为指令" });
+    const saveDialog = page.getByRole("dialog", { name: "Save as prompt" });
     await expect(saveDialog).toBeVisible();
-    await saveDialog.getByPlaceholder("例如：周报提炼").fill(promptName);
-    await saveDialog.getByRole("button", { name: "创建", exact: true }).click();
+    await saveDialog.getByPlaceholder("For example: Weekly digest").fill(promptName);
+    await saveDialog.getByRole("button", { name: "Created", exact: true }).click();
     await expect(saveDialog).toBeHidden();
-    await expect(dialog.getByRole("combobox", { name: "处理方式" })).toHaveText(promptName);
+    await expect(dialog.getByRole("combobox", { name: "Action" })).toHaveText(promptName);
 
     await login(request);
     const prompts = await listPrompts(request);
@@ -632,9 +632,9 @@ test.describe("AI custom prompts", () => {
     expect(created?.instruction).toBe(instruction);
     if (created) createdPromptIds.push(created.id);
 
-    await dialog.getByRole("button", { name: "生成", exact: true }).click();
+    await dialog.getByRole("button", { name: "Generate", exact: true }).click();
     await expect(dialog.getByText("- 3 月 1 日：接口联调完成（张三）", { exact: true })).toBeVisible();
-    await dialog.getByRole("button", { name: "追加到笔记", exact: true }).click();
+    await dialog.getByRole("button", { name: "Append to note", exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect(page.locator(".ProseMirror[contenteditable='true']")).toContainText("接口联调完成（张三）");
   });
@@ -655,14 +655,14 @@ test.describe("AI custom prompts", () => {
     await expect(editor).toBeVisible();
     await editor.locator(":scope > p").nth(1).click();
     await page.keyboard.press("End");
-    await page.getByRole("button", { name: "打开 AI 写作助手", exact: true }).click();
+    await page.getByRole("button", { name: "Open AI writing assistant", exact: true }).click();
 
-    const dialog = page.getByRole("dialog", { name: "AI 笔记助手" });
-    await selectAction(dialog, "精简总结");
-    await dialog.getByRole("button", { name: "生成", exact: true }).click();
+    const dialog = page.getByRole("dialog", { name: "AI note assistant" });
+    await selectAction(dialog, "Summarize");
+    await dialog.getByRole("button", { name: "Generate", exact: true }).click();
     await expect(dialog.getByText("AI 插入段落", { exact: true })).toBeVisible();
-    const copyButton = dialog.getByRole("button", { name: "复制结果", exact: true });
-    const appendButton = dialog.getByRole("button", { name: "追加到笔记", exact: true });
+    const copyButton = dialog.getByRole("button", { name: "Copy result", exact: true });
+    const appendButton = dialog.getByRole("button", { name: "Append to note", exact: true });
     await expect(copyButton).toBeVisible();
     await expect(appendButton).toBeVisible();
     const [dialogBox, copyButtonBox, appendButtonBox] = await Promise.all([
@@ -701,21 +701,21 @@ test.describe("AI custom prompts", () => {
     await openPromptLibrary(page);
     const row = page.getByRole("article").filter({ has: page.getByRole("heading", { name: originalName, exact: true }) });
     await expect(row.getByText(originalName, { exact: true })).toBeVisible();
-    await row.getByRole("button", { name: "编辑指令", exact: true }).click();
+    await row.getByRole("button", { name: "Edit prompt", exact: true }).click();
 
-    const editor = page.locator("form").filter({ has: page.getByRole("heading", { name: "编辑指令", exact: true }) });
+    const editor = page.locator("form").filter({ has: page.getByRole("heading", { name: "Edit prompt", exact: true }) });
     await expect(editor).toBeVisible();
-    await editor.getByPlaceholder("例如：周报提炼 / 会议待办").fill(updatedName);
+    await editor.getByPlaceholder("For example: Weekly digest / Meeting tasks").fill(updatedName);
     await editor.locator("textarea").fill("更新后的指令：提取风险与应对。");
-    await editor.getByRole("button", { name: "保存", exact: true }).click();
+    await editor.getByRole("button", { name: "Save", exact: true }).click();
     await expect(editor).toBeHidden();
     await expect(page.getByText(updatedName, { exact: true })).toBeVisible();
 
     const updatedRow = page.getByRole("article").filter({ has: page.getByRole("heading", { name: updatedName, exact: true }) });
-    await updatedRow.getByRole("button", { name: "删除", exact: true }).click();
+    await updatedRow.getByRole("button", { name: "Delete", exact: true }).click();
     const deleteConfirm = page.getByRole("dialog").filter({ hasText: updatedName });
     await expect(deleteConfirm.getByText(/确定删除指令/)).toBeVisible();
-    await deleteConfirm.getByRole("button", { name: "删除", exact: true }).click();
+    await deleteConfirm.getByRole("button", { name: "Delete", exact: true }).click();
     await expect(page.getByText(updatedName, { exact: true })).toHaveCount(0);
 
     await login(request);
@@ -738,11 +738,11 @@ test.describe("AI custom prompts", () => {
 
     const dialog = await openMemoAssistant(page, memo.id, notebookName);
     await selectAction(dialog, promptName);
-    await expect(dialog.getByRole("combobox", { name: "处理方式" })).toHaveText(promptName);
-    await dialog.getByRole("button", { name: "生成", exact: true }).click();
+    await expect(dialog.getByRole("combobox", { name: "Action" })).toHaveText(promptName);
+    await dialog.getByRole("button", { name: "Generate", exact: true }).click();
     await expect(dialog.getByText("进展顺利")).toBeVisible();
     await expect(dialog.getByText("风险可控")).toBeVisible();
-    await dialog.getByRole("button", { name: "替换笔记", exact: true }).click();
+    await dialog.getByRole("button", { name: "Replace note", exact: true }).click();
     await expect(dialog).toBeHidden();
     await expect(page.locator(".ProseMirror[contenteditable='true']")).toContainText("进展顺利");
   });
@@ -750,16 +750,16 @@ test.describe("AI custom prompts", () => {
   test("opens on a custom instruction when nothing is selected", async ({ page }) => {
     const memo = await createMemo(page, `e2e-ai-last-action-${Date.now()}`, "记住上次处理方式。");
     await ensureAuthenticatedPage(page);
-    await page.evaluate(() => window.localStorage.removeItem("edgeever.aiAssistant.lastAction"));
+    await page.evaluate(() => window.localStorage.removeItem("ponder.invalidAssistant.lastAction"));
     const dialog = await openMemoAssistant(page, memo.id, notebookName);
-    await expect(dialog.getByRole("combobox", { name: "处理方式" })).toHaveText("自定义指令");
-    await selectAction(dialog, "全文翻译");
-    await expect(dialog.getByRole("combobox", { name: "处理方式" })).toHaveText("全文翻译");
-    await dialog.getByRole("button", { name: "关闭", exact: true }).click();
+    await expect(dialog.getByRole("combobox", { name: "Action" })).toHaveText("Custom prompt");
+    await selectAction(dialog, "Translate");
+    await expect(dialog.getByRole("combobox", { name: "Action" })).toHaveText("Translate");
+    await dialog.getByRole("button", { name: "Close", exact: true }).click();
     await expect(dialog).toBeHidden();
 
-    await page.getByRole("button", { name: "打开 AI 写作助手", exact: true }).click();
+    await page.getByRole("button", { name: "Open AI writing assistant", exact: true }).click();
     await expect(dialog).toBeVisible();
-    await expect(dialog.getByRole("combobox", { name: "处理方式" })).toHaveText("自定义指令");
+    await expect(dialog.getByRole("combobox", { name: "Action" })).toHaveText("Custom prompt");
   });
 });

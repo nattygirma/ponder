@@ -84,7 +84,7 @@ describe("screenshot capture helpers", () => {
 
   test("localizes the generated note title", () => {
     const date = new Date(2026, 8, 14, 11, 8, 3);
-    expect(screenshotNoteTitle("zh-CN", date)).toBe("截图 2026-09-14 11:08");
+    expect(screenshotNoteTitle("en-US", date)).toBe("Screenshot 2026-09-14 11:08");
     expect(screenshotNoteTitle("en-US", date)).toBe("Screenshot 2026-09-14 11:08");
     expect(screenshotNoteTitle("pl", date)).toBe("Zrzut ekranu 2026-09-14 11:08");
     expect(screenshotNoteTitle("ru-RU", date)).toBe("Снимок экрана 2026-09-14 11:08");
@@ -133,7 +133,7 @@ describe("region screenshot to note", () => {
     toPNG: () => Buffer.from("full"),
   };
   const input = {
-    locale: "zh-CN",
+    locale: "en-US",
     now: new Date(2026, 8, 14, 11, 8, 3),
     screen: {
       getCursorScreenPoint: () => ({ x: 1, y: 1 }),
@@ -150,7 +150,7 @@ describe("region screenshot to note", () => {
       selectRegion: async () => ({ x: 10, y: 5, width: 20, height: 10 }),
     });
     expect(Buffer.from(selected.bytes).toString()).toBe("crop:20,10,40,20");
-    expect(selected.title).toBe("截图 2026-09-14 11:08");
+    expect(selected.title).toBe("Screenshot 2026-09-14 11:08");
     expect(selected.type).toBe("image/png");
   });
 

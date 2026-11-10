@@ -1,4 +1,4 @@
-import type { PosterDocument } from "@edgeever/shared";
+import type { PosterDocument } from "@ponder/shared";
 import {
   legacyPosterSampleCopy,
   paperListSampleCopy,
@@ -102,7 +102,7 @@ export function paperListCurrentCopy(document: PosterDocument, copy: Copy): Copy
             row.heading,
             row.subtitle === undefined
               ? undefined
-              : `${/副标题[：:]/.test(copy.subtitle) ? "副标题：" : "Subtitle: "}${row.subtitle}`,
+              : `Subtitle: ${row.subtitle}`,
             row.body,
             ...[...(row.paragraphs ?? [])]
               .sort(([a], [b]) => a - b)

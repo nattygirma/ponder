@@ -1,5 +1,5 @@
-import { ImageGallery, MergeDivider } from "@edgeever/shared";
-import { createNativeImageGalleryView } from "@edgeever/shared/native-image-gallery";
+import { ImageGallery, MergeDivider } from "@ponder/shared";
+import { createNativeImageGalleryView } from "@ponder/shared/native-image-gallery";
 
 export { ImageGallery, MergeDivider };
 

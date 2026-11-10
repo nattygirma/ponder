@@ -25,14 +25,6 @@ describe("infographic gallery samples", () => {
     expect(INFOGRAPHIC_SAMPLE_CATEGORIES.length).toBe(7);
   });
 
-  test("all Chinese sample syntaxes parse cleanly without errors", () => {
-    for (const sample of INFOGRAPHIC_SAMPLES) {
-      const parsed = parseSyntax(sample.syntaxZh);
-      expect(parsed.errors.length).toBe(0);
-      expect(parsed.options.template).toBe(sample.template);
-    }
-  });
-
   test("all English sample syntaxes parse cleanly without errors", () => {
     for (const sample of INFOGRAPHIC_SAMPLES) {
       const parsed = parseSyntax(sample.syntaxEn);
@@ -43,17 +35,13 @@ describe("infographic gallery samples", () => {
 
   test("multilingual helper methods return appropriate localized content", () => {
     const sample = INFOGRAPHIC_SAMPLES[0];
-    expect(getSampleTitle(sample, "zh-CN")).toBe(sample.titleZh);
     expect(getSampleTitle(sample, "en-US")).toBe(sample.titleEn);
     expect(getSampleTitle(sample, "ja")).toBe(sample.titleJa ?? sample.titleEn);
 
-    expect(getSampleSyntax(sample, "zh-CN")).toBe(sample.syntaxZh);
     expect(getSampleSyntax(sample, "en-US")).toBe(sample.syntaxEn);
-    expect(getSampleSyntax(sample, "zh")).toBe(sample.syntaxZh);
     expect(getSampleSyntax(sample, "pl")).toBe(sample.syntaxEn);
     expect(getSampleSyntax(sample)).toBe(sample.syntaxEn);
 
-    expect(getSampleDesc(sample, "zh-CN")).toBe(sample.descZh);
     expect(getSampleDesc(sample, "en-US")).toBe(sample.descEn);
   });
 });

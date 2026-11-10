@@ -10,7 +10,7 @@ import {
   type MemoDetail,
   type Notebook,
   type TiptapDoc,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { Alert } from "../components/LocalizedText";
 import type { LocalTiptapEditorRef } from "../components/LocalTiptapEditor";
 import {
@@ -24,7 +24,7 @@ import { localizeMissingNotebookName, useMobileLocale, getMobileCatalog, formatM
 import { useSession } from "../lib/session";
 import { recordEditorStartup } from "../lib/startup-performance";
 import { safeDomCall } from "../lib/safe-dom-call";
-import { showEdgeEverKeyboard } from "../../modules/edgeever-keyboard";
+import { showPonderKeyboard } from "../../modules/ponder-keyboard";
 import { parseTags } from "../screens/workspace-utils";
 import type { MobileMemoUpdatePayload } from "../screens/workspace-memo-cache";
 import { resolveEditorCloseAction } from "./mobile-editor-close";
@@ -64,7 +64,7 @@ const createLocalImagePreviewDataUrl = async (asset: { mimeType?: string | null;
 };
 
 const alertProtectedImageLoadFailure = (
-  locale: "zh-CN" | "en-US" | "ja" | "pl" | "ru",
+  locale: "en-US" | "ja" | "pl" | "ru",
   failure: ProtectedResourceLoadFailure
 ) => {
   const statusLabel = failure.status != null
@@ -221,7 +221,7 @@ export const useMobileRichEditor = ({
         }
         initialFocusTimerRef.current = setTimeout(() => {
           initialFocusTimerRef.current = null;
-          showEdgeEverKeyboard();
+          showPonderKeyboard();
         }, 180);
       }
     } else {
@@ -301,7 +301,7 @@ export const useMobileRichEditor = ({
       return savedMemo;
     } catch (saveError) {
       closingRef.current = false;
-      setError(saveError instanceof Error ? saveError.message : "保存失败");
+      setError(saveError instanceof Error ? saveError.message : "Save failed");
       return null;
     } finally {
       savingRef.current = false;
@@ -378,7 +378,7 @@ export const useMobileRichEditor = ({
       return;
     }
     if (currentMemo.id.startsWith("local:")) {
-      Alert.alert("正在同步新笔记", "首次同步完成后即可上传本地图片；图片链接现在就可以直接粘贴到正文。");
+      Alert.alert("New note is syncing", "Local images can be uploaded after the first sync. Image links can already be pasted into the note.");
       return;
     }
     const assets = await pickUploadAssets();
@@ -401,13 +401,13 @@ export const useMobileRichEditor = ({
         }
         const uploadAsset = await prepareUploadAsset(asset, imageCompressionEnabled);
         const { resource } = await uploadMobileResource(client, currentMemo.id, uploadAsset);
-        applyMobileEditorUpload(editorRef, resource, uploadId, uploadAsset.name || (resource.kind === "image" ? "图片" : "附件"));
+        applyMobileEditorUpload(editorRef, resource, uploadId, uploadAsset.name || (resource.kind === "image" ? "Images" : "Attachments"));
         if (resource.kind === "image") sources.push(resource.url);
         uploadId = null;
       }
     } catch (uploadError) {
       cancelMobileEditorUpload(editorRef, uploadId);
-      setError(uploadError instanceof Error ? uploadError.message : "附件上传失败");
+      setError(uploadError instanceof Error ? uploadError.message : "Could not upload the attachment");
     } finally {
       safeDomCall(() => editorRef.current?.finishImageBatch(sources));
       uploadingRef.current = false;

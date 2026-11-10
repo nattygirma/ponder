@@ -91,12 +91,12 @@ describe("diagram editor canvas surface", () => {
   test("shows native horizontal and vertical scrollbars for oversized diagrams", () => {
     expect(source).toContain("new Scroller({");
     expect(source).toContain("panning: false");
-    expect(source).toContain('className: "edgeever-diagram-scroller"');
+    expect(source).toContain('className: "ponder-diagram-scroller"');
     expect(source).toContain('pannable: { enabled: true, eventTypes: ["leftMouseDown", "rightMouseDown"] }');
     expect(source).not.toContain("attachDiagramScroll");
-    expect(globalStyles).toContain(".edgeever-diagram-scroller");
+    expect(globalStyles).toContain(".ponder-diagram-scroller");
     expect(globalStyles).toContain("scrollbar-gutter: stable");
-    expect(globalStyles).toContain("--edgeever-diagram-canvas");
+    expect(globalStyles).toContain("--ponder-diagram-canvas");
     expect(globalStyles).toContain("min-width: 100%");
     expect(globalStyles).toContain("min-height: 100%");
     expect(globalStyles).toContain('data-panning="true"');
@@ -293,8 +293,8 @@ describe("diagram editor canvas surface", () => {
     expect(source).toContain("const FLOW_PORT_HIT_RADIUS = 14");
     expect(source).toContain("const FLOW_PORT_DOT_RADIUS = 7");
     expect(source).toContain('selector: "hitArea"');
-    expect(source).toContain('className: "edgeever-flow-port-hit-area"');
-    expect(source).toContain('className: "edgeever-flow-port-dot"');
+    expect(source).toContain('className: "ponder-flow-port-hit-area"');
+    expect(source).toContain('className: "ponder-flow-port-dot"');
     expect(source).toContain('pointerEvents: "all"');
     expect(source).toContain('pointerEvents: "none"');
     expect(globalStyles).toContain('[data-diagram-kind="flowchart"] .x6-widget-selection-box-node');
@@ -366,7 +366,7 @@ describe("diagram editor canvas surface", () => {
   });
 
   test("places architecture resources at an explicit canvas position", () => {
-    expect(source).toContain('const ARCHITECTURE_LIBRARY_DRAG_TYPE = "application/x-edgeever-architecture-resource"');
+    expect(source).toContain('const ARCHITECTURE_LIBRARY_DRAG_TYPE = "application/x-ponder-architecture-resource"');
     expect(source).toContain('<DropdownMenu modal={false}');
     expect(source).toContain("draggable");
     expect(source).toContain("event.dataTransfer.setData(ARCHITECTURE_LIBRARY_DRAG_TYPE");
@@ -407,8 +407,8 @@ describe("diagram editor canvas surface", () => {
   });
 
   test("shows connection handles only on selected flowchart nodes", () => {
-    expect(globalStyles).toContain('.x6-node.edgeever-flow-node-active .edgeever-flow-port-dot');
-    expect(globalStyles).toContain('.x6-port-body:hover .edgeever-flow-port-dot');
+    expect(globalStyles).toContain('.x6-node.ponder-flow-node-active .ponder-flow-port-dot');
+    expect(globalStyles).toContain('.x6-port-body:hover .ponder-flow-port-dot');
     expect(globalStyles).not.toContain('.x6-node.x6-node-selected .x6-port-body');
     expect(source).toContain('graph.on("node:selected"');
     expect(source).toContain('setFlowNodePortsActive(graph, node, true)');
@@ -416,14 +416,14 @@ describe("diagram editor canvas surface", () => {
     expect(source).toContain('setFlowNodePortsActive(graph, node, false)');
     expect(source).toContain('port.style.setProperty("opacity", active ? "1" : "0", "important")');
     expect(source).toContain('port.style.setProperty("pointer-events", active ? "auto" : "none", "important")');
-    expect(source).toContain('port.querySelector<SVGElement>(".edgeever-flow-port-dot") ?? port');
+    expect(source).toContain('port.querySelector<SVGElement>(".ponder-flow-port-dot") ?? port');
     expect(source).toContain('setOnlyFlowNodePortsActive(graph, node)');
     expect(source).toContain('graph.on("blank:click"');
     expect(source).toContain('setOnlyFlowNodePortsActive(graph);');
     expect(globalStyles).toContain("fill: var(--brand-green) !important");
     expect(globalStyles).toContain("pointer-events: none");
     expect(globalStyles).toContain("pointer-events: auto");
-    expect(globalStyles).not.toContain('.edgeever-diagram-canvas[data-diagram-kind="flowchart"] .x6-node:hover .x6-port-body');
+    expect(globalStyles).not.toContain('.ponder-diagram-canvas[data-diagram-kind="flowchart"] .x6-node:hover .x6-port-body');
   });
 
   test("turns a connection dropped on blank canvas into a connected-node picker", () => {

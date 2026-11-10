@@ -1,7 +1,5 @@
 # Optional share-image fonts
 
-[简体中文](note-image-fonts.zh-CN.md)
-
 Body settings, poster design and share images use the same directory of 23 named fonts, including all five fonts in Qiaomu’s designer starter pack. They load remote, version-pinned resources on demand; no additional font binaries are included in Web, desktop, Android or iOS packages. The picker, loader and license notices add a small amount of application code.
 
 | Choice | Pinned package and stylesheet |
@@ -19,7 +17,7 @@ Smiley Sans is also a member of the five-font recommended pack. The four additio
 
 `packages/shared/src/font-catalog.ts` defines the catalog used by share images, body typography and poster design. `note-image-remote-fonts.ts` keeps the original share-image exports compatible. Subsets are provided by the [Chinese Webfont Project](https://github.com/KonghaYao/chinese-free-web-font-storage) and [Fontsource](https://fontsource.org/fonts/noto-sans-sc). Each request first tries jsDelivr, then unpkg. For CSS-backed fonts, only descriptors for WOFF2 files in the pinned package directory are accepted; external styles are never inserted into the page.
 
-For CSS-backed fonts, the selected font's manifest is fetched on demand. The renderer matches its Unicode ranges against the card's text and downloads only matching subsets, not the entire family. Note text is matched locally and is never sent in font requests. Manifests and font bytes are cached in the separate, disposable IndexedDB database `edgeever-share-font-cache`. Downloads are deduplicated, failed requests can be retried, and unavailable storage does not prevent online rendering. The application waits for font loading before rendering the image.
+For CSS-backed fonts, the selected font's manifest is fetched on demand. The renderer matches its Unicode ranges against the card's text and downloads only matching subsets, not the entire family. Note text is matched locally and is never sent in font requests. Manifests and font bytes are cached in the separate, disposable IndexedDB database `ponder-share-font-cache`. Downloads are deduplicated, failed requests can be retried, and unavailable storage does not prevent online rendering. The application waits for font loading before rendering the image.
 
 Offline reuse requires both the manifest and the relevant character subsets to remain cached. A new character may require another download. Browser storage eviction, restricted WebViews, or clearing site data can remove this ability; HTTP caching and in-session deduplication still apply where available. Selecting a catalog font in body settings changes editor typography; the existing card-theme fonts remain available.
 
@@ -31,7 +29,7 @@ The Web picker renders each visible name in its corresponding font, including th
 
 ## Shared body and poster typography
 
-`font-loader.ts` owns optional-font downloading, integrity checks, registration and export CSS. All three entry points keep using the existing `edgeever-share-font-cache` database and URL keys, so previously cached fonts remain usable. The Web `FontLabel` component previews only visible rows; each picker reads the same 23 catalog entries, in the same order and with the same names.
+`font-loader.ts` owns optional-font downloading, integrity checks, registration and export CSS. All three entry points keep using the existing `ponder-share-font-cache` database and URL keys, so previously cached fonts remain usable. The Web `FontLabel` component previews only visible rows; each picker reads the same 23 catalog entries, in the same order and with the same names.
 
 Body preferences keep their existing storage keys and legacy choices. Selecting a catalog face applies its shared family with a system or existing local fallback. A debounced observer loads new character subsets as note text changes or another note mounts. Publishing accepts the catalog IDs through the existing body-font setting; no database schema or migration is changed.
 

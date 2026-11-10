@@ -7,9 +7,9 @@ describe("note print page margin", () => {
   test("keeps the page number and leaves the note title off the page header", () => {
     expect(css).toContain('content: counter(page) " / " counter(pages)');
     expect(css).not.toContain("@top-center");
-    expect(css).not.toContain("edgeever-note-title");
+    expect(css).not.toContain("ponder-note-title");
     expect(css).not.toContain("string-set:");
-    expect(css).not.toContain("edgeever-print-toc");
+    expect(css).not.toContain("ponder-print-toc");
   });
 
   test("uses the editor's neutral prose colors", () => {
@@ -25,9 +25,9 @@ describe("note print page margin", () => {
   });
 
   test("lets a long table continue on the same page", () => {
-    expect(css).toMatch(/\.edgeever-print-content \.tableWrapper\s*\{[^}]*display:\s*contents;/s);
-    expect(css).toMatch(/\.edgeever-print-content table\s*\{[^}]*break-inside:\s*auto;/s);
-    expect(css).toMatch(/\.edgeever-print-content tr\s*\{[^}]*break-inside:\s*avoid;/s);
+    expect(css).toMatch(/\.ponder-print-content \.tableWrapper\s*\{[^}]*display:\s*contents;/s);
+    expect(css).toMatch(/\.ponder-print-content table\s*\{[^}]*break-inside:\s*auto;/s);
+    expect(css).toMatch(/\.ponder-print-content tr\s*\{[^}]*break-inside:\s*avoid;/s);
     expect(css).not.toMatch(/\.tableWrapper\s*\{[^}]*overflow:\s*hidden;/s);
   });
 });

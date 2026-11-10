@@ -6,26 +6,26 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { createServer } from "node:http";
-import { fetchEdgeEverApp } from "../../../api/src/index.ts";
+import { fetchPonderApp } from "../../../api/src/index.ts";
 import { createSelfHostedStorageAdapter } from "../../../api/src/self-hosted-storage-adapter.ts";
 import { BackupManager } from "../main/backup-manager.mjs";
-import { createEdgeEverClient } from "../../../../packages/client/src/index.ts";
+import { createPonderClient } from "../../../../packages/client/src/index.ts";
 
 const cleanups = [];
 afterEach(async () => { for (const cleanup of cleanups.splice(0).reverse()) await cleanup(); });
-const directory = async () => { const path = await mkdtemp(join(tmpdir(), "edgeever-backup-e2e-")); cleanups.push(() => rm(path, { recursive: true, force: true })); return path; };
+const directory = async () => { const path = await mkdtemp(join(tmpdir(), "ponder-backup-e2e-")); cleanups.push(() => rm(path, { recursive: true, force: true })); return path; };
 const instance = async ({ intercept } = {}) => {
   const directoryPath = await directory();
   const db = new Database(join(directoryPath, "db.sqlite"));
   for (const file of (await readdir("migrations")).filter((name) => name.endsWith(".sql")).sort()) db.exec(await readFile(join("migrations", file), "utf8"));
-  const env = { storage: createSelfHostedStorageAdapter(db, join(directoryPath, "resources")), EDGE_EVER_ALLOW_UNAUTHENTICATED: "true", EDGE_EVER_RUNTIME: "self-hosted-bun" };
+  const env = { storage: createSelfHostedStorageAdapter(db, join(directoryPath, "resources")), PONDER_ALLOW_UNAUTHENTICATED: "true", PONDER_RUNTIME: "self-hosted-bun" };
   const server = Bun.serve({ hostname: "127.0.0.1", port: 0, async fetch(request) {
     const response = await intercept?.(request);
-    return response ?? fetchEdgeEverApp(request, env, { waitUntil() {}, passThroughOnException() {} });
+    return response ?? fetchPonderApp(request, env, { waitUntil() {}, passThroughOnException() {} });
   } });
   cleanups.push(() => { server.stop(true); db.close(); });
   const baseUrl = `http://127.0.0.1:${server.port}`;
-  return { db, server, baseUrl, client: createEdgeEverClient({ baseUrl }) };
+  return { db, server, baseUrl, client: createPonderClient({ baseUrl }) };
 };
 
 let bundle;
@@ -34,7 +34,7 @@ afterAll(async () => { if (bundleDirectory) await rm(bundleDirectory, { recursiv
 const nodeBinary = execFileSync("node", ["-p", "process.execPath"], { encoding: "utf8" }).trim();
 const prepareBundle = async () => {
   if (!bundle) {
-    bundleDirectory = await mkdtemp(join(tmpdir(), "edgeever-backup-e2e-bundle-"));
+    bundleDirectory = await mkdtemp(join(tmpdir(), "ponder-backup-e2e-bundle-"));
     const build = await Bun.build({ entrypoints: ["apps/desktop/src/backup/worker.ts", "apps/desktop/src/backup/tests/restore-sink-rejection.mjs"], target: "node", format: "esm", outdir: bundleDirectory, naming: "[name].mjs" });
     if (!build.success) throw new Error(build.logs.join("\n"));
     bundle = join(bundleDirectory, "worker.mjs");
@@ -76,7 +76,7 @@ test("real socket failures retain safe request and underlying transport diagnost
   await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
   cleanups.push(() => new Promise((resolve) => server.close(resolve)));
   const root = await directory();
-  const job = await launch({ operation: "export", context: { baseUrl: `http://127.0.0.1:${server.address().port}`, accountId: null, token: "private-request-token" }, path: join(root, "failed.zip.part"), version: { edgeeverVersion: "2.16.0", buildId: "socket-failure" } });
+  const job = await launch({ operation: "export", context: { baseUrl: `http://127.0.0.1:${server.address().port}`, accountId: null, token: "private-request-token" }, path: join(root, "failed.zip.part"), version: { ponderVersion: "2.16.0", buildId: "socket-failure" } });
   await expect(job.next("done")).rejects.toMatchObject({ code: "backup_failed", message: "fetch failed" });
   const diagnostic = job.messages.find((message) => message.type === "request-error")?.result;
   expect(diagnostic).toMatchObject({ method: "GET", path: "/api/v1/backups/state", code: "backup_network_failed", message: "Backup network request failed." });
@@ -98,7 +98,7 @@ test("failed workers cancel unfinished sibling requests and exit", async () => {
   } });
   // stop() resolves only after active requests finish. This fixture never responds.
   cleanups.push(() => { server.stop(true); });
-  const job = await launch({ operation: "export", context: { baseUrl: `http://127.0.0.1:${server.port}`, accountId: null, token: "" }, path: join(await directory(), "pending.zip.part"), version: { edgeeverVersion: "2.2.0", buildId: "failure" } });
+  const job = await launch({ operation: "export", context: { baseUrl: `http://127.0.0.1:${server.port}`, accountId: null, token: "" }, path: join(await directory(), "pending.zip.part"), version: { ponderVersion: "2.2.0", buildId: "failure" } });
   await expect(job.next("done")).rejects.toMatchObject({ code: "fixture_read_failed" });
   let timer;
   try {
@@ -114,8 +114,8 @@ test("real Node background workers export encrypted and plain archives and resto
     const bytes = new Uint8Array(2 * 1024 * 1024 + 11).fill(42);
     const { resource } = await source.client.uploadMemoResource(memo.id, new File([bytes], "payload.bin", { type: "application/octet-stream" }));
     const sourceState = await (await fetch(`${source.baseUrl}/api/v1/backups/state`)).json();
-    const root = await directory(); const archive = join(root, encrypted ? "backup.edgeever.enc" : "backup.zip");
-    const job = await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "", locale: "en-US" }, path: archive, password: encrypted ? "  备份 password  " : undefined, version: { edgeeverVersion: "2.2.0", buildId: "e2e" } });
+    const root = await directory(); const archive = join(root, encrypted ? "backup.ponder.enc" : "backup.zip");
+    const job = await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "", locale: "en-US" }, path: archive, password: encrypted ? "  备份 password  " : undefined, version: { ponderVersion: "2.2.0", buildId: "e2e" } });
     const done = await job.next("done");
     expect(done.result.manifest.counts).toEqual(sourceState.counts);
     source.server.stop(true);
@@ -153,8 +153,8 @@ for (const jsonError of [true, false]) test(`preserves and diagnoses a third-res
     const { resource } = await source.client.uploadMemoResource(memo.id, new File([new Uint8Array(32 + i).fill(i)], `file-${i}.bin`, { type: "application/octet-stream" }));
     resourceIds.push(resource.id);
   }
-  const archive = join(await directory(), "backup.edgeever.enc");
-  const exported = await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "" }, path: archive, password: "fixture password", version: { edgeeverVersion: "2.2.0", buildId: "http-error" } });
+  const archive = join(await directory(), "backup.ponder.enc");
+  const exported = await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "" }, path: archive, password: "fixture password", version: { ponderVersion: "2.2.0", buildId: "http-error" } });
   await exported.next("done");
   const initializations = [];
   let failedPath;
@@ -191,7 +191,7 @@ test('unchanged scheduled sources read only state and changed sources produce an
   const previousState = { identity: state.identity, workspaceId: state.workspaceId, backupRevision: state.backupRevision };
   requests.length = 0;
   const root = await directory();
-  const input = { operation: 'export', context: { baseUrl: source.baseUrl, accountId: null, token: '' }, path: join(root, 'new.zip.part'), previousState, version: { edgeeverVersion: '2.2.0', buildId: 'skip' } };
+  const input = { operation: 'export', context: { baseUrl: source.baseUrl, accountId: null, token: '' }, path: join(root, 'new.zip.part'), previousState, version: { ponderVersion: '2.2.0', buildId: 'skip' } };
   const unchanged = await launch(input);
   expect((await unchanged.next('done')).result).toMatchObject({ skipped: true, sourceState: previousState });
   expect(await readdir(root)).toEqual([]);
@@ -216,7 +216,7 @@ test("manager creates named files, restores from history and deletes only the se
   const manager = new BackupManager({
     userData: join(root, "private"), defaultDirectory: join(root, "backups"),
     secureStorage: { isEncryptionAvailable: () => true, isAsyncEncryptionAvailable: async () => true },
-    version: { edgeeverVersion: "2.2.0", buildId: "named-e2e" },
+    version: { ponderVersion: "2.2.0", buildId: "named-e2e" },
     workerFactory(data) {
       const child = fork(new URL("./tests/node-worker-runner.mjs", import.meta.url), [bundle], { execPath: nodeBinary, stdio: ["ignore", "ignore", "inherit", "ipc"] });
       child.send(data);
@@ -232,10 +232,10 @@ test("manager creates named files, restores from history and deletes only the se
     await manager.waitForIdle(); expect(manager.status().error).toBeNull();
   }
   const status = manager.status();
-  expect(status.history.map(entry => entry.name)).toEqual(["Plain snapshot.zip", "Encrypted snapshot.edgeever.enc"]);
+  expect(status.history.map(entry => entry.name)).toEqual(["Plain snapshot.zip", "Encrypted snapshot.ponder.enc"]);
   expect(status.config.encrypted).toBe(false); expect(status.passwordSet).toBe(false);
-  expect((await readdir(status.actualDirectory)).sort()).toEqual(["Encrypted snapshot.edgeever.enc", "Plain snapshot.zip"]);
-  const selection = await manager.selectHistory("Encrypted snapshot.edgeever.enc", id);
+  expect((await readdir(status.actualDirectory)).sort()).toEqual(["Encrypted snapshot.ponder.enc", "Plain snapshot.zip"]);
+  const selection = await manager.selectHistory("Encrypted snapshot.ponder.enc", id);
   expect(selection.encrypted).toBe(true);
   await source.client.deleteMemo(memo.id);
   let ready;
@@ -248,8 +248,8 @@ test("manager creates named files, restores from history and deletes only the se
   const response = await source.client.getResourceResponse(`/api/v1/resources/${resource.id}/blob`);
   expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes);
   await manager.deleteHistory("Plain snapshot.zip", id);
-  expect(await readdir(status.actualDirectory)).toEqual(["Encrypted snapshot.edgeever.enc"]);
-  expect(manager.status().history.map(entry => entry.name)).toEqual(["Encrypted snapshot.edgeever.enc"]);
+  expect(await readdir(status.actualDirectory)).toEqual(["Encrypted snapshot.ponder.enc"]);
+  expect(manager.status().history.map(entry => entry.name)).toEqual(["Encrypted snapshot.ponder.enc"]);
 }, 15000);
 
 const stateServer = (respond) => {
@@ -264,7 +264,7 @@ for (const [name, respond, accountId, code] of [
   ["a source owned by another account", () => Response.json({ protocolVersion: 1, userId: "someone-else", workspaceId: "ws", identity: "i", backupRevision: "0", counts: emptyCounts }), "me", "backup_account_changed"],
 ]) test(`export rejects ${name} without writing an archive`, async () => {
   const root = await directory();
-  const job = await launch({ operation: "export", context: { baseUrl: stateServer(respond), accountId, token: "" }, path: join(root, "backup.zip.part"), version: { edgeeverVersion: "2.2.0", buildId: "state" } });
+  const job = await launch({ operation: "export", context: { baseUrl: stateServer(respond), accountId, token: "" }, path: join(root, "backup.zip.part"), version: { ponderVersion: "2.2.0", buildId: "state" } });
   await expect(job.next("done")).rejects.toMatchObject({ code });
   expect(await readdir(root)).toEqual([]);
 }, 10000);
@@ -276,7 +276,7 @@ test("export fails when the source changes while the archive is written", async 
     if (new URL(request.url).pathname === "/api/v1/backups/state" && ++stateRequests === 2) await source.client.createNotebook({ name: "Written during backup" });
   } });
   await source.client.createNotebook({ name: "Before backup" });
-  const job = await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "" }, path: join(await directory(), "backup.zip.part"), version: { edgeeverVersion: "2.2.0", buildId: "changed" } });
+  const job = await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "" }, path: join(await directory(), "backup.zip.part"), version: { ponderVersion: "2.2.0", buildId: "changed" } });
   await expect(job.next("done")).rejects.toMatchObject({ code: "backup_source_changed" });
   expect(stateRequests).toBe(2);
 }, 10000);
@@ -288,7 +288,7 @@ test("export rejects attachments whose bytes do not match the recorded digest", 
   const { notebook } = await source.client.createNotebook({ name: "Damaged attachment" });
   const { memo } = await source.client.createMemo({ notebookId: notebook.id, contentMarkdown: "attachment" });
   await source.client.uploadMemoResource(memo.id, new File([new Uint8Array(64).fill(7)], "original.bin", { type: "application/octet-stream" }));
-  const job = await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "" }, path: join(await directory(), "backup.zip.part"), version: { edgeeverVersion: "2.2.0", buildId: "digest" } });
+  const job = await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "" }, path: join(await directory(), "backup.zip.part"), version: { ponderVersion: "2.2.0", buildId: "digest" } });
   await expect(job.next("done")).rejects.toMatchObject({ code: "incompleteResources" });
 }, 10000);
 
@@ -297,10 +297,10 @@ test("verify checks archives offline and rejects damaged files and wrong passwor
   const { notebook } = await source.client.createNotebook({ name: "Verify" });
   await source.client.createMemo({ notebookId: notebook.id, contentMarkdown: "verify me" });
   const root = await directory();
-  const plain = join(root, "backup.zip"); const encrypted = join(root, "backup.edgeever.enc");
+  const plain = join(root, "backup.zip"); const encrypted = join(root, "backup.ponder.enc");
   const counts = (await (await fetch(`${source.baseUrl}/api/v1/backups/state`)).json()).counts;
   for (const [path, password] of [[plain, undefined], [encrypted, "fixture password"]]) {
-    await (await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "" }, path, password, version: { edgeeverVersion: "2.2.0", buildId: "verify" } })).next("done");
+    await (await launch({ operation: "export", context: { baseUrl: source.baseUrl, accountId: null, token: "" }, path, password, version: { ponderVersion: "2.2.0", buildId: "verify" } })).next("done");
   }
   source.server.stop(true);
   // An unreachable server proves verification never touches the network.

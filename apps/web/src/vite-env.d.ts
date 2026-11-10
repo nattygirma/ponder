@@ -1,18 +1,18 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/client" />
 
-declare const __EDGEEVER_BUILD_ID__: string;
-declare const __EDGEEVER_BUILD_LABEL__: string;
-declare const __EDGEEVER_APP_VERSION__: string;
-declare const __EDGEEVER_RELEASED_AT__: string;
-declare const __EDGEEVER_RELEASE_SUMMARY__: {
+declare const __PONDER_BUILD_ID__: string;
+declare const __PONDER_BUILD_LABEL__: string;
+declare const __PONDER_APP_VERSION__: string;
+declare const __PONDER_RELEASED_AT__: string;
+declare const __PONDER_RELEASE_SUMMARY__: {
   version: string;
   changes: Record<string, string[]>;
 };
-declare const __EDGEEVER_DEPLOYMENT_TRIGGER__: string;
-declare const __EDGEEVER_DEPLOYMENT_METHOD__: string;
-declare const __EDGEEVER_DEVELOPMENT_PROFILE__: "" | "local" | "demo";
-declare const __EDGEEVER_DESKTOP_BUILD__: boolean;
+declare const __PONDER_DEPLOYMENT_TRIGGER__: string;
+declare const __PONDER_DEPLOYMENT_METHOD__: string;
+declare const __PONDER_DEVELOPMENT_PROFILE__: "" | "local" | "demo";
+declare const __PONDER_DESKTOP_BUILD__: boolean;
 
 interface DesktopGlobalShortcutBinding {
   key: string;
@@ -43,12 +43,12 @@ interface DesktopNoteWindowSyncUpdate {
   failed: number;
   conflicted: number;
   /** The note as acknowledged by this sync, when it was part of it. */
-  memo: import("@edgeever/shared").MemoDetail | null;
+  memo: import("@ponder/shared").MemoDetail | null;
 }
 
-interface EdgeEverDesktopBridge {
-  backup<A extends keyof import("@edgeever/shared").DesktopBackupActions>(action: A, input?: import("@edgeever/shared").DesktopBackupActions[A]["input"]): Promise<import("@edgeever/shared").DesktopBackupActions[A]["output"]>;
-  onBackupStatus(callback: (status: import("@edgeever/shared").DesktopBackupStatus | null) => void): () => void;
+interface PonderDesktopBridge {
+  backup<A extends keyof import("@ponder/shared").DesktopBackupActions>(action: A, input?: import("@ponder/shared").DesktopBackupActions[A]["input"]): Promise<import("@ponder/shared").DesktopBackupActions[A]["output"]>;
+  onBackupStatus(callback: (status: import("@ponder/shared").DesktopBackupStatus | null) => void): () => void;
   isAvailable: boolean;
   canClearLocalData: boolean;
   recoveredAfterAbnormalExit: boolean;
@@ -74,7 +74,7 @@ interface EdgeEverDesktopBridge {
     uploadChannel: import("@/lib/imgbed").ImgBedUploadChannel; serverCompress: boolean;
     bytes: Uint8Array; filename: string; mimeType: string; copy: import("@/lib/picgo").PicGoFailureCopy;
   }): Promise<{ url: string } | { fallback: true }>;
-  publicNetworkFetch(requestId: string, input: import("@edgeever/shared").PluginPublicFetchRequest): Promise<import("@edgeever/shared").PluginPublicFetchResponse>;
+  publicNetworkFetch(requestId: string, input: import("@ponder/shared").PluginPublicFetchRequest): Promise<import("@ponder/shared").PluginPublicFetchResponse>;
   cancelPublicNetworkFetch(requestId: string): Promise<void>;
   openAiProviderStream(requestId: string, input: {
     url: string;
@@ -151,9 +151,9 @@ interface EdgeEverDesktopBridge {
   setRichTextHeadingShortcutActive?(active: boolean): void;
   onHeadingShortcut?(callback: (level: number) => void): () => void;
   onHibernatePrepare?(callback: () => void | Promise<void>): () => void;
-  syncScheduledTasks(tasks: import("@edgeever/shared").ScheduledTask[]): Promise<{ scheduled: number }>;
+  syncScheduledTasks(tasks: import("@ponder/shared").ScheduledTask[]): Promise<{ scheduled: number }>;
   onScheduledTask(callback: (payload: {
-    task: import("@edgeever/shared").ScheduledTask;
+    task: import("@ponder/shared").ScheduledTask;
     scheduledFor: string;
   }) => void | Promise<void>): () => void;
   onImportMarkdown(callback: (payload: { name: string; content: string }) => void): () => void;
@@ -303,11 +303,11 @@ interface DesktopRendererErrorDetails {
   exitCode?: number;
 }
 
-interface EdgeEverPrintBridge {
+interface PonderPrintBridge {
   savePdf: () => Promise<Uint8Array>;
 }
 
 interface Window {
-  edgeeverDesktop?: EdgeEverDesktopBridge;
-  edgeeverPrint?: EdgeEverPrintBridge;
+  ponderDesktop?: PonderDesktopBridge;
+  ponderPrint?: PonderPrintBridge;
 }

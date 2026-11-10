@@ -22,7 +22,7 @@ const labels = {
 };
 
 const source = (overrides = {}) => ({
-  pageUrl: "https://github.com/tianma-if/edgeever",
+  pageUrl: "https://github.com/tianma-if/ponder",
   openGraphDescription: "",
   embeddedJsonChunks: [],
   aboutText: "",
@@ -38,10 +38,10 @@ const sidebarPayload = (overrides = {}) => JSON.stringify({
   payload: {
     sidebarAbout: {
       description: "Open-source, AI-native knowledge base.",
-      website: "https://edgeever.org",
+      website: "https://appkeep.io",
       topics: [{ name: "notes" }, { name: "mcp" }, { name: "notes" }],
       ownerLogin: "tianma-if",
-      repoName: "edgeever",
+      repoName: "ponder",
       stargazerCount: 1915,
       forksCount: 995,
       repo: { license: { spdxId: "AGPL-3.0", name: "GNU Affero General Public License v3.0" } },
@@ -52,24 +52,24 @@ const sidebarPayload = (overrides = {}) => JSON.stringify({
 
 describe("github repository addresses", () => {
   test("accepts a repository home and a code tree, and ignores other GitHub pages", () => {
-    expect(githubRepoTarget("https://github.com/tianma-if/edgeever")).toEqual({
+    expect(githubRepoTarget("https://github.com/tianma-if/ponder")).toEqual({
       owner: "tianma-if",
-      name: "edgeever",
-      canonicalUrl: "https://github.com/tianma-if/edgeever",
+      name: "ponder",
+      canonicalUrl: "https://github.com/tianma-if/ponder",
     });
-    expect(githubRepoTarget("https://www.github.com/tianma-if/edgeever/?tab=readme-ov-file#readme")?.canonicalUrl)
-      .toBe("https://github.com/tianma-if/edgeever");
-    expect(githubRepoTarget("https://github.com/tianma-if/edgeever/tree/main")?.canonicalUrl)
-      .toBe("https://github.com/tianma-if/edgeever");
-    expect(githubRepoTarget("https://github.com/tianma-if/edgeever/tree/release/1.0/apps")?.canonicalUrl)
-      .toBe("https://github.com/tianma-if/edgeever");
-    expect(githubRepoTarget("https://github.com/tianma-if/edgeever/issues/12")).toBeNull();
-    expect(githubRepoTarget("https://github.com/tianma-if/edgeever/pull/4")).toBeNull();
-    expect(githubRepoTarget("https://github.com/tianma-if/edgeever/blob/main/README.md")).toBeNull();
-    expect(githubRepoTarget("https://github.com/tianma-if/edgeever/tree")).toBeNull();
+    expect(githubRepoTarget("https://www.github.com/tianma-if/ponder/?tab=readme-ov-file#readme")?.canonicalUrl)
+      .toBe("https://github.com/tianma-if/ponder");
+    expect(githubRepoTarget("https://github.com/tianma-if/ponder/tree/main")?.canonicalUrl)
+      .toBe("https://github.com/tianma-if/ponder");
+    expect(githubRepoTarget("https://github.com/tianma-if/ponder/tree/release/1.0/apps")?.canonicalUrl)
+      .toBe("https://github.com/tianma-if/ponder");
+    expect(githubRepoTarget("https://github.com/tianma-if/ponder/issues/12")).toBeNull();
+    expect(githubRepoTarget("https://github.com/tianma-if/ponder/pull/4")).toBeNull();
+    expect(githubRepoTarget("https://github.com/tianma-if/ponder/blob/main/README.md")).toBeNull();
+    expect(githubRepoTarget("https://github.com/tianma-if/ponder/tree")).toBeNull();
     expect(githubRepoTarget("https://github.com/tianma-if")).toBeNull();
-    expect(githubRepoTarget("https://gist.github.com/tianma-if/edgeever")).toBeNull();
-    expect(githubRepoTarget("https://example.com/tianma-if/edgeever")).toBeNull();
+    expect(githubRepoTarget("https://gist.github.com/tianma-if/ponder")).toBeNull();
+    expect(githubRepoTarget("https://example.com/tianma-if/ponder")).toBeNull();
   });
 });
 
@@ -78,27 +78,27 @@ describe("github repository card", () => {
     const [script] = bundleTestScripts(["capture-github"]);
     for (const json of ["", JSON.stringify({ ownerLogin: "tianma-if", readme: "x".repeat(500_000) })]) {
       const window = createWindow(`
-        <meta name="octolytics-dimension-repository_nwo" content="tianma-if/edgeever">
+        <meta name="octolytics-dimension-repository_nwo" content="tianma-if/ponder">
         <script type="application/json">${json}</script>
         <div class="sidebarSection__oqw6Y8">
           <h2>About</h2><p class="description__ej4leF">A portable notes workspace.</p>
-          <div class="websiteRow__c4vvco"><a href="https://edgeever.org">edgeever.org</a></div>
+          <div class="websiteRow__c4vvco"><a href="https://appkeep.io">appkeep.io</a></div>
           <a href="/topics/notes">notes</a>
           <a href="#license"><svg class="octicon-law"></svg>AGPL-3.0 license</a>
-        </div>`, "https://github.com/tianma-if/edgeever/tree/main");
+        </div>`, "https://github.com/tianma-if/ponder/tree/main");
       Object.getPrototypeOf(window.document.querySelectorAll("span"))[Symbol.iterator] ??= Array.prototype[Symbol.iterator];
       let result;
       runInContext(script, createContext({
         document: window.document,
         location: window.location,
-        __edgeeverGithubClipPayload: { requestId: "regression" },
+        __ponderGithubClipPayload: { requestId: "regression" },
         chrome: { runtime: { sendMessage: (message) => { result = message.result; } } },
       }));
       expect(result?.ok).toBe(true);
       expect(result.source.embeddedJsonChunks).toEqual([]);
       expect(githubRepoFactsFromSource(result.source)).toMatchObject({
-        owner: "tianma-if", name: "edgeever", intro: "A portable notes workspace.",
-        homepage: "https://edgeever.org/", topics: ["notes"], license: "AGPL-3.0",
+        owner: "tianma-if", name: "ponder", intro: "A portable notes workspace.",
+        homepage: "https://appkeep.io/", topics: ["notes"], license: "AGPL-3.0",
       });
       expect(githubRepoFactsFromSource({ ...result.source, repositoryNwo: "other/repo" })).toBeNull();
       expect(githubRepoFactsFromSource({ ...result.source, repositoryNwo: undefined })).toBeNull();
@@ -108,19 +108,19 @@ describe("github repository card", () => {
 
   test("drops GitHub's generated description and the repository suffix", () => {
     expect(cleanRepoDescription(
-      "Open-source notes. - tianma-if/edgeever",
+      "Open-source notes. - tianma-if/ponder",
       "tianma-if",
-      "edgeever",
+      "ponder",
     )).toBe("Open-source notes.");
     expect(cleanRepoDescription(
-      "Open-source notes &amp; sync. - edgeever/apps at main · tianma-if/edgeever",
+      "Open-source notes &amp; sync. - ponder/apps at main · tianma-if/ponder",
       "tianma-if",
-      "edgeever",
+      "ponder",
     )).toBe("Open-source notes & sync.");
     expect(cleanRepoDescription(
-      "Contribute to tianma-if/edgeever development by creating an account on GitHub.",
+      "Contribute to tianma-if/ponder development by creating an account on GitHub.",
       "tianma-if",
-      "edgeever",
+      "ponder",
     )).toBe("");
   });
 
@@ -132,30 +132,30 @@ describe("github repository card", () => {
 
   test("builds a card from the repository payload and leaves out live counters", () => {
     const facts = githubRepoFactsFromSource(source({
-      pageUrl: "https://github.com/Tianma-IF/EdgeEver/tree/main/apps",
-      openGraphDescription: "Open-source, AI-native knowledge base. - tianma-if/edgeever",
+      pageUrl: "https://github.com/Tianma-IF/Ponder/tree/main/apps",
+      openGraphDescription: "Open-source, AI-native knowledge base. - tianma-if/ponder",
       embeddedJsonChunks: [sidebarPayload()],
       language: "TypeScript 62.1%",
       topics: ["notes", "sqlite"],
     }));
     expect(facts).toMatchObject({
       owner: "tianma-if",
-      name: "edgeever",
-      canonicalUrl: "https://github.com/tianma-if/edgeever",
+      name: "ponder",
+      canonicalUrl: "https://github.com/tianma-if/ponder",
       intro: "Open-source, AI-native knowledge base.",
-      homepage: "https://edgeever.org/",
+      homepage: "https://appkeep.io/",
       language: "TypeScript",
       license: "AGPL-3.0",
       topics: ["notes", "mcp", "sqlite"],
     });
     const markdown = githubRepoNoteMarkdown({ ...facts, ...labels });
-    expect(githubRepoNoteTitle(facts.owner, facts.name)).toBe("tianma-if/edgeever");
+    expect(githubRepoNoteTitle(facts.owner, facts.name)).toBe("tianma-if/ponder");
     expect(markdown.startsWith("Open-source, AI-native knowledge base.")).toBe(true);
-    expect(markdown).toContain("主页: [edgeever.org](https://edgeever.org/)");
+    expect(markdown).toContain("主页: [appkeep.io](https://appkeep.io/)");
     expect(markdown).toContain("语言: TypeScript");
     expect(markdown).toContain("许可证: AGPL-3.0");
     expect(markdown).toContain("话题: notes, mcp, sqlite");
-    expect(markdown).toContain("[https://github.com/tianma-if/edgeever](https://github.com/tianma-if/edgeever)");
+    expect(markdown).toContain("[https://github.com/tianma-if/ponder](https://github.com/tianma-if/ponder)");
     expect(markdown).toContain("抓取时间: 2026-10-01T00:00:00.000Z");
     expect(markdown).not.toContain("1915");
     expect(markdown).not.toContain("995");
@@ -163,12 +163,12 @@ describe("github repository card", () => {
 
   test("reads a code tree that only identifies the repository, then uses the README lead", () => {
     const facts = githubRepoFactsFromSource(source({
-      pageUrl: "https://github.com/tianma-if/edgeever/tree/main",
-      openGraphDescription: "Contribute to tianma-if/edgeever development by creating an account on GitHub.",
+      pageUrl: "https://github.com/tianma-if/ponder/tree/main",
+      openGraphDescription: "Contribute to tianma-if/ponder development by creating an account on GitHub.",
       embeddedJsonChunks: [JSON.stringify({
         payload: {
           codeViewLayoutRoute: {
-            repo: { ownerLogin: "tianma-if", name: "edgeever", defaultBranch: "main" },
+            repo: { ownerLogin: "tianma-if", name: "ponder", defaultBranch: "main" },
           },
         },
       })],
@@ -180,7 +180,7 @@ describe("github repository card", () => {
     const markdown = githubRepoNoteMarkdown({ ...facts, ...labels });
     expect(markdown).not.toContain("主页:");
     expect(markdown).not.toContain("话题:");
-    expect(markdown).toContain("来源: [https://github.com/tianma-if/edgeever](https://github.com/tianma-if/edgeever)");
+    expect(markdown).toContain("来源: [https://github.com/tianma-if/ponder](https://github.com/tianma-if/ponder)");
   });
 
   test("does not treat an unrelated GitHub page as the repository in the address", () => {
@@ -190,7 +190,7 @@ describe("github repository card", () => {
       embeddedJsonChunks: [sidebarPayload()],
     }))).toBeNull();
     expect(githubRepoFactsFromSource(source({
-      pageUrl: "https://github.com/tianma-if/edgeever/issues/8",
+      pageUrl: "https://github.com/tianma-if/ponder/issues/8",
       embeddedJsonChunks: [sidebarPayload()],
     }))).toBeNull();
   });

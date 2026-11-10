@@ -15,7 +15,7 @@ export const macAppExecutable = (bundle) => {
   return join(bundle, "Contents/MacOS", metadata.stdout.trim());
 };
 
-export const MAC_UPDATE_FIXTURE_NAME = "EdgeEverUpdateVerifier";
+export const MAC_UPDATE_FIXTURE_NAME = "PonderUpdateVerifier";
 
 export const assertMacFixtureRuntime = (bundle) =>
   backgroundNodeExecutable(macAppExecutable(bundle), "darwin");

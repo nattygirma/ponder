@@ -13,7 +13,7 @@ export const mountedInstallerCandidates = (volumeNames, volumesDirectory = "/Vol
       const volumePath = join(volumesDirectory, name);
       return {
         volumePath,
-        appPath: join(volumePath, "EdgeEver.app"),
+        appPath: join(volumePath, "Ponder.app"),
       };
     });
 };

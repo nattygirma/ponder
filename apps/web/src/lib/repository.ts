@@ -1,7 +1,7 @@
-import type { NotebookUpdateInput } from "@edgeever/shared";
+import type { NotebookUpdateInput } from "@ponder/shared";
 import { assertLocalMemoSnapshot } from "./local-memo-guard";
-import { localizeDefaultMemoTemplate } from "@edgeever/shared/memo-template-seeds";
-import { markdownToDoc, type MemoDetail, type MemoRevision, type MemoTemplate, type Notebook, type Resource, type ResourceListItem, type ResourceStorageSummary, type TagSummary, type TiptapDoc } from "@edgeever/shared";
+import { localizeDefaultMemoTemplate } from "@ponder/shared/memo-template-seeds";
+import { markdownToDoc, type MemoDetail, type MemoRevision, type MemoTemplate, type Notebook, type Resource, type ResourceListItem, type ResourceStorageSummary, type TagSummary, type TiptapDoc } from "@ponder/shared";
 import { api } from "@/lib/api";
 import {
   getLocalMemo,
@@ -54,7 +54,7 @@ import { isActiveLocalMemoUpdateStatus, shouldAcceptRemoteMemoDetail } from "@/l
 import { cacheLocalResourceBytes, getCachedLocalResourceBytes } from "@/lib/local-resource-cache";
 import { withRepositoryMutationEvents } from "@/lib/repository-events";
 
-export type EdgeEverRepository = {
+export type PonderRepository = {
   listNotebooks(): Promise<{ notebooks: Notebook[] }>;
   createNotebook(input: { name: string; parentId?: string | null }): Promise<{ notebook: Notebook }>;
   updateNotebook(notebookId: string, input: NotebookUpdateInput): Promise<{ notebook: Notebook }>;
@@ -184,7 +184,7 @@ const acceptRemoteMemoDetail = async (
 
   cacheMemoWithoutBlocking(scope, remote);
   if (options.emitRefreshEvent) {
-    window.dispatchEvent(new CustomEvent("edgeever:memo-detail-refreshed", { detail: remote }));
+    window.dispatchEvent(new CustomEvent("ponder:memo-detail-refreshed", { detail: remote }));
   }
   return true;
 };
@@ -204,7 +204,7 @@ const applyRemoteNotebookList = async (scope: string, notebooks: Notebook[], gen
   await reconcileLocalNotebooks(scope, notebooks, guards.pendingDeleteIds, guards.pendingCreateIds);
 };
 
-export const createWebRepository = (scope: string): EdgeEverRepository => {
+export const createWebRepository = (scope: string): PonderRepository => {
   const isOffline = isBrowserOffline;
 
   return ({
@@ -229,7 +229,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
   async createNotebook(input) {
     const notebook = await createLocalNotebook(scope, input);
     await queueLocalAction(scope, "notebook.create", notebook.id, { ...input, temporaryId: notebook.id });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { notebook };
   },
 
@@ -242,14 +242,14 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
       return result;
     }
     await queueLocalAction(scope, "notebook.update", notebookId, { notebookId, ...input });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { notebook: local };
   },
 
   async deleteNotebook(notebookId) {
     const notebookIds = await deleteLocalNotebookTree(scope, notebookId);
     await queueLocalAction(scope, "notebook.delete", notebookId, { notebookId, notebookIds });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const };
   },
 
@@ -273,7 +273,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
   createTemplate: async (input) => {
     const template = await createLocalTemplate(scope, input);
     await queueLocalAction(scope, "template.create", template.id, { ...input, temporaryId: template.id });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { template };
   },
   updateTemplate: async (templateId, input) => {
@@ -285,13 +285,13 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
       return result;
     }
     await queueLocalAction(scope, "template.update", templateId, { templateId, ...input });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { template };
   },
   deleteTemplate: async (templateId) => {
     await deleteLocalTemplate(scope, templateId);
     await queueLocalAction(scope, "template.delete", templateId, { templateId });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const };
   },
   useTemplate: async (templateId, notebookId, locale) => {
@@ -319,7 +319,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
       createdAt: memo.createdAt,
       updatedAt: memo.updatedAt,
     });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { memo };
   },
   uploadMemoResource: async (memoId, file) => {
@@ -332,7 +332,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
         mimeType: resource.mimeType,
         url: resource.url,
       }, memoId);
-      window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+      window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
       return { resource };
     }
     const result = await api.uploadMemoResource(memoId, file);
@@ -401,25 +401,25 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
   renameTag: async (tag, name) => {
     const updated = await applyLocalTagRename(scope, tag, name);
     await queueLocalAction(scope, "tag.rename", tag, { tag, name });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const, updated };
   },
   deleteTag: async (tag) => {
     const updated = await applyLocalTagDelete(scope, tag);
     await queueLocalAction(scope, "tag.delete", tag, { tag });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const, updated };
   },
   moveMemos: async (input) => {
     const moved = await applyLocalMemoMove(scope, input.memoIds, input.notebookId);
     await queueLocalAction(scope, "memo.moveBatch", input.memoIds.join(","), input);
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const, moved };
   },
   deleteMemos: async (input) => {
     const deleted = await applyLocalMemoDeleteBatch(scope, input.memoIds, input.permanent);
     await queueLocalAction(scope, "memo.deleteBatch", input.memoIds.join(","), input);
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const, deleted };
   },
   emptyTrash: async () => {
@@ -428,13 +428,13 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
       .map((memo) => memo.id);
     const deleted = await applyLocalEmptyTrash(scope);
     await queueLocalAction(scope, "memo.emptyTrash", "trash", { memoIds });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const, deleted };
   },
   pinMemos: async ({ memoIds, isPinned }) => {
     const updated = await applyLocalMemoPin(scope, memoIds, isPinned);
     await queueLocalAction(scope, "memo.pinBatch", memoIds.join(","), { memoIds, isPinned });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const, updated };
   },
   mergeMemos: async (input) => {
@@ -444,7 +444,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
       return api.mergeMemos(input);
     }
     await queueLocalAction(scope, "memo.merge", memo.id, { ...input, temporaryId: memo.id });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { memo };
   },
 
@@ -558,7 +558,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
     // the queue worker starts remapping its temporary ID. Otherwise the sync
     // callback can win the race and the list effect falls back to the first
     // memo (the demo welcome note).
-    window.setTimeout(() => window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed")), 0);
+    window.setTimeout(() => window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed")), 0);
     return { memo };
   },
 
@@ -589,7 +589,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
     const { deleteLocalMemo } = await import("@/lib/local-mirror");
     await deleteLocalMemo(scope, memoId, permanent);
     await queueMemoDelete(scope, { memoId, permanent });
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { ok: true as const };
   },
 
@@ -598,7 +598,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
     await queueMemoRestore(scope, { memoId });
     const memo = await getLocalMemo(scope, memoId);
     if (!memo) throw new Error("Memo is not available in the local mirror");
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { memo, queued: true };
   },
 
@@ -635,7 +635,7 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
       contentMarkdown: revision.contentMarkdown,
       tags: revision.tags,
     }, scope);
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
     return { memo: updated };
   },
 
@@ -643,8 +643,8 @@ export const createWebRepository = (scope: string): EdgeEverRepository => {
   });
 };
 
-export const createRepository = (scope: string): EdgeEverRepository => {
-  if (typeof window !== "undefined" && window.edgeeverDesktop?.isAvailable) {
+export const createRepository = (scope: string): PonderRepository => {
+  if (typeof window !== "undefined" && window.ponderDesktop?.isAvailable) {
     return withRepositoryMutationEvents(createDesktopRepository(), scope);
   }
   return withRepositoryMutationEvents(createWebRepository(scope), scope);

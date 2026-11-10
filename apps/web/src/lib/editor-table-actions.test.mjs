@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { Editor, Extension } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
-import { EdgeEverTableKit as TableKit } from '../../../../packages/shared/src/markdown-table.ts';
+import { PonderTableKit as TableKit } from '../../../../packages/shared/src/markdown-table.ts';
 import { CellSelection } from '@tiptap/pm/tables';
 import { AllSelection, NodeSelection } from '@tiptap/pm/state';
 import { getEditorTableActions } from './editor-table-actions.ts';

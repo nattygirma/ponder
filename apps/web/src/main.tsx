@@ -1,3 +1,4 @@
+import { InvitePage } from "./components/teams/Teams";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React, { useEffect } from "react";
 import { createRoot } from "react-dom/client";
@@ -8,7 +9,7 @@ import { bootstrapI18n } from "./i18n";
 import { emitPwaUpdateNotice } from "./lib/pwa-update-notice";
 import { withEnvironmentTitlePrefix } from "./lib/environment-title";
 import { initializeTheme, ThemeProvider } from "./components/ThemeProvider";
-import { installPhoneImageFillStyle } from "@edgeever/shared/image-display";
+import { installPhoneImageFillStyle } from "@ponder/shared/image-display";
 import { installDesktopClipboardBridge } from "./lib/clipboard";
 import { applyEditorBodyFontPreference } from "./lib/editor-body-font";
 import { installEditorBodyFontFaces } from "./lib/editor-body-font-faces";
@@ -16,14 +17,15 @@ import { applyUiFontPreference } from "./lib/ui-font";
 import { DesktopRendererErrorBoundary } from "./components/DesktopRendererErrorBoundary";
 import { reportDesktopRendererReadyAfterPaint } from "./lib/desktop-renderer-ready";
 import "./styles/globals.css";
+import "./styles/page-blocks.css";
 import "./styles/editor-body-fonts.css";
 
 installPhoneImageFillStyle();
 installDesktopClipboardBridge();
 
 const PWA_UPDATE_CHECK_INTERVAL_MS = 10 * 60 * 1_000;
-const DEVELOPMENT_PWA_RELOAD_KEY = "edgeever.dev-pwa-reset";
-const isDesktopRenderer = __EDGEEVER_DESKTOP_BUILD__ || window.edgeeverDesktop?.isAvailable === true;
+const DEVELOPMENT_PWA_RELOAD_KEY = "ponder.dev-pwa-reset";
+const isDesktopRenderer = __PONDER_DESKTOP_BUILD__ || window.ponderDesktop?.isAvailable === true;
 
 const DesktopBootstrapReady = () => {
   useEffect(() => reportDesktopRendererReadyAfterPaint(), []);
@@ -31,12 +33,12 @@ const DesktopBootstrapReady = () => {
 };
 
 if (import.meta.env.DEV) {
-  if (__EDGEEVER_DEVELOPMENT_PROFILE__) {
-    document.documentElement.dataset.edgeeverEnvironment = __EDGEEVER_DEVELOPMENT_PROFILE__;
+  if (__PONDER_DEVELOPMENT_PROFILE__) {
+    document.documentElement.dataset.ponderEnvironment = __PONDER_DEVELOPMENT_PROFILE__;
   }
   document.title = withEnvironmentTitlePrefix(document.title, {
     development: true,
-    profile: __EDGEEVER_DEVELOPMENT_PROFILE__,
+    profile: __PONDER_DEVELOPMENT_PROFILE__,
   });
 }
 
@@ -127,6 +129,7 @@ const mountApp = () => {
   applyEditorBodyFontPreference();
   applyUiFontPreference();
   const Router = isDesktopRenderer ? HashRouter : BrowserRouter;
+  const inviteToken = /^\/invite\/([^/]+)$/.exec(window.location.pathname)?.[1] ?? null;
 
   createRoot(root, {
     onUncaughtError(error, errorInfo) {
@@ -138,9 +141,13 @@ const mountApp = () => {
         <DesktopBootstrapReady />
         <QueryClientProvider client={queryClient}>
           <ThemeProvider>
-            <Router>
-              <App />
-            </Router>
+            {inviteToken ? (
+              <InvitePage token={inviteToken} />
+            ) : (
+              <Router>
+                <App />
+              </Router>
+            )}
           </ThemeProvider>
         </QueryClientProvider>
       </DesktopRendererErrorBoundary>

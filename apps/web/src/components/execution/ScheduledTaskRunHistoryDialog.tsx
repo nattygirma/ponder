@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import type { ScheduledTask } from "@edgeever/shared";
+import type { ScheduledTask } from "@ponder/shared";
 import { api } from "@/lib/api";
 import { ExecutionHistoryDialog, type ExecutionHistoryPage } from "./ExecutionHistoryDialog";
 

@@ -6,7 +6,7 @@ import { encryptArchive, decryptArchive, assertEncryptedArchiveSize, MAX_ENCRYPT
 
 const directories = [];
 afterEach(async () => { for (const path of directories.splice(0)) await rm(path, { recursive: true, force: true }); });
-const directory = async () => { const path = await mkdtemp(join(tmpdir(), "edgeever-encryption-")); directories.push(path); return path; };
+const directory = async () => { const path = await mkdtemp(join(tmpdir(), "ponder-encryption-")); directories.push(path); return path; };
 const encode = async (bytes, password) => {
   const parts = [];
   for await (const chunk of encryptArchive((async function* () { yield bytes.subarray(0, 3); yield bytes.subarray(3); })(), password)) parts.push(chunk);
@@ -24,7 +24,7 @@ test("EDGB v1 authenticates its exact header and preserves Unicode and whitespac
   expect(first.readUInt32BE(8)).toBe(600000);
   expect(first.length).toBe(bytes.length + 56);
   expect(first.subarray(12, 40).equals(second.subarray(12, 40))).toBe(false);
-  const input = join(path, "backup.edgeever.enc");
+  const input = join(path, "backup.ponder.enc");
   const output = join(path, "restored.zip");
   await writeFile(input, first);
   await decryptArchive(input, output, password);

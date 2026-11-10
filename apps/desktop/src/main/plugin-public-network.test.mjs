@@ -9,7 +9,7 @@ test("desktop public requests stay local, preserve safe metadata, and release th
     return new Response("desktop", { status: 202, headers: { "Content-Type": "text/plain", "Set-Cookie": "hidden" } });
   } });
   const result = await runtime.fetch("one", input);
-  expect(received.url).toBe(input.url); expect(received.init.headers["User-Agent"]).toBe("EdgeEver-Plugins/1.0");
+  expect(received.url).toBe(input.url); expect(received.init.headers["User-Agent"]).toBe("Ponder-Plugins/1.0");
   expect(result.status).toBe(202); expect(new TextDecoder().decode(result.body)).toBe("desktop");
   expect(result.headers).toEqual({ "content-type": "text/plain" }); expect(runtime.activeCount).toBe(0);
 });

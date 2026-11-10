@@ -15,7 +15,7 @@ import { PluginPanelDialog } from "@/components/plugins/PluginPanelDialog";
 import { cn } from "@/lib/utils";
 import { getPluginToolbarGroups } from "@/lib/plugins/plugin-navigation";
 import type {
-  EdgeEverPluginHost,
+  PonderPluginHost,
   RegisteredPluginAction,
   RegisteredPluginPanel,
 } from "@/lib/plugins/plugin-host";
@@ -30,7 +30,7 @@ export const PluginToolbarMenu = ({
   tooltipSide,
   className,
 }: {
-  host: EdgeEverPluginHost;
+  host: PonderPluginHost;
   onManage: () => void;
   align?: "start" | "center" | "end";
   side?: "top" | "right" | "bottom" | "left";

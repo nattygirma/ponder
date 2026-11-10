@@ -8,7 +8,7 @@ import { createSelfHostedStorageAdapter } from "./self-hosted-storage-adapter.ts
 import { registerCompanionRoutes } from "./companion-routes.ts";
 import { beginCompanionTurn, checkpointCompanionTurn, clearCompanionHistory, companionRevision, forgetCompanionMemory,
   getCompanionTurn, importCompanionMemories, listCompanionMemories, listCompanionTurns, saveCompanionMemory } from "./companion-service.ts";
-import { parseCompanionMentionQuery } from "@edgeever/shared";
+import { parseCompanionMentionQuery } from "@ponder/shared";
 import { COMPANION_INSTRUCTIONS, companionAgentInstructions, companionMessages, companionTurnInstructions, companionUserContent, selectCompanionMemories, streamCompanion } from "./test-support/companion-model.ts";
 import { applyCompanionAction, proposeCompanionAction, listCompanionActions, dismissCompanionAction } from "./companion-actions.ts";
 import { createMemoRecord, getMemoDetail, updateMemoRecord } from "./memo-service.ts";
@@ -25,7 +25,7 @@ function fixture(options = {}) {
   const sqlite = new Database(":memory:"); databases.push(sqlite);
   for (const path of globSync("migrations/*.sql").sort()) sqlite.exec(readFileSync(path, "utf8"));
   for (const id of [scope.workspaceId, other.workspaceId]) sqlite.query("INSERT INTO workspaces(id, name, is_personal) VALUES (?, ?, 1)").run(id, id);
-  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-companion-unused-resources");
+  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-companion-unused-resources");
   const app = new Hono();
   app.use("*", async (c, next) => {
     const identity = c.req.header("x-test-other") ? other : scope;
@@ -79,7 +79,7 @@ describe("companion turn context", () => {
     expect(companionUserContent(input({
       message: "帮我新建一个RAG原理的思维导图。",
       focus: { memoId: "memo_1", notebookId: "nb_demo_features", notebookTitle: "功能演示" },
-    }))).toContain("saved in the inbox notebook (等待分类)");
+    }))).toContain("saved in the inbox notebook");
     expect(companionUserContent(input({
       message: "帮我新建一个RAG原理的思维导图。",
       focus: { memoId: "memo_1", notebookId: "nb_demo_features", notebookTitle: "功能演示" },
@@ -434,7 +434,7 @@ describe("companion client-direct HTTP contracts", () => {
     expect(await replyLanguage("?locale=ja")).toBe("Japanese");
     expect(await replyLanguage("?locale=pl")).toBe("Polish");
     expect(await replyLanguage("?locale=ru")).toBe("Russian");
-    expect(await replyLanguage("?locale=zh-CN")).toBe("Simplified Chinese");
+    expect(await replyLanguage("?locale=zh-CN")).toBe("English");
     expect(await replyLanguage("?locale=en-US")).toBe("English");
     // A missing or unknown locale keeps the previous English default.
     expect(await replyLanguage("")).toBe("English");
@@ -537,20 +537,19 @@ describe("actual AI SDK companion runtime", () => {
     expect(COMPANION_INSTRUCTIONS).toContain("after you have already searched");
     expect(COMPANION_INSTRUCTIONS).toContain("create_diagram_memo");
     expect(COMPANION_INSTRUCTIONS).toContain("create_infographic_memo");
-    expect(COMPANION_INSTRUCTIONS).toContain("信息图");
+    expect(COMPANION_INSTRUCTIONS).toContain("infographic");
     expect(COMPANION_INSTRUCTIONS).toContain("chart-pie-donut-plain-text");
-    expect(COMPANION_INSTRUCTIONS).toContain("思维导图");
-    expect(COMPANION_INSTRUCTIONS).toContain("架构图/architecture diagram means kind=architecture");
+    expect(COMPANION_INSTRUCTIONS).toContain("mind map");
+    expect(COMPANION_INSTRUCTIONS).toContain("architecture diagram");
     expect(COMPANION_INSTRUCTIONS).toContain("does not refer to the open note");
     expect(COMPANION_INSTRUCTIONS).toContain("build it only from the requested topic");
     expect(COMPANION_INSTRUCTIONS).toContain("update_diagram");
-    expect(COMPANION_INSTRUCTIONS).toContain("这篇");
     expect(COMPANION_INSTRUCTIONS).not.toContain("You cannot create or edit diagrams");
     expect(COMPANION_INSTRUCTIONS).not.toContain("You cannot edit existing diagrams");
     expect(COMPANION_INSTRUCTIONS).toContain("use_note_template");
     expect(COMPANION_INSTRUCTIONS).toContain("todo_write");
     expect(COMPANION_INSTRUCTIONS).toContain("ask_user_question");
-    expect(COMPANION_INSTRUCTIONS).toContain("Omit notebookId and it is saved in the inbox notebook (等待分类)");
+    expect(COMPANION_INSTRUCTIONS).toContain("Omit notebookId and it is saved in the inbox notebook");
     expect(COMPANION_INSTRUCTIONS).toContain("Do not ask which notebook, and do not use the open notebook unless the user named it");
     expect(COMPANION_INSTRUCTIONS).not.toContain("use the open notebook from Focus DATA");
     expect(COMPANION_INSTRUCTIONS).toContain("Do not narrate");

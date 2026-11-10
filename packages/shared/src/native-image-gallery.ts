@@ -77,28 +77,27 @@ export const groupUploadedImages = (editor: Editor, sources: readonly string[]):
 };
 
 const IMAGE_GALLERY_COPY = {
-  "zh-CN": { label: "图片画廊布局", auto: "自动", single: "单列", columns: (count: string) => `${count} 栏`, width: "适应宽度", height: "适应高度" },
   "en-US": { label: "Image gallery layout", auto: "Auto", single: "Single", columns: (count: string) => `${count} columns`, width: "Fit width", height: "Fit height" },
   ja: { label: "画像ギャラリーのレイアウト", auto: "自動", single: "1列", columns: (count: string) => `${count}列`, width: "幅に合わせる", height: "高さに合わせる" },
   pl: { label: "Układ galerii obrazów", auto: "Auto", single: "1 kolumna", columns: (count: string) => `${count} kolumny`, width: "Dopasuj szerokość", height: "Dopasuj wysokość" },
 };
 
 export const imageGalleryCopy = (locale: string) =>
-  IMAGE_GALLERY_COPY[locale as keyof typeof IMAGE_GALLERY_COPY] ?? IMAGE_GALLERY_COPY["zh-CN"];
+  IMAGE_GALLERY_COPY[locale as keyof typeof IMAGE_GALLERY_COPY] ?? IMAGE_GALLERY_COPY["en-US"];
 
 /** A shared touch-sized, in-flow toolbar for Android and iOS WebView editors. */
 export const createNativeImageGalleryView = (getLocale: () => string): NodeViewRenderer => (
   ({ editor, node, getPos }) => {
     let current = node;
     const dom = document.createElement("div");
-    dom.className = "edgeever-native-image-gallery";
-    dom.dataset.edgeeverImageGallery = "true";
+    dom.className = "ponder-native-image-gallery";
+    dom.dataset.ponderImageGallery = "true";
     const toolbar = document.createElement("div");
-    toolbar.className = "edgeever-native-gallery-toolbar";
+    toolbar.className = "ponder-native-gallery-toolbar";
     toolbar.contentEditable = "false";
     toolbar.setAttribute("role", "toolbar");
     const contentDOM = document.createElement("div");
-    contentDOM.className = "edgeever-native-gallery-content";
+    contentDOM.className = "ponder-native-gallery-content";
     const controls = [
       ...IMAGE_GALLERY_LAYOUTS.map((value) => ({ attribute: "layout" as const, value })),
       ...IMAGE_GALLERY_FITS.map((value) => ({ attribute: "fit" as const, value })),
@@ -164,20 +163,20 @@ export const createNativeImageGalleryView = (getLocale: () => string): NodeViewR
 );
 
 export const NATIVE_IMAGE_GALLERY_CSS = `
-[data-edgeever-image-gallery].edgeever-native-image-gallery { display: block; }
-.edgeever-native-gallery-toolbar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; line-height: 1.2; }
-.edgeever-native-gallery-toolbar[hidden] { display: none; }
-.edgeever-native-gallery-toolbar button { min-height: 44px; padding: 8px 12px; border: 1px solid #16a06e55; border-radius: 8px; background: transparent; color: inherit; font: inherit; font-size: 13px; }
-.edgeever-native-gallery-toolbar button[aria-pressed="true"] { color: #16a06e; background: #16a06e22; }
-.edgeever-native-gallery-toolbar button:focus-visible { outline: 2px solid #16a06e; outline-offset: 2px; }
-.edgeever-native-gallery-content { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
-[data-image-gallery-layout="1"] > .edgeever-native-gallery-content { grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 600px) { [data-image-gallery-layout="3"] > .edgeever-native-gallery-content { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.edgeever-native-gallery-content > * { width: 100% !important; min-width: 0; height: 100%; margin: 0 !important; overflow: hidden; border-radius: 10px; background: transparent; }
-.edgeever-native-gallery-content > img, .edgeever-native-gallery-content > * > img { width: 100% !important; height: 100%; min-height: 112px; max-height: 220px; object-fit: cover; }
-[data-edgeever-image-gallery][data-image-gallery-fit="height"] > img,
-[data-edgeever-image-gallery][data-image-gallery-fit="height"] > .edgeever-image-node > img,
-[data-edgeever-image-gallery][data-image-gallery-fit="height"] > .edgeever-native-gallery-content > img,
-[data-edgeever-image-gallery][data-image-gallery-fit="height"] > .edgeever-native-gallery-content > * > img { height: 220px; min-height: 0; object-fit: contain; }
-.edgeever-native-gallery-content .edgeever-image-size-controls { display: none !important; }
+[data-ponder-image-gallery].ponder-native-image-gallery { display: block; }
+.ponder-native-gallery-toolbar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; line-height: 1.2; }
+.ponder-native-gallery-toolbar[hidden] { display: none; }
+.ponder-native-gallery-toolbar button { min-height: 44px; padding: 8px 12px; border: 1px solid #16a06e55; border-radius: 8px; background: transparent; color: inherit; font: inherit; font-size: 13px; }
+.ponder-native-gallery-toolbar button[aria-pressed="true"] { color: #16a06e; background: #16a06e22; }
+.ponder-native-gallery-toolbar button:focus-visible { outline: 2px solid #16a06e; outline-offset: 2px; }
+.ponder-native-gallery-content { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+[data-image-gallery-layout="1"] > .ponder-native-gallery-content { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 600px) { [data-image-gallery-layout="3"] > .ponder-native-gallery-content { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ponder-native-gallery-content > * { width: 100% !important; min-width: 0; height: 100%; margin: 0 !important; overflow: hidden; border-radius: 10px; background: transparent; }
+.ponder-native-gallery-content > img, .ponder-native-gallery-content > * > img { width: 100% !important; height: 100%; min-height: 112px; max-height: 220px; object-fit: cover; }
+[data-ponder-image-gallery][data-image-gallery-fit="height"] > img,
+[data-ponder-image-gallery][data-image-gallery-fit="height"] > .ponder-image-node > img,
+[data-ponder-image-gallery][data-image-gallery-fit="height"] > .ponder-native-gallery-content > img,
+[data-ponder-image-gallery][data-image-gallery-fit="height"] > .ponder-native-gallery-content > * > img { height: 220px; min-height: 0; object-fit: contain; }
+.ponder-native-gallery-content .ponder-image-size-controls { display: none !important; }
 `;

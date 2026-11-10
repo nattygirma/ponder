@@ -1,4 +1,4 @@
-import { parseExtensionManifest, type ExtensionManifest, type MarketplaceEntry, type PluginPermission } from "@edgeever/plugin-api";
+import { parseExtensionManifest, type ExtensionManifest, type MarketplaceEntry, type PluginPermission } from "@ponder/plugin-api";
 import type { InstalledExtension } from "@/lib/plugins/plugin-host";
 import { readRevokedPluginIds } from "@/lib/plugins/community-registry-store";
 import { loadGithubInstallableManifest } from "@/lib/plugins/github-plugin-distribution";
@@ -20,7 +20,7 @@ export interface PluginUpdateCheckResult {
 }
 
 type PluginUpdateHost = Pick<
-  import("@/lib/plugins/plugin-host").EdgeEverPluginHost,
+  import("@/lib/plugins/plugin-host").PonderPluginHost,
   "getSnapshot" | "installMarketplaceEntry" | "installFromGithubRepository" | "installFromManifestUrl"
 >;
 

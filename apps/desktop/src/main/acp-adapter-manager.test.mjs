@@ -14,7 +14,7 @@ const codexEntry = (version) => ({
 
 describe("managed ACP adapters", () => {
   test("reports the failed stage and HTTP status, retains the old binary, and retries using the supplied network transport", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-acp-network-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-acp-network-"));
     const oldDir = path.join(root, "antigravity", "1.3.0");
     await mkdir(oldDir, { recursive: true });
     await writeFile(path.join(oldDir, "agy_acp_server.par"), "old");
@@ -52,7 +52,7 @@ describe("managed ACP adapters", () => {
   });
 
   test("accepts only the expected pi ACP npm package and retains the old adapter on a failed update", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-managed-pi-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-managed-pi-"));
     let version = "0.0.34";
     const metadata = () => ({ name: "pi-acp", version, bin: { "pi-acp": "dist/index.js" } });
     expect(selectPiAdapterRelease(metadata()).packageName).toBe("pi-acp@0.0.34");
@@ -81,7 +81,7 @@ describe("managed ACP adapters", () => {
     }
   });
   test("installs Claude, preserves a working version on failed updates, and restores it after restart", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-managed-claude-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-managed-claude-"));
     let version = "0.88.0";
     const entry = () => ({ id: "claude-acp", version, distribution: { npx: { package: `@agentclientprotocol/claude-agent-acp@${version}` } } });
     expect(selectAdapterRelease([entry()], "claudeCode").packageName).toBe("@agentclientprotocol/claude-agent-acp@0.88.0");
@@ -144,7 +144,7 @@ describe("managed ACP adapters", () => {
   });
 
   test("keeps the previous version when a staged update fails the ACP handshake", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-managed-acp-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-managed-acp-"));
     let release = "2.0.1";
     const manager = createAcpAdapterManager({
       root,
@@ -186,7 +186,7 @@ describe("managed ACP adapters", () => {
   });
 
   test("extracts only expected Antigravity files and rejects archive traversal", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-managed-agy-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-managed-agy-"));
     let malicious = false;
     const entry = {
       id: "antigravity-acp",
@@ -222,7 +222,7 @@ describe("managed ACP adapters", () => {
   });
 
   test("updates an unauthenticated connector only when the previous version also needs login", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-acp-login-update-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-acp-login-update-"));
     let release = "2.0.1";
     const manager = createAcpAdapterManager({
       root,
@@ -251,7 +251,7 @@ describe("managed ACP adapters", () => {
   });
 
   test("prunes orphaned stage directories even when the adapter is uninstalled", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-prune-orphaned-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-prune-orphaned-"));
     const stageDir = path.join(root, "antigravity", ".stage-1.3.0-12345-67890");
     await mkdir(stageDir, { recursive: true });
     const manager = createAcpAdapterManager({ root });
@@ -270,7 +270,7 @@ describe("managed ACP adapters", () => {
   });
 
   test("updates binary ACP adapters from an older version to a larger newer version with staging and rollback protection (simulated)", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-cross-version-agy-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-cross-version-agy-"));
     const versionRoot = path.join(root, "antigravity");
     const oldVersionDir = path.join(versionRoot, "1.2.1");
     const ancientVersionDir = path.join(versionRoot, "1.1.0");
@@ -376,7 +376,7 @@ describe("managed ACP adapters", () => {
   });
 
   test("enforces archive size cap of 500 MiB and rejects larger downloads", async () => {
-    const root = await mkdtemp(path.join(tmpdir(), "edgeever-archive-size-"));
+    const root = await mkdtemp(path.join(tmpdir(), "ponder-archive-size-"));
     const entry = {
       id: "antigravity-acp",
       version: "1.3.0",

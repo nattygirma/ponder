@@ -42,7 +42,7 @@ describe("desktop workspace restore", () => {
 
   test("is only used in the desktop renderer", () => {
     const previous = globalThis.window;
-    globalThis.window = { edgeeverDesktop: { isAvailable: true } };
+    globalThis.window = { ponderDesktop: { isAvailable: true } };
     try {
       expect(shouldRestoreDesktopWorkspace()).toBe(true);
     } finally {

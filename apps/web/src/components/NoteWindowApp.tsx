@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { getMemoDisplayTitle, hasTableDocumentMarker, parseDiagramDocument, type MemoDetail } from "@edgeever/shared";
+import { getMemoDisplayTitle, hasTableDocumentMarker, parseDiagramDocument, type MemoDetail } from "@ponder/shared";
 import { EditorPane } from "@/components/EditorPane";
 import { EditorPaneErrorBoundary } from "@/components/EditorPaneErrorBoundary";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import { getShortcutActionForEvent, readImageCompressionPreference, readShortcut
 import { noteWindowSyncCompletedDetail } from "@/lib/desktop-note-windows";
 import { createLocalDataScope, putLocalMemo } from "@/lib/local-mirror";
 import { updateMemoSummaryInLists } from "@/lib/memo-list-cache";
-import { EdgeEverPluginHost } from "@/lib/plugins/plugin-host";
+import { PonderPluginHost } from "@/lib/plugins/plugin-host";
 import { createRepository } from "@/lib/repository";
 import { cacheMemoDetail, memoDetailQueryKey, memoToSummary } from "@/lib/workspace-memo-cache";
 import { useNoteProse } from "@/hooks/useNoteProse";
@@ -28,7 +28,7 @@ const noop = () => undefined;
 export const NoteWindowApp = ({ memoId }: { memoId: string }) => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const bridge = window.edgeeverDesktop;
+  const bridge = window.ponderDesktop;
   const sessionQuery = useQuery({
     queryKey: ["auth", "session"],
     queryFn: async () => {
@@ -50,7 +50,7 @@ export const NoteWindowApp = ({ memoId }: { memoId: string }) => {
   );
   const repository = useMemo(() => createRepository(localDataScope), [localDataScope]);
   // Plugins are never activated here, so no plugin code runs twice.
-  const pluginHost = useMemo(() => new EdgeEverPluginHost({
+  const pluginHost = useMemo(() => new PonderPluginHost({
     repository,
     scope: localDataScope,
     aiAdapter: api.pluginAi,
@@ -98,7 +98,7 @@ export const NoteWindowApp = ({ memoId }: { memoId: string }) => {
   useEffect(() => bridge?.onNoteWindowSync?.((update) => {
     // Same order as the main window: advance the editor's sync state, then
     // reload the note so remote changes reach it.
-    window.dispatchEvent(new CustomEvent("edgeever:sync-completed", { detail: noteWindowSyncCompletedDetail(memoId, update) }));
+    window.dispatchEvent(new CustomEvent("ponder:sync-completed", { detail: noteWindowSyncCompletedDetail(memoId, update) }));
     void Promise.all([
       queryClient.invalidateQueries({ queryKey: ["memo", memoId] }),
       queryClient.invalidateQueries({ queryKey: ["notebooks"] }),
@@ -106,7 +106,7 @@ export const NoteWindowApp = ({ memoId }: { memoId: string }) => {
   }), [bridge, memoId, queryClient]);
 
   useEffect(() => {
-    document.title = memo ? `${getMemoDisplayTitle(memo.title, t("common.untitledMemo"))} · EdgeEver` : "EdgeEver";
+    document.title = memo ? `${getMemoDisplayTitle(memo.title, t("common.untitledMemo"))} · Ponder` : "Ponder";
   }, [memo, t]);
 
   const registerPendingSave = useCallback((save: (() => Promise<boolean>) | null) => {

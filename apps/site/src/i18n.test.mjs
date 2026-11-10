@@ -29,30 +29,28 @@ const collectKeys = (value, prefix = "") => {
 
 describe("site locale routing", () => {
   test("reads locale from the path prefix", () => {
-    expect(getSiteLocale("/")).toBe("zh-CN");
-    expect(getSiteLocale("/privacy")).toBe("zh-CN");
-    expect(getSiteLocale("/en")).toBe("en-US");
-    expect(getSiteLocale("/en/privacy")).toBe("en-US");
+    expect(getSiteLocale("/")).toBe("en-US");
+    expect(getSiteLocale("/privacy")).toBe("en-US");
     expect(getSiteLocale("/ja")).toBe("ja");
     expect(getSiteLocale("/ja/privacy")).toBe("ja");
     expect(getSiteLocale("/pl")).toBe("pl");
     expect(getSiteLocale("/pl/privacy")).toBe("pl");
-    expect(getSiteLocale("/plan")).toBe("zh-CN");
+    expect(getSiteLocale("/plan")).toBe("en-US");
   });
 
   test("builds localized paths without stacking prefixes", () => {
-    expect(getLocalizedPath("zh-CN", "/en/privacy")).toBe("/privacy");
-    expect(getLocalizedPath("en-US", "/privacy")).toBe("/en/privacy");
+    expect(getLocalizedPath("en-US", "/ja/privacy")).toBe("/privacy");
+    expect(getLocalizedPath("en-US", "/privacy")).toBe("/privacy");
     expect(getLocalizedPath("ja", "/")).toBe("/ja/");
-    expect(getLocalizedPath("ja", "/en/contact")).toBe("/ja/contact");
-    expect(getLocalizedPath("en-US", "/ja/docker-deploy")).toBe("/en/docker-deploy");
+    expect(getLocalizedPath("ja", "/contact")).toBe("/ja/contact");
+    expect(getLocalizedPath("en-US", "/ja/docker-deploy")).toBe("/docker-deploy");
     expect(getLocalizedPath("ja", "/blog/evernote-migration-guide")).toBe("/ja/blog/evernote-migration-guide");
     expect(stripSiteLocalePrefix("/ja/privacy")).toBe("/privacy");
     expect(stripSiteLocalePrefix("/ja/")).toBe("/");
     expect(getLocalizedPath("pl", "/")).toBe("/pl/");
     expect(getLocalizedPath("pl", "/ja/contact")).toBe("/pl/contact");
     expect(getLocalizedPath("ja", "/pl/docker-deploy")).toBe("/ja/docker-deploy");
-    expect(getLocalizedPath("zh-CN", "/pl/privacy")).toBe("/privacy");
+    expect(getLocalizedPath("en-US", "/pl/privacy")).toBe("/privacy");
     expect(stripSiteLocalePrefix("/pl/privacy")).toBe("/privacy");
   });
 
@@ -62,15 +60,14 @@ describe("site locale routing", () => {
     expect(matchSiteLocale("fr-FR")).toBeNull();
     expect(matchSiteLocale("ko-KR")).toBeNull();
     expect(isExplicitSiteLocalePath("/ja/privacy")).toBe(true);
-    expect(isExplicitSiteLocalePath("/en/")).toBe(true);
+    expect(isExplicitSiteLocalePath("/en/")).toBe(false);
     expect(isExplicitSiteLocalePath("/privacy")).toBe(false);
   });
 
-  test("keeps Japanese marketing copy aligned with Chinese and English keys", () => {
-    expect(siteLocales).toEqual(["zh-CN", "en-US", "ja", "pl"]);
-    expect(collectKeys(siteCopy.ja)).toEqual(collectKeys(siteCopy["zh-CN"]));
+  test("keeps Japanese marketing copy aligned with English keys", () => {
+    expect(siteLocales).toEqual(["en-US", "ja", "pl"]);
     expect(collectKeys(siteCopy.ja)).toEqual(collectKeys(siteCopy["en-US"]));
-    expect(collectKeys(alternativePageCopy.ja)).toEqual(collectKeys(alternativePageCopy["zh-CN"]));
+    expect(collectKeys(alternativePageCopy.ja)).toEqual(collectKeys(alternativePageCopy["en-US"]));
     expect(siteCopy.ja.nav.backToBlog).toBe("ブログ一覧へ");
   });
 
@@ -82,10 +79,9 @@ describe("site locale routing", () => {
     expect(isExplicitSiteLocalePath("/plan")).toBe(false);
   });
 
-  test("keeps Polish marketing copy aligned with Chinese and English keys", () => {
-    expect(collectKeys(siteCopy.pl)).toEqual(collectKeys(siteCopy["zh-CN"]));
+  test("keeps Polish marketing copy aligned with English keys", () => {
     expect(collectKeys(siteCopy.pl)).toEqual(collectKeys(siteCopy["en-US"]));
-    expect(collectKeys(alternativePageCopy.pl)).toEqual(collectKeys(alternativePageCopy["zh-CN"]));
+    expect(collectKeys(alternativePageCopy.pl)).toEqual(collectKeys(alternativePageCopy["en-US"]));
     expect(siteCopy.pl.layout.ogLocale).toBe("pl_PL");
     expect(siteCopy.pl.nav.backToBlog).toBe("Wróć do bloga");
   });
@@ -93,7 +89,7 @@ describe("site locale routing", () => {
   test("keeps best practices showcase copy and media counts aligned across locales", () => {
     for (const locale of siteLocales) {
       expect(collectKeys(bestPracticesPageCopy[locale])).toEqual(
-        collectKeys(bestPracticesPageCopy["zh-CN"]),
+        collectKeys(bestPracticesPageCopy["en-US"]),
       );
       const cases = bestPracticesPageCopy[locale].categories.flatMap((c) => c.cases);
       // Every configured showcase appears exactly once in each locale.

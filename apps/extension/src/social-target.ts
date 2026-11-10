@@ -6,12 +6,12 @@ import { jikeCardTarget, JIKE_CARD_SELECTOR, JIKE_WEB_CARD_SELECTOR, isJikeWebCa
 
 // Only remembers the card under the pointer. No network or automatic capture.
 (() => {
-  const root = globalThis as typeof globalThis & { __edgeeverSocialTarget?: boolean };
-  if (root.__edgeeverSocialTarget) return;
-  root.__edgeeverSocialTarget = true;
+  const root = globalThis as typeof globalThis & { __ponderSocialTarget?: boolean };
+  if (root.__ponderSocialTarget) return;
+  root.__ponderSocialTarget = true;
   document.addEventListener("contextmenu", (event) => {
-    for (const node of document.querySelectorAll("[data-edgeever-social-target]")) node.removeAttribute("data-edgeever-social-target");
-    for (const node of document.querySelectorAll("[data-edgeever-jike-selected]")) node.removeAttribute("data-edgeever-jike-selected");
+    for (const node of document.querySelectorAll("[data-ponder-social-target]")) node.removeAttribute("data-ponder-social-target");
+    for (const node of document.querySelectorAll("[data-ponder-jike-selected]")) node.removeAttribute("data-ponder-jike-selected");
     const element = event.target instanceof Element ? event.target : event.target instanceof Node ? event.target.parentElement : null;
     if (!element) return;
     const platform = socialPlatform(location.href);
@@ -29,23 +29,23 @@ import { jikeCardTarget, JIKE_CARD_SELECTOR, JIKE_WEB_CARD_SELECTOR, isJikeWebCa
     const mark = (node: Element) => {
       if (platform === "jike") {
         const target=jikeCardTarget(node,location.href);
-        if (target) {node.setAttribute("data-edgeever-social-target",target.url);return true;}
-        if (new URL(location.href).origin === "https://web.okjike.com" && isJikeWebCard(node)) {node.setAttribute("data-edgeever-jike-selected","");return true;}
+        if (target) {node.setAttribute("data-ponder-social-target",target.url);return true;}
+        if (new URL(location.href).origin === "https://web.okjike.com" && isJikeWebCard(node)) {node.setAttribute("data-ponder-jike-selected","");return true;}
         return false;
       }
       if (platform === "douban") {
         const target=doubanCommentTarget(node,location.href);
-        if (target) {node.setAttribute("data-edgeever-social-target",target.url);return true;}
+        if (target) {node.setAttribute("data-ponder-social-target",target.url);return true;}
         return false;
       }
       if (platform === "xueqiu") {
         const target = xueqiuCardTarget(node);
-        if (target) { node.setAttribute("data-edgeever-social-target", target.url); return true; }
+        if (target) { node.setAttribute("data-ponder-social-target", target.url); return true; }
         return false;
       }
       if (platform === "linkedin") {
         const target = linkedinCardTarget(node);
-        if (target) { node.setAttribute("data-edgeever-social-target", target.url); return true; }
+        if (target) { node.setAttribute("data-ponder-social-target", target.url); return true; }
         return false;
       }
       for (const link of ownPostLinks(node,platform || '')) {
@@ -57,7 +57,7 @@ import { jikeCardTarget, JIKE_CARD_SELECTOR, JIKE_WEB_CARD_SELECTOR, isJikeWebCa
         try { url = new URL(href,location.href); } catch { continue; }
         if (platform === "facebook" && url.searchParams.has("comment_id")) continue;
         const target = platformTarget(url.href);
-        if (target?.platform === platform) { node.setAttribute("data-edgeever-social-target",target.url); return true; }
+        if (target?.platform === platform) { node.setAttribute("data-ponder-social-target",target.url); return true; }
       }
       return false;
     };

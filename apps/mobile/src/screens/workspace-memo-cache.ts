@@ -1,5 +1,5 @@
 import { type InfiniteData, type QueryClient } from "@tanstack/react-query";
-import type { MemoDetail, MemoSummary, Notebook, TiptapDoc } from "@edgeever/shared";
+import type { MemoDetail, MemoSummary, Notebook, TiptapDoc } from "@ponder/shared";
 import { listLocalMemos } from "../lib/local-mirror";
 import { memoHasExactTag } from "../lib/mobile-tags";
 import { markdownToLocalText, sortMemoSummaries } from "./workspace-utils";

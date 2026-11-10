@@ -12,7 +12,7 @@ afterEach(() => { globalThis.fetch = originalFetch; });
 describe("DOCX preview source", () => {
   test("only offers inline preview for note-owned DOCX resources", () => {
     expect(isPreviewableDocx("Report.DOCX", "/api/v1/resources/res_1/blob")).toBe(true);
-    expect(isPreviewableDocx("draft.docx", "edgeever-staged://stage_1")).toBe(true);
+    expect(isPreviewableDocx("draft.docx", "ponder-staged://stage_1")).toBe(true);
     expect(isPreviewableDocx("old.doc", "/api/v1/resources/res_1/blob")).toBe(false);
     expect(isPreviewableDocx("report.docx", "https://other.example/report.docx")).toBe(false);
   });
@@ -26,7 +26,7 @@ describe("DOCX preview source", () => {
         return { bytes: original };
       },
     };
-    const bytes = await loadDocxPreviewBytes("edgeever-staged://stage_1", undefined, bridge);
+    const bytes = await loadDocxPreviewBytes("ponder-staged://stage_1", undefined, bridge);
     expect(bytes).toEqual(original);
     expect(bytes).not.toBe(original);
   });

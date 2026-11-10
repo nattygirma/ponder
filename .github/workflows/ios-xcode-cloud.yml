@@ -54,9 +54,9 @@ jobs:
       - name: Inspect, start, or monitor Xcode Cloud
         env:
           ASC_APP_ID: "6792625631"
-          ASC_API_ISSUER: ${{ secrets.EDGEEVER_APPLE_API_ISSUER }}
-          ASC_API_KEY_ID: ${{ secrets.EDGEEVER_APPLE_API_KEY_ID }}
-          ASC_API_KEY_BASE64: ${{ secrets.EDGEEVER_APPLE_API_KEY_BASE64 }}
+          ASC_API_ISSUER: ${{ secrets.PONDER_APPLE_API_ISSUER }}
+          ASC_API_KEY_ID: ${{ secrets.PONDER_APPLE_API_KEY_ID }}
+          ASC_API_KEY_BASE64: ${{ secrets.PONDER_APPLE_API_KEY_BASE64 }}
           XCODE_CLOUD_MODE: ${{ inputs.mode }}
           XCODE_CLOUD_WORKFLOW_ID: ${{ inputs.workflow_id }}
           XCODE_CLOUD_BUILD_RUN_ID: ${{ inputs.build_run_id }}

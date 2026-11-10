@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { globSync, readFileSync } from "node:fs";
 import { Database } from "bun:sqlite";
 import { Hono } from "hono";
-import { listMemoTemplateGallery } from "@edgeever/shared/memo-template-gallery";
+import { listMemoTemplateGallery } from "@ponder/shared/memo-template-gallery";
 import { mapMemoTemplateRow, registerTemplateRoutes } from "./template-routes.ts";
 
 const row = {

@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { createEdgeEverClient } from "./index.ts";
+import { createPonderClient } from "./index.ts";
 import { parsePreparedTagSuggestions, suggestionsFromDirectText } from "./ai-direct-generate.ts";
 
 describe("direct tag suggestions", () => {
   test("prepares on the instance then calls the model provider", async () => {
     const urls = [];
-    const client = createEdgeEverClient({
+    const client = createPonderClient({
       baseUrl: "https://notes.example",
       token: "user-token",
       directAiGeneration: true,
@@ -28,7 +28,7 @@ describe("direct tag suggestions", () => {
         throw new Error(`unexpected instance ${url}`);
       },
       providerFetch: async () => new Response(JSON.stringify({
-        choices: [{ message: { content: "<edgeever-tags>\nReact\nnew-topic\n</edgeever-tags>" } }],
+        choices: [{ message: { content: "<ponder-tags>\nReact\nnew-topic\n</ponder-tags>" } }],
       }), { headers: { "content-type": "application/json" } }),
     });
     const result = await client.suggestAiTags({ title: "Note", contentMarkdown: "Body", currentTags: ["Current"] });
@@ -42,7 +42,7 @@ describe("direct tag suggestions", () => {
 
   test("browser tag suggestions report blocked direct access without instance generation", async () => {
  const paths=[];let calls=0;
- const client=createEdgeEverClient({fetch:async url=>{paths.push(String(url));return Response.json({provider:"openai-compatible",baseUrl:"https://model.example/v1",apiKey:"key",modelId:"model",system:"tags",prompt:"Body",maxOutputTokens:32,currentTags:[],canonicalTags:{}});},providerFetch:async()=>{calls++;throw new TypeError("Failed to fetch");}});
+ const client=createPonderClient({fetch:async url=>{paths.push(String(url));return Response.json({provider:"openai-compatible",baseUrl:"https://model.example/v1",apiKey:"key",modelId:"model",system:"tags",prompt:"Body",maxOutputTokens:32,currentTags:[],canonicalTags:{}});},providerFetch:async()=>{calls++;throw new TypeError("Failed to fetch");}});
  await expect(client.suggestAiTags({title:"Note",contentMarkdown:"Body",currentTags:[]})).rejects.toThrow();
  expect(paths).toEqual(["/api/v1/ai/tag-suggestions/prepare"]);expect(calls).toBe(1);
 });
@@ -59,7 +59,7 @@ describe("direct tag suggestions", () => {
       currentTags: ["Current"],
       canonicalTags: { react: "React" },
     });
-    expect(suggestionsFromDirectText("<edgeever-tags>\nreact\nCurrent\nfresh\n</edgeever-tags>", prepared))
+    expect(suggestionsFromDirectText("<ponder-tags>\nreact\nCurrent\nfresh\n</ponder-tags>", prepared))
       .toEqual([{ name: "React", existing: true }, { name: "fresh", existing: false }]);
   });
 });
@@ -68,7 +68,7 @@ describe("direct plugin AI", () => {
   test("does not repeat native generation on the instance after a provider network failure", async () => {
     const paths = [];
     let providerRequests = 0;
-    const client = createEdgeEverClient({
+    const client = createPonderClient({
       baseUrl: "https://notes.example",
       directAiGeneration: true,
       fetch: async url => {
@@ -84,7 +84,7 @@ describe("direct plugin AI", () => {
 
   test("prepares then calls the model provider", async () => {
     const urls = [];
-    const client = createEdgeEverClient({
+    const client = createPonderClient({
       baseUrl: "https://notes.example",
       directAiGeneration: true,
       fetch: async (url) => {

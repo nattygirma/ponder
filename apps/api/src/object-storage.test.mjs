@@ -19,11 +19,11 @@ const objectStorageRow = (encryptedSecret) => ({
   display_name: "S3",
   endpoint: "https://s3.example.com",
   region: "us-east-1",
-  bucket: "edgeever",
+  bucket: "ponder",
   access_key_id: "access-key",
   secret_access_key_encrypted: encryptedSecret,
   force_path_style: 1,
-  object_prefix: "edgeever",
+  object_prefix: "ponder",
   is_active: 1,
 });
 
@@ -44,15 +44,15 @@ const migrationDatabase = () => {
 
 describe("object storage credential encryption", () => {
   test("derives a purpose-specific key from instance authentication", () => {
-    const environment = { EDGE_EVER_AUTH_PASSWORD: "instance-auth-secret" };
+    const environment = { PONDER_AUTH_PASSWORD: "instance-auth-secret" };
 
     expect(resolvePrimaryObjectStorageEncryptionKey(environment))
-      .toBe("edgeever:object-storage:v1:instance-auth-secret");
+      .toBe("ponder:object-storage:v1:instance-auth-secret");
     expect(resolveObjectStorageEncryptionKeys(environment)).not.toContain("instance-auth-secret");
   });
 
   test("never uses the legacy object-storage key for new credentials", () => {
-    const environment = { EDGE_EVER_STORAGE_ENCRYPTION_KEY: "legacy-storage-key" };
+    const environment = { PONDER_STORAGE_ENCRYPTION_KEY: "legacy-storage-key" };
 
     expect(resolvePrimaryObjectStorageEncryptionKey(environment)).toBeUndefined();
     expect(resolveObjectStorageEncryptionKeys(environment)).toEqual(["legacy-storage-key"]);
@@ -60,14 +60,14 @@ describe("object storage credential encryption", () => {
 
   test("decrypts rotated object-storage secrets with the persisted auth fallback", () => {
     const environment = {
-      EDGE_EVER_AUTH_PASSWORD: "rotated-password",
-      EDGE_EVER_AUTH_PASSWORD_FALLBACK: "original-password",
+      PONDER_AUTH_PASSWORD: "rotated-password",
+      PONDER_AUTH_PASSWORD_FALLBACK: "original-password",
     };
 
     expect(resolvePrimaryObjectStorageEncryptionKey(environment))
-      .toBe("edgeever:object-storage:v1:rotated-password");
+      .toBe("ponder:object-storage:v1:rotated-password");
     expect(resolveObjectStorageEncryptionKeys(environment)).toContain(
-      "edgeever:object-storage:v1:original-password",
+      "ponder:object-storage:v1:original-password",
     );
   });
 
@@ -75,8 +75,8 @@ describe("object storage credential encryption", () => {
     const plaintext = "legacy-secret-access-key";
     const legacyKey = "legacy-storage-key";
     const environment = {
-      EDGE_EVER_AUTH_PASSWORD: "instance-auth-secret",
-      EDGE_EVER_STORAGE_ENCRYPTION_KEY: legacyKey,
+      PONDER_AUTH_PASSWORD: "instance-auth-secret",
+      PONDER_STORAGE_ENCRYPTION_KEY: legacyKey,
     };
     const row = objectStorageRow(await encryptSecret(plaintext, legacyKey));
     const database = migrationDatabase();
@@ -92,7 +92,7 @@ describe("object storage credential encryption", () => {
   });
 
   test("does not rewrite a credential already encrypted with the auth-derived key", async () => {
-    const environment = { EDGE_EVER_AUTH_PASSWORD_HASH: "stable-auth-hash" };
+    const environment = { PONDER_AUTH_PASSWORD_HASH: "stable-auth-hash" };
     const encrypted = await encryptSecret(
       "current-secret-access-key",
       resolvePrimaryObjectStorageEncryptionKey(environment),
@@ -109,7 +109,7 @@ describe("object storage credential encryption", () => {
 });
 
 const FAKE_SECRET = "FAKE-secret-access-key-do-not-use";
-const authEnvironment = { EDGE_EVER_AUTH_PASSWORD: "fake-instance-auth-password" };
+const authEnvironment = { PONDER_AUTH_PASSWORD: "fake-instance-auth-password" };
 const primaryKey = resolvePrimaryObjectStorageEncryptionKey(authEnvironment);
 
 const originalFetch = globalThis.fetch;
@@ -143,7 +143,7 @@ const installation = ({ env = authEnvironment } = {}) => {
   const environment = {
     ...env,
     storage: {
-      db: createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-object-storage-test-unused").db,
+      db: createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-object-storage-test-unused").db,
       resources,
     },
   };
@@ -154,7 +154,7 @@ const insertS3Config = async (sqlite, {
   id = "instance-s3",
   encryptedSecret,
   isActive = false,
-  bucket = "edgeever-fake",
+  bucket = "ponder-fake",
   endpoint = "https://objects.example.test",
 } = {}) => {
   if (isActive) sqlite.exec("UPDATE object_storage_configs SET is_active = 0");
@@ -199,10 +199,10 @@ describe("object storage resolution on a migrated database", () => {
 
     expect(await resolveObjectStorage(environment)).toEqual({
       configId: "builtin",
-      bucketName: "edgeever-resources",
+      bucketName: "ponder-resources",
       store: resources,
     });
-    expect(await resolveObjectStorage({ ...environment, EDGE_EVER_R2_BUCKET_NAME: "  custom-bucket  " }, "builtin"))
+    expect(await resolveObjectStorage({ ...environment, PONDER_R2_BUCKET_NAME: "  custom-bucket  " }, "builtin"))
       .toMatchObject({ configId: "builtin", bucketName: "custom-bucket" });
     sqlite.close();
   });
@@ -214,10 +214,10 @@ describe("object storage resolution on a migrated database", () => {
 
     const active = await resolveObjectStorage(environment);
     expect(active.configId).toBe("instance-s3");
-    expect(active.bucketName).toBe("edgeever-fake");
+    expect(active.bucketName).toBe("ponder-fake");
     expect(active.store).not.toBe(resources);
     await active.store.put("new-file.txt", new TextEncoder().encode("new"));
-    expect(requests).toEqual([{ method: "PUT", url: "https://objects.example.test/edgeever-fake/notes/new-file.txt" }]);
+    expect(requests).toEqual([{ method: "PUT", url: "https://objects.example.test/ponder-fake/notes/new-file.txt" }]);
 
     const legacy = await resolveObjectStorage(environment, "builtin");
     expect(legacy).toMatchObject({ configId: "builtin", store: resources });
@@ -231,7 +231,7 @@ describe("object storage resolution on a migrated database", () => {
     await external.store.delete("old-file.txt");
     expect(requests.at(-1)).toEqual({
       method: "DELETE",
-      url: "https://objects.example.test/edgeever-fake/notes/old-file.txt",
+      url: "https://objects.example.test/ponder-fake/notes/old-file.txt",
     });
     sqlite.close();
   });
@@ -286,7 +286,7 @@ describe("object storage resolution on a migrated database", () => {
   ]) {
     test(`fails with 503 without leaking when the credential is ${label}`, async () => {
       const { sqlite, environment } = installation({
-        env: { ...authEnvironment, EDGE_EVER_AUTH_PASSWORD_FALLBACK: "fake-old-password" },
+        env: { ...authEnvironment, PONDER_AUTH_PASSWORD_FALLBACK: "fake-old-password" },
       });
       const ciphertext = encryptedSecret ?? await encryptSecret(FAKE_SECRET, "fake-key-from-another-instance");
       await insertS3Config(sqlite, { encryptedSecret: ciphertext, isActive: true });
@@ -302,11 +302,11 @@ describe("object storage resolution on a migrated database", () => {
 
   test("re-encrypts a credential saved under the rotated-password fallback with the primary key once", async () => {
     const environmentKeys = {
-      EDGE_EVER_AUTH_PASSWORD: "fake-new-password",
-      EDGE_EVER_AUTH_PASSWORD_FALLBACK: "fake-old-password",
+      PONDER_AUTH_PASSWORD: "fake-new-password",
+      PONDER_AUTH_PASSWORD_FALLBACK: "fake-old-password",
     };
     const { sqlite, environment } = installation({ env: environmentKeys });
-    const fallbackCiphertext = await encryptSecret(FAKE_SECRET, "edgeever:object-storage:v1:fake-old-password");
+    const fallbackCiphertext = await encryptSecret(FAKE_SECRET, "ponder:object-storage:v1:fake-old-password");
     await insertS3Config(sqlite, { encryptedSecret: fallbackCiphertext, isActive: true });
     recordS3Requests();
 
@@ -321,13 +321,13 @@ describe("object storage resolution on a migrated database", () => {
     expect(storedSecret(sqlite)).toBe(migrated);
 
     // Once migrated, the credential no longer depends on the fallback secret.
-    const { EDGE_EVER_AUTH_PASSWORD_FALLBACK: _removed, ...withoutFallback } = environment;
+    const { PONDER_AUTH_PASSWORD_FALLBACK: _removed, ...withoutFallback } = environment;
     expect((await resolveObjectStorage(withoutFallback)).configId).toBe("instance-s3");
     sqlite.close();
   });
 
   test("keeps a legacy-key credential readable but unmigrated when no primary key exists", async () => {
-    const legacyEnvironment = { EDGE_EVER_STORAGE_ENCRYPTION_KEY: "fake-legacy-storage-key" };
+    const legacyEnvironment = { PONDER_STORAGE_ENCRYPTION_KEY: "fake-legacy-storage-key" };
     const { sqlite, environment } = installation({ env: legacyEnvironment });
     const legacyCiphertext = await encryptSecret(FAKE_SECRET, "fake-legacy-storage-key");
     await insertS3Config(sqlite, { encryptedSecret: legacyCiphertext, isActive: true });
@@ -352,8 +352,8 @@ describe("object storage resolution on a migrated database", () => {
 
     expect(resources.deleted).toEqual([["builtin-a", "builtin-b", "builtin-c"]]);
     expect(requests).toEqual([
-      { method: "DELETE", url: "https://objects.example.test/edgeever-fake/notes/s3-a" },
-      { method: "DELETE", url: "https://objects.example.test/edgeever-fake/notes/s3-b" },
+      { method: "DELETE", url: "https://objects.example.test/ponder-fake/notes/s3-a" },
+      { method: "DELETE", url: "https://objects.example.test/ponder-fake/notes/s3-b" },
     ]);
     sqlite.close();
   });

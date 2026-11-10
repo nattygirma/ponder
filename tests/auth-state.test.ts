@@ -10,24 +10,24 @@ describe("instance authentication state", () => {
     expect(
       resolveInstanceAuthMode({
         allowUnauthenticated: false,
-        hasBootstrapCredential: false,
+        platformSignIn: false,
         hasEnabledUser: false,
       }),
     ).toBe("unconfigured");
   });
 
-  test("requires authentication when a bootstrap credential or enabled user exists", () => {
+  test("requires authentication when AppKeep sign-in or an enabled user exists", () => {
     expect(
       resolveInstanceAuthMode({
         allowUnauthenticated: false,
-        hasBootstrapCredential: true,
+        platformSignIn: true,
         hasEnabledUser: false,
       }),
     ).toBe("required");
     expect(
       resolveInstanceAuthMode({
         allowUnauthenticated: false,
-        hasBootstrapCredential: false,
+        platformSignIn: false,
         hasEnabledUser: true,
       }),
     ).toBe("required");
@@ -40,7 +40,7 @@ describe("instance authentication state", () => {
     expect(
       resolveInstanceAuthMode({
         allowUnauthenticated: true,
-        hasBootstrapCredential: false,
+        platformSignIn: false,
         hasEnabledUser: false,
       }),
     ).toBe("disabled");

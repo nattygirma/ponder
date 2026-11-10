@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient, type InfiniteData, type QueryKey } from "@tanstack/react-query";
 import * as Clipboard from "expo-clipboard";
-import type { ListMemosResponse, MemoFilterMode, MemoSortMode } from "@edgeever/client";
+import type { ListMemosResponse, MemoFilterMode, MemoSortMode } from "@ponder/client";
 import {
   ActivityIndicator,
   Home,
@@ -18,9 +18,9 @@ import {
 } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { Alert, Pressable, Text } from "../components/LocalizedText";
-import { ApiRequestError } from "@edgeever/client";
-import { DEFAULT_MEMO_TITLE, getNotebookScopeIds, hasDiagramDocumentMarker, markdownToDoc, type MemoDetail, type MemoSummary, type Notebook } from "@edgeever/shared";
-import { MOBILE_UI_METRICS } from "@edgeever/shared/mobile-ui";
+import { ApiRequestError } from "@ponder/client";
+import { DEFAULT_MEMO_TITLE, getNotebookScopeIds, hasDiagramDocumentMarker, markdownToDoc, type MemoDetail, type MemoSummary, type Notebook } from "@ponder/shared";
+import { MOBILE_UI_METRICS } from "@ponder/shared/mobile-ui";
 import { clearMobileMemoDraft, readMobileMemoDraft, type MobileMemoDraft } from "../lib/mobile-drafts";
 import {
   readMobileImageCompressionEnabled,
@@ -386,7 +386,7 @@ export const WorkspaceScreen = ({
 
   const refresh = async () => {
     // Pull-to-refresh must push the outbox first; previously it only pulled
-    // the server mirror, so pending local edits stayed stuck on "待同步".
+    // the server mirror, so pending local edits stayed stuck on "Pending sync".
     if (client) {
       await runForcedSync();
       await syncMobileLocalMirror(client, dataScope);
@@ -520,7 +520,7 @@ export const WorkspaceScreen = ({
   const allVisibleMemosSelected = canToggleVisibleSelection && visibleMemos.every((memo) => selectedMemoIds.has(memo.id));
   const nextSelectionPinValue = selectedMemos.some((memo) => !memo.isPinned);
   const defaultMemoNotebookId = notebooks.find(
-    (notebook) => notebook.id === "nb_inbox" || notebook.slug === "inbox" || notebook.name === "等待分类"
+    (notebook) => notebook.id === "nb_inbox" || notebook.slug === "inbox" || notebook.name === "Inbox"
   )?.id ?? "";
   const createMemoNotebookId =
     activeNotebookId !== ALL_NOTES_ID && notebooks.some((notebook) => notebook.id === activeNotebookId)
@@ -579,8 +579,8 @@ export const WorkspaceScreen = ({
       .then((draft) => {
         openIncomingClipDraft(draft);
         Alert.alert(
-          "正文剪藏失败",
-          `${translate(message)} ${translate("已保留文章链接，你可以稍后重新分享重试。")}`,
+          "Article extraction failed",
+          `${translate(message)} ${translate("The article link was kept. Share it again later to retry.")}`,
         );
       })
       .finally(finishIncomingShare);
@@ -594,7 +594,7 @@ export const WorkspaceScreen = ({
     if (incomingShareError && incomingSharePayloads.length === 0) {
       if (processedShareUrlRef.current !== "invalid-share-resolution") {
         processedShareUrlRef.current = "invalid-share-resolution";
-        Alert.alert(translate("无法读取分享内容"), translate("请重新分享后再试。"));
+        Alert.alert(translate("Could not read the shared content"), translate("Share it again and retry."));
         onIncomingShareHandledRef.current?.();
       }
       return;
@@ -603,7 +603,7 @@ export const WorkspaceScreen = ({
     if (incomingShareError && sharedImages.some((image) => !image.uri.startsWith("file:"))) {
       if (processedShareUrlRef.current !== "invalid-binary-share") {
         processedShareUrlRef.current = "invalid-binary-share";
-        Alert.alert(translate("无法读取分享图片"), translate("请重新分享后再试。"));
+        Alert.alert(translate("Could not read the shared image"), translate("Share it again and retry."));
         onIncomingShareHandledRef.current?.();
       }
       return;
@@ -628,7 +628,7 @@ export const WorkspaceScreen = ({
       if (notebooks.length === 0) {
         if (notebooksQuery.isSuccess) {
           processedShareUrlRef.current = shareKey;
-          Alert.alert("无法保存图片", "请先在 EdgeEver 中创建一个笔记本。");
+          Alert.alert("Unable to save images", "Create a notebook in Ponder first.");
           onIncomingShareHandledRef.current?.();
         }
         return;
@@ -642,7 +642,7 @@ export const WorkspaceScreen = ({
       setCreateSeed({
         contentMarkdown: "",
         tagsText: "",
-        title: translate(sharedImages.length === 1 ? "分享的图片" : `分享的图片（${sharedImages.length} 张）`),
+        title: translate(sharedImages.length === 1 ? "Shared image" : `Shared images (${sharedImages.length})`),
       });
       setActiveView("notes");
       setMemoView("notebook");
@@ -656,8 +656,8 @@ export const WorkspaceScreen = ({
       if (incomingSharePayloads.length > 0 && processedShareUrlRef.current !== "invalid-share") {
         processedShareUrlRef.current = "invalid-share";
         Alert.alert(
-          "无法读取分享内容",
-          incomingShareError?.message || "分享内容里没有可识别的网页链接或图片。",
+          "Could not read the shared content",
+          incomingShareError?.message || "The shared content has no recognizable web link or image.",
         );
         onIncomingShareHandledRef.current?.();
         return;
@@ -671,7 +671,7 @@ export const WorkspaceScreen = ({
     if (notebooks.length === 0) {
       if (notebooksQuery.isSuccess) {
         processedShareUrlRef.current = sourceUrl;
-        Alert.alert("无法保存剪藏", "请先在 EdgeEver 中创建一个笔记本。");
+        Alert.alert("Unable to save clip", "Create a notebook in Ponder first.");
         onIncomingShareHandledRef.current?.();
       }
       return;
@@ -697,7 +697,7 @@ export const WorkspaceScreen = ({
       })
       .catch(() => {
         if (isActive()) {
-          Alert.alert("剪藏失败", "无法读取分享的网页，请稍后重试。");
+          Alert.alert("Could not clip the page", "Could not read the shared page. Try again later.");
         }
       })
       .finally(() => {
@@ -885,7 +885,7 @@ export const WorkspaceScreen = ({
       };
 
       // Online-first: push immediately when the instance is reachable so common
-      // edits never sit in "待同步". Fall back to the durable outbox only when
+      // edits never sit in "Pending sync". Fall back to the durable outbox only when
       // the network or server cannot accept the write right now.
       if (client && !syncBaseMemo.id.startsWith("local:")) {
         try {
@@ -990,7 +990,7 @@ export const WorkspaceScreen = ({
       if (context?.reopenMemoId) {
         setSelectedMemoId(context.reopenMemoId);
       }
-      Alert.alert("删除失败", error instanceof Error ? error.message : "请检查网络后重试");
+      Alert.alert("Could not delete", error instanceof Error ? error.message : "Check your network and try again");
     },
   });
 
@@ -1026,7 +1026,7 @@ export const WorkspaceScreen = ({
       });
     },
     onError: () => {
-      Alert.alert("分享失败", "无法创建分享链接，请检查网络后重试。");
+      Alert.alert("Could not share", "Could not create a share link. Check your connection and try again.");
     },
   });
 
@@ -1088,7 +1088,7 @@ export const WorkspaceScreen = ({
         context?.previousSelectionMode ?? false,
         context?.previousSelectedMemoIds ?? new Set(),
       );
-      Alert.alert("删除失败", error instanceof Error ? error.message : "请检查网络后重试");
+      Alert.alert("Could not delete", error instanceof Error ? error.message : "Check your network and try again");
     },
   });
 
@@ -1098,10 +1098,10 @@ export const WorkspaceScreen = ({
       deleteMemoMutation.mutate({ memo, permanent: false });
       return;
     }
-    Alert.alert("永久删除笔记", "这个操作不可恢复。", [
-      { text: "取消", style: "cancel" },
+    Alert.alert("Delete note permanently", "This action cannot be undone.", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: "永久删除",
+        text: "Delete permanently",
         style: "destructive",
         onPress: () => deleteMemoMutation.mutate({ memo, permanent: true }),
       },
@@ -1109,7 +1109,7 @@ export const WorkspaceScreen = ({
   };
 
   const handleRenameResource = async (memo: MemoDetail, target: MobileResourceTarget, filename: string) => {
-    if (!client) throw new Error("当前无法连接实例，请稍后重试");
+    if (!client) throw new Error("Cannot reach the instance right now. Try again later.");
     const { resource } = await client.renameResource(target.resourceId, filename);
     const contentJson = renameMobileResourceInDoc(
       memo.contentJson,
@@ -1124,7 +1124,7 @@ export const WorkspaceScreen = ({
   };
 
   const handleDeleteResource = async (memo: MemoDetail, target: MobileResourceTarget) => {
-    if (!client) throw new Error("当前无法连接实例，请稍后重试");
+    if (!client) throw new Error("Cannot reach the instance right now. Try again later.");
     await client.deleteResource(target.resourceId);
     const contentJson = deleteMobileResourceFromDoc(memo.contentJson, target);
     await localUpdateMemoMutation.mutateAsync({
@@ -1137,13 +1137,13 @@ export const WorkspaceScreen = ({
     try {
       const text = await getMobileConflictDraftClipboardText(syncQueueScope, memo.id);
       if (!text?.trim()) {
-        Alert.alert("复制失败", "没有可复制的本地草稿。");
+        Alert.alert("Copy failed", "There is no local draft to copy.");
         return;
       }
       await Clipboard.setStringAsync(text);
-      Alert.alert("已复制", "本地草稿已复制到剪贴板。");
+      Alert.alert("Copied", "Local draft copied to the clipboard.");
     } catch (error) {
-      Alert.alert("复制失败", error instanceof Error ? error.message : "请重试");
+      Alert.alert("Copy failed", error instanceof Error ? error.message : "Please try again");
     }
   }, [syncQueueScope]);
 
@@ -1168,25 +1168,25 @@ export const WorkspaceScreen = ({
         queryClient.invalidateQueries({ queryKey: ["mobile", "memo", "trash", memo.id] }),
       ]);
     } catch (error) {
-      Alert.alert("采用云端版本失败", error instanceof Error ? error.message : "请检查网络后重试");
+      Alert.alert("Could not use the cloud version", error instanceof Error ? error.message : "Check your network and try again");
     }
   }, [client, dataScope, queryClient, refreshSyncQueueItems, syncQueueScope]);
 
   const handleMemoSyncConflict = useCallback((memo: MemoDetail) => {
     Alert.alert(
-      "同步冲突",
-      "云端笔记已在其他标签页、设备，或离线期间被更新，本地草稿无法直接覆盖。可先复制本地草稿，再采用云端版本后继续编辑。",
+      "Sync conflict",
+      "The cloud note was updated in another tab, on another device, or while you were offline. Copy your local draft, then use the cloud version before editing again.",
       [
-        { text: "取消", style: "cancel" },
+        { text: "Cancel", style: "cancel" },
         {
-          text: "复制本地草稿",
+          text: "Copy local draft",
           onPress: () => {
             void handleCopyConflictDraft(memo);
           },
         },
-        { text: "查看历史", onPress: () => setRevisionMemo(memo) },
+        { text: "View history", onPress: () => setRevisionMemo(memo) },
         {
-          text: "采用云端并重新加载",
+          text: "Use cloud and reload",
           style: "destructive",
           onPress: () => {
             void handleAdoptCloudVersion(memo);
@@ -1202,10 +1202,10 @@ export const WorkspaceScreen = ({
       deleteMemosMutation.mutate({ memoIds: selectedMemoIdList, permanent: false });
       return;
     }
-    Alert.alert(`永久删除 ${selectedMemoIdList.length} 条笔记`, "这个操作不可恢复。", [
-      { text: "取消", style: "cancel" },
+    Alert.alert(`Delete ${selectedMemoIdList.length} notes permanently`, "This action cannot be undone.", [
+      { text: "Cancel", style: "cancel" },
       {
-        text: "永久删除",
+        text: "Delete permanently",
         style: "destructive",
         onPress: () => deleteMemosMutation.mutate({ memoIds: selectedMemoIdList, permanent: true }),
       },
@@ -1361,7 +1361,7 @@ export const WorkspaceScreen = ({
         onClose={() => setNotebookPickerOpen(false)}
         onCreate={async (name, parentId) => {
           if (!client) {
-            throw new Error("连接尚未就绪");
+            throw new Error("Connection is not ready");
           }
           const { notebook } = await client.createNotebook({ name, parentId });
           queryClient.setQueryData<{ notebooks: Notebook[] }>(["mobile", "notebooks"], (current) => ({
@@ -1371,7 +1371,7 @@ export const WorkspaceScreen = ({
             await upsertLocalNotebook(dataScope, notebook);
             void queryClient.invalidateQueries({ queryKey: ["mobile", "notebooks"] });
           } catch {
-            Alert.alert("笔记本已创建", "本机缓存更新失败，正在重新同步。", [{ text: "好的" }]);
+            Alert.alert("Notebook created", "The local cache could not update. Syncing again now.", [{ text: "OK" }]);
             void syncMobileLocalMirror(client, dataScope)
               .then(() => queryClient.invalidateQueries({ queryKey: ["mobile", "notebooks"] }))
               .catch(() => undefined);
@@ -1389,7 +1389,7 @@ export const WorkspaceScreen = ({
       {tagFilterPickerOpen ? <TagPickerModal
         allowCreate={false}
         dataScope={dataScope}
-        description="选择一个标签，只查看带有该标签的笔记"
+        description="Choose a tag to view only notes with that tag"
         maxSelections={1}
         onChange={(tags) => {
           setSelectedTag(tags[0] ?? null);
@@ -1402,7 +1402,7 @@ export const WorkspaceScreen = ({
         }}
         onClose={() => setTagFilterPickerOpen(false)}
         selectedTags={selectedTag ? [selectedTag] : []}
-        title="按标签筛选"
+        title="Filter by tag"
         visible
       /> : null}
 
@@ -1446,8 +1446,8 @@ export const WorkspaceScreen = ({
         <View style={styles.shareImportBackdrop}>
           <View style={styles.shareImportCard}>
             <ActivityIndicator color="#059669" size="large" />
-            <Text style={styles.shareImportTitle}>正在剪藏文章</Text>
-            <Text style={styles.shareImportDescription}>正在提取标题、正文和图片链接…</Text>
+            <Text style={styles.shareImportTitle}>Clipping article</Text>
+            <Text style={styles.shareImportDescription}>Extracting the title, body, and image links…</Text>
           </View>
           {incomingClipCaptureUrl ? (
             <MobileWebClipCapture
@@ -1475,8 +1475,8 @@ export const WorkspaceScreen = ({
         canEnterSelection={visibleMemos.length > 0}
         memoListDensity={memoListDensity}
         memoSortMode={memoSortMode}
-        listDescription={`${searchActive ? searchQuery.data?.pages[0]?.totalCount ?? searchResults.length : memosQuery.data?.pages[0]?.totalCount ?? memos.length} 条笔记`}
-        listTitle={memoView === "trash" ? "回收站" : selectedTag ? `#${selectedTag}` : activeNotebook?.name ?? "全部笔记"}
+        listDescription={`${searchActive ? searchQuery.data?.pages[0]?.totalCount ?? searchResults.length : memosQuery.data?.pages[0]?.totalCount ?? memos.length} notes`}
+        listTitle={memoView === "trash" ? "Trash" : selectedTag ? `#${selectedTag}` : activeNotebook?.name ?? "All notes"}
         onClose={() => setNotesActionsOpen(false)}
         onEnterSelection={() => {
           setNotesActionsOpen(false);
@@ -1521,9 +1521,9 @@ export const WorkspaceScreen = ({
           setSelectionMoreOpen(false);
           toggleVisibleSelection(visibleMemos.map((memo) => memo.id));
         }}
-        pinLabel={nextSelectionPinValue ? "置顶" : "取消置顶"}
+        pinLabel={nextSelectionPinValue ? "Pinned" : "Unpin"}
         selectedCount={selectedMemoIds.size}
-        selectionToggleLabel={allVisibleMemosSelected ? "全不选当前列表" : "全选当前列表"}
+        selectionToggleLabel={allVisibleMemosSelected ? "Deselect current list" : "Select current list"}
         visible
       /> : null}
 
@@ -1547,11 +1547,11 @@ export const WorkspaceScreen = ({
         <BottomNavItem
           active={activeView === "notes"}
           icon={<Home color={activeView === "notes" ? styles.bottomNavIconActive.color : styles.bottomNavText.color} size={20} />}
-          label="首页"
+          label="Home"
           onPress={showAllNotes}
         />
         <Pressable
-          accessibilityLabel="新建笔记"
+          accessibilityLabel="New note"
           accessibilityRole="button"
           disabled={!canCreateMemo}
           onLongPress={() => {
@@ -1570,7 +1570,7 @@ export const WorkspaceScreen = ({
           active={activeView === "settings"}
           badge={hasUpdate}
           icon={<UserRound color={activeView === "settings" ? styles.bottomNavIconActive.color : styles.bottomNavText.color} size={20} />}
-          label="我的"
+          label="Me"
           onPress={openSettings}
         />
         </View>
@@ -1581,7 +1581,7 @@ export const WorkspaceScreen = ({
 
 const BottomNavItem = ({ active = false, badge = false, icon, label, onPress }: { active?: boolean; badge?: boolean; icon: ReactNode; label: string; onPress: () => void }) => (
   <Pressable
-    accessibilityLabel={badge ? `${label}，发现新版本` : label}
+    accessibilityLabel={badge ? `${label}, update available` : label}
     accessibilityRole="button"
     accessibilityState={{ selected: active }}
     onPress={onPress}

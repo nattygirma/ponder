@@ -2,27 +2,27 @@
 import Container from "@/components/container.astro";
 import Layout from "@/layouts/Layout.astro";
 
-const title = "EdgeEver AI Agent 进阶玩法";
-const description = "通过 EdgeEver MCP 读取真实笔记，让 AI Agent 辅助整理人物画像、知识图谱和标签体系。";
+const title = "Ponder AI Agent advanced plays";
+const description = "Use Ponder MCP to let AI agents organize real notes into persona profiles, knowledge maps, and cleaner tag systems.";
 
 const prompts = [
   {
-    title: "人物画像",
-    summary: "从长期笔记中提炼关注主题、做事偏好、能力线索、反复出现的问题和近期动向。",
+    title: "Persona profile",
+    summary: "Extract long-term themes, work preferences, capability signals, recurring problems, and recent direction from your notes.",
     prompt:
-      "请通过 EdgeEver MCP 读取我的笔记，基于真实笔记内容为我整理一份人物画像。请只根据笔记中的证据判断，不要做心理诊断，不要夸张定性。输出包括：长期关注的主题、做事偏好、能力线索、反复出现的问题、近期动向，并在每条结论后列出相关笔记标题或 memo id。",
+      "Use Ponder MCP to read my notes and create a persona profile based on the real note content. Judge only from evidence in the notes, do not make psychological diagnoses, and do not exaggerate traits. Include long-term themes, work preferences, capability signals, recurring problems, recent direction, and list related note titles or memo ids after each conclusion.",
   },
   {
-    title: "知识图谱",
-    summary: "把笔记拆成主要知识领域、关键概念、相关材料、已掌握部分和待补齐问题。",
+    title: "Knowledge map",
+    summary: "Organize notes into knowledge areas, key concepts, related material, what you already understand, and gaps to fill.",
     prompt:
-      "请通过 EdgeEver MCP 读取我的笔记，为我整理一份知识地图。请找出主要知识领域、每个领域下的关键概念、相关笔记、我已经掌握的部分和还需要补齐的问题。输出结构要适合后续继续学习和写作。",
+      "Use Ponder MCP to read my notes and organize a knowledge map. Identify the main knowledge areas, key concepts in each area, related notes, what I already understand, and the gaps I still need to fill. Structure the output so it is useful for continued learning and writing.",
   },
   {
-    title: "标签建议",
-    summary: "基于已有笔记和标签，发现重复、过细、过宽或命名不一致的问题。",
+    title: "Tag suggestions",
+    summary: "Review existing notes and tags to find duplicate, narrow, broad, or inconsistent labels before applying changes.",
     prompt:
-      "请通过 EdgeEver MCP 读取我的笔记和现有标签，帮我设计一套更清晰的标签体系。请指出重复、过细、过宽或命名不一致的标签，并给出合并、重命名和新增标签建议。先不要修改笔记，等我确认后再执行。",
+      "Use Ponder MCP to read my notes and existing tags, then design a clearer tag system. Point out duplicate, overly narrow, overly broad, or inconsistently named tags, and suggest merges, renames, and new tags. Do not modify notes yet. Wait for my confirmation before applying changes.",
   },
 ];
 
@@ -33,10 +33,10 @@ const jsonLd = {
   headline: title,
   description,
   url: pageUrl,
-  inLanguage: "zh-CN",
+  inLanguage: "en-US",
   publisher: {
     "@type": "Organization",
-    name: "EdgeEver",
+    name: "Ponder",
   },
 };
 ---

@@ -1,17 +1,17 @@
 export default {
   activate(context) {
     const disposeSettings = context.events.on("settings.changed", ({ key }) => {
-      globalThis.edgeeverPluginObservedSettings ??= [];
-      globalThis.edgeeverPluginObservedSettings.push({ pluginId: context.pluginId, key });
+      globalThis.ponderPluginObservedSettings ??= [];
+      globalThis.ponderPluginObservedSettings.push({ pluginId: context.pluginId, key });
     });
     const disposeNote = context.events.on("note.updated", ({ note }) => {
-      globalThis.edgeeverPluginObservedNote = note;
+      globalThis.ponderPluginObservedNote = note;
     });
     const disposeTemplate = context.events.on("template.created", ({ template }) => {
-      globalThis.edgeeverPluginObservedTemplate = template;
+      globalThis.ponderPluginObservedTemplate = template;
     });
     const disposeResource = context.events.on("resource.updated", ({ resource }) => {
-      globalThis.edgeeverPluginObservedResource = resource;
+      globalThis.ponderPluginObservedResource = resource;
     });
     return () => {
       disposeSettings();

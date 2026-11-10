@@ -1,21 +1,20 @@
 import {
   DEFAULT_AI_PROMPT_SEEDS,
   defaultAiPromptId,
-} from "@edgeever/shared/ai-prompt-seeds";
+} from "@ponder/shared/ai-prompt-seeds";
 import {
   DEFAULT_NOTEBOOK_SEEDS,
   WELCOME_MEMO_ID,
-  WELCOME_MEMO_REPAIRED_CONTENT_HASH,
   WELCOME_MEMO_SEED_CONTENT_HASH,
   WELCOME_MEMO_SEED_TITLE,
   buildWelcomeMemoContent,
   localizeDefaultNotebookName,
-} from "@edgeever/shared/default-workspace-seeds";
+} from "@ponder/shared/default-workspace-seeds";
 import {
   DEFAULT_MEMO_TEMPLATE_SEEDS,
   defaultMemoTemplateId,
   localizeMemoTemplateSeed,
-} from "@edgeever/shared/memo-template-seeds";
+} from "@ponder/shared/memo-template-seeds";
 import { createId, isoNow } from "./entity-utils";
 import { markWorkspaceExampleSeedPendingStatement } from "./workspace-example-seed";
 import { sha256 } from "./hash-utils";
@@ -171,10 +170,10 @@ export const createWorkspaceSeedLocalizationStatements = async (
     ],
   });
   const welcomeIsUntouched = welcomeGuard([
-    [WELCOME_MEMO_SEED_CONTENT_HASH, 0],
-    [WELCOME_MEMO_REPAIRED_CONTENT_HASH, 1],
+    [WELCOME_MEMO_SEED_CONTENT_HASH, 1],
+    [WELCOME_MEMO_SEED_CONTENT_HASH, 2],
   ]);
-  const welcomeContentWasLocalized = welcomeGuard([[welcomeContentHash, 1], [welcomeContentHash, 2]]);
+  const welcomeContentWasLocalized = welcomeGuard([[welcomeContentHash, 2], [welcomeContentHash, 3]]);
 
   return [
     ...createWorkspaceDefaultSeedStatements(db, workspaceId, now, locale, {
@@ -228,7 +227,7 @@ export const createWorkspaceSeedLocalizationStatements = async (
     }),
     db.prepare(
       `INSERT INTO memo_search_documents (memo_id, title, content_text, tags)
-       SELECT ?, ?, ?, 'edgeever welcome'
+       SELECT ?, ?, ?, 'ponder welcome'
        WHERE ${welcomeIsUntouched.sql}
        ON CONFLICT(memo_id) DO UPDATE SET
          title = excluded.title,

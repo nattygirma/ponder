@@ -37,7 +37,7 @@ describe("note link suggestion", () => {
     });
     try {
       const initialState = editor.state.reconfigure({ plugins: editor.extensionManager.plugins });
-      const plugin = initialState.plugins.find((item) => item.key.startsWith("edgeever-note-link-suggestion$"));
+      const plugin = initialState.plugins.find((item) => item.key.startsWith("ponder-note-link-suggestion$"));
       const state = initialState.apply(initialState.tr.setSelection(TextSelection.atEnd(initialState.doc)));
       return plugin.getState(state);
     } finally {
@@ -115,7 +115,7 @@ describe("note link suggestion", () => {
           href: "#memo=target",
           target: "_blank",
           rel: "noopener noreferrer nofollow",
-          class: "edgeever-note-link",
+          class: "ponder-note-link",
           title: null,
         },
       }],

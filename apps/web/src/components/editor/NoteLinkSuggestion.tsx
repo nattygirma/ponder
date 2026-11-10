@@ -4,7 +4,7 @@ import { ReactRenderer } from "@tiptap/react";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from "@tiptap/suggestion";
 import { Link2 } from "lucide-react";
-import { createMemoLinkHref, type MemoSummary } from "@edgeever/shared";
+import { createMemoLinkHref, type MemoSummary } from "@ponder/shared";
 import {
   Command,
   CommandEmpty,
@@ -29,7 +29,7 @@ export type NoteLinkSuggestionHandle = {
   onKeyDown: (props: SuggestionKeyDownProps) => boolean;
 };
 
-const noteLinkSuggestionPluginKey = new PluginKey("edgeever-note-link-suggestion");
+const noteLinkSuggestionPluginKey = new PluginKey("ponder-note-link-suggestion");
 
 export const filterNoteLinkSuggestions = (items: MemoSummary[], currentMemoId: string | null) =>
   items.filter((memo) => memo.id !== currentMemoId && !memo.isDeleted);
@@ -119,32 +119,38 @@ export const insertSuggestedNoteLink = ({
       text: item.title || labels.untitled,
       marks: [{
         type: "link",
-        attrs: { href: createMemoLinkHref(item.id), class: "edgeever-note-link" },
+        attrs: { href: createMemoLinkHref(item.id), class: "ponder-note-link" },
       }],
     })
     .run();
 };
 
 export const createNoteLinkSuggestionExtension = ({
+  char = "@",
+  isEnabled,
   getCurrentMemoId,
   getLabels,
   searchMemos,
 }: {
+  /** What opens the menu. Other triggers live alongside "@", each with its own plugin. */
+  char?: string;
+  isEnabled?: () => boolean;
   getCurrentMemoId: () => string | null;
   getLabels: () => NoteLinkSuggestionLabels;
   searchMemos: (query: string) => Promise<MemoSummary[]>;
 }) => Extension.create({
-  name: "edgeeverNoteLinkSuggestion",
+  name: `ponderNoteLinkSuggestion${char === "@" ? "" : char}`,
   addProseMirrorPlugins() {
     return [Suggestion<MemoSummary, MemoSummary>({
       editor: this.editor,
-      pluginKey: noteLinkSuggestionPluginKey,
-      char: "@",
-      allowSpaces: true,
+      pluginKey: char === "@" ? noteLinkSuggestionPluginKey : new PluginKey(`ponder-note-link-suggestion-${char}`),
+      char,
+      // "1 + 2" must not open a menu that swallows the next Enter.
+      allowSpaces: char !== "+",
       allowedPrefixes: null,
       placement: "bottom-start",
       offset: { mainAxis: 6 },
-      decorationClass: "edgeever-note-link-query",
+      decorationClass: "ponder-note-link-query",
       allow: ({ state, range }) => {
         const position = state.doc.resolve(range.from);
         // Check the paragraph boundary, since formatting can split a word into text nodes.
@@ -152,7 +158,7 @@ export const createNoteLinkSuggestionExtension = ({
           Math.max(0, position.parentOffset - 1), position.parentOffset, "\n",
           (node) => node.type.name === "hardBreak" ? "\n" : "\ufffc",
         );
-        return this.editor.isEditable && position.parent.type.name === "paragraph"
+        return (isEnabled?.() ?? true) && this.editor.isEditable && position.parent.type.name === "paragraph"
           && (position.parentOffset === 0 || /\s/u.test(prefix));
       },
       items: async ({ query }) => {

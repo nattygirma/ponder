@@ -3,7 +3,7 @@
 // writes the request onto globalThis immediately before injection.
 (() => {
   const root = globalThis as typeof globalThis & {
-    __edgeeverImageClipPayload?: {
+    __ponderImageClipPayload?: {
       action?: string;
       requestId?: string;
       urls?: unknown;
@@ -13,8 +13,8 @@
       kind?: string;
     };
   };
-  const payload = root.__edgeeverImageClipPayload;
-  delete root.__edgeeverImageClipPayload;
+  const payload = root.__ponderImageClipPayload;
+  delete root.__ponderImageClipPayload;
   if (!payload) return;
 
   const supported = new Set(["image/png", "image/jpeg", "image/gif", "image/webp", "image/avif"]);

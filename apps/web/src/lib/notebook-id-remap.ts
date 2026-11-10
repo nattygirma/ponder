@@ -1,4 +1,4 @@
-import type { Notebook } from "@edgeever/shared";
+import type { Notebook } from "@ponder/shared";
 import { localDb, type SyncQueueItem } from "@/lib/local-db";
 
 // Keep notebook mappings separate from the memo mappings observed by editors.

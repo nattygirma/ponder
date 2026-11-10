@@ -1,9 +1,9 @@
-import type { PublicNotebookShare } from "@edgeever/shared";
+import type { PublicNotebookShare } from "@ponder/shared";
 import { NotebookSiteSearch, NotebookSiteSearchContext } from "./NotebookSiteSearch";
 import { useAppearanceTheme, type ThemePreference } from "./ThemeProvider";
 import { ButtonTooltip } from "./ui/button-tooltip";
 import "./notebook-site.css";
-import { getMemoDisplayTitle } from "@edgeever/shared";
+import { getMemoDisplayTitle } from "@ponder/shared";
 import {
   ArrowLeft,
   ArrowRight,
@@ -297,7 +297,7 @@ export const PublicNotebookSite = ({ share, token, selectedId, children }: {
     </nav><div className="px-8 py-5 text-[11px] text-muted-foreground">{t("sharing.sitePoweredBy")}</div>
   </div>;
   return <NotebookSiteSearchContext.Provider value={(selectedTag) => { setTag(selectedTag ?? ""); setSearchOpen(true); }}><TooltipProvider delayDuration={400}>
-    <div data-site-theme="default" className="edgeever-notebook-site min-h-[100dvh] bg-card text-foreground">
+    <div data-site-theme="default" className="ponder-notebook-site min-h-[100dvh] bg-card text-foreground">
       <a href="#notebook-site-content" className="sr-only z-[60] rounded-md bg-card p-3 focus:not-sr-only focus:fixed focus:left-4 focus:top-4">{t("sharing.siteSkipToContent")}</a>
       <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center justify-between gap-3 border-b bg-card/95 px-4 py-3 backdrop-blur sm:px-6">
         <Link to={root} onClick={navigate} className={`${linkClass} flex min-w-0 items-center gap-3 font-semibold`}><SiteLogo key={share.settings?.logoUrl} src={share.settings?.logoUrl} /><span className="max-w-[40vw] truncate">{share.name}</span></Link>

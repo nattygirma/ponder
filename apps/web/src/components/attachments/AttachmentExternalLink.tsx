@@ -32,13 +32,13 @@ export const AttachmentExternalLink = forwardRef<HTMLAnchorElement, Props>(
             onClick?.(event);
             if (event.defaultPrevented || !isDesktopResourceRuntime()) return;
             const url = toDesktopResourceUrl(href);
-            if (!url.startsWith("edgeever-resource://") && !url.startsWith("edgeever-staged://")) return;
+            if (!url.startsWith("ponder-resource://") && !url.startsWith("ponder-staged://")) return;
             event.preventDefault();
             if (busy.current) return;
             busy.current = true;
             setOpening(true);
             // Invoke synchronously while the click still has user activation.
-            const request = window.edgeeverDesktop?.openAttachment?.({ url, filename });
+            const request = window.ponderDesktop?.openAttachment?.({ url, filename });
             void Promise.resolve(request).then((result) => {
               if (!result?.ok) setError(result?.code ?? "open-failed");
             }).catch(() => setError("open-failed")).finally(() => {

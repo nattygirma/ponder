@@ -21,8 +21,8 @@ test("keeps undo history isolated when switching between search results", async 
 
   try {
     await page.goto("/");
-    await page.getByRole("button", { name: "全部笔记", exact: true }).click();
-    await page.getByPlaceholder("搜索笔记").fill(marker);
+    await page.getByRole("button", { name: "All notes", exact: true }).click();
+    await page.getByPlaceholder("Search notes").fill(marker);
 
     await page.locator(`[data-memo-id="${first.id}"]`).locator("button").first().click();
     const editor = page.locator(".ProseMirror[contenteditable='true']");

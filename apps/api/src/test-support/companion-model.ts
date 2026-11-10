@@ -3,7 +3,7 @@ import { isStepCount, jsonSchema, tool, streamText, type LanguageModel, type Mod
 import type {
   AiProvider, CompanionAnswer, CompanionMemory, CompanionModelContentPart, CompanionPreparedMessage,
   CompanionSource, CompanionTurnInput,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import type { DatabaseAdapter } from "../storage-contract";
 import type { CompanionScope, TurnRow } from "../companion-service";
 import type { AppContext } from "../api-context";

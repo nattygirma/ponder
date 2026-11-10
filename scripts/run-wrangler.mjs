@@ -34,7 +34,7 @@ if (wranglerArgs.length === 0) {
   process.exit(1);
 }
 
-const requestedInstance = process.env.EDGE_EVER_INSTANCE;
+const requestedInstance = process.env.PONDER_INSTANCE;
 
 const loadLocalEnv = () => {
   const envPath = resolve(".env.local");
@@ -75,14 +75,14 @@ loadLocalEnv();
 // stored in .env.local. Bun loads .env.local before this script starts, so
 // capture the effective process value before the explicit reload above.
 if (requestedInstance !== undefined) {
-  process.env.EDGE_EVER_INSTANCE = requestedInstance;
+  process.env.PONDER_INSTANCE = requestedInstance;
 }
 
 const repositoryConfigPath = resolve("wrangler.toml");
 const baseConfigPath = resolve(process.env.WRANGLER_CONFIG ?? repositoryConfigPath);
 const usesRepositoryConfig = baseConfigPath === repositoryConfigPath;
 const baseConfigDirectory = dirname(baseConfigPath);
-const instance = process.env.EDGE_EVER_INSTANCE?.trim();
+const instance = process.env.PONDER_INSTANCE?.trim();
 const instanceKey = instance?.replace(/[^a-zA-Z0-9]/g, "_").toUpperCase();
 const generatedConfigPath = resolve(
   instanceKey
@@ -159,9 +159,9 @@ const replaceTomlValue = (source, key, value) => {
 const tomlString = (value) => JSON.stringify(value);
 
 const envValue = (name) => {
-  const scopedName = instanceKey ? `EDGE_EVER_${instanceKey}_${name}` : undefined;
+  const scopedName = instanceKey ? `PONDER_${instanceKey}_${name}` : undefined;
   return (scopedName ? process.env[scopedName] : undefined)?.trim()
-    || process.env[`EDGE_EVER_${name}`]?.trim();
+    || process.env[`PONDER_${name}`]?.trim();
 };
 
 const isRemoteCommand =
@@ -184,7 +184,7 @@ const workersDev = envValue("WORKERS_DEV");
 if (workersDev) {
   const normalized = workersDev.toLowerCase();
   if (!["true", "false"].includes(normalized)) {
-    throw new Error("EDGE_EVER_WORKERS_DEV must be true or false.");
+    throw new Error("PONDER_WORKERS_DEV must be true or false.");
   }
 
   const pattern = /^workers_dev\s*=\s*(true|false)/m;
@@ -199,7 +199,7 @@ if (workersDev) {
 const d1DatabaseId = envValue("D1_DATABASE_ID");
 if (d1DatabaseId) {
   if (!UUID_PATTERN.test(d1DatabaseId)) {
-    throw new Error("EDGE_EVER_D1_DATABASE_ID must be a Cloudflare D1 UUID.");
+    throw new Error("PONDER_D1_DATABASE_ID must be a Cloudflare D1 UUID.");
   }
 
   config = replaceTomlValue(config, "database_id", d1DatabaseId);
@@ -242,7 +242,7 @@ let inheritedR2BucketName;
 let inheritedAuthUsername;
 
 if (isDeployCommand && (!explicitR2BucketName || !explicitAuthUsername)) {
-  const deployedWorkerName = config.match(/^name\s*=\s*"([^"]+)"/m)?.[1] ?? "edgeever";
+  const deployedWorkerName = config.match(/^name\s*=\s*"([^"]+)"/m)?.[1] ?? "ponder";
   const statusResult = runWranglerSync(
     [
       "--config",
@@ -297,7 +297,7 @@ if (isDeployCommand && (!explicitR2BucketName || !explicitAuthUsername)) {
     const authUsernames = uniqueValue("authUsername");
     if (r2BucketNames.length > 1 || authUsernames.length > 1) {
       throw new Error(
-        "Active Worker versions use conflicting instance settings. Complete the rollout or set explicit EDGE_EVER_* Builds variables before deploying.",
+        "Active Worker versions use conflicting instance settings. Complete the rollout or set explicit PONDER_* Builds variables before deploying.",
       );
     }
     inheritedR2BucketName = r2BucketNames[0];
@@ -324,20 +324,20 @@ config = replaceTomlValue(
 const runtimeVars = {
   // Keep the login identifier explicit in generated online deployments so
   // users can discover and override the default without changing code.
-  EDGE_EVER_AUTH_USERNAME: resolvedAuthUsername,
-  EDGE_EVER_SESSION_TTL_DAYS: envValue("SESSION_TTL_DAYS"),
-  EDGE_EVER_AUTH_LOGIN_WINDOW_SECONDS: envValue("AUTH_LOGIN_WINDOW_SECONDS"),
-  EDGE_EVER_AUTH_LOGIN_USERNAME_MAX_ATTEMPTS: envValue("AUTH_LOGIN_USERNAME_MAX_ATTEMPTS"),
-  EDGE_EVER_AUTH_LOGIN_USERNAME_COOLDOWN_SECONDS: envValue("AUTH_LOGIN_USERNAME_COOLDOWN_SECONDS"),
-  EDGE_EVER_AUTH_LOGIN_IP_MAX_ATTEMPTS: envValue("AUTH_LOGIN_IP_MAX_ATTEMPTS"),
-  EDGE_EVER_AUTH_LOGIN_IP_COOLDOWN_SECONDS: envValue("AUTH_LOGIN_IP_COOLDOWN_SECONDS"),
-  EDGE_EVER_R2_BUCKET_NAME: resolvedR2BucketName,
-  EDGE_EVER_DEMO_MODE: envValue("DEMO_MODE"),
-  EDGE_EVER_LOCAL_DEMO_SEED: envValue("LOCAL_DEMO_SEED"),
+  PONDER_AUTH_USERNAME: resolvedAuthUsername,
+  PONDER_SESSION_TTL_DAYS: envValue("SESSION_TTL_DAYS"),
+  PONDER_AUTH_LOGIN_WINDOW_SECONDS: envValue("AUTH_LOGIN_WINDOW_SECONDS"),
+  PONDER_AUTH_LOGIN_USERNAME_MAX_ATTEMPTS: envValue("AUTH_LOGIN_USERNAME_MAX_ATTEMPTS"),
+  PONDER_AUTH_LOGIN_USERNAME_COOLDOWN_SECONDS: envValue("AUTH_LOGIN_USERNAME_COOLDOWN_SECONDS"),
+  PONDER_AUTH_LOGIN_IP_MAX_ATTEMPTS: envValue("AUTH_LOGIN_IP_MAX_ATTEMPTS"),
+  PONDER_AUTH_LOGIN_IP_COOLDOWN_SECONDS: envValue("AUTH_LOGIN_IP_COOLDOWN_SECONDS"),
+  PONDER_R2_BUCKET_NAME: resolvedR2BucketName,
+  PONDER_DEMO_MODE: envValue("DEMO_MODE"),
+  PONDER_LOCAL_DEMO_SEED: envValue("LOCAL_DEMO_SEED"),
   // Persistent local development uses real sessions. Only the isolated local
   // demo stays auth-free; remote deployments always fail closed.
-  EDGE_EVER_ALLOW_UNAUTHENTICATED: isLocalCommand ? String(envValue("LOCAL_DEMO_SEED") === "true") : undefined,
-  EDGE_EVER_COMMUNITY_REGISTRY_URL: envValue("COMMUNITY_REGISTRY_URL"),
+  PONDER_ALLOW_UNAUTHENTICATED: isLocalCommand ? String(envValue("LOCAL_DEMO_SEED") === "true") : undefined,
+  PONDER_COMMUNITY_REGISTRY_URL: envValue("COMMUNITY_REGISTRY_URL"),
 };
 const runtimeVarLines = Object.entries(runtimeVars)
   .filter(([, value]) => Boolean(value))
@@ -354,12 +354,12 @@ ${runtimeVarLines.join("\n")}
 
 const demoMode = envValue("DEMO_MODE")?.toLowerCase();
 if (demoMode && !["true", "false"].includes(demoMode)) {
-  throw new Error("EDGE_EVER_DEMO_MODE must be true or false.");
+  throw new Error("PONDER_DEMO_MODE must be true or false.");
 }
 
 const localDemoSeed = envValue("LOCAL_DEMO_SEED")?.toLowerCase();
 if (localDemoSeed && !["true", "false"].includes(localDemoSeed)) {
-  throw new Error("EDGE_EVER_LOCAL_DEMO_SEED must be true or false.");
+  throw new Error("PONDER_LOCAL_DEMO_SEED must be true or false.");
 }
 
 if (demoMode === "true") {
@@ -387,20 +387,20 @@ custom_domain = ${customDomain ? "true" : "false"}
 
 if (isRemoteDevCommand && !instance) {
   console.error(
-    "Remote development requires an explicit instance. Run EDGE_EVER_INSTANCE=<name> bun run dev:remote.",
+    "Remote development requires an explicit instance. Run PONDER_INSTANCE=<name> bun run dev:remote.",
   );
   process.exit(1);
 }
 
 if (isRemoteCommand && config.includes(`database_id = "${PLACEHOLDER_D1_ID}"`)) {
-  const databaseName = config.match(/^database_name\s*=\s*"([^"]+)"/m)?.[1] ?? "edgeever";
+  const databaseName = config.match(/^database_name\s*=\s*"([^"]+)"/m)?.[1] ?? "ponder";
   console.error(
     [
       `Could not resolve Cloudflare D1 database "${databaseName}".`,
       "Create it with that exact name and ensure the Workers Builds API token has D1 read/edit permission.",
       instanceKey
-        ? `Set EDGE_EVER_${instanceKey}_D1_DATABASE_ID or EDGE_EVER_D1_DATABASE_ID,`
-        : "Set EDGE_EVER_D1_DATABASE_ID,",
+        ? `Set PONDER_${instanceKey}_D1_DATABASE_ID or PONDER_D1_DATABASE_ID,`
+        : "Set PONDER_D1_DATABASE_ID,",
       "or point WRANGLER_CONFIG at an external configuration file with the required binding.",
     ].join(" "),
   );
@@ -428,15 +428,15 @@ const hasEnvFileArg = wranglerArgs.some((arg) => arg === "--env-file" || arg.sta
 const authPassword = envValue("AUTH_PASSWORD");
 const authPasswordHash = envValue("AUTH_PASSWORD_HASH");
 const authSecrets = {
-  ...(authPassword ? { EDGE_EVER_AUTH_PASSWORD: authPassword } : {}),
-  ...(authPasswordHash ? { EDGE_EVER_AUTH_PASSWORD_HASH: authPasswordHash } : {}),
+  ...(authPassword ? { PONDER_AUTH_PASSWORD: authPassword } : {}),
+  ...(authPasswordHash ? { PONDER_AUTH_PASSWORD_HASH: authPasswordHash } : {}),
 };
 const finalWranglerArgs = [...wranglerArgs];
-const useExistingAuthSecret = process.env.EDGE_EVER_USE_EXISTING_AUTH_SECRET?.trim().toLowerCase() === "true";
+const useExistingAuthSecret = process.env.PONDER_USE_EXISTING_AUTH_SECRET?.trim().toLowerCase() === "true";
 
 if (isDeployCommand && Object.keys(authSecrets).length === 0 && !useExistingAuthSecret) {
   console.error(
-    "Refusing to deploy without EDGE_EVER_AUTH_PASSWORD or EDGE_EVER_AUTH_PASSWORD_HASH. Run bun run deploy:setup first, or use the Cloudflare one-click deploy entrypoint.",
+    "Refusing to deploy without PONDER_AUTH_PASSWORD or PONDER_AUTH_PASSWORD_HASH. Run bun run deploy:setup first, or use the Cloudflare one-click deploy entrypoint.",
   );
   process.exit(1);
 }

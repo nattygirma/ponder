@@ -1,6 +1,6 @@
 {
   "name": "wrangler",
-  "version": "4.112.0-edgeever.1",
+  "version": "4.112.0-ponder.1",
   "private": true,
   "type": "module",
   "bin": {
@@ -9,6 +9,6 @@
     "cf-wrangler": "bin/wrangler.js"
   },
   "dependencies": {
-    "edgeever-wrangler-cli": "npm:wrangler@4.112.0"
+    "ponder-wrangler-cli": "npm:wrangler@4.112.0"
   }
 }

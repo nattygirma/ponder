@@ -4,7 +4,7 @@ import {
   TRANSIENT_IMAGE_UPLOAD_PREFIX,
   type TiptapDoc,
   type TiptapNode,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 export const createMobileImageUploadPlaceholderSource = (id: string) =>
   `${TRANSIENT_IMAGE_UPLOAD_PREFIX}${id}`;

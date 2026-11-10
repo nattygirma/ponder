@@ -105,7 +105,7 @@ describe("local mirror", () => {
   });
 
   test("clears cached data, drafts, and pending changes for a reset scope", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const otherScope = createLocalDataScope("https://notes.example.org", "user-2");
     const scopedMemo = await createLocalMemo(scope, { notebookId: "demo-notebook", title: "Changed demo note" });
     const otherMemo = await createLocalMemo(otherScope, { notebookId: "private-notebook", title: "Keep me" });
@@ -162,7 +162,7 @@ describe("local mirror", () => {
   });
 
   test("replaces stale IndexedDB data after the server change log is reset", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     await createLocalMemo(scope, { notebookId: "old-notebook", title: "Stale cached note" });
     await localDb.syncMeta.bulkPut([
       { scope, key: "cursor", value: "42", updatedAt: "2026-01-01T00:00:00.000Z" },
@@ -219,7 +219,7 @@ describe("local mirror", () => {
   });
 
   test("creates and lists a memo without a network request", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const memo = await createLocalMemo(scope, {
       notebookId: "nb-inbox",
       title: "Local note",
@@ -234,7 +234,7 @@ describe("local mirror", () => {
   });
 
   test("filters local memos by an exact tag across notebooks", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const expected = await createLocalMemo(scope, { notebookId: "nb-a", tags: ["Demo"] });
     await createLocalMemo(scope, { notebookId: "nb-b", tags: ["demo-extra"] });
     await createLocalMemo(scope, { notebookId: "nb-b", title: "Demo without tag" });
@@ -246,7 +246,7 @@ describe("local mirror", () => {
   });
 
   test("updates local content and preserves the memo identity", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const memo = await createLocalMemo(scope, { notebookId: "nb-inbox" });
     const updated = await putLocalMemoUpdate(scope, memo, {
       title: "Updated locally",
@@ -261,7 +261,7 @@ describe("local mirror", () => {
   });
 
   test("caches templates inside the same local data scope", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     await putLocalTemplate(scope, {
       id: "template-1",
       name: "Daily note",
@@ -278,13 +278,13 @@ describe("local mirror", () => {
   });
 
   test("derives tags from the local memo mirror", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     await createLocalMemo(scope, { notebookId: "nb-inbox", tags: ["offline", "offline"] });
     expect((await listLocalTags(scope)).tags).toEqual([{ name: "offline", memoCount: 1, updatedAt: expect.any(String) }]);
   });
 
   test("applies batch mutations to the local mirror immediately", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const first = await createLocalMemo(scope, { notebookId: "inbox", tags: ["old"] });
     const second = await createLocalMemo(scope, { notebookId: "inbox" });
     expect(await applyLocalTagRename(scope, "old", "new")).toBe(1);
@@ -296,7 +296,7 @@ describe("local mirror", () => {
   });
 
   test("deletes and empties trash locally without waiting for the API", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const activeMemo = await createLocalMemo(scope, { notebookId: "inbox", title: "Keep me" });
     const trashedMemo = await createLocalMemo(scope, { notebookId: "inbox", title: "Delete me" });
     expect(await applyLocalMemoDeleteBatch(scope, [trashedMemo.id])).toBe(1);
@@ -308,7 +308,7 @@ describe("local mirror", () => {
   });
 
   test("treats empty batch selections as no-ops", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const memo = await createLocalMemo(scope, { notebookId: "inbox", title: "Keep me", tags: ["old"] });
 
     expect(await applyLocalMemoMove(scope, [], "archive")).toBe(0);
@@ -326,7 +326,7 @@ describe("local mirror", () => {
   });
 
   test("updates and removes notebooks in the local mirror immediately", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     await putLocalNotebook(scope, {
       id: "notebook-1",
       parentId: null,
@@ -347,7 +347,7 @@ describe("local mirror", () => {
   });
 
   test("deletes an empty notebook subtree and refuses one that still has notes", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const notebook = (id, parentId, name) => putLocalNotebook(scope, {
       id,
       parentId,
@@ -383,7 +383,7 @@ describe("local mirror", () => {
   });
 
   test("does not restore a notebook that is waiting to be deleted", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const notebook = (id, parentId, name) => ({
       id,
       parentId,
@@ -415,23 +415,23 @@ describe("local mirror", () => {
   });
 
   test("merges memos locally and marks source notes as deleted", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const first = await createLocalMemo(scope, { notebookId: "inbox", title: "First", contentMarkdown: "one", tags: ["a"] });
     const second = await createLocalMemo(scope, { notebookId: "inbox", title: "Second", contentMarkdown: "two", tags: ["b"] });
     const merged = await mergeLocalMemos(scope, { memoIds: [first.id, second.id], title: "Merged" });
     expect(merged?.title).toBe("Merged");
     expect(merged?.contentMarkdown).toContain("one");
     expect(merged?.contentMarkdown).toContain("two");
-    expect(merged?.contentMarkdown).toContain("edgeever:merge-divider");
-    expect(merged?.contentJson?.content?.some((node) => node.type === "edgeeverMergeDivider")).toBe(true);
+    expect(merged?.contentMarkdown).toContain("ponder:merge-divider");
+    expect(merged?.contentJson?.content?.some((node) => node.type === "ponderMergeDivider")).toBe(true);
     expect(merged?.sourceMemoIds).toEqual([first.id, second.id]);
     expect((await getLocalMemo(scope, first.id))?.isDeleted).toBe(true);
     expect((await getLocalMemo(scope, second.id))?.mergedIntoMemoId).toBe(merged?.id);
   });
 
   test("uses a custom source title when the first merged memo is untitled", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
-    const untitled = await createLocalMemo(scope, { notebookId: "inbox", title: "无标题笔记", contentMarkdown: "one" });
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
+    const untitled = await createLocalMemo(scope, { notebookId: "inbox", title: "Untitled note", contentMarkdown: "one" });
     const titled = await createLocalMemo(scope, { notebookId: "inbox", title: "手动设置的标题", contentMarkdown: "two" });
 
     const merged = await mergeLocalMemos(scope, { memoIds: [untitled.id, titled.id] });
@@ -440,7 +440,7 @@ describe("local mirror", () => {
   });
 
   test("recovers rich content when source Markdown copies are empty", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const first = await createLocalMemo(scope, { notebookId: "inbox", title: "First" });
     const second = await createLocalMemo(scope, { notebookId: "inbox", title: "Second" });
     first.contentJson = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "第一篇真实正文" }] }] };
@@ -459,7 +459,7 @@ describe("local mirror", () => {
   });
 
   test("cancels a merge before deleting sources when cached content is inconsistent", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const unsafe = await createLocalMemo(scope, { notebookId: "inbox", title: "Unsafe" });
     const second = await createLocalMemo(scope, { notebookId: "inbox", title: "Second", contentMarkdown: "正常正文" });
     unsafe.contentText = "缓存声称这里有正文";
@@ -472,7 +472,7 @@ describe("local mirror", () => {
   });
 
   test("caches memo revisions by account scope", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const memo = await createLocalMemo(scope, { notebookId: "inbox" });
     const revision = {
       id: "revision-local-1",
@@ -492,7 +492,7 @@ describe("local mirror", () => {
   });
 
   test("caches resource metadata without storing resource bytes", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     await putLocalResource(scope, {
       id: "resource-1",
       memoId: "memo-1",
@@ -527,7 +527,7 @@ describe("local mirror", () => {
       }),
     };
     try {
-      const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+      const scope = createLocalDataScope("https://appkeep.io", "user-1");
       const resource = await createLocalResource(scope, "memo-1", new File(["offline bytes"], "offline.txt", { type: "text/plain" }));
       const cached = await getCachedLocalResourceBytes(resource.url);
       expect(resource.id).toStartWith("local_resource_");

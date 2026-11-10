@@ -1,8 +1,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronRight } from "lucide-react";
-import type { PluginManifest, PluginSettingField, PluginSettingValue } from "@edgeever/plugin-api";
-import type { EdgeEverPluginHost } from "@/lib/plugins/plugin-host";
+import type { PluginManifest, PluginSettingField, PluginSettingValue } from "@ponder/plugin-api";
+import type { PonderPluginHost } from "@/lib/plugins/plugin-host";
 import {
   createPluginSettingWriteQueue,
   planPluginSettingWrite,
@@ -171,7 +171,7 @@ const PluginSettingFieldRow = ({
   );
 };
 
-export const PluginSettingsSection = ({ host, manifest }: { host: EdgeEverPluginHost; manifest: PluginManifest }) => {
+export const PluginSettingsSection = ({ host, manifest }: { host: PonderPluginHost; manifest: PluginManifest }) => {
   const { t, i18n } = useTranslation();
   const formId = useId();
   const fields = manifest.settings?.fields ?? [];
@@ -241,7 +241,7 @@ export const PluginSettingsSection = ({ host, manifest }: { host: EdgeEverPlugin
   useEffect(() => {
     const flush = () => flushRef.current();
     window.addEventListener("pagehide", flush);
-    const stopHibernatePrepare = window.edgeeverDesktop?.onHibernatePrepare?.(flush);
+    const stopHibernatePrepare = window.ponderDesktop?.onHibernatePrepare?.(flush);
     return () => {
       window.removeEventListener("pagehide", flush);
       stopHibernatePrepare?.();

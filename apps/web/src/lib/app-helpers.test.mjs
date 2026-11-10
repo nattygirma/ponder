@@ -25,7 +25,7 @@ import {
   getNotebookDropSortOrder,
   getNotebookMoveOptions,
   getNotebookSortOptions,
-  hasEdgeEverDragData,
+  hasPonderDragData,
   hasMemoDragData,
   hasNotebookDragData,
   headingBlockValue,
@@ -1447,7 +1447,7 @@ describe("drag and drop helpers", () => {
     getData: (type) => data[type] ?? "",
   });
 
-  test("recognises EdgeEver drag payloads", () => {
+  test("recognises Ponder drag payloads", () => {
     const memoDrag = dataTransfer({ [MEMO_DRAG_MIME]: "[]" });
     const notebookDrag = dataTransfer({ [NOTEBOOK_DRAG_MIME]: "nb" });
     const fileDrag = dataTransfer({ Files: "" });
@@ -1455,9 +1455,9 @@ describe("drag and drop helpers", () => {
     expect(hasMemoDragData(memoDrag)).toBe(true);
     expect(hasNotebookDragData(memoDrag)).toBe(false);
     expect(hasNotebookDragData(notebookDrag)).toBe(true);
-    expect(hasEdgeEverDragData(memoDrag)).toBe(true);
-    expect(hasEdgeEverDragData(notebookDrag)).toBe(true);
-    expect(hasEdgeEverDragData(fileDrag)).toBe(false);
+    expect(hasPonderDragData(memoDrag)).toBe(true);
+    expect(hasPonderDragData(notebookDrag)).toBe(true);
+    expect(hasPonderDragData(fileDrag)).toBe(false);
   });
 
   test("reads only non-blank string memo ids from the drag payload", () => {

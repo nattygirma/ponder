@@ -59,7 +59,7 @@ import {
   isNotebookColor,
   readableNotebookColor,
   type NotebookAppearance,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { cn } from "@/lib/utils";
 
 export const notebookIconComponents = {

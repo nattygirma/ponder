@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ApiRequestError, type createEdgeEverClient } from "@edgeever/client";
+import { ApiRequestError, type createPonderClient } from "@ponder/client";
 import {
   createEmptySyncQueueSummary,
   createEmptySyncRunResult,
@@ -11,11 +11,11 @@ import {
   type MemoDetail,
   type SyncQueueSummary,
   type SyncRunResult,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { readMobileMemoDraft } from "./mobile-drafts";
 
-const LEGACY_SYNC_QUEUE_KEY = "edgeever.mobile.syncQueue.v1";
-const SYNC_QUEUE_KEY_PREFIX = "edgeever.mobile.syncQueue.v2";
+const LEGACY_SYNC_QUEUE_KEY = "ponder.mobile.syncQueue.v1";
+const SYNC_QUEUE_KEY_PREFIX = "ponder.mobile.syncQueue.v2";
 
 export type MobileMemoUpdateSyncPayload = {
   memoId: string;
@@ -244,7 +244,7 @@ export const cancelMobileMemoQueueItems = async (scope: string, memoId: string) 
  * authoritative cloud memo so the UI can rehydrate cleanly.
  */
 export const discardMobileMemoConflict = async (
-  client: ReturnType<typeof createEdgeEverClient>,
+  client: ReturnType<typeof createPonderClient>,
   scope: string,
   memoId: string,
 ) => {
@@ -296,7 +296,7 @@ export const getMobileConflictDraftClipboardText = async (scope: string, memoId:
 };
 
 export const syncMobileQueuedChanges = async (
-  client: ReturnType<typeof createEdgeEverClient>,
+  client: ReturnType<typeof createPonderClient>,
   scope: string,
   options: {
     force?: boolean;
@@ -382,7 +382,7 @@ export const shouldQueueMobileMemoSaveError = (error: unknown) => {
     || message.includes("timeout");
 };
 
-const syncMobileQueueItem = async (client: ReturnType<typeof createEdgeEverClient>, item: MobileSyncQueueItem) => {
+const syncMobileQueueItem = async (client: ReturnType<typeof createPonderClient>, item: MobileSyncQueueItem) => {
   if (item.kind === "memo.create") {
     const response = await client.createMemo({
       notebookId: item.payload.notebookId,

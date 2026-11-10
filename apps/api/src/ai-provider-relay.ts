@@ -38,10 +38,10 @@ export const registerAiProviderRelay = (app: Hono<AppEnv>, fetchProvider: typeof
     if (denied) return denied;
     let target: URL;
     let headers: Headers;
-    const method = c.req.header("x-edgeever-ai-method") ?? "POST";
+    const method = c.req.header("x-ponder-ai-method") ?? "POST";
     try {
-      target = new URL(c.req.header("x-edgeever-ai-target") ?? "");
-      const raw = JSON.parse(c.req.header("x-edgeever-ai-headers") ?? "{}");
+      target = new URL(c.req.header("x-ponder-ai-target") ?? "");
+      const raw = JSON.parse(c.req.header("x-ponder-ai-headers") ?? "{}");
       if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Invalid headers");
       headers = new Headers();
       for (const [key, value] of Object.entries(raw)) {

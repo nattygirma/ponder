@@ -10,8 +10,8 @@
 
 /* Shared production CSS can include the app shell's fixed, clipped viewport.
    This standalone document must grow in both screen and print media. */
-html.edgeever-note-print,
-html.edgeever-note-print body {
+html.ponder-note-print,
+html.ponder-note-print body {
   height: auto;
   overflow: visible;
 }

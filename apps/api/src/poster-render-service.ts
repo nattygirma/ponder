@@ -1,4 +1,4 @@
-import { parsePosterDocument, POSTER_DESIGN_TEMPLATES } from '@edgeever/shared';
+import { parsePosterDocument, POSTER_DESIGN_TEMPLATES } from '@ponder/shared';
 import type { DatabaseAdapter } from './storage-contract';
 import { AppError } from './app-error';
 import { createId, isoNow } from './entity-utils';

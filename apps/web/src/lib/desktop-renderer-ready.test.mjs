@@ -15,7 +15,7 @@ describe("desktop renderer readiness", () => {
     const frames = [];
     let reports = 0;
     globalThis.window = {
-      edgeeverDesktop: { rendererBootstrapReady: () => { reports += 1; } },
+      ponderDesktop: { rendererBootstrapReady: () => { reports += 1; } },
       requestAnimationFrame: (callback) => { frames.push(callback); return frames.length; },
       cancelAnimationFrame: () => {},
       setTimeout: () => 1,
@@ -33,14 +33,14 @@ describe("desktop renderer readiness", () => {
     frames.shift()(32);
 
     expect(reports).toBe(1);
-    expect(document.documentElement.dataset.edgeeverRendererReady).toBe("true");
+    expect(document.documentElement.dataset.ponderRendererReady).toBe("true");
   });
 
   test("reports readiness when animation frames are suspended", () => {
     let fallback;
     let reports = 0;
     globalThis.window = {
-      edgeeverDesktop: { rendererBootstrapReady: () => { reports += 1; } },
+      ponderDesktop: { rendererBootstrapReady: () => { reports += 1; } },
       requestAnimationFrame: () => 1,
       cancelAnimationFrame: () => {},
       setTimeout: (callback) => { fallback = callback; return 1; },
@@ -56,6 +56,6 @@ describe("desktop renderer readiness", () => {
     fallback();
 
     expect(reports).toBe(1);
-    expect(document.documentElement.dataset.edgeeverRendererReady).toBe("true");
+    expect(document.documentElement.dataset.ponderRendererReady).toBe("true");
   });
 });

@@ -15,40 +15,40 @@ const idle = {
 
 describe("getMobileEditorSaveChrome", () => {
   test("keeps a saved note on the quiet chip", () => {
-    expect(getMobileEditorSaveChrome(idle)).toEqual({ emphasized: false, label: "已保存" });
+    expect(getMobileEditorSaveChrome(idle)).toEqual({ emphasized: false, label: "Saved" });
   });
 
   test("shows unsaved edits without a saving flash or green pill", () => {
     expect(getMobileEditorSaveChrome({ ...idle, dirty: true })).toEqual({
       emphasized: false,
-      label: "未保存",
+      label: "Not saved",
     });
     expect(getMobileEditorSaveChrome({ ...idle, dirty: true, saving: true })).toEqual({
       emphasized: false,
-      label: "未保存",
+      label: "Not saved",
     });
   });
 
   test("keeps a restored draft visible while its first save is in flight", () => {
     expect(getMobileEditorSaveChrome({ ...idle, dirty: true, draftRestored: true, saving: true })).toEqual({
       emphasized: false,
-      label: "本地草稿",
+      label: "Local draft",
     });
   });
 
   test("keeps upload and failure visible", () => {
     expect(getMobileEditorSaveChrome({ ...idle, uploading: true, dirty: true })).toEqual({
       emphasized: true,
-      label: "上传中",
+      label: "Uploading",
     });
     expect(getMobileEditorSaveChrome({ ...idle, error: true, saving: true })).toEqual({
       emphasized: false,
-      label: "保存失败",
+      label: "Save failed",
     });
   });
 
   test("shows a loading label before the editor is ready", () => {
-    expect(getMobileEditorSaveChrome({ ...idle, ready: false }).label).toBe("加载中");
+    expect(getMobileEditorSaveChrome({ ...idle, ready: false }).label).toBe("Loading");
   });
 });
 

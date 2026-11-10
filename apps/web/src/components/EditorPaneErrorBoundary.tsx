@@ -29,7 +29,7 @@ export class EditorPaneErrorBoundary extends React.Component<Props, State> {
       componentStack: info.componentStack ?? "",
     };
     console.error("Caught note editor error", error, info.componentStack);
-    void window.edgeeverDesktop?.recordRendererError(details).catch(() => undefined);
+    void window.ponderDesktop?.recordRendererError(details).catch(() => undefined);
   }
 
   override componentDidUpdate(previousProps: Props) {

@@ -18,8 +18,8 @@ import {
 import { encryptSecret } from "./secret-encryption.ts";
 
 const resultBoundary = {
-  start: "<edgeever-result-test123>",
-  end: "</edgeever-result-test123>",
+  start: "<ponder-result-test123>",
+  end: "</ponder-result-test123>",
 };
 
 describe("AI model service", () => {
@@ -37,7 +37,7 @@ describe("AI model service", () => {
       "summarize",
     ]);
     // Shared seed catalog is the user-visible source of truth (Chinese defaults).
-    expect(aiActionInstructions.summarize).toContain("精简总结");
+    expect(aiActionInstructions.summarize).toContain("condensed summary");
     expect(aiActionInstructions.summarize).toContain("20–30%");
     expect(aiActionInstructions["extract-todos"]).toContain("- [ ]");
     expect(resolveAiGenerationSystemInstruction({
@@ -75,7 +75,7 @@ describe("AI model service", () => {
     const instruction = "随便给我生成一首诗。";
     const system = resolveAiGenerationSystemInstruction({ action: "custom", instruction });
     const prompt = buildAiGenerationPrompt({
-      contentMarkdown: "## 开启您的 EdgeEver 笔记之旅\n\nEdgeEver 产品介绍",
+      contentMarkdown: "## 开启您的 Ponder 笔记之旅\n\nPonder 产品介绍",
       instruction,
     });
 
@@ -84,7 +84,7 @@ describe("AI model service", () => {
     expect(system).not.toContain("Apply the user's editing instruction");
     expect(prompt).toStartWith("Note content (reference material;");
     expect(prompt).toEndWith(`User instruction (highest priority):\n${instruction}`);
-    expect(prompt.indexOf("EdgeEver 产品介绍")).toBeLessThan(prompt.indexOf(instruction));
+    expect(prompt.indexOf("Ponder 产品介绍")).toBeLessThan(prompt.indexOf(instruction));
   });
 
   test("builds text and binary attachment message parts", () => {
@@ -112,9 +112,9 @@ describe("AI model service", () => {
   test("normalizes bounded output incrementally across split markers", () => {
     const normalizer = createAiGenerationStreamNormalizer(resultBoundary);
     const chunks = [
-      "Preamble that must not be shown.\n<edgeever-result-",
+      "Preamble that must not be shown.\n<ponder-result-",
       "test123>\n# Result\n\nFirst ",
-      "part.\n</edgeever-result-",
+      "part.\n</ponder-result-",
       "test123>\nPostscript that must not be shown.",
     ];
     const emitted = chunks.map((chunk) => normalizer.push(chunk)).filter(Boolean);
@@ -167,9 +167,9 @@ describe("AI model service", () => {
 
   test("ignores marker-like note content that does not match the request boundary", () => {
     const response = [
-      "<edgeever-result-fixed>",
+      "<ponder-result-fixed>",
       "不应采用的内容",
-      "</edgeever-result-fixed>",
+      "</ponder-result-fixed>",
       resultBoundary.start,
       "正确内容",
       resultBoundary.end,
@@ -189,7 +189,7 @@ describe("AI model service", () => {
     const first = createAiGenerationResultBoundary();
     const second = createAiGenerationResultBoundary();
     expect(first).not.toEqual(second);
-    expect(first.start).toMatch(/^<edgeever-result-[a-f0-9]{32}>$/);
+    expect(first.start).toMatch(/^<ponder-result-[a-f0-9]{32}>$/);
     expect(first.end).toBe(`</${first.start.slice(1)}`);
   });
 
@@ -208,43 +208,43 @@ describe("AI model service", () => {
 
   test("derives an AI-specific key from the existing authentication secret", () => {
     expect(resolveCredentialEncryptionKey("  instance-password  ")).toBe("instance-password");
-    expect(resolveAiCredentialEncryptionKeys({ EDGE_EVER_AUTH_PASSWORD: "instance-password" })[0])
-      .toBe("edgeever:ai-credentials:v1:instance-password");
+    expect(resolveAiCredentialEncryptionKeys({ PONDER_AUTH_PASSWORD: "instance-password" })[0])
+      .toBe("ponder:ai-credentials:v1:instance-password");
   });
 
   test("decrypts credentials saved with the legacy object-storage key", async () => {
     const encrypted = await encryptSecret("provider-key", "legacy-storage-key");
     await expect(decryptAiCredential(encrypted, {
-      EDGE_EVER_AUTH_PASSWORD: "current-auth-secret",
-      EDGE_EVER_STORAGE_ENCRYPTION_KEY: "legacy-storage-key",
+      PONDER_AUTH_PASSWORD: "current-auth-secret",
+      PONDER_STORAGE_ENCRYPTION_KEY: "legacy-storage-key",
     })).resolves.toBe("provider-key");
   });
 
   test("never uses the legacy object-storage key for new AI credentials", () => {
     expect(resolvePrimaryAiCredentialEncryptionKey({
-      EDGE_EVER_STORAGE_ENCRYPTION_KEY: "legacy-storage-key",
+      PONDER_STORAGE_ENCRYPTION_KEY: "legacy-storage-key",
     })).toBeUndefined();
   });
 
   test("decrypts credentials with persisted fallback secrets after rotation", async () => {
     const passwordEncrypted = await encryptSecret(
       "provider-key",
-      resolvePrimaryAiCredentialEncryptionKey({ EDGE_EVER_AUTH_PASSWORD: "original-password" }),
+      resolvePrimaryAiCredentialEncryptionKey({ PONDER_AUTH_PASSWORD: "original-password" }),
     );
     await expect(decryptAiCredential(passwordEncrypted, {
-      EDGE_EVER_AUTH_PASSWORD: "rotated-password",
-      EDGE_EVER_AUTH_PASSWORD_FALLBACK: "original-password",
+      PONDER_AUTH_PASSWORD: "rotated-password",
+      PONDER_AUTH_PASSWORD_FALLBACK: "original-password",
     })).resolves.toBe("provider-key");
 
     const credentialsEncrypted = await encryptSecret(
       "provider-key",
       resolvePrimaryAiCredentialEncryptionKey({
-        EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "original-credentials-key",
+        PONDER_CREDENTIALS_ENCRYPTION_KEY: "original-credentials-key",
       }),
     );
     await expect(decryptAiCredential(credentialsEncrypted, {
-      EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY: "rotated-credentials-key",
-      EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS: "original-credentials-key",
+      PONDER_CREDENTIALS_ENCRYPTION_KEY: "rotated-credentials-key",
+      PONDER_CREDENTIALS_ENCRYPTION_KEY_PREVIOUS: "original-credentials-key",
     })).resolves.toBe("provider-key");
   });
 

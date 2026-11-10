@@ -15,8 +15,8 @@ export const BorderBeam = ({
   size = 200,
   duration = 15,
   borderWidth = 1.5,
-  colorFrom = "var(--edgeever-decor-beam-from)",
-  colorTo = "var(--edgeever-decor-beam-to)",
+  colorFrom = "var(--ponder-decor-beam-from)",
+  colorTo = "var(--ponder-decor-beam-to)",
   delay = 0,
 }: BorderBeamProps) => {
   return (

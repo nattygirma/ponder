@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 import { companionLocale } from "./companion-locale.ts";
 
 describe("companion locale", () => {
-  test("maps Chinese and Japanese families and falls back to English", () => {
-    expect(companionLocale("zh-CN")).toBe("zh-CN");
-    expect(companionLocale("zh-TW")).toBe("zh-CN");
+  test("maps Japanese and Polish families and falls back to English", () => {
+    expect(companionLocale("zh-CN")).toBe("en-US");
+    expect(companionLocale("zh-TW")).toBe("en-US");
     expect(companionLocale("ja-JP")).toBe("ja");
     expect(companionLocale("pl-PL")).toBe("pl");
     expect(companionLocale("en-GB")).toBe("en-US");

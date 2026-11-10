@@ -1,8 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { enUS } from "@edgeever/shared/i18n/en-US";
-import { ja } from "@edgeever/shared/i18n/ja";
-import { pl } from "@edgeever/shared/i18n/pl";
-import { zhCN } from "@edgeever/shared/i18n/zh-CN";
+import { enUS } from "@ponder/shared/i18n/en-US";
+import { ja } from "@ponder/shared/i18n/ja";
+import { pl } from "@ponder/shared/i18n/pl";
 import { findInlineFields, formatInlineFieldChip, rangesOverlap } from "./inline-fields.ts";
 
 const translatorFor = (catalog) => (key) => key.split(".").reduce((node, part) => node?.[part], catalog) ?? key;
@@ -17,8 +16,8 @@ describe("inline fields", () => {
   });
 
   test("formats quiet chips instead of raw syntax", () => {
-    expect(formatInlineFieldChip("due", "2026-09-10", translatorFor(zhCN))).toBe("截止 2026-09-10");
-    expect(formatInlineFieldChip("priority", "highest", translatorFor(zhCN))).toBe("优先级 最高");
+    expect(formatInlineFieldChip("due", "2026-09-10", translatorFor(enUS))).toBe("Due 2026-09-10");
+    expect(formatInlineFieldChip("priority", "highest", translatorFor(enUS))).toBe("Priority Highest");
     expect(formatInlineFieldChip("due", "2026-09-10", translatorFor(enUS))).toBe("Due 2026-09-10");
   });
 

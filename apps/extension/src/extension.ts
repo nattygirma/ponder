@@ -21,7 +21,7 @@ export const DEFAULT_SETTINGS: ExtensionSettings = {
 const isInboxNotebook = (notebook: { id: string; slug?: string | null }) =>
   notebook.slug === "inbox" || notebook.id === "nb_inbox" || notebook.id.endsWith("_inbox");
 
-// An empty or stale choice means 等待分类. A notebook the user picked still wins.
+// An empty or stale choice means the inbox. A notebook the user picked still wins.
 export const clipNotebookId = (savedId: string, notebooks: { id: string; slug?: string | null }[]) => {
   const saved = savedId.trim();
   if (saved && notebooks.some((notebook) => notebook.id === saved)) return saved;
@@ -65,7 +65,7 @@ export const requestInstancePermission = async (instanceUrl: string) => {
   }
 };
 
-export const edgeEverRequest = async <T>(settings: ExtensionSettings, path: string, init?: RequestInit): Promise<T> => {
+export const ponderRequest = async <T>(settings: ExtensionSettings, path: string, init?: RequestInit): Promise<T> => {
   const instanceUrl = normalizeInstanceUrl(settings.instanceUrl);
   if (!instanceUrl || !settings.token) {
     throw new Error(t("missingSettingsDetails"));
@@ -88,7 +88,7 @@ export const edgeEverRequest = async <T>(settings: ExtensionSettings, path: stri
   return response.json() as Promise<T>;
 };
 
-export const edgeEverFormRequest = async <T>(
+export const ponderFormRequest = async <T>(
   settings: ExtensionSettings,
   path: string,
   form: FormData,
@@ -124,7 +124,7 @@ export const uploadMemoImage = async (
   new Uint8Array(buffer).set(file.bytes);
   const form = new FormData();
   form.append("file", new File([buffer], file.filename, { type: file.mimeType }));
-  return edgeEverFormRequest<{ resource: { id: string } }>(
+  return ponderFormRequest<{ resource: { id: string } }>(
     settings,
     `/api/v1/memos/${encodeURIComponent(memoId)}/resources`,
     form,
@@ -133,7 +133,7 @@ export const uploadMemoImage = async (
 };
 
 export const listNotebooks = (settings: ExtensionSettings) =>
-  edgeEverRequest<{ notebooks: Notebook[] }>(settings, "/api/v1/notebooks");
+  ponderRequest<{ notebooks: Notebook[] }>(settings, "/api/v1/notebooks");
 
 export const testConnection = async (settings: ExtensionSettings) => {
   await requestInstancePermission(settings.instanceUrl);

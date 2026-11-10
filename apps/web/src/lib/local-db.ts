@@ -1,7 +1,7 @@
-import type { MemoDetail, MemoRevision, MemoTemplate, Notebook, ResourceListItem, TiptapDoc } from "@edgeever/shared";
+import type { MemoDetail, MemoRevision, MemoTemplate, Notebook, ResourceListItem, TiptapDoc } from "@ponder/shared";
 import Dexie, { type Table } from "dexie";
 
-export const LOCAL_DATABASE_INTERRUPTED_EVENT = "edgeever:local-database-interrupted";
+export const LOCAL_DATABASE_INTERRUPTED_EVENT = "ponder:local-database-interrupted";
 
 const notifyLocalDatabaseInterrupted = (reason: "blocked" | "versionchange") => {
   if (typeof window === "undefined") return;
@@ -98,7 +98,7 @@ export type LocalIdMapping = {
 export type LocalRevision = MemoRevision & { scope: string };
 export type LocalResource = ResourceListItem & { scope: string };
 
-class EdgeEverLocalDb extends Dexie {
+class PonderLocalDb extends Dexie {
   drafts!: Table<LocalDraft, string>;
   syncQueue!: Table<SyncQueueItem, string>;
   notebooks!: Table<LocalNotebook, [string, string]>;
@@ -110,7 +110,7 @@ class EdgeEverLocalDb extends Dexie {
   resources!: Table<LocalResource, [string, string]>;
 
   constructor() {
-    super("edgeever-local");
+    super("ponder-local");
     this.on("blocked", () => notifyLocalDatabaseInterrupted("blocked"));
     this.on("versionchange", () => notifyLocalDatabaseInterrupted("versionchange"));
     this.version(1).stores({
@@ -161,4 +161,4 @@ class EdgeEverLocalDb extends Dexie {
   }
 }
 
-export const localDb = new EdgeEverLocalDb();
+export const localDb = new PonderLocalDb();

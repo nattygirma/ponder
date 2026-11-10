@@ -38,14 +38,14 @@ describe("storage adapter", () => {
       }),
       transaction: (callback: () => void) => () => callback(),
     };
-    const database = createSelfHostedStorageAdapter(sqlite, ".edgeever-unused-resources").db;
-    const statement = database.prepare("SELECT ? AS value").bind("edgeever");
+    const database = createSelfHostedStorageAdapter(sqlite, ".ponder-unused-resources").db;
+    const statement = database.prepare("SELECT ? AS value").bind("ponder");
 
     await expect(statement.all<{ sql: string; value: string }>()).resolves.toMatchObject({
       success: true,
-      results: [{ sql: "SELECT ? AS value", value: "edgeever" }],
+      results: [{ sql: "SELECT ? AS value", value: "ponder" }],
     });
-    await expect(statement.first<string>("value")).resolves.toBe("edgeever");
+    await expect(statement.first<string>("value")).resolves.toBe("ponder");
     await expect(database.prepare("UPDATE notes SET value = ?").bind("updated").run()).resolves.toMatchObject({
       success: true,
       results: [],
@@ -63,7 +63,7 @@ describe("storage adapter", () => {
   });
 
   test("stores attachments in a persistent filesystem directory", async () => {
-    const directory = await mkdtemp(`${tmpdir()}/edgeever-storage-`);
+    const directory = await mkdtemp(`${tmpdir()}/ponder-storage-`);
     const sqlite = {
       query: () => ({ all: () => [], get: () => null, run: () => undefined }),
       transaction: (callback: () => void) => () => callback(),
@@ -74,7 +74,7 @@ describe("storage adapter", () => {
       expect(adapter.diagnostics).toEqual({
         database: "sqlite",
         resources: "filesystem",
-        migrationTable: "_edgeever_migrations",
+        migrationTable: "_ponder_migrations",
       });
       await adapter.resources.put("workspace/memo/image.bin", new Uint8Array([1, 2, 3]));
 
@@ -88,7 +88,7 @@ describe("storage adapter", () => {
   });
 
   test("streams full and ranged filesystem downloads in bounded chunks", async () => {
-    const directory = await mkdtemp(`${tmpdir()}/edgeever-storage-`);
+    const directory = await mkdtemp(`${tmpdir()}/ponder-storage-`);
     const sqlite = {
       query: () => ({ all: () => [], get: () => null, run: () => undefined }),
       transaction: (callback: () => void) => () => callback(),
@@ -117,7 +117,7 @@ describe("storage adapter", () => {
   });
 
   test("assembles filesystem multipart uploads without exposing staging parts", async () => {
-    const directory = await mkdtemp(`${tmpdir()}/edgeever-storage-`);
+    const directory = await mkdtemp(`${tmpdir()}/ponder-storage-`);
     const sqlite = {
       query: () => ({ all: () => [], get: () => null, run: () => undefined }),
       transaction: (callback: () => void) => () => callback(),
@@ -140,7 +140,7 @@ describe("storage adapter", () => {
   });
 
   test("rejects attachment path traversal", async () => {
-    const directory = await mkdtemp(`${tmpdir()}/edgeever-storage-`);
+    const directory = await mkdtemp(`${tmpdir()}/ponder-storage-`);
     const sqlite = {
       query: () => ({ all: () => [], get: () => null, run: () => undefined }),
       transaction: (callback: () => void) => () => callback(),
@@ -162,7 +162,7 @@ describe("storage adapter", () => {
       send: async (command: { constructor: { name: string }; input: { Key?: string } }) => {
         commands.push(`${command.constructor.name}:${command.input.Key ?? ""}`);
         if (command.constructor.name === "GetObjectCommand") {
-          return { Body: new Blob(["edgeever"]), ContentLength: 8, ContentType: "text/plain" };
+          return { Body: new Blob(["ponder"]), ContentLength: 8, ContentType: "text/plain" };
         }
         return {};
       },
@@ -173,13 +173,13 @@ describe("storage adapter", () => {
     };
     const adapter = createS3CompatibleStorageAdapter(
       sqlite,
-      { bucket: "edgeever", endpoint: "http://minio:9000" },
+      { bucket: "ponder", endpoint: "http://minio:9000" },
       client as never,
     );
     expect(adapter.diagnostics).toEqual({
       database: "sqlite",
       resources: "s3",
-      migrationTable: "_edgeever_migrations",
+      migrationTable: "_ponder_migrations",
     });
 
     await adapter.resources.put("memo/image.txt", new Uint8Array([1]), {
@@ -210,7 +210,7 @@ describe("storage adapter", () => {
     };
     const store = createS3CompatibleStorageAdapter(
       sqlite,
-      { bucket: "edgeever", endpoint: "http://minio:9000" },
+      { bucket: "ponder", endpoint: "http://minio:9000" },
       client as never,
     ).resources;
 

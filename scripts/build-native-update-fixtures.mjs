@@ -12,7 +12,7 @@ if (process.env.GITHUB_ACTIONS !== "true" || process.env.GITHUB_REPOSITORY !== "
   throw new Error("Instrumented update builds run only on the official repository's disposable CI runners");
 }
 const root = process.cwd();
-const output = resolve(process.argv[2] || join(process.env.RUNNER_TEMP, "edgeever-update-verification"));
+const output = resolve(process.argv[2] || join(process.env.RUNNER_TEMP, "ponder-update-verification"));
 mkdirSync(output, { recursive: true });
 const desktop = join(root, "apps/desktop");
 const packagePath = join(desktop, "package.json");
@@ -43,13 +43,13 @@ try {
   mkdirSync(join(desktop, "build"), { recursive: true });
   if (process.platform === "darwin") run("bash", ["scripts/build-macos-share-extension.sh"]);
   for (const version of versions) {
-    const metadata = { ...JSON.parse(originalPackage), name: "edgeever-update-verifier", version };
+    const metadata = { ...JSON.parse(originalPackage), name: "ponder-update-verifier", version };
     writeFileSync(packagePath, JSON.stringify(metadata, null, 2));
     const directory = join(output, version);
     const config = {
       extends: "./electron-builder.yml", appId: "org.edgeever.update-verifier",
       // The product resolves its background Helper from the executable name.
-      productName: process.platform === "darwin" ? MAC_UPDATE_FIXTURE_NAME : "EdgeEver Update Verification",
+      productName: process.platform === "darwin" ? MAC_UPDATE_FIXTURE_NAME : "Ponder Update Verification",
       executableName: MAC_UPDATE_FIXTURE_NAME,
       directories: { output: directory },
       mac: { notarize: false },
@@ -65,7 +65,7 @@ try {
     const payload = process.platform === "darwin"
       ? join(macAppBundle(join(directory, process.arch === "arm64" ? "mac-arm64" : "mac")), "Contents/Resources/app.asar")
       : process.platform === "win32" ? join(directory, "win-unpacked/resources/app.asar")
-      : join(directory, `EdgeEver-${version}-linux-x64.AppImage`);
+      : join(directory, `Ponder-${version}-linux-x64.AppImage`);
     writeFileSync(join(directory, "payload.sha256"), createHash("sha256").update(readFileSync(payload)).digest("hex"));
     if (process.platform === "win32") {
       await createWindowsUpdateMetadata({ directory, version });

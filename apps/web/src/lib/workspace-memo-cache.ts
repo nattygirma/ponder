@@ -9,7 +9,7 @@ import {
   type MemoDetail,
   type MemoSummary,
   type Notebook,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import type { MemoView } from "@/lib/app-helpers";
 import type { MemoListQueryData } from "@/lib/memo-list-cache";
 

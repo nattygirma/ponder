@@ -1,8 +1,8 @@
-export const PWA_UPDATE_NOTICE_EVENT = "edgeever:pwa-update-notice";
-export const DEPLOYED_UPDATE_SEEN_EVENT = "edgeever:deployed-update-seen";
+export const PWA_UPDATE_NOTICE_EVENT = "ponder:pwa-update-notice";
+export const DEPLOYED_UPDATE_SEEN_EVENT = "ponder:deployed-update-seen";
 
-const DEPLOYED_RELEASE_ID_KEY = "edgeever:deployed-release-id:v1";
-const DEPLOYED_SEEN_RELEASE_ID_KEY = "edgeever:deployed-seen-release-id:v1";
+const DEPLOYED_RELEASE_ID_KEY = "ponder:deployed-release-id:v1";
+const DEPLOYED_SEEN_RELEASE_ID_KEY = "ponder:deployed-seen-release-id:v1";
 
 const scopedStorageKey = (key: string, scope?: string) =>
   scope ? `${key}:${encodeURIComponent(scope)}` : key;

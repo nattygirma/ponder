@@ -1,12 +1,12 @@
 {
   "extensionName": {
-    "message": "EdgeEver Web Clipper"
+    "message": "Ponder Web Clipper"
   },
   "extensionDescription": {
-    "message": "ウェブページ、選択した文章、画像、Hacker News の投稿をセルフホストの EdgeEver に保存します。"
+    "message": "ウェブページ、選択した文章、画像、Hacker News の投稿をセルフホストの Ponder に保存します。"
   },
   "actionTitle": {
-    "message": "EdgeEver に保存"
+    "message": "Ponder に保存"
   },
   "webClipper": {
     "message": "Web Clipper"
@@ -26,14 +26,14 @@
   "completePluginConfiguration": {
     "message": "先に拡張機能の設定を完了してください"
   },
-  "savedToEdgeEver": {
-    "message": "EdgeEver に保存しました。"
+  "savedToPonder": {
+    "message": "Ponder に保存しました。"
   },
   "saveFailed": {
     "message": "保存に失敗しました。"
   },
   "optionsTitle": {
-    "message": "EdgeEver Web Clipper の設定"
+    "message": "Ponder Web Clipper の設定"
   },
   "diagnosticsTitle": {
     "message": "情報と診断"
@@ -90,10 +90,10 @@
     "message": "不明"
   },
   "instanceAddress": {
-    "message": "EdgeEver インスタンス URL"
+    "message": "Ponder インスタンス URL"
   },
   "tokenPlaceholder": {
-    "message": "EdgeEver の設定で作成します"
+    "message": "Ponder の設定で作成します"
   },
   "defaultNotebook": {
     "message": "既定のノートブック"
@@ -108,7 +108,7 @@
     "message": "設定を保存"
   },
   "projectAndSource": {
-    "message": "GitHub のプロジェクトとソース"
+    "message": "AppKeep"
   },
   "reportIssue": {
     "message": "問題を報告"
@@ -140,13 +140,13 @@
     "message": "設定の保存に失敗しました。"
   },
   "missingSettingsDetails": {
-    "message": "先に拡張機能の設定で EdgeEver のインスタンス URL と API トークンを入力してください。"
+    "message": "先に拡張機能の設定で Ponder のインスタンス URL と API トークンを入力してください。"
   },
   "instancePermissionRequired": {
-    "message": "拡張機能が EdgeEver インスタンスへアクセスすることを許可してください。"
+    "message": "拡張機能が Ponder インスタンスへアクセスすることを許可してください。"
   },
   "requestFailed": {
-    "message": "EdgeEver へのリクエストが失敗しました（$STATUS$）。",
+    "message": "Ponder へのリクエストが失敗しました（$STATUS$）。",
     "placeholders": {
       "status": {
         "content": "$1"
@@ -166,7 +166,7 @@
     "message": "キーワード"
   },
   "noAvailableNotebooks": {
-    "message": "EdgeEver に使えるノートブックがありません。"
+    "message": "Ponder に使えるノートブックがありません。"
   },
   "currentPageNotFound": {
     "message": "現在のページが見つかりませんでした。"
@@ -189,10 +189,10 @@
     "message": "詳細は提供されていません"
   },
   "instanceNetworkFailed": {
-    "message": "EdgeEver インスタンスに接続できませんでした。URL、ネットワーク、CORS を確認してください。"
+    "message": "Ponder インスタンスに接続できませんでした。URL、ネットワーク、CORS を確認してください。"
   },
   "saveFailedWithReason": {
-    "message": "EdgeEver に保存できませんでした: $DETAIL$",
+    "message": "Ponder に保存できませんでした: $DETAIL$",
     "placeholders": {
       "detail": {
         "content": "$1"
@@ -202,11 +202,11 @@
   "emptyPageContent": {
     "message": "（このページから読み取れる本文はありませんでした）"
   },
-  "saveSelectionToEdgeEver": {
-    "message": "選択したテキストを EdgeEver に保存"
+  "saveSelectionToPonder": {
+    "message": "選択したテキストを Ponder に保存"
   },
   "selectionSaveHint": {
-    "message": "ページ上の文字を選択して右クリックし、「選択したテキストを EdgeEver に保存」を選びます。その文章は、上で選んだ既定のノートブックに 1 件のノートとして保存されます。"
+    "message": "ページ上の文字を選択して右クリックし、「選択したテキストを Ponder に保存」を選びます。その文章は、上で選んだ既定のノートブックに 1 件のノートとして保存されます。"
   },
   "savingSelection": {
     "message": "選択した文字を保存しています…"
@@ -220,11 +220,11 @@
   "selectionNoteFallbackTitle": {
     "message": "選択した文字"
   },
-  "saveImageToEdgeEver": {
-    "message": "画像を EdgeEver に保存"
+  "saveImageToPonder": {
+    "message": "画像を Ponder に保存"
   },
   "imageSaveHint": {
-    "message": "ウェブページ上の画像を右クリックし、「画像を EdgeEver に保存」を選ぶと、上で選んだ既定のノートブックに新しいノートとして保存されます。"
+    "message": "ウェブページ上の画像を右クリックし、「画像を Ponder に保存」を選ぶと、上で選んだ既定のノートブックに新しいノートとして保存されます。"
   },
   "savingImage": {
     "message": "画像を保存しています…"
@@ -265,7 +265,7 @@
     "message": "サイトへのアクセスが許可されなかったため、画像は保存されていません。"
   },
   "imageResourceScopeRequired": {
-    "message": "この API トークンには添付ファイルの書き込み権限がありません。EdgeEver の設定でフルアクセスのトークンを作成してください。"
+    "message": "この API トークンには添付ファイルの書き込み権限がありません。Ponder の設定でフルアクセスのトークンを作成してください。"
   },
   "imageNoteFallbackTitle": {
     "message": "画像"
@@ -274,16 +274,16 @@
     "message": "画像"
   },
   "imageSaveWindowTitle": {
-    "message": "画像を EdgeEver に保存"
+    "message": "画像を Ponder に保存"
   },
   "imageSaveExpired": {
     "message": "この保存は終了しています。画像を右クリックしてやり直してください。"
   },
-  "saveTweetToEdgeEver": {
-    "message": "投稿を EdgeEver に保存"
+  "saveTweetToPonder": {
+    "message": "投稿を Ponder に保存"
   },
   "tweetSaveHint": {
-    "message": "X で投稿を右クリックし、「投稿を EdgeEver に保存」を選びます。本文は「さらに表示」で折りたたまれた部分も含めて保存され、表示中の画像とともに、上で選んだ既定のノートブックへ 1 件のノートになります。"
+    "message": "X で投稿を右クリックし、「投稿を Ponder に保存」を選びます。本文は「さらに表示」で折りたたまれた部分も含めて保存され、表示中の画像とともに、上で選んだ既定のノートブックへ 1 件のノートになります。"
   },
   "savingTweet": {
     "message": "この投稿を保存しています…"
@@ -316,16 +316,16 @@
     "message": "投稿"
   },
   "tweetSaveWindowTitle": {
-    "message": "投稿を EdgeEver に保存"
+    "message": "投稿を Ponder に保存"
   },
   "tweetTimeLabel": {
     "message": "日時"
   },
-  "saveGithubRepoToEdgeEver": {
-    "message": "リポジトリ情報を EdgeEver に保存"
+  "saveGithubRepoToPonder": {
+    "message": "リポジトリ情報を Ponder に保存"
   },
   "githubRepoSaveHint": {
-    "message": "GitHub のリポジトリページまたはコード一覧で、ページの余白、紹介文、または README 本文を右クリックし、「リポジトリ情報を EdgeEver に保存」を選びます。アドレスと紹介文は、上で選んだ既定のノートブックに 1 件のノートとして保存されます。Issue、ディスカッション、単一ファイルのページは保存しません。"
+    "message": "GitHub のリポジトリページまたはコード一覧で、ページの余白、紹介文、または README 本文を右クリックし、「リポジトリ情報を Ponder に保存」を選びます。アドレスと紹介文は、上で選んだ既定のノートブックに 1 件のノートとして保存されます。Issue、ディスカッション、単一ファイルのページは保存しません。"
   },
   "savingGithubRepo": {
     "message": "このリポジトリを保存しています…"
@@ -351,11 +351,11 @@
   "githubRepoTopicsLabel": {
     "message": "トピック"
   },
-  "saveXhsToEdgeEver": {
-    "message": "ノートを EdgeEver に保存"
+  "saveXhsToPonder": {
+    "message": "ノートを Ponder に保存"
   },
   "xhsSaveHint": {
-    "message": "小紅書でノート本文を右クリックし、「ノートを EdgeEver に保存」を選びます。タイトル、本文、画像が 1 件のノートになります。コメントは含めません。画像を右クリックした場合は、その画像だけを保存します。"
+    "message": "小紅書でノート本文を右クリックし、「ノートを Ponder に保存」を選びます。タイトル、本文、画像が 1 件のノートになります。コメントは含めません。画像を右クリックした場合は、その画像だけを保存します。"
   },
   "savingXhs": {
     "message": "このノートを保存しています…"
@@ -391,13 +391,13 @@
     "message": "小紅書のノート"
   },
   "xhsSaveWindowTitle": {
-    "message": "ノートを EdgeEver に保存"
+    "message": "ノートを Ponder に保存"
   },
   "xhsLocationLabel": {
     "message": "場所"
   },
-  "saveZhihuToEdgeEver": {
-    "message": "回答・記事を EdgeEver に保存"
+  "saveZhihuToPonder": {
+    "message": "回答・記事を Ponder に保存"
   },
   "zhihuQuestionLabel": {
     "message": "質問"
@@ -415,7 +415,7 @@
     "message": "本文"
   },
   "zhihuSaveHint": {
-    "message": "知乎で回答または記事の本文を右クリックし、「回答・記事を EdgeEver に保存」を選びます。タイトル、著者、本文、画像が 1 件のノートになります。コメントは含めません。画像を右クリックした場合は、その画像だけを保存します。"
+    "message": "知乎で回答または記事の本文を右クリックし、「回答・記事を Ponder に保存」を選びます。タイトル、著者、本文、画像が 1 件のノートになります。コメントは含めません。画像を右クリックした場合は、その画像だけを保存します。"
   },
   "savingZhihu": {
     "message": "この知乎の回答または記事を保存しています…"
@@ -451,10 +451,10 @@
     "message": "知乎の回答または記事"
   },
   "zhihuSaveWindowTitle": {
-    "message": "回答・記事を EdgeEver に保存"
+    "message": "回答・記事を Ponder に保存"
   },
-  "saveRedditToEdgeEver": {
-    "message": "Reddit の投稿を EdgeEver に保存"
+  "saveRedditToPonder": {
+    "message": "Reddit の投稿を Ponder に保存"
   },
   "savingReddit": {
     "message": "Reddit の投稿を保存しています…"
@@ -477,8 +477,8 @@
   "redditLinkLabel": {
     "message": "外部リンク"
   },
-  "saveVideoNoteToEdgeEver": {
-    "message": "動画ノートを EdgeEver に保存"
+  "saveVideoNoteToPonder": {
+    "message": "動画ノートを Ponder に保存"
   },
   "savingVideoNote": {
     "message": "動画ノートを保存しています…"
@@ -552,17 +552,17 @@
   "videoNoteFallbackTitle": {
     "message": "動画ノート"
   },
-  "saveHackerNewsToEdgeEver": {
-    "message": "Hacker News の投稿を EdgeEver に保存"
+  "saveHackerNewsToPonder": {
+    "message": "Hacker News の投稿を Ponder に保存"
   },
-  "saveV2exToEdgeEver": {
-    "message": "V2EX のトピックを EdgeEver に保存"
+  "saveV2exToPonder": {
+    "message": "V2EX のトピックを Ponder に保存"
   },
-  "saveXiaoyuzhouToEdgeEver": {
-    "message": "小宇宙のエピソードを EdgeEver に保存"
+  "saveXiaoyuzhouToPonder": {
+    "message": "小宇宙のエピソードを Ponder に保存"
   },
   "savingPlatformClip": {
-    "message": "このページを EdgeEver に保存中…"
+    "message": "このページを Ponder に保存中…"
   },
   "platformNotDetail": {
     "message": "対応する投稿、トピック、エピソードの詳細ページを開いて、もう一度お試しください。"
@@ -580,7 +580,7 @@
     "message": "本文を保存しました。一部の画像は外部リンクのままです。"
   },
   "platformSavedWithImages": {
-    "message": "すべての画像とともに EdgeEver に保存しました。"
+    "message": "すべての画像とともに Ponder に保存しました。"
   },
   "platformNoShowNotes": {
     "message": "このエピソードには Show Notes がありません。"
@@ -606,20 +606,20 @@
   "platformPodcastLabel": {
     "message": "番組"
   },
-  "saveFacebookToEdgeEver": {
-    "message": "Facebook の投稿を EdgeEver に保存"
+  "saveFacebookToPonder": {
+    "message": "Facebook の投稿を Ponder に保存"
   },
-  "saveInstagramToEdgeEver": {
-    "message": "Instagram の投稿を EdgeEver に保存"
+  "saveInstagramToPonder": {
+    "message": "Instagram の投稿を Ponder に保存"
   },
-  "saveLinkedinToEdgeEver": {
-    "message": "LinkedIn の投稿を EdgeEver に保存"
+  "saveLinkedinToPonder": {
+    "message": "LinkedIn の投稿を Ponder に保存"
   },
-  "saveThreadsToEdgeEver": {
-    "message": "Threads の投稿を EdgeEver に保存"
+  "saveThreadsToPonder": {
+    "message": "Threads の投稿を Ponder に保存"
   },
-  "saveBlueskyToEdgeEver": {
-    "message": "Bluesky の投稿を EdgeEver に保存"
+  "saveBlueskyToPonder": {
+    "message": "Bluesky の投稿を Ponder に保存"
   },
   "socialSelectPost": {
     "message": "投稿の詳細ページを開くか、対象の投稿をもう一度右クリックして保存してください。"
@@ -645,8 +645,8 @@
   "platformXiaoyuzhou": {
     "message": "Xiaoyuzhou"
   },
-  "saveSubstackNoteToEdgeEver": {
-    "message": "Substack Note を EdgeEver に保存"
+  "saveSubstackNoteToPonder": {
+    "message": "Substack Note を Ponder に保存"
   },
   "adaptedPlatformsTitle": {
     "message": "専用対応プラットフォーム"
@@ -708,11 +708,11 @@
   "clipNotifications": {
     "message": "クリップの通知"
   },
-  "saveBossToEdgeEver": {
-    "message": "BOSS直聘の求人をEdgeEverに保存"
+  "saveBossToPonder": {
+    "message": "BOSS直聘の求人をPonderに保存"
   },
-  "saveXueqiuToEdgeEver": {
-    "message": "雪球の投稿をEdgeEverに保存"
+  "saveXueqiuToPonder": {
+    "message": "雪球の投稿をPonderに保存"
   },
   "platformBoss": {
     "message": "BOSS直聘"
@@ -729,32 +729,32 @@
   "platformWechat": {
     "message": "WeChat"
   },
-  "saveWechatToEdgeEver": {
-    "message": "WeChatを EdgeEver に保存"
+  "saveWechatToPonder": {
+    "message": "WeChatを Ponder に保存"
   },
   "platformJike": {
     "message": "Jike"
   },
-  "saveJikeToEdgeEver": {
-    "message": "Jikeを EdgeEver に保存"
+  "saveJikeToPonder": {
+    "message": "Jikeを Ponder に保存"
   },
   "platformSspai": {
     "message": "SSPAI"
   },
-  "saveSspaiToEdgeEver": {
-    "message": "SSPAIを EdgeEver に保存"
+  "saveSspaiToPonder": {
+    "message": "SSPAIを Ponder に保存"
   },
   "platformJuejin": {
     "message": "Juejin"
   },
-  "saveJuejinToEdgeEver": {
-    "message": "Juejinを EdgeEver に保存"
+  "saveJuejinToPonder": {
+    "message": "Juejinを Ponder に保存"
   },
   "platformDouban": {
     "message": "Douban"
   },
-  "saveDoubanToEdgeEver": {
-    "message": "Doubanを EdgeEver に保存"
+  "saveDoubanToPonder": {
+    "message": "Doubanを Ponder に保存"
   },
   "platformOfficialAccountLabel": {
     "message": "公式アカウント"
@@ -763,7 +763,7 @@
     "message": "元の一覧"
   },
   "doubanSelectComment": {
-    "message": "短評を右クリックして「Douban を EdgeEver に保存」を選ぶか、選択したテキストを保存してください。"
+    "message": "短評を右クリックして「Douban を Ponder に保存」を選ぶか、選択したテキストを保存してください。"
   },
   "pageCaptureRestricted": {
     "message": "内容に制限あり"
@@ -813,7 +813,7 @@
     "message": "選び直す"
   },
   "regionSave": {
-    "message": "EdgeEver に保存"
+    "message": "Ponder に保存"
   },
   "regionCancel": {
     "message": "キャンセル"

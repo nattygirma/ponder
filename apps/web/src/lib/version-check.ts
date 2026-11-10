@@ -1,4 +1,4 @@
-const DESKTOP_ASSET_PATTERN = /^EdgeEver-(\d+\.\d+\.\d+)-mac-(arm64|x64)\.dmg$/;
+const DESKTOP_ASSET_PATTERN = /^Ponder-(\d+\.\d+\.\d+)-mac-(arm64|x64)\.dmg$/;
 
 export const findDesktopReleaseVersion = (assetNames: string[]) => {
   const versions = new Map<string, string>();
@@ -16,7 +16,7 @@ export const findDesktopReleaseVersion = (assetNames: string[]) => {
     : null;
 };
 
-export { isClientAheadOfInstance, isVersionOutdated } from "@edgeever/shared";
+export { isClientAheadOfInstance, isVersionOutdated } from "@ponder/shared";
 
 export const getReleaseTagForVersion = (version: string) => {
   const match = version.match(/^v?(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?)(?:\+[0-9A-Za-z.-]+)?$/i);

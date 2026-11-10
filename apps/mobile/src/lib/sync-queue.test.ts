@@ -1,6 +1,6 @@
 import { beforeEach, expect, mock, test } from "bun:test";
-import { ApiRequestError } from "@edgeever/client";
-import type { MemoDetail } from "@edgeever/shared";
+import { ApiRequestError } from "@ponder/client";
+import type { MemoDetail } from "@ponder/shared";
 
 const storage = new Map<string, string>();
 

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { DIAGRAM_CANVAS_LIGHT } from "@edgeever/shared/diagram-canvas";
+import { DIAGRAM_CANVAS_LIGHT } from "@ponder/shared/diagram-canvas";
 import {
   DEFAULT_CUSTOM_DARK_COLORS,
   DEFAULT_CUSTOM_EDITOR_THEME,
@@ -167,12 +167,12 @@ interface ThemeProviderProps {
   children: ReactNode;
 }
 
-const THEME_STORAGE_KEY = "edgeever.theme";
-const MERMAID_THEME_STORAGE_KEY = "edgeever.mermaid-theme";
-const MARKDOWN_THEME_STORAGE_KEY = "edgeever.markdown-theme";
-const EDITOR_THEME_STORAGE_KEY = "edgeever.editor-theme";
-const CUSTOM_EDITOR_THEME_STORAGE_KEY = "edgeever.custom-editor-theme";
-const CUSTOM_EDITOR_THEMES_STORAGE_KEY = "edgeever.custom-editor-themes";
+const THEME_STORAGE_KEY = "ponder.theme";
+const MERMAID_THEME_STORAGE_KEY = "ponder.mermaid-theme";
+const MARKDOWN_THEME_STORAGE_KEY = "ponder.markdown-theme";
+const EDITOR_THEME_STORAGE_KEY = "ponder.editor-theme";
+const CUSTOM_EDITOR_THEME_STORAGE_KEY = "ponder.custom-editor-theme";
+const CUSTOM_EDITOR_THEMES_STORAGE_KEY = "ponder.custom-editor-themes";
 const LIGHT_THEME_COLOR = "#eef1f4";
 const DARK_THEME_COLOR = "#121315";
 const AppearanceThemeContext = createContext<AppearanceThemeContextValue | null>(null);

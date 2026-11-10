@@ -1,4 +1,4 @@
-import type { AiProvider, AiDiscoveredModel } from "@edgeever/shared";
+import type { AiProvider, AiDiscoveredModel } from "@ponder/shared";
 const normalizeAiBaseUrl = (value: string) => value.trim().replace(/\/+$/, "");
 const asRecord = (value: unknown): Record<string, unknown> | null => value && typeof value === "object" ? value as Record<string, unknown> : null;
 export const discoverAiModels = async (

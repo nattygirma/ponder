@@ -17,7 +17,6 @@ import {
 } from "mediabunny";
 import { api, directProviderFetch } from "./api";
 import { SpeechProviderReachabilityError } from "./speech-transcription-error";
-import { prefersChineseContent } from "./bilingual-content-locale";
 
 const MAX_SOURCE_BYTES = 1024 * 1024 * 1024;
 const MAX_PROVIDER_FILE_BYTES = 24_000_000;
@@ -234,7 +233,7 @@ export async function transcribePreparedAudioParts(
     } catch {
       if (signal?.aborted) signal.throwIfAborted();
       throw new SpeechProviderReachabilityError(
-        typeof window !== "undefined" && window.edgeeverDesktop?.isAvailable ? "desktop" : "browser",
+        typeof window !== "undefined" && window.ponderDesktop?.isAvailable ? "desktop" : "browser",
       );
     }
     if (!response.ok) throw new Error(`The speech provider returned HTTP ${response.status}.`);
@@ -252,12 +251,8 @@ export async function testSpeechService(
   signal?: AbortSignal,
   transport: { sampleFetch?: typeof fetch; providerFetch?: typeof fetch; sampleLocale?: string } = {},
 ): Promise<string> {
-  const sampleFilename = prefersChineseContent(transport.sampleLocale)
-    ? "speech-service-check.zh-CN.mp3"
-    : "speech-service-check.en-US.mp3";
-  const sampleUrl = sampleFilename === "speech-service-check.zh-CN.mp3"
-    ? new URL("./fixtures/speech-service-check.zh-CN.mp3", import.meta.url)
-    : new URL("./fixtures/speech-service-check.en-US.mp3", import.meta.url);
+  const sampleFilename = "speech-service-check.en-US.mp3";
+  const sampleUrl = new URL("./fixtures/speech-service-check.en-US.mp3", import.meta.url);
   const sampleResponse = await (transport.sampleFetch ?? fetch)(
     sampleUrl,
     { signal },

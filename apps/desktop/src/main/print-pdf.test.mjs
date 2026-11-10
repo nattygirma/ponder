@@ -18,7 +18,7 @@ describe("desktop note PDF", () => {
     const preload = read("../preload/print.cjs");
     const main = read("./index.mjs");
     expect(preload).toContain('ipcRenderer.invoke("desktop:print-pdf")');
-    expect(preload).not.toContain("edgeeverDesktop");
+    expect(preload).not.toContain("ponderDesktop");
     expect(main).toContain('ipcMain.handle("desktop:print-pdf"');
     expect(main).toContain("isAllowedPrintPreviewUrl");
     expect(main).toContain("PRINT_PDF_OPTIONS");

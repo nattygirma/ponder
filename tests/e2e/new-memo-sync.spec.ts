@@ -9,7 +9,7 @@ type StoredQueueItem = {
 
 const readIndexedDbStore = <T>(page: Page, storeName: string) => page.evaluate(
   (targetStore) => new Promise<T[]>((resolve, reject) => {
-    const openRequest = indexedDB.open("edgeever-local");
+    const openRequest = indexedDB.open("ponder-local");
     openRequest.onerror = () => reject(openRequest.error);
     openRequest.onsuccess = () => {
       const database = openRequest.result;
@@ -91,7 +91,7 @@ const holdNextMemoCreateResponse = async (page: Page) => {
 };
 
 const editNewMemo = async (page: Page, title: string, content: string) => {
-  await page.getByRole("button", { name: "新建笔记", exact: true }).click();
+  await page.getByRole("button", { name: "New note", exact: true }).click();
 
   const titleInput = page.getByPlaceholder("无标题");
   const editor = page.locator(".ProseMirror[contenteditable='true']");
@@ -117,7 +117,7 @@ const finishSyncAndVerifyReload = async (
     (response) => response.request().method() === "PATCH" && new URL(response.url()).pathname.startsWith("/api/v1/memos/"),
   );
   const createSyncCompletedPromise = page.evaluate(() => new Promise<void>((resolve) => {
-    window.addEventListener("edgeever:sync-completed", () => resolve(), { once: true });
+    window.addEventListener("ponder:sync-completed", () => resolve(), { once: true });
   }));
   releaseCreate();
   const createResponse = await createResponsePromise;
@@ -134,9 +134,9 @@ const finishSyncAndVerifyReload = async (
 
     await createSyncCompletedPromise;
     const firstUpdateSyncCompletedPromise = page.evaluate(() => new Promise<void>((resolve) => {
-      window.addEventListener("edgeever:sync-completed", () => resolve(), { once: true });
+      window.addEventListener("ponder:sync-completed", () => resolve(), { once: true });
     }));
-    await page.evaluate(() => window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed")));
+    await page.evaluate(() => window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed")));
     const updateResponse = await updateResponsePromise;
     expect(new URL(updateResponse.url()).pathname).toBe(`/api/v1/memos/${memoId}`);
     expect(updateResponse.request().postDataJSON()).toMatchObject({
@@ -175,7 +175,7 @@ const finishSyncAndVerifyReload = async (
     await secondUpdateStarted;
     expect(secondUpdateRequestBody).toMatchObject({ expectedRevision: updated.memo.revision });
     const secondUpdateSyncCompletedPromise = page.evaluate(() => new Promise<void>((resolve) => {
-      window.addEventListener("edgeever:sync-completed", () => resolve(), { once: true });
+      window.addEventListener("ponder:sync-completed", () => resolve(), { once: true });
     }));
     releaseSecondUpdate();
     const secondUpdateResponse = await secondUpdateResponsePromise;
@@ -190,7 +190,7 @@ const finishSyncAndVerifyReload = async (
       const serializedContent = JSON.stringify(body.memo.contentJson);
       return body.memo.title === title && serializedContent.includes(content) && serializedContent.includes(followUp);
     }).toBe(true);
-    await expect(page.getByText("有冲突", { exact: true })).toHaveCount(0);
+    await expect(page.getByText("Conflict", { exact: true })).toHaveCount(0);
 
     await page.reload();
     const memoCard = page.locator(`[data-memo-id="${memoId}"]`);
@@ -212,7 +212,7 @@ test.describe("new memo synchronization", () => {
 
     try {
       await page.goto("/");
-      await page.getByRole("button", { name: "新建笔记", exact: true }).click();
+      await page.getByRole("button", { name: "New note", exact: true }).click();
       const createdMemo = await heldCreate.createdMemo;
       memoId = createdMemo.id;
 
@@ -254,7 +254,7 @@ test.describe("new memo synchronization", () => {
         mutationObserver.observe(document.body, { childList: true, subtree: true });
         originalEditor.addEventListener("focusout", () => { focusLost = true; });
 
-        window.addEventListener("edgeever:memo-id-remapped", (event) => {
+        window.addEventListener("ponder:memo-id-remapped", (event) => {
           const detail = (event as CustomEvent<Map<string, string>>).detail;
           window.setTimeout(() => {
             sampleEditorState();
@@ -272,7 +272,7 @@ test.describe("new memo synchronization", () => {
       }));
 
       await page.evaluate(({ localId, remoteId }) => {
-        window.dispatchEvent(new CustomEvent("edgeever:memo-id-remapped", {
+        window.dispatchEvent(new CustomEvent("ponder:memo-id-remapped", {
           detail: new Map([[localId, remoteId]]),
         }));
       }, { localId: temporaryMemoId!, remoteId: memoId });

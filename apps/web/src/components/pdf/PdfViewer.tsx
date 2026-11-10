@@ -1,4 +1,4 @@
-import { formatAttachmentMetadata } from "@edgeever/shared";
+import { formatAttachmentMetadata } from "@ponder/shared";
 import {
   ChevronDown,
   ChevronLeft,
@@ -97,7 +97,7 @@ const PdfPage = ({ document, pageNumber, fitWidth, zoom }: PdfPageProps) => {
 
   return (
     <span ref={hostRef} className="flex w-full justify-center" style={{ minHeight: visible && page ? undefined : placeholderHeight }}>
-      <canvas ref={canvasRef} className="edgeever-paper max-w-none bg-white shadow-sm" aria-label={`PDF page ${pageNumber}`} />
+      <canvas ref={canvasRef} className="ponder-paper max-w-none bg-white shadow-sm" aria-label={`PDF page ${pageNumber}`} />
     </span>
   );
 };
@@ -251,7 +251,7 @@ export const PdfViewer = ({
     <span
       ref={rootRef}
       className={cn(
-        "edgeever-pdf-viewer block overflow-hidden rounded-xl border border-slate-200 bg-card shadow-sm",
+        "ponder-pdf-viewer block overflow-hidden rounded-xl border border-slate-200 bg-card shadow-sm",
         expanded ? "w-full" : COMPACT_ATTACHMENT_WIDTH_CLASS,
         isFullscreen && "fixed inset-0 z-[120] flex rounded-none border-0 bg-slate-950/95 p-3 sm:p-5",
         className,
@@ -261,7 +261,7 @@ export const PdfViewer = ({
       aria-label={isFullscreen ? t("pdfViewer.fullscreenLabel", { filename: label }) : undefined}
     >
       <span className={cn("flex min-w-0 flex-col", isFullscreen && "mx-auto h-full w-full max-w-6xl overflow-hidden rounded-xl bg-card shadow-2xl")}>
-        <span data-edgeever-resource-toolbar className="flex min-h-12 shrink-0 items-center gap-2 overflow-x-auto border-b border-slate-200 bg-card px-3">
+        <span data-ponder-resource-toolbar className="flex min-h-12 shrink-0 items-center gap-2 overflow-x-auto border-b border-slate-200 bg-card px-3">
           {isFullscreen && onPrevious ? (
             <ButtonTooltip title={t("pdfViewer.previous")}>
               <button type="button" className="pdf-viewer-action" aria-label={t("pdfViewer.previous")} onClick={onPrevious}>
@@ -278,7 +278,7 @@ export const PdfViewer = ({
           ) : null}
           <button
             type="button"
-            className="edgeever-attachment-link flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left disabled:cursor-default"
+            className="ponder-attachment-link flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left disabled:cursor-default"
             aria-expanded={expanded}
             disabled={isFullscreen || !previewAllowed}
             onClick={() => setExpanded(!expanded)}

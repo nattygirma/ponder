@@ -1,17 +1,16 @@
 import { describe, expect, test } from "bun:test";
-import { ApiRequestError } from "@edgeever/client";
+import { ApiRequestError } from "@ponder/client";
 import { formatMobileLoginError, MISSING_MOBILE_SESSION_MESSAGE } from "./login-error.ts";
 
 describe("mobile login error messages", () => {
   test("explains a Cloudflare challenge and preserves its Ray ID", () => {
     const error = new ApiRequestError("Request failed", 403, undefined, undefined, {
       cloudflareMitigated: true,
-      isEdgeEverApiError: false,
+      isPonderApiError: false,
       rayId: "abc123-NRT",
     });
 
-    expect(formatMobileLoginError(error, "zh-CN")).toContain("Cloudflare 人机验证拦截了登录接口");
-    expect(formatMobileLoginError(error, "zh-CN")).toContain("cloudflare_challenge · Ray ID: abc123-NRT");
+    expect(formatMobileLoginError(error, "en-US")).toContain("cloudflare_challenge · Ray ID: abc123-NRT");
     expect(formatMobileLoginError(error, "en-US")).toContain("A Cloudflare browser challenge intercepted the login API");
   });
 
@@ -24,21 +23,20 @@ describe("mobile login error messages", () => {
       .toContain("ユーザー名またはパスワードが正しくありません。");
   });
 
-  test("distinguishes credentials, edge security blocks, and EdgeEver 403 responses", () => {
-    expect(formatMobileLoginError(new ApiRequestError("Unauthorized", 401), "zh-CN"))
-      .toContain("用户名或密码不正确");
+  test("distinguishes credentials, edge security blocks, and Ponder 403 responses", () => {
+    expect(formatMobileLoginError(new ApiRequestError("Unauthorized", 401), "en-US"))
+      .toContain("The username or password is incorrect.");
 
     const blocked = new ApiRequestError("Forbidden", 403, undefined, undefined, {
       cloudflareMitigated: false,
-      isEdgeEverApiError: false,
+      isPonderApiError: false,
       rayId: "def456-SJC",
     });
-    expect(formatMobileLoginError(blocked, "zh-CN")).toContain("安全策略拦截");
-    expect(formatMobileLoginError(blocked, "zh-CN")).toContain("security_policy_blocked");
+    expect(formatMobileLoginError(blocked, "en-US")).toContain("security_policy_blocked");
 
     const forbidden = new ApiRequestError("Forbidden", 403, "forbidden", undefined, {
       cloudflareMitigated: false,
-      isEdgeEverApiError: true,
+      isPonderApiError: true,
     });
     expect(formatMobileLoginError(forbidden, "en-US")).toContain("The instance rejected the login request");
   });
@@ -46,13 +44,13 @@ describe("mobile login error messages", () => {
   test("provides actionable network and server messages", () => {
     expect(formatMobileLoginError(new TypeError("Failed to fetch"), "en-US"))
       .toContain("Unable to reach the instance");
-    expect(formatMobileLoginError(new ApiRequestError("Unavailable", 503), "zh-CN"))
-      .toContain("实例服务异常（HTTP 503）");
+    expect(formatMobileLoginError(new ApiRequestError("Unavailable", 503), "en-US"))
+      .toContain("The instance returned a server error (HTTP 503).");
   });
 
   test("keeps the missing mobile session guidance in each language", () => {
     const error = new Error(MISSING_MOBILE_SESSION_MESSAGE);
-    expect(formatMobileLoginError(error, "zh-CN"))
+    expect(formatMobileLoginError(error, "en-US"))
       .toBe(`${MISSING_MOBILE_SESSION_MESSAGE}\nmobile_session_missing`);
     expect(formatMobileLoginError(error, "en-US"))
       .toBe("Signed in, but the server did not return a mobile session. Make sure the server is updated to a version that supports app sign-in.\nmobile_session_missing");

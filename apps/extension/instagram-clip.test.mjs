@@ -21,7 +21,7 @@ async function capture({ html=feed, data=media, status=200, change, contentType=
   const result = new Promise(resolve=>{done=resolve;});
   runInNewContext(bundle, { window:w,document:w.document,location,URL,AbortSignal,setTimeout,clearTimeout,setInterval,clearInterval,
     DOMParser:class {parseFromString(html){return createDocument(html);}},
-    __edgeeverPlatformClipPayload:{requestId:'instagram',url,sourceUrl},
+    __ponderPlatformClipPayload:{requestId:'instagram',url,sourceUrl},
     fetch:async (request,init)=>{calls.push({url:request,init});change?.(w.document,location);return {ok:status===200,url:responseUrl,headers:new Headers({'content-type':contentType}),text:async()=>json(data)};},
     chrome:{i18n:{getMessage:k=>k},runtime:{sendMessage:async message=>done(message.result)}},
   });

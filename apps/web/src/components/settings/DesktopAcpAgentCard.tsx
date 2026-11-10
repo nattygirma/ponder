@@ -93,7 +93,7 @@ const getStatusTone = ({
 const cliMethodName = (name: string) => name.replace(/^Login with\s+/i, "").replace(/Google\/Github/gi, "Google / GitHub");
 
 const desktopBridgeAvailable = () => (
-  typeof window !== "undefined" && typeof window.edgeeverDesktop?.listAcpAdapters === "function"
+  typeof window !== "undefined" && typeof window.ponderDesktop?.listAcpAdapters === "function"
 );
 
 const DesktopAcpAgentCardBody = ({ bridge }: { bridge: boolean }) => {
@@ -301,7 +301,7 @@ const DesktopAcpAgentCardBody = ({ bridge }: { bridge: boolean }) => {
                   <input
                     className="mt-0.5"
                     type="radio"
-                    name={`edgeever-acp-source-${instanceId}`}
+                    name={`ponder-acp-source-${instanceId}`}
                     value={option}
                     checked={checked}
                     disabled={disabled}
@@ -345,7 +345,7 @@ const DesktopAcpAgentCardBody = ({ bridge }: { bridge: boolean }) => {
                     <input
                       className="sr-only"
                       type="radio"
-                      name={`edgeever-acp-adapter-${instanceId}`}
+                      name={`ponder-acp-adapter-${instanceId}`}
                       value={id}
                       checked={checked}
                       onChange={() => selectAdapter(id)}
@@ -383,7 +383,7 @@ const DesktopAcpAgentCardBody = ({ bridge }: { bridge: boolean }) => {
                   readOnly
                 />
                 <Button type="button" variant="outline" size="sm" onClick={() => {
-                  void window.edgeeverDesktop?.chooseAcpAdapterPath?.().then((selected) => {
+                  void window.ponderDesktop?.chooseAcpAdapterPath?.().then((selected) => {
                     if (selected) { setAdapterPath(selected); setProbed(null); }
                   }).catch(() => setInstallError(true));
                 }}>

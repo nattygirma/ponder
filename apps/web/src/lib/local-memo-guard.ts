@@ -1,4 +1,4 @@
-import type { MemoDetail } from "@edgeever/shared";
+import type { MemoDetail } from "@ponder/shared";
 
 /** Synchronous comparison so it can run inside an IndexedDB write transaction. */
 const canonical = (value: unknown) => JSON.stringify(value, (_key, item) =>

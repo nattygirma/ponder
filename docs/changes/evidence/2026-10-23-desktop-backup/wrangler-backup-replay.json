@@ -13,10 +13,10 @@
   "failedRequests": 0,
   "result": {
     "manifest": {
-      "format": "edgeever-zip",
+      "format": "ponder-zip",
       "formatVersion": 2,
       "schemaVersion": 1,
-      "edgeeverVersion": "2.2.0",
+      "ponderVersion": "2.2.0",
       "buildId": "proxy-fixture",
       "exportedAt": "2026-10-26T10:15:47.076Z",
       "includesTrash": false,

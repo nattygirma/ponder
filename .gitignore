@@ -44,8 +44,8 @@ credentials.json
 *-key.pem
 
 # Local HyperFrames video workspace.
-/videos/edgeever-promo/
-/videos/edgeever-launch/
+/videos/ponder-promo/
+/videos/ponder-launch/
 
 # Local App Review crash dumps / image self-test screenshots.
 .tmp-app-review-crashes/
@@ -54,6 +54,5 @@ credentials.json
 apps/mobile/ios/
 
 # Local brand concept and research drafts.
-/assets/brand/edgeever-concept-13.png
+/assets/brand/ponder-concept-13.png
 /docs/notion-ai-feature-landscape.en-US.md
-/docs/notion-ai-feature-landscape.zh-CN.md

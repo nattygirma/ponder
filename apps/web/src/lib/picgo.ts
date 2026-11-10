@@ -1,18 +1,18 @@
 import { expandImgBedFolder, IMGBED_NAME_TYPES, IMGBED_UPLOAD_CHANNELS, type ImgBedNameType, type ImgBedUploadChannel } from "./imgbed";
 
-export const PICGO_STORAGE_KEY = "edgeever.desktop.picgo.v1";
+export const PICGO_STORAGE_KEY = "ponder.desktop.picgo.v1";
 export const DEFAULT_PICGO_ENDPOINT = "http://127.0.0.1:36677/upload";
 export type ImgBedPreference = {
   endpoint: string; token: string; uploadFolder: string; nameType: ImgBedNameType;
   uploadChannel: ImgBedUploadChannel; serverCompress: boolean;
 };
-export type PicGoPreference = { provider: "edgeever" | "picgo" | "imgbed"; endpoint: string; serverKey: string; imgbed: ImgBedPreference };
-export type ExternalImageHost = Exclude<PicGoPreference["provider"], "edgeever">;
+export type PicGoPreference = { provider: "ponder" | "picgo" | "imgbed"; endpoint: string; serverKey: string; imgbed: ImgBedPreference };
+export type ExternalImageHost = Exclude<PicGoPreference["provider"], "ponder">;
 
 const emptyImgBedPreference = (): ImgBedPreference => ({
   endpoint: "", token: "", uploadFolder: "", nameType: "default", uploadChannel: "telegram", serverCompress: true,
 });
-const emptyPicGoPreference = (): PicGoPreference => ({ provider: "edgeever", endpoint: DEFAULT_PICGO_ENDPOINT, serverKey: "", imgbed: emptyImgBedPreference() });
+const emptyPicGoPreference = (): PicGoPreference => ({ provider: "ponder", endpoint: DEFAULT_PICGO_ENDPOINT, serverKey: "", imgbed: emptyImgBedPreference() });
 
 const readImgBedPreference = (value: unknown): ImgBedPreference => {
   const record = value && typeof value === "object" ? value as Record<string, unknown> : {};
@@ -33,7 +33,7 @@ export const readPicGoPreference = (): PicGoPreference => {
     const value = JSON.parse(window.localStorage.getItem(PICGO_STORAGE_KEY) ?? "null");
     if (!value || typeof value.endpoint !== "string") return fallback;
     return {
-      provider: value.provider === "picgo" || value.provider === "imgbed" ? value.provider : "edgeever",
+      provider: value.provider === "picgo" || value.provider === "imgbed" ? value.provider : "ponder",
       endpoint: value.endpoint,
       serverKey: typeof value.serverKey === "string" ? value.serverKey : "",
       imgbed: readImgBedPreference(value.imgbed),
@@ -61,15 +61,15 @@ export const writePicGoPreference = (value: PicGoPreference) => {
   window.localStorage.setItem(PICGO_STORAGE_KEY, JSON.stringify(value));
 };
 
-export const hasPicGoBridge = () => Boolean(window.edgeeverDesktop?.uploadPicGoImage && window.edgeeverDesktop?.testPicGoConnection);
-export const hasImgBedBridge = () => Boolean(window.edgeeverDesktop?.uploadImgBedImage && window.edgeeverDesktop?.testImgBedConnection);
+export const hasPicGoBridge = () => Boolean(window.ponderDesktop?.uploadPicGoImage && window.ponderDesktop?.testPicGoConnection);
+export const hasImgBedBridge = () => Boolean(window.ponderDesktop?.uploadImgBedImage && window.ponderDesktop?.testImgBedConnection);
 
 const hasBridge = (provider: ExternalImageHost) => provider === "imgbed" ? hasImgBedBridge() : hasPicGoBridge();
 
-// The configured external host that will receive new images, or null for EdgeEver storage.
+// The configured external host that will receive new images, or null for Ponder storage.
 export const activeExternalImageHost = (): ExternalImageHost | null => {
   const { provider } = readPicGoPreference();
-  return provider !== "edgeever" && hasBridge(provider) ? provider : null;
+  return provider !== "ponder" && hasBridge(provider) ? provider : null;
 };
 
 export const shouldUploadWithPicGo = () => activeExternalImageHost() !== null;
@@ -78,15 +78,15 @@ export type PicGoFailureCopy = { title: string; message: string; retry: string; 
 
 export const uploadImageWithPicGo = async (file: File, copy: PicGoFailureCopy, context: { memoId?: string } = {}) => {
   const preference = readPicGoPreference();
-  if (preference.provider === "edgeever" || !hasBridge(preference.provider)) return null;
+  if (preference.provider === "ponder" || !hasBridge(preference.provider)) return null;
   const bytes = new Uint8Array(await file.arrayBuffer());
   const result = preference.provider === "imgbed"
-    ? await window.edgeeverDesktop!.uploadImgBedImage!({
+    ? await window.ponderDesktop!.uploadImgBedImage!({
       endpoint: preference.imgbed.endpoint, token: preference.imgbed.token, nameType: preference.imgbed.nameType,
       uploadChannel: preference.imgbed.uploadChannel, serverCompress: preference.imgbed.serverCompress,
       uploadFolder: expandImgBedFolder(preference.imgbed.uploadFolder, new Date(), { memoId: context.memoId }), bytes, filename: file.name, mimeType: file.type, copy,
     })
-    : await window.edgeeverDesktop!.uploadPicGoImage({
+    : await window.ponderDesktop!.uploadPicGoImage({
       endpoint: preference.endpoint, serverKey: preference.serverKey, bytes, filename: file.name, mimeType: file.type, copy,
     });
   return "url" in result ? {

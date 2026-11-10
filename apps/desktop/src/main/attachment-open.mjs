@@ -21,9 +21,9 @@ export const attachmentOpenInput = (input) => {
   try {
     const url = new URL(input.url);
     if (url.username || url.password || url.port || url.search || url.hash) return null;
-    const staged = url.protocol === "edgeever-staged:";
+    const staged = url.protocol === "ponder-staged:";
     if (staged ? !url.hostname || !["", "/"].includes(url.pathname)
-      : url.protocol !== "edgeever-resource:" || url.hostname !== "resource") return null;
+      : url.protocol !== "ponder-resource:" || url.hostname !== "resource") return null;
     const id = decodeURIComponent(staged ? url.hostname : url.pathname.slice(1));
     if (!isSafeResourceId(id)) return null;
     // Treat the supplied label as a filename, never as a path. Remove Windows
@@ -39,7 +39,7 @@ export const attachmentOpenInput = (input) => {
     while (Buffer.byteLength(stem) > 120) stem = Array.from(stem).slice(0, -1).join("");
     if (!stem || /^(con|prn|aux|nul|com[0-9]|lpt[0-9])(?:\.|$)/i.test(stem.normalize("NFKC"))) stem = `attachment_${stem}`;
     filename = stem + extension;
-    return { url: staged ? `edgeever-staged://${id}` : `edgeever-resource://resource/${id}`, filename };
+    return { url: staged ? `ponder-staged://${id}` : `ponder-resource://resource/${id}`, filename };
   } catch { return null; }
 };
 

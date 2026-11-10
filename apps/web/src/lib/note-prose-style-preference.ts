@@ -10,10 +10,10 @@ import {
   parseNoteProseHeadingStyle,
   parseNoteProseQuoteStyle,
   type NoteProseStylePreferences,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
-export const NOTE_PROSE_STYLE_STORAGE_KEY = "edgeever.note-prose-style";
-export const NOTE_PROSE_STYLE_CHANGED_EVENT = "edgeever:note-prose-style-changed";
+export const NOTE_PROSE_STYLE_STORAGE_KEY = "ponder.note-prose-style";
+export const NOTE_PROSE_STYLE_CHANGED_EVENT = "ponder:note-prose-style-changed";
 
 let unsavedNoteProseStylePreference: NoteProseStylePreferences | null = null;
 

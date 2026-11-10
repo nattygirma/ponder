@@ -2,11 +2,11 @@
 // in the address bar when this page is a single status. Must stay import-free.
 (() => {
   const root = globalThis as typeof globalThis & {
-    __edgeeverTweetTarget?: boolean;
-    __edgeeverTweetClipPayload?: { requestId?: string; statusId?: string };
+    __ponderTweetTarget?: boolean;
+    __ponderTweetClipPayload?: { requestId?: string; statusId?: string };
   };
-  const payload = root.__edgeeverTweetClipPayload;
-  delete root.__edgeeverTweetClipPayload;
+  const payload = root.__ponderTweetClipPayload;
+  delete root.__ponderTweetClipPayload;
   if (!payload || typeof payload.requestId !== "string") return;
   const requestId = payload.requestId;
   const statusId = typeof payload.statusId === "string" ? payload.statusId : "";
@@ -54,7 +54,7 @@
   const ownStatusHref = (article: Element) => ownTime(article)?.closest("a")?.getAttribute("href") ?? "";
 
   const findArticle = (preferredId: string) => {
-    const marked = document.querySelector('article[data-testid="tweet"][data-edgeever-tweet-target="1"]');
+    const marked = document.querySelector('article[data-testid="tweet"][data-ponder-tweet-target="1"]');
     if (marked) return marked;
     const id = preferredId || statusId;
     if (!id) return null;
@@ -195,7 +195,7 @@
     try {
       const initial = findArticle(statusId);
       if (!initial) {
-        finish({ ok: false, reason: root.__edgeeverTweetTarget ? "not-found" : "needs-listener" });
+        finish({ ok: false, reason: root.__ponderTweetTarget ? "not-found" : "needs-listener" });
         return;
       }
       const article = await expandTruncatedText(initial);

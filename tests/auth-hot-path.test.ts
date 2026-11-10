@@ -18,11 +18,11 @@ const createDatabase = (
         return this;
       },
       async first() {
-        if (sql.includes("SELECT id FROM users")) return { id: "usr_owner" };
+        if (sql.includes("SELECT id FROM users")) return { id: "usr_appkeep_owner" };
         if (sql.includes("FROM sessions s")) {
           return {
             id: "sess_owner",
-            user_id: "usr_owner",
+            user_id: "usr_appkeep_owner",
             username: "owner",
             display_name: "Owner",
             expires_at: "2027-08-14T00:00:00.000Z",
@@ -48,17 +48,17 @@ describe("authentication hot path", () => {
   test("reads an authenticated session without provisioning or seeding its workspace", async () => {
     const statements: string[] = [];
     const response = await worker.fetch(
-      new Request("https://edgeever.test/api/v1/auth/session", {
-        headers: { Authorization: "Bearer desktop-session-token" },
+      new Request("https://ponder.test/api/v1/auth/session", {
+        headers: { Cookie: "ponder_session=session-token", "x-altstack-owner-id": "owner", "x-altstack-owner-email": "owner@example.test", "x-altstack-role": "owner" },
       }),
-      { DB: createDatabase(statements), EDGE_EVER_AUTH_PASSWORD: "configured-secret" } as never,
+      { DB: createDatabase(statements), PONDER_APPKEEP: "true" } as never,
       executionContext,
     );
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
       authenticated: true,
-      user: { id: "usr_owner", role: "owner" },
+      user: { id: "usr_appkeep_owner", role: "owner" },
     });
     const sessionQueries = statements.filter((sql) => sql.includes("FROM sessions s"));
     expect(sessionQueries).toHaveLength(1);
@@ -71,10 +71,10 @@ describe("authentication hot path", () => {
   test("does not rewrite a recently touched session on a protected request", async () => {
     const statements: string[] = [];
     const response = await worker.fetch(
-      new Request("https://edgeever.test/api/v1/memos/memo_1/share", {
-        headers: { Authorization: "Bearer desktop-session-token" },
+      new Request("https://ponder.test/api/v1/memos/memo_1/share", {
+        headers: { Cookie: "ponder_session=session-token", "x-altstack-owner-id": "owner", "x-altstack-owner-email": "owner@example.test", "x-altstack-role": "owner" },
       }),
-      { DB: createDatabase(statements), EDGE_EVER_AUTH_PASSWORD: "configured-secret" } as never,
+      { DB: createDatabase(statements), PONDER_APPKEEP: "true" } as never,
       executionContext,
     );
 
@@ -88,12 +88,12 @@ describe("authentication hot path", () => {
   test("touches a stale session once on a protected request", async () => {
     const statements: string[] = [];
     const response = await worker.fetch(
-      new Request("https://edgeever.test/api/v1/memos/memo_1/share", {
-        headers: { Authorization: "Bearer desktop-session-token" },
+      new Request("https://ponder.test/api/v1/memos/memo_1/share", {
+        headers: { Cookie: "ponder_session=session-token", "x-altstack-owner-id": "owner", "x-altstack-owner-email": "owner@example.test", "x-altstack-role": "owner" },
       }),
       {
         DB: createDatabase(statements, { lastSeenAt: "2026-08-14T00:00:00.000Z" }),
-        EDGE_EVER_AUTH_PASSWORD: "configured-secret",
+        PONDER_APPKEEP: "true",
       } as never,
       executionContext,
     );

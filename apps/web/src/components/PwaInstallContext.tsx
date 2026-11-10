@@ -20,7 +20,7 @@ interface PwaInstallContextType {
 
 const PwaInstallContext = createContext<PwaInstallContextType | undefined>(undefined);
 
-const IOS_DISMISSED_KEY = "edgeever:ios-pwa-dismissed";
+const IOS_DISMISSED_KEY = "ponder:ios-pwa-dismissed";
 
 export const PwaInstallProvider = ({ children }: { children: React.ReactNode }) => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);

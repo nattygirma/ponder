@@ -25,8 +25,8 @@ import { Button } from "@/components/ui/button";
 import { ButtonTooltip } from "@/components/ui/button-tooltip";
 import { formatDateTime } from "@/lib/utils";
 import { WORKSPACE_PAGE_TITLE_CLASSNAME } from "@/lib/workspace-ui";
-import type { EdgeEverRepository } from "@/lib/repository";
-import { isPdfAttachment, type ResourceListItem } from "@edgeever/shared";
+import type { PonderRepository } from "@/lib/repository";
+import { isPdfAttachment, type ResourceListItem } from "@ponder/shared";
 import { PdfViewer } from "@/components/pdf/PdfViewer";
 import { PdfThumbnail } from "@/components/pdf/PdfThumbnail";
 import { AttachmentFileIcon } from "@/components/attachments/AttachmentFileIcon";
@@ -56,7 +56,7 @@ const DOCUMENT_MIME_TYPES = new Set([
 
 interface AssetsPaneProps {
   onClose: () => void;
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
   onOpenExecutionCenter: () => void;
 }
 
@@ -325,7 +325,7 @@ export const AssetsPane = ({ onClose, repository, onOpenExecutionCenter }: Asset
                       size="icon"
                       variant="ghost"
                       aria-label={t("assets.deleteAria", { filename: resource.filename || resource.id })}
-                      className="edgeever-reveal-on-touch absolute right-2 top-2 z-10 h-8 w-8 bg-card/90 text-slate-500 opacity-0 shadow-sm transition-opacity hover:bg-rose-50 hover:text-rose-600 focus:opacity-100 group-hover:opacity-100 focus-within:opacity-100"
+                      className="ponder-reveal-on-touch absolute right-2 top-2 z-10 h-8 w-8 bg-card/90 text-slate-500 opacity-0 shadow-sm transition-opacity hover:bg-rose-50 hover:text-rose-600 focus:opacity-100 group-hover:opacity-100 focus-within:opacity-100"
                       onClick={() => requestResourceDelete(resource)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -466,7 +466,7 @@ export const AssetsPane = ({ onClose, repository, onOpenExecutionCenter }: Asset
                       size="icon"
                       variant="ghost"
                       aria-label={t("assets.deleteAria", { filename: resource.filename || resource.id })}
-                      className="edgeever-reveal-on-touch h-8 w-8 text-slate-350 opacity-0 transition-all duration-150 hover:bg-rose-50 hover:text-rose-600 focus:opacity-100 group-hover:opacity-100 focus-within:opacity-100"
+                      className="ponder-reveal-on-touch h-8 w-8 text-slate-350 opacity-0 transition-all duration-150 hover:bg-rose-50 hover:text-rose-600 focus:opacity-100 group-hover:opacity-100 focus-within:opacity-100"
                       onClick={() => requestResourceDelete(resource)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -478,7 +478,7 @@ export const AssetsPane = ({ onClose, repository, onOpenExecutionCenter }: Asset
                       target="_blank"
                       rel="noreferrer"
                       aria-label={t("assets.openInNewWindow")}
-                      className="edgeever-reveal-on-touch flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 opacity-0 transition-all duration-150 hover:bg-slate-50 hover:text-slate-800 focus:opacity-100 focus-within:opacity-100 group-hover:opacity-100"
+                      className="ponder-reveal-on-touch flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 opacity-0 transition-all duration-150 hover:bg-slate-50 hover:text-slate-800 focus:opacity-100 focus-within:opacity-100 group-hover:opacity-100"
                     >
                       <ExternalLink className="h-4 w-4" />
                     </a>

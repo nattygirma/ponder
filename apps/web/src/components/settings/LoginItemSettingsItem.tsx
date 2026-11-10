@@ -35,7 +35,7 @@ interface LoginItemState {
 // Packaged desktop is the only place this setting can change the OS. Local web
 // dev still shows the row so the layout can be previewed.
 const devPreviewState = (): LoginItemState | null => (
-  import.meta.env.DEV && typeof window !== "undefined" && !window.edgeeverDesktop?.loginItem
+  import.meta.env.DEV && typeof window !== "undefined" && !window.ponderDesktop?.loginItem
     ? { supported: true, openAtLogin: false, launchMode: "window", status: "disabled" }
     : null
 );
@@ -47,7 +47,7 @@ export const LoginItemSettingsItem = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const bridge = window.edgeeverDesktop;
+    const bridge = window.ponderDesktop;
     if (!bridge?.loginItem) return undefined;
     let cancelled = false;
     void bridge.loginItem().then((next) => {
@@ -65,7 +65,7 @@ export const LoginItemSettingsItem = () => {
   const approvalNotice = state.status === "requires-approval" ? t("settings.loginItem.requiresApproval") : "";
 
   const update = async (patch: { openAtLogin: boolean }) => {
-    const bridge = window.edgeeverDesktop;
+    const bridge = window.ponderDesktop;
     if (!bridge?.setLoginItem) {
       setState((current) => {
         if (!current || !import.meta.env.DEV) return current;

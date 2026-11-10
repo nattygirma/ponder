@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { createInstance } from "i18next";
-import { enUS } from "@edgeever/shared/i18n/en-US";
-import { pl } from "@edgeever/shared/i18n/pl";
+import { enUS } from "@ponder/shared/i18n/en-US";
+import { pl } from "@ponder/shared/i18n/pl";
 import { errorScreenText } from "./error-screen-copy.ts";
 
 describe("error screen text", () => {

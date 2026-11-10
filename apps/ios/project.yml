@@ -1,4 +1,4 @@
-name: EdgeEver
+name: Ponder
 options:
   bundleIdPrefix: org.edgeever
   deploymentTarget:
@@ -35,22 +35,22 @@ configFiles:
   Debug: Config/Debug.xcconfig
   Release: Config/Release.xcconfig
 targets:
-  EdgeEver:
+  Ponder:
     type: application
     platform: iOS
     sources:
-      - path: EdgeEver
+      - path: Ponder
         excludes:
           - Resources/Info.plist
           - Resources/EditorBundle/assets
-      - path: EdgeEver/Resources/EditorBundle/assets
+      - path: Ponder/Resources/EditorBundle/assets
         type: folder
         buildPhase: resources
     resources:
-      - path: EdgeEver/Resources/Assets.xcassets
-      - path: EdgeEver/Resources/Localizable.xcstrings
-      - path: EdgeEver/Resources/PrivacyInfo.xcprivacy
-      - path: EdgeEver/Resources/EditorBundle
+      - path: Ponder/Resources/Assets.xcassets
+      - path: Ponder/Resources/Localizable.xcstrings
+      - path: Ponder/Resources/PrivacyInfo.xcprivacy
+      - path: Ponder/Resources/EditorBundle
         excludes:
           - assets
     dependencies:
@@ -65,10 +65,10 @@ targets:
         codeSign: true
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: org.edgeever.mobile
-        PRODUCT_NAME: EdgeEver
-        INFOPLIST_FILE: EdgeEver/Resources/Info.plist
-        CODE_SIGN_ENTITLEMENTS: EdgeEver/Resources/EdgeEver.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: io.appkeep.ponder.mobile
+        PRODUCT_NAME: Ponder
+        INFOPLIST_FILE: Ponder/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Ponder/Resources/Ponder.entitlements
         GENERATE_INFOPLIST_FILE: false
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -80,15 +80,14 @@ targets:
         DEVELOPMENT_TEAM: 9KA3NM38B6
         CODE_SIGN_STYLE: Automatic
     info:
-      path: EdgeEver/Resources/Info.plist
+      path: Ponder/Resources/Info.plist
       properties:
-        CFBundleDisplayName: EdgeEver
-        CFBundleName: EdgeEver
+        CFBundleDisplayName: Ponder
+        CFBundleName: Ponder
         CFBundleShortVersionString: "$(MARKETING_VERSION)"
         CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         CFBundleLocalizations:
           - en
-          - zh-Hans
           - ja
           - pl
         UILaunchScreen: {}
@@ -96,25 +95,25 @@ targets:
           - UIInterfaceOrientationPortrait
         UIRequiresFullScreen: true
         CFBundleURLTypes:
-          - CFBundleURLName: org.edgeever.mobile
+          - CFBundleURLName: io.appkeep.ponder.mobile
             CFBundleURLSchemes:
-              - edgeever
+              - ponder
         ITSAppUsesNonExemptEncryption: false
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
           NSAllowsArbitraryLoads: true
           NSAllowsArbitraryLoadsInWebContent: true
-        NSPhotoLibraryUsageDescription: EdgeEver needs photo library access to insert images into notes.
-        NSCameraUsageDescription: EdgeEver needs camera access to take photos and insert them into notes.
-        NSMicrophoneUsageDescription: EdgeEver only uses the microphone if content inside a note explicitly requests it.
+        NSPhotoLibraryUsageDescription: Ponder needs photo library access to insert images into notes.
+        NSCameraUsageDescription: Ponder needs camera access to take photos and insert them into notes.
+        NSMicrophoneUsageDescription: Ponder only uses the microphone if content inside a note explicitly requests it.
     entitlements:
-      path: EdgeEver/Resources/EdgeEver.entitlements
+      path: Ponder/Resources/Ponder.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.org.edgeever.mobile
+          - group.io.appkeep.ponder.mobile
     scheme:
       testTargets:
-        - EdgeEverTests
+        - PonderTests
   ShareExtension:
     type: app-extension
     platform: iOS
@@ -125,7 +124,7 @@ targets:
     settings:
       base:
         # Keep the existing App Store App ID used by the previous RN share extension.
-        PRODUCT_BUNDLE_IDENTIFIER: org.edgeever.mobile.expo-sharing-extension
+        PRODUCT_BUNDLE_IDENTIFIER: io.appkeep.ponder.mobile.expo-sharing-extension
         PRODUCT_NAME: ShareExtension
         INFOPLIST_FILE: ShareExtension/Info.plist
         CODE_SIGN_ENTITLEMENTS: ShareExtension/ShareExtension.entitlements
@@ -138,17 +137,17 @@ targets:
       path: ShareExtension/ShareExtension.entitlements
       properties:
         com.apple.security.application-groups:
-          - group.org.edgeever.mobile
-  EdgeEverTests:
+          - group.io.appkeep.ponder.mobile
+  PonderTests:
     type: bundle.unit-test
     platform: iOS
     sources:
-      - path: Tests/EdgeEverTests
+      - path: Tests/PonderTests
     dependencies:
-      - target: EdgeEver
+      - target: Ponder
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: org.edgeever.mobile.tests
+        PRODUCT_BUNDLE_IDENTIFIER: io.appkeep.ponder.mobile.tests
         GENERATE_INFOPLIST_FILE: true
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/EdgeEver.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/EdgeEver"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Ponder.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ponder"
         BUNDLE_LOADER: "$(TEST_HOST)"

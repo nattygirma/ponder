@@ -17,7 +17,7 @@ const manifest = {
   arch: "x64",
   releaseDate: "2026-08-30T00:00:00.000Z",
   file: {
-    name: "EdgeEver-1.49.0-windows-x64.exe",
+    name: "Ponder-1.49.0-windows-x64.exe",
     size: 7,
     sha512: "cLM86ckEfjD5F+fqE+Qvd2cAjD9PnJuvSeQ5D8YlVJ6WJe7jm5RUUHTooYJM8/I4RjsRvAPZc0jg/CmZyh//fw==",
     sha256: "239f59ed55e737c77147cf55ad0c1b030b6d7ee748a7426952f9b852d5a935e5",
@@ -33,9 +33,12 @@ const updateInfo = {
   }],
 };
 
+const releaseKey = generateKeyPairSync("ed25519");
+const trustedPublicKeys = { [WINDOWS_UPDATE_KEY_ID]: releaseKey.publicKey };
+
 const signedFixture = () => {
   const bytes = Buffer.from(`${JSON.stringify(manifest, null, 2)}\n`);
-  const signature = "Itc3UD0G6Hn6BWdk9qlJ4SoqAUDn8efi1VRVUWDtA3Ip5+gwpAj7HxElxM6D/GXcAlHFxnVv19soEWxlfZLCDA==";
+  const signature = sign(null, bytes, releaseKey.privateKey).toString("base64");
   return {
     manifestBytes: bytes,
     signatureBytes: Buffer.from(`${JSON.stringify({ schemaVersion: 1, keyId: WINDOWS_UPDATE_KEY_ID, signature })}\n`),
@@ -47,6 +50,7 @@ describe("Windows update trust", () => {
     const signed = signedFixture();
     expect(verifyWindowsUpdateMetadata({
       ...signed,
+      trustedPublicKeys,
       expectedVersion: manifest.version,
       updateInfo,
     })).toEqual(manifest);
@@ -63,6 +67,7 @@ describe("Windows update trust", () => {
         keyId: WINDOWS_UPDATE_KEY_ID,
         signature,
       })),
+      trustedPublicKeys,
       expectedVersion: manifest.version,
       updateInfo,
     })).toThrow("signature is invalid");
@@ -72,6 +77,7 @@ describe("Windows update trust", () => {
     const signed = signedFixture();
     expect(() => verifyWindowsUpdateMetadata({
       ...signed,
+      trustedPublicKeys,
       expectedVersion: manifest.version,
       updateInfo: {
         ...updateInfo,
@@ -84,6 +90,7 @@ describe("Windows update trust", () => {
     const signed = signedFixture();
     expect(() => verifyWindowsUpdateMetadata({
       ...signed,
+      trustedPublicKeys,
       expectedVersion: manifest.version,
       updateInfo: {
         ...updateInfo,
@@ -96,7 +103,7 @@ describe("Windows update trust", () => {
   });
 
   test("checks the downloaded installer size and both digests", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "edgeever-windows-update-test-"));
+    const directory = await mkdtemp(join(tmpdir(), "ponder-windows-update-test-"));
     const path = join(directory, manifest.file.name);
     try {
       await writeFile(path, "payload");

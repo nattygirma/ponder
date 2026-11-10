@@ -1,7 +1,5 @@
 # Desktop scheduled backups: optional WebDAV off-site copy
 
-[简体中文](2026-11-02-desktop-webdav-offsite.zh-CN.md)
-
 Related Issue: #723 (P2 of the backup plan; continues #61 and #650)
 
 ## Problem and outcome
@@ -17,7 +15,7 @@ Desktop scheduled backups are written to a local folder only. Users without a cl
 
 ## Risks and recovery
 
-- **Password disclosure.** Stored only through Electron `safeStorage` in a scope-bound `.secret` file; never in state, renderer status, logs, the archive or the EdgeEver server. No plaintext fallback. The saved password is bound to the address and username, so changing either, or testing another server, requires entering it again. `https://` is required except for local-network hosts.
+- **Password disclosure.** Stored only through Electron `safeStorage` in a scope-bound `.secret` file; never in state, renderer status, logs, the archive or the Ponder server. No plaintext fallback. The saved password is bound to the address and username, so changing either, or testing another server, requires entering it again. `https://` is required except for local-network hosts.
 - **Deleting a good remote copy.** Remote retention deletes only files this backup set recorded as uploaded to the same target, only after a newer copy succeeded.
 - **Blocking local backups.** Uploads run outside the local backup queue and never change its result.
 - **Rollback.** Turning the option off stops uploads and keeps local and remote files. Older versions ignore `<scope>.offsite.json` and the off-site `.secret` file (verified below).

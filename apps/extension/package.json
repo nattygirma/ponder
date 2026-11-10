@@ -1,11 +1,11 @@
 {
-  "name": "@edgeever/extension",
+  "name": "@ponder/extension",
   "version": "0.4.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "vite build --config vite.config.ts",
-    "build:firefox": "EDGE_EVER_EXTENSION_TARGET=firefox vite build --config vite.config.ts",
+    "build:firefox": "PONDER_EXTENSION_TARGET=firefox vite build --config vite.config.ts",
     "dev": "vite --config vite.config.ts",
     "lint:firefox": "web-ext lint --source-dir dist-firefox --output text",
     "package:firefox": "bun run build:firefox && bun run lint:firefox && web-ext build --source-dir dist-firefox --artifacts-dir web-ext-artifacts --overwrite-dest",

@@ -3,7 +3,7 @@ import type { FontLoadStatus } from "@/lib/font-load-state";
 import { FontLoadFeedback } from "@/components/FontLoadFeedback";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { findCatalogFont } from "@edgeever/shared/font-catalog";
+import { findCatalogFont } from "@ponder/shared/font-catalog";
 import { FontLabel } from "@/components/FontLabel";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { POSTER_FONTS, loadPosterFont } from "@/lib/poster-design/fonts";
@@ -27,7 +27,7 @@ export const PosterFontPicker = ({ value, disabled, zh, onChange, status, onRetr
     { family: "sans-serif", label: t("poster.sans") },
     { family: "serif", label: t("poster.serif") },
     { family: "monospace", label: t("poster.mono") },
-    ...POSTER_FONTS.map(font => ({ family: font.family, label: zh ? font.zh : font.en })),
+    ...POSTER_FONTS.map(font => ({ family: font.family, label: font.en })),
   ];
   return <div className="space-y-1"><Select value={value} disabled={disabled} onOpenChange={setOpen} onValueChange={onChange}>
     <SelectTrigger aria-label={t("poster.fontFamily")} className="h-9 w-full">

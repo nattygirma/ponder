@@ -3,25 +3,25 @@
  * Missing glyphs fall through to the system CJK fonts in that stack.
  * Verified monospace choices also apply to code; formulas retain their own faces.
  */
-html[data-editor-body-font] .edgeever-editor .ProseMirror,
-html[data-editor-body-font] .edgeever-editor textarea[data-edgeever-mobile-editor="plain-textarea"],
-html[data-editor-body-font] .edgeever-mobile-tiptap-content {
+html[data-editor-body-font] .ponder-editor .ProseMirror,
+html[data-editor-body-font] .ponder-editor textarea[data-ponder-mobile-editor="plain-textarea"],
+html[data-editor-body-font] .ponder-mobile-tiptap-content {
   font-family: var(--editor-body-font-family);
   font-synthesis: weight style;
 }
 
-html[data-editor-body-font] .edgeever-editor[data-editor-theme] .ProseMirror :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, th, td),
-html[data-editor-body-font] .edgeever-mobile-tiptap-content :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, th, td) {
+html[data-editor-body-font] .ponder-editor[data-editor-theme] .ProseMirror :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, th, td),
+html[data-editor-body-font] .ponder-mobile-tiptap-content :is(h1, h2, h3, h4, h5, h6, p, li, blockquote, th, td) {
   font-family: var(--editor-body-font-family);
 }
 
 
 /* Explicit monospace choices win over editor themes without restyling math,
  * diagram labels, toolbar controls, or code in the AI sidebar. */
-html[data-editor-code-font] .edgeever-editor .ProseMirror :is(code, pre, .edgeever-code-source),
-html[data-editor-code-font] .edgeever-editor[data-editor-theme] .ProseMirror :is(code, pre, .edgeever-code-source),
-html[data-editor-code-font] .edgeever-mobile-tiptap-content :is(code, pre, .edgeever-code-source),
-html[data-editor-code-font] .edgeever-editor textarea[data-edgeever-mobile-editor="plain-textarea"] {
+html[data-editor-code-font] .ponder-editor .ProseMirror :is(code, pre, .ponder-code-source),
+html[data-editor-code-font] .ponder-editor[data-editor-theme] .ProseMirror :is(code, pre, .ponder-code-source),
+html[data-editor-code-font] .ponder-mobile-tiptap-content :is(code, pre, .ponder-code-source),
+html[data-editor-code-font] .ponder-editor textarea[data-ponder-mobile-editor="plain-textarea"] {
   font-family: var(--editor-code-font-family);
 }
 
@@ -35,13 +35,13 @@ html[data-ui-font] body {
   font-synthesis: weight style;
 }
 
-html[data-ui-font]:not([data-editor-body-font]) .edgeever-editor[data-editor-theme="default"] .ProseMirror,
-html[data-ui-font]:not([data-editor-body-font]) .edgeever-editor:not([data-editor-theme]) .ProseMirror,
-html[data-ui-font]:not([data-editor-body-font]) .edgeever-editor textarea[data-edgeever-mobile-editor="plain-textarea"],
-html[data-ui-font]:not([data-editor-body-font]) .edgeever-mobile-tiptap-content {
-  font-family: var(--edgeever-system-font-family);
+html[data-ui-font]:not([data-editor-body-font]) .ponder-editor[data-editor-theme="default"] .ProseMirror,
+html[data-ui-font]:not([data-editor-body-font]) .ponder-editor:not([data-editor-theme]) .ProseMirror,
+html[data-ui-font]:not([data-editor-body-font]) .ponder-editor textarea[data-ponder-mobile-editor="plain-textarea"],
+html[data-ui-font]:not([data-editor-body-font]) .ponder-mobile-tiptap-content {
+  font-family: var(--ponder-system-font-family);
 }
 
-html[data-ui-font] .edgeever-public-share {
-  font-family: var(--edgeever-system-font-family);
+html[data-ui-font] .ponder-public-share {
+  font-family: var(--ponder-system-font-family);
 }

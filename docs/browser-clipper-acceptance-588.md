@@ -1,7 +1,5 @@
 # Browser clipper live acceptance: Issue #588
 
-[简体中文](browser-clipper-acceptance-588.zh-CN.md)
-
 Updated: 2026-10-18. Tracks [#588](https://github.com/tianma-if/edgeever/issues/588). This is an in-progress record, not a claim of complete cross-browser acceptance.
 
 2026-10-19 addendum: Store-installed testing for [#587](https://github.com/tianma-if/edgeever/issues/587) found stray brackets and original image URLs around Substack images. The local and store capture scripts are identical, and the existing article fixture reproduces the problem; earlier text and image readback did not check the surrounding formatting. `0.2.1` removes only Substack's textless image-viewer link wrappers, retaining images, captions, and prose links, with regression assertions on the archived document. This does not claim store publication of the fix or expand historical acceptance for other platforms.
@@ -67,7 +65,7 @@ Historical sample states and expectations come from [sources.json](../apps/exten
 
 ## Firefox Android
 
-The manifest declares `gecko_android.strict_min_version = 142.0`, and the extension README also declares Android 142+. On 2026-10-17, the [Mozilla store API](https://addons.mozilla.org/api/v5/addons/addon/edgeever-web-clipper/) listed public version 0.1.17 for both Firefox Desktop 140+ and Android 142+. Android compatibility is therefore currently declared for the same Firefox extension; this is separate from the EdgeEver Android app. Neither the declaration nor the store listing proves runtime acceptance. The user subsequently connected a physical RMX5200 over USB (Android 17, arm64). Mozilla Firefox 158.0 was installed after APK signature verification. `web-ext` temporarily loaded extension 0.1.17 from the current workspace. A dedicated token and USB mapping connected to the local instance; after the user granted host access, the extension retrieved 13 notebooks. Temporary loading does not prove store installation or extension upgrades.
+The manifest declares `gecko_android.strict_min_version = 142.0`, and the extension README also declares Android 142+. On 2026-10-17, the [Mozilla store API](https://addons.mozilla.org/api/v5/addons/addon/edgeever-web-clipper/) listed public version 0.1.17 for both Firefox Desktop 140+ and Android 142+. Android compatibility is therefore currently declared for the same Firefox extension; this is separate from the Ponder Android app. Neither the declaration nor the store listing proves runtime acceptance. The user subsequently connected a physical RMX5200 over USB (Android 17, arm64). Mozilla Firefox 158.0 was installed after APK signature verification. `web-ext` temporarily loaded extension 0.1.17 from the current workspace. A dedicated token and USB mapping connected to the local instance; after the user granted host access, the extension retrieved 13 notebooks. Temporary loading does not prove store installation or extension upgrades.
 
 The device first reproduced a background initialization failure: Android lacks `chrome.contextMenus`/`chrome.windows`, and unconditional desktop listener registration threw `TypeError`. The popup showed “Unknown,” and saving failed with `Receiving end does not exist`. Menu/window listeners now register only when the APIs exist, and install-time menu registration checks availability. Extraction, permissions, and saving remain unchanged. A regression failed before the fix and now verifies initialization, capture-mode detection, and saving without these APIs; the existing desktop menu installation regression also passes. These three guards can be reverted independently. The main risk is disabling desktop entry points accidentally, covered by the desktop menu test.
 
@@ -88,7 +86,7 @@ Three classes of omission are repaired. Jike Web removed button-semantic nodes t
 
 Five evidenced regressions cover three image/container button variants, Medium restored visibility/body headings, and Jike restored body/media. They reproduce failures before repair and pass afterward. Final review finds no further substantive issue. No permission, API, dependency, retry or required metadata is added. Repairs are confined to the two readers and shared control cleanup and can be reverted independently. Visibility/media filtering remains the main risk, constrained by hidden-content, image-order, completeness, unchanged-source-DOM and existing identity regressions.
 
-The latest complete non-E2E run passes **3,743 tests with zero failures**, including **481 extension tests**. One real Windows cwd-lock case is skipped on macOS under its existing platform condition. Root/mobile typechecking, Web/Chromium/Firefox builds and diff checks pass. Firefox lint has zero errors, zero notices and seven existing dependency warnings. This is code/automated verification, without repeating native live-site/Android actions or retroactively claiming latest-build hardware acceptance. No business test clip or token is created; login settings remain. No commit, push, deploy, issue update or closure. Evidence: `/private/tmp/edgeever-issue-588-review-20261018`.
+The latest complete non-E2E run passes **3,743 tests with zero failures**, including **481 extension tests**. One real Windows cwd-lock case is skipped on macOS under its existing platform condition. Root/mobile typechecking, Web/Chromium/Firefox builds and diff checks pass. Firefox lint has zero errors, zero notices and seven existing dependency warnings. This is code/automated verification, without repeating native live-site/Android actions or retroactively claiming latest-build hardware acceptance. No business test clip or token is created; login settings remain. No commit, push, deploy, issue update or closure. Evidence: `/private/tmp/ponder-issue-588-review-20261018`.
 
 ## 2026-10-18 tenth round: Douban, Medium and formatting repairs
 
@@ -114,7 +112,7 @@ This round creates eight notes and 24 resources, including the pre-repair Medium
 
 All **476 extension tests pass**, with root/mobile typechecking, Web/Chromium/Firefox builds and diff checks passing. Three-view review finds no outstanding substantive issue. The six Edge cases use this round's preceding build containing both formatting repairs. The final build additionally changes only the Medium reader and is tested in ego lite. Firefox's new package only builds; no runtime claim is extended retroactively.
 
-All eight owned notes and 24 resources are deleted, the dedicated token is revoked and returns 401. Only this round's token is removed from both browsers; other extension settings and site logins remain. Exact original 40/74/1/13 note/resource/token/notebook ID sets and all content hashes match. Temporary helpers/receivers are removed/stopped, product hashes match the final build, and the test space is cleaned up. Evidence: `/private/tmp/edgeever-issue-588-20261017-uz6mqhpj/evidence/tenth`. No commit, push, release or issue closure.
+All eight owned notes and 24 resources are deleted, the dedicated token is revoked and returns 401. Only this round's token is removed from both browsers; other extension settings and site logins remain. Exact original 40/74/1/13 note/resource/token/notebook ID sets and all content hashes match. Temporary helpers/receivers are removed/stopped, product hashes match the final build, and the test space is cleaned up. Evidence: `/private/tmp/ponder-issue-588-20261017-uz6mqhpj/evidence/tenth`. No commit, push, release or issue closure.
 
 ## 2026-10-18 Edge signed-in feed ninth-round follow-up
 
@@ -133,7 +131,7 @@ All four notes reopen in Edge's own Web editor with text matching stored nodes; 
 
 Two minor formatting observations remain: one Xueqiu bold span shows literal `**`, and each Bluesky quoted image includes a localized alt-text badge. Text and images are intact, including image alt descriptions. This is not pixel-perfect or exhaustive formatting acceptance; no translation- or style-dependent guessing rule is introduced to strip those badges.
 
-The four owned notes, thirteen resources and dedicated token are removed; the revoked token returns 401. All original 40 content hashes and exact 40/74/1/13 note/resource/token/notebook ID sets match. Only this round's extension token is removed; other extension settings and site logins remain. Browser cookies were neither replaced nor cleared. Temporary extension helpers and receivers are removed/stopped, and product hashes match this round's final build. Evidence: `/private/tmp/edgeever-issue-588-20261017-uz6mqhpj/evidence/ninth`. No commit, push or release.
+The four owned notes, thirteen resources and dedicated token are removed; the revoked token returns 401. All original 40 content hashes and exact 40/74/1/13 note/resource/token/notebook ID sets match. Only this round's extension token is removed; other extension settings and site logins remain. Browser cookies were neither replaced nor cleared. Temporary extension helpers and receivers are removed/stopped, and product hashes match this round's final build. Evidence: `/private/tmp/ponder-issue-588-20261017-uz6mqhpj/evidence/ninth`. No commit, push or release.
 
 ## 2026-10-18 Medium eighth-round follow-up
 
@@ -147,7 +145,7 @@ Both Edge notes and the Firefox note reopened in their own Web editors with matc
 
 All three notes and three resources were deleted by ID. The dedicated token was revoked and verified to return 401; only matching extension tokens were removed in Edge/Firefox. Firefox initially had no local session cookie. Its one copied `127.0.0.1` session changed value during Web readback; cleanup removed only that QA host/path/name session and verified none remained, preserving other site logins and verification cookies. Edge's original cookies were not replaced. All ten temporary extension helper files, two helper services and plaintext credentials were removed. Product artifact hashes are exactly unchanged. Original 40 memo content hashes and exact 40/74/1/13 memo/resource/token/notebook ID sets are preserved.
 
-No product code changed; previous 472-test/build results still apply. Nothing was committed, pushed or released. Medium in ego lite was not rechecked this round. The original members-only full story and other Medium layouts such as code do not inherit a pass from the public short article. Evidence: `/private/tmp/edgeever-issue-588-20261017-uz6mqhpj/evidence/eighth`.
+No product code changed; previous 472-test/build results still apply. Nothing was committed, pushed or released. Medium in ego lite was not rechecked this round. The original members-only full story and other Medium layouts such as code do not inherit a pass from the public short article. Evidence: `/private/tmp/ponder-issue-588-20261017-uz6mqhpj/evidence/eighth`.
 
 ## 2026-10-18 Edge signed-in seventh-round follow-up
 
@@ -163,7 +161,7 @@ Edge's Medium sample redirects to `scottbatson.dev` but remains on Cloudflare se
 
 All three test notes and 13 resources were deleted by ID. The dedicated token was revoked and verified to return 401. Only the matching extension token was removed, with other settings unchanged. Eight temporary helper files, two local helper services and plaintext cookie/token files were removed; product artifact hashes are exactly unchanged. Original 40 memo content hashes and exact 40/74/1/13 memo/resource/token/notebook ID sets are preserved. Original browser cookies were unchanged; Threads/LinkedIn logins and host grants remain. The QA window retains only both sites and Medium for follow-up.
 
-No product code changed in this round; the previous 472-test/build results still apply. Nothing was committed, pushed or released. Evidence: `/private/tmp/edgeever-issue-588-20261017-uz6mqhpj/evidence/seventh`.
+No product code changed in this round; the previous 472-test/build results still apply. Nothing was committed, pushed or released. Evidence: `/private/tmp/ponder-issue-588-20261017-uz6mqhpj/evidence/seventh`.
 
 ## 2026-10-18 Firefox and Edge sixth-round follow-up
 
@@ -176,7 +174,7 @@ No product code changed in this round; the previous 472-test/build results still
 
 This round has seven qualified test notes and 52 archived resources: Firefox 31, Edge 21. The 40 Instagram files additionally match independent source downloads in order. All 52 API downloads match metadata sizes/SHA-256. Seven notes and 52 resources were removed by ID; the dedicated token was revoked and verified to return 401. Only matching extension tokens were removed. Firefox's seven copied local cookies were removed while website logins and host grants remain. Edge's original local session cookie was restored and verified through browser readback. All 18 temporary extension helper files, two helper services and plaintext credential files were removed/stopped; product artifact hashes are exactly unchanged. Original 40 memo content hashes and exact 40/74/1/13 memo/resource/token/notebook ID sets are preserved.
 
-This round adds acceptance evidence and documentation only, retaining the previous 472-test/build results. Nothing was committed, pushed or released. Evidence: `/private/tmp/edgeever-issue-588-20261017-uz6mqhpj/evidence/sixth`.
+This round adds acceptance evidence and documentation only, retaining the previous 472-test/build results. Nothing was committed, pushed or released. Evidence: `/private/tmp/ponder-issue-588-20261017-uz6mqhpj/evidence/sixth`.
 
 ## 2026-10-18 ego lite native-toolbar follow-up
 
@@ -239,7 +237,7 @@ A regression first reproduced loss of `Dr.`, `Mr.` and `II.`, then verified lite
 - In ego lite, the native selection context menu saved exactly the explicitly selected 221-character paid-preview paragraph plus source/capture time, without the full article. Reopening matched with external sources blocked. Normal Facebook feed expansion still saved the complete body and three images on the final build; source-blocked reopening also passed.
 - The current Jike Web feed was retested through its native context menu: safe refusal, no new memo. The target card lacks its own stable DOM post permalink; Jike links inside its body reference other posts. Private React objects are not a stable DOM contract. Detail-page passes do not cover this feed layout.
 - This round's 15 qualified save cases decoded 70 instance attachments in their own browsers (Firefox 34, Edge 33, ego lite 3). Four other notes from race reproductions or non-target probes are excluded from acceptance passes. All 19 notes and 80 resources were cleaned by ID; all 80 files matched actual sizes and SHA-256 hashes. The original 40 memo content hashes and memo/resource/token/notebook ID sets (40/74/1/13) were preserved.
-- Edge's original local Web session returned `http_500`; only the `127.0.0.1` `edgeever_session` cookie was temporarily replaced for QA. Its backed-up original value was restored and verified through the browser's request. Authentication code and other sites' sessions were unchanged. Temporary browser readback helpers did not invoke capture functions; actual saves used native entries. Helper/collector cleanup, dedicated-token revocation and credential cleanup have separate receipts. The isolated Firefox profile and host grant remain available.
+- Edge's original local Web session returned `http_500`; only the `127.0.0.1` `ponder_session` cookie was temporarily replaced for QA. Its backed-up original value was restored and verified through the browser's request. Authentication code and other sites' sessions were unchanged. Temporary browser readback helpers did not invoke capture functions; actual saves used native entries. Helper/collector cleanup, dedicated-token revocation and credential cleanup have separate receipts. The isolated Firefox profile and host grant remain available.
 
 ### Fixed: cross-document departure during expansion
 
@@ -331,7 +329,7 @@ The editor only allows local connections/images. MAIN-world probes prove all fiv
 
 **483 extension tests pass, zero fail**. Root/mobile typechecks, Web/Chromium/Firefox builds and diff check pass; Firefox lint has zero errors/notices and seven existing dependency warnings. The full 3,743 non-E2E results belong to the prior review; this round does not claim a fresh full-suite run. Firefox is built, not newly verified at runtime.
 
-Both targeted gaps are closed; other historical #588 limits and #587/#589 scope remain explicit. Four test notes, three resources and the dedicated token are removed; the revoked token returns 401. Original ID sets of 40 notes/74 resources/one token/13 notebooks and 40 content hashes match exactly. Only this round's browser token is removed; other settings and site logins remain. Six helpers, two credential files and two receivers are removed; all 52 product files match the final build. No commit, push, deployment or GitHub update/closure. Evidence: `/private/tmp/edgeever-issue-588-20261017-uz6mqhpj/evidence/eleventh`.
+Both targeted gaps are closed; other historical #588 limits and #587/#589 scope remain explicit. Four test notes, three resources and the dedicated token are removed; the revoked token returns 401. Original ID sets of 40 notes/74 resources/one token/13 notebooks and 40 content hashes match exactly. Only this round's browser token is removed; other settings and site logins remain. Six helpers, two credential files and two receivers are removed; all 52 product files match the final build. No commit, push, deployment or GitHub update/closure. Evidence: `/private/tmp/ponder-issue-588-20261017-uz6mqhpj/evidence/eleventh`.
 
 ## 2026-10-18 round twelve: final-build cross-browser targeted acceptance
 
@@ -347,7 +345,7 @@ Reuse Firefox 158.0’s original test profile and Edge’s seven-tab window. The
 
 Firefox/ego lite each prove all 14 connection/image probes (three sources and eleven image URLs) blocked by CSP, while their eleven local images decode. Edge proves ten source/image URLs blocked and its eight archived images decode. All 30 successful resources from seven notes match API byte counts/SHA-256 and independently downloaded source bytes. Both Medium code sources, both Threads main/quoted captions and three Jike captions/image orders are independently compared; storage/reopen equality alone is not source completeness.
 
-Seven notes, 30 resources and the dedicated token are removed; revoked access returns 401. Original ID sets (40 notes/74 resources/one token/13 notebooks) and 40 content hashes match exactly. Only this round’s token is removed from each browser; other settings/site logins remain. Firefox’s test tab is restored blank and Edge’s original seven tabs remain. Eight helpers, two credential files and two receivers are removed. All 52 Chromium and 52 Firefox product files match the final build. No commit, push, deployment or GitHub write. Evidence: `/private/tmp/edgeever-issue-588-20261017-uz6mqhpj/evidence/twelfth`.
+Seven notes, 30 resources and the dedicated token are removed; revoked access returns 401. Original ID sets (40 notes/74 resources/one token/13 notebooks) and 40 content hashes match exactly. Only this round’s token is removed from each browser; other settings/site logins remain. Firefox’s test tab is restored blank and Edge’s original seven tabs remain. Eight helpers, two credential files and two receivers are removed. All 52 Chromium and 52 Firefox product files match the final build. No commit, push, deployment or GitHub write. Evidence: `/private/tmp/ponder-issue-588-20261017-uz6mqhpj/evidence/twelfth`.
 
 ## Delivery check against #588 completion conditions
 
@@ -370,7 +368,7 @@ Medium normalized code only when the chosen node itself was `pre`. If a quote/co
 
 Scope is the Medium reader and regression, independently reversible. The worst risk is incorrect code language/newline handling; existing visibility/state-not-replacing-body/exact-code/language regressions and the new consumer checks constrain it. Both independent reviewers and the primary reviewer finish all three views without untreated substantive findings.
 
-Latest full non-E2E: **3,746 pass, zero fail** (3705 + 17 + 24), including **484 extension tests**. One real Windows cwd-lock case skips under its existing macOS platform condition. Root/mobile typechecks, Web/Chromium/Firefox builds, Firefox lint and diff check pass; lint reports zero errors/notices and seven existing dependency warnings. This is code/automated review, with no new native browser/Android operation, memo or token. Round twelve runtime evidence remains tied to its recorded build, not retroactively to these new packages. No commit, push, deployment or GitHub write. Evidence: `/private/tmp/edgeever-issue-588-review-final-20261018`.
+Latest full non-E2E: **3,746 pass, zero fail** (3705 + 17 + 24), including **484 extension tests**. One real Windows cwd-lock case skips under its existing macOS platform condition. Root/mobile typechecks, Web/Chromium/Firefox builds, Firefox lint and diff check pass; lint reports zero errors/notices and seven existing dependency warnings. This is code/automated review, with no new native browser/Android operation, memo or token. Round twelve runtime evidence remains tied to its recorded build, not retroactively to these new packages. No commit, push, deployment or GitHub write. Evidence: `/private/tmp/ponder-issue-588-review-final-20261018`.
 
 ## Contribution-branch pre-submission verification
 

@@ -11,7 +11,7 @@ const blogSchema = z.object({
     alt: z.string(),
   }),
   publishDate: z.string().transform(str => new Date(str)),
-  author: z.string().default('EdgeEver Team'),
+  author: z.string().default('Ponder Team'),
   category: z.string(),
   tags: z.array(z.string()),
 });
@@ -19,10 +19,6 @@ const blogSchema = z.object({
 export const collections = {
   'blog': defineCollection({
     loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/blog' }),
-    schema: blogSchema,
-  }),
-  'blog_en': defineCollection({
-    loader: glob({ pattern: '**/[^_]*.{md,mdx}', base: './src/content/blog_en' }),
     schema: blogSchema,
   }),
 };

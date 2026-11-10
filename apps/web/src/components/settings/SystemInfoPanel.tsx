@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getClientDisplaySizeParts } from "@edgeever/shared";
-import type { DeploymentMetadata } from "@edgeever/shared/deployment-metadata";
+import { getClientDisplaySizeParts } from "@ponder/shared";
+import type { DeploymentMetadata } from "@ponder/shared/deployment-metadata";
 import { Activity, CircleCheck, CircleX, Cloud, Copy, ExternalLink, Info, LoaderCircle, MonitorSmartphone, RefreshCw, RotateCcw } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { PONDER_SOURCE_URL } from "@ponder/shared";
 import { ClipboardCopyNotice } from "@/components/ClipboardCopyNotice";
 import { Button } from "@/components/ui/button";
 import { useDeployedUpdateNotice } from "@/hooks/useDeployedUpdateNotice";
@@ -127,7 +128,7 @@ const getWebSystemInfoGroups = (
   })();
   const userAgent = navigator.userAgent;
   const clientKind = detectWebClientKind({
-    desktopBridgeAvailable: window.edgeeverDesktop?.isAvailable === true,
+    desktopBridgeAvailable: window.ponderDesktop?.isAvailable === true,
     displayModeStandalone:
       window.matchMedia("(display-mode: standalone)").matches ||
       window.matchMedia("(display-mode: fullscreen)").matches,
@@ -136,8 +137,8 @@ const getWebSystemInfoGroups = (
   const deployment = resolveSystemInfoDeploymentMetadata(
     diagnostics.instance?.deployment,
     {
-      trigger: __EDGEEVER_DEPLOYMENT_TRIGGER__,
-      method: __EDGEEVER_DEPLOYMENT_METHOD__,
+      trigger: __PONDER_DEPLOYMENT_TRIGGER__,
+      method: __PONDER_DEPLOYMENT_METHOD__,
     },
     clientKind !== "desktopApp",
   );
@@ -165,7 +166,7 @@ const getWebSystemInfoGroups = (
             ? `v${diagnostics.instanceVersion.replace(/^v/, "")}`
             : clientKind === "desktopApp"
               ? t("systemInfo.unknown")
-              : `v${__EDGEEVER_APP_VERSION__}`,
+              : `v${__PONDER_APP_VERSION__}`,
           mono: true,
         },
         { label: t("systemInfo.instanceBuild"), value: diagnostics.instance?.build ?? t("systemInfo.unknown"), mono: true },
@@ -224,16 +225,16 @@ const getWebSystemInfoGroups = (
       items: [
         {
           label: t("systemInfo.clientVersion"),
-          value: `v${diagnostics.clientRuntime?.appVersion ?? __EDGEEVER_APP_VERSION__}`,
+          value: `v${diagnostics.clientRuntime?.appVersion ?? __PONDER_APP_VERSION__}`,
           mono: true,
         },
         {
           label: t("systemInfo.releaseTime"),
-          value: __EDGEEVER_RELEASED_AT__
-            ? new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short" }).format(new Date(__EDGEEVER_RELEASED_AT__))
+          value: __PONDER_RELEASED_AT__
+            ? new Intl.DateTimeFormat(language, { dateStyle: "medium", timeStyle: "short" }).format(new Date(__PONDER_RELEASED_AT__))
             : t("systemInfo.unknown"),
         },
-        { label: t("systemInfo.build"), value: __EDGEEVER_BUILD_LABEL__, mono: true },
+        { label: t("systemInfo.build"), value: __PONDER_BUILD_LABEL__, mono: true },
         { label: t("systemInfo.client"), value: t(`systemInfo.clients.${clientKind}`) },
         {
           label: t("systemInfo.os"),
@@ -291,7 +292,7 @@ export const SystemInfoPanel = ({ active = true }: { active?: boolean }) => {
   const [viewportRevision, setViewportRevision] = useState(0);
   const queryClient = useQueryClient();
   const { markSeen, release } = useDeployedUpdateNotice();
-  const desktopBridge = window.edgeeverDesktop;
+  const desktopBridge = window.ponderDesktop;
   const desktopAvailable = desktopBridge?.isAvailable === true;
   const instanceUrl = desktopAvailable ? getConfiguredDesktopApiBaseUrl() : window.location.origin;
   const healthQuery = useQuery({
@@ -420,9 +421,7 @@ export const SystemInfoPanel = ({ active = true }: { active?: boolean }) => {
     viewportRevision,
   ]);
   const releaseTag = release ? getReleaseTagForVersion(release.version) : null;
-  const releaseUrl = releaseTag
-    ? `https://github.com/tianma-if/edgeever/releases/tag/${encodeURIComponent(releaseTag)}`
-    : "https://github.com/tianma-if/edgeever/releases/latest";
+  const releaseUrl = "https://appkeep.io";
 
   const handleCopy = async () => {
     const clipboard = formatSystemInfoClipboard({
@@ -447,7 +446,7 @@ export const SystemInfoPanel = ({ active = true }: { active?: boolean }) => {
   };
 
   const clientAheadOfInstance = isClientAheadOfInstance(
-    clientRuntimeQuery.data?.appVersion ?? __EDGEEVER_APP_VERSION__,
+    clientRuntimeQuery.data?.appVersion ?? __PONDER_APP_VERSION__,
     release?.version,
   );
   const clientAheadHint = t(
@@ -569,7 +568,7 @@ export const SystemInfoPanel = ({ active = true }: { active?: boolean }) => {
                   variant="outline"
                   className="h-7 bg-card px-2.5 text-xs shadow-xs hover:bg-slate-50"
                 >
-                  <a href="https://github.com/tianma-if/edgeever/releases/latest" target="_blank" rel="noreferrer">
+                  <a href="https://appkeep.io" target="_blank" rel="noreferrer">
                     <ExternalLink className="h-3.5 w-3.5" />
                     {t("systemInfo.desktopDownloadLatest")}
                   </a>
@@ -623,7 +622,7 @@ export const SystemInfoPanel = ({ active = true }: { active?: boolean }) => {
                     {updateDiagnosticCopyState === "copied" ? t("systemInfo.desktopUpdateDiagnosticCopied") : t("systemInfo.desktopCopyUpdateDiagnostic")}
                   </Button>
                   {updateDiagnosticCopyState === "error" ? <span role="status">{t("systemInfo.copyFailed")}</span> : null}
-                  <a className="underline underline-offset-2" href="https://github.com/tianma-if/edgeever/releases/latest" target="_blank" rel="noreferrer">
+                  <a className="underline underline-offset-2" href="https://appkeep.io" target="_blank" rel="noreferrer">
                     {t("systemInfo.desktopUpdateManualDownload")}
                   </a>
                 </div>
@@ -667,6 +666,17 @@ export const SystemInfoPanel = ({ active = true }: { active?: boolean }) => {
           </section>
         );
       })}
+      <p className="px-0.5 text-xs leading-5 text-slate-500">
+        {t("systemInfo.sourceNotice")}{" "}
+        <a
+          className="inline-flex items-center gap-1 font-medium text-slate-800 underline underline-offset-2 hover:text-slate-950"
+          href={PONDER_SOURCE_URL}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {t("systemInfo.sourceLink")} <ExternalLink className="h-3 w-3" />
+        </a>
+      </p>
       {copyState !== "idle" ? (
         <ClipboardCopyNotice status={copyState}>
           {t(copyState === "copied" ? "systemInfo.copySucceeded" : "systemInfo.copyFailed")}

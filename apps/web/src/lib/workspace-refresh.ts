@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { MemoDetail } from "@edgeever/shared";
+import type { MemoDetail } from "@ponder/shared";
 
 export type WorkspaceRefreshMode = "background" | "manual";
 export type WorkspaceMemoView = "notebook" | "trash";

@@ -61,7 +61,7 @@ describe("editor native clipboard snapshots", () => {
 });
 
 describe("native clipboard snapshot authorization", () => {
-  const fixture = (rendererUrl = "edgeever-app://app/index.html") => {
+  const fixture = (rendererUrl = "ponder-app://app/index.html") => {
     const handlers = new Map();
     let reads = 0;
     let getItems = async () => [item({ "text/plain": "Native snapshot" })];
@@ -105,12 +105,12 @@ describe("native clipboard snapshot authorization", () => {
     }
   });
   test("permits app navigation and rejects untrusted renderer origins", async () => {
-    for (const rendererUrl of ["edgeever-app://app/index.html", "http://127.0.0.1:5173/", "file:///app/web/index.html"]) {
+    for (const rendererUrl of ["ponder-app://app/index.html", "http://127.0.0.1:5173/", "file:///app/web/index.html"]) {
       const context = fixture(rendererUrl);
       context.sender.mainFrame.url = `${rendererUrl}#/memo/test`;
       await context.read(context.event);
       expect(context.count()).toBe(1);
-      for (const url of ["edgeever-app://evil/index.html", "https://example.org/", "http://127.0.0.1:5173@evil.example/", "file:///etc/passwd", "edgeever-resource://resource/html"]) {
+      for (const url of ["ponder-app://evil/index.html", "https://example.org/", "http://127.0.0.1:5173@evil.example/", "file:///etc/passwd", "ponder-resource://resource/html"]) {
         context.sender.mainFrame.url = url;
         await expect(context.read(context.event)).rejects.toThrow("Clipboard read forbidden");
       }

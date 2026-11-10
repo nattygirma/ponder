@@ -3,8 +3,8 @@ import { clean, gt, valid } from "semver";
 const LATEST_RELEASE_API_URL = "https://api.github.com/repos/tianma-if/edgeever/releases/latest";
 
 export const GITHUB_LATEST_RELEASE_URL = "https://github.com/tianma-if/edgeever/releases/latest";
-export const ANDROID_APPLICATION_ID = "org.edgeever.mobile";
-export const GOOGLE_PLAY_APP_URL = "market://details?id=org.edgeever.mobile";
+export const ANDROID_APPLICATION_ID = "io.appkeep.ponder.mobile";
+export const GOOGLE_PLAY_APP_URL = "market://details?id=io.appkeep.ponder.mobile";
 export const GOOGLE_PLAY_WEB_URL = "https://play.google.com/store/apps/details?id=org.edgeever.mobile";
 
 type MobileInstallUpdateSourceBase = {
@@ -53,7 +53,7 @@ const normalizeVersion = (value: string) => {
   return normalized && valid(normalized) ? normalized : null;
 };
 
-const ANDROID_ASSET_PATTERN = /^edgeever-android-v(\d+\.\d+\.\d+)-arm64-v8a\.apk$/;
+const ANDROID_ASSET_PATTERN = /^ponder-android-v(\d+\.\d+\.\d+)-arm64-v8a\.apk$/;
 
 const findAndroidReleaseAsset = (assets: unknown): MobileRelease | null => {
   if (!Array.isArray(assets)) return null;

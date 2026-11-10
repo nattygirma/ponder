@@ -4,7 +4,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import { EditorState } from "@tiptap/pm/state";
 import { history, undo, redo } from "@tiptap/pm/history";
-import { ImageGallery, createImageGalleryCleanupPlugin } from "@edgeever/shared";
+import { ImageGallery, createImageGalleryCleanupPlugin } from "@ponder/shared";
 import { createImageDragPlugin, imageDragKey, moveImage } from "./image-drag";
 
 const schema = getSchema([StarterKit, Image.extend({ addAttributes() {
@@ -12,7 +12,7 @@ const schema = getSchema([StarterKit, Image.extend({ addAttributes() {
 } }), ImageGallery]);
 const image = (src) => schema.nodes.image.create({ src, alt: `alt ${src}`, title: `title ${src}`, width: 42, alignment: "right" });
 const paragraph = (text) => schema.nodes.paragraph.create(null, schema.text(text));
-const gallery = (...names) => schema.nodes.edgeeverImageGallery.create({ layout: "3", fit: "height" }, names.map(image));
+const gallery = (...names) => schema.nodes.ponderImageGallery.create({ layout: "3", fit: "height" }, names.map(image));
 const state = (...nodes) => EditorState.create({ doc: schema.nodes.doc.create(null, nodes), plugins: [history(), createImageDragPlugin()] });
 const move = (before, from, to) => {
   const tr = moveImage(before, from, to);

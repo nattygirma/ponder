@@ -5,7 +5,7 @@ import { Hono } from "hono";
 import { createSelfHostedStorageAdapter } from "./self-hosted-storage-adapter.ts";
 import { registerCompanionRoutes } from "./companion-routes.ts";
 import { beginCompanionTurn, checkpointCompanionTurn, clearCompanionHistory, saveCompanionMemory } from "./companion-service.ts";
-import { createPosterDocument, serializePosterDocument, parsePosterDocument, createDefaultTableDocument, parseDiagramDocument, parseInfographicDocument, parseTableDocument, serializeTableDocument } from "@edgeever/shared";
+import { createPosterDocument, serializePosterDocument, parsePosterDocument, createDefaultTableDocument, parseDiagramDocument, parseInfographicDocument, parseTableDocument, serializeTableDocument } from "@ponder/shared";
 import { createMemoRecord, getMemoDetail, normalizeSearchTimeBound, updateMemoRecord } from "./memo-service.ts";
 import { companionWorkspaceCursor, proposeCompanionToolAction } from "./companion-tool-actions.ts";
 import { getCompanionAction, applyCompanionAction, dismissCompanionAction } from "./companion-actions.ts";
@@ -23,7 +23,7 @@ async function setup() {
   for (const file of globSync("migrations/*.sql").sort()) sqlite.exec(readFileSync(file, "utf8"));
   sqlite.query("INSERT INTO workspaces(id, name) VALUES (?, 'Test')").run(scope.workspaceId);
   for (const id of ["ideas", "target"]) sqlite.query("INSERT INTO notebooks(id, workspace_id, name) VALUES (?, ?, ?)").run(id, scope.workspaceId, id);
-  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-companion-tool-test-unused");
+  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-companion-tool-test-unused");
   const db = storage.db;
   const auth = { kind: "user", actorType: "user", actorId: scope.ownerId, workspaceId: scope.workspaceId, scopes: [], role: "member" };
   const context = { env: { storage }, get: () => auth };
@@ -278,12 +278,12 @@ describe("shared companion MCP adapter", () => {
       nodes: [
         { id: "root", label: "RAG" },
         { id: "retrieve", label: "检索", parentId: "root" },
-        { id: "generate", label: "生成", parentId: "root" },
+        { id: "generate", label: "Generate", parentId: "root" },
       ],
     });
     expect(created).toMatchObject({ applied: true, title: "RAG 原理思维导图", diagramKind: "mind-map", nodeCount: 3 });
     expect(created.id).toBeTruthy();
-    expect(JSON.stringify(created)).not.toContain("edgeever-diagram-v1");
+    expect(JSON.stringify(created)).not.toContain("ponder-diagram-v1");
     const memo = await getMemoDetail(f.db, scope.workspaceId, created.id);
     expect(parseDiagramDocument(memo.contentMarkdown)).toMatchObject({ kind: "mind-map", theme: "plain" });
     expect(memo.contentMarkdown).not.toContain("## RAG");
@@ -293,7 +293,7 @@ describe("shared companion MCP adapter", () => {
       diagramKind: "mind-map",
       message: expect.stringContaining("update_diagram"),
     });
-    expect(JSON.stringify(diagramMemo)).not.toContain("edgeever-diagram-v1");
+    expect(JSON.stringify(diagramMemo)).not.toContain("ponder-diagram-v1");
     expect(diagramMemo.content).toBeUndefined();
     await expect(tools.update_memo.execute({ memoId: created.id, contentMarkdown: "# no" })).rejects.toThrow(
       "This is an editable diagram. Change it with update_diagram, not update_memo.",
@@ -322,7 +322,7 @@ describe("shared companion MCP adapter", () => {
   test("creates a structured table in the inbox and adds a record using real field IDs", async () => {
     const f = await setup();
     const inboxId = `${scope.workspaceId}_inbox`;
-    f.sqlite.query("INSERT INTO notebooks(id, workspace_id, name, slug) VALUES (?, ?, '等待分类', 'inbox')").run(inboxId, scope.workspaceId);
+    f.sqlite.query("INSERT INTO notebooks(id, workspace_id, name, slug) VALUES (?, ?, 'Inbox', 'inbox')").run(inboxId, scope.workspaceId);
     const input = { ...f.input, message: "帮我生成一个自媒体选题库的多维表格" };
     const definition = companionToolDefinitions(input).find(tool => tool.name === "create_table_memo");
     expect(definition).toBeTruthy();
@@ -368,11 +368,11 @@ describe("shared companion MCP adapter", () => {
     expect(read.message).toContain("structured table");
     expect(read.structuredTable).toBeTruthy();
     expect(read.content).toContain("|");
-    expect(read.content).not.toContain("edgeever-table-v1");
+    expect(read.content).not.toContain("ponder-table-v1");
     await expect(tools.update_memo.execute({ memoId: table.id, contentMarkdown: "# no" })).rejects.toThrow(
       "This is a structured table. Do not replace it with update_memo.",
     );
-    expect((await getMemoDetail(f.db, scope.workspaceId, table.id)).contentMarkdown).toContain("edgeever-table-v1");
+    expect((await getMemoDetail(f.db, scope.workspaceId, table.id)).contentMarkdown).toContain("ponder-table-v1");
   });
   test("create_diagram_memo keeps generated edge IDs out of Agent input", async () => {
     const f = await setup();
@@ -481,12 +481,12 @@ describe("shared companion MCP adapter", () => {
     expect(definition.inputSchema.properties.kind.enum).toEqual(["architecture"]);
     expect(definition.inputSchema.required ?? []).not.toContain("notebookId");
     expect(definition.description).toContain("use exactly that kind");
-    expect(definition.description).toContain("等待分类");
+    expect(definition.description).toContain("inbox");
     const plain = companionToolDefinitions(f.input);
     for (const name of ["create_memo", "create_diagram_memo", "create_infographic_memo", "create_poster_memo", "use_note_template"]) {
       const tool = plain.find(item => item.name === name);
       expect(tool.inputSchema.required ?? []).not.toContain("notebookId");
-      expect(tool.description).toContain("等待分类");
+      expect(tool.description).toContain("inbox");
     }
     expect(plain.find(item => item.name === "ask_user_question").description).toContain("Do not use this to choose a notebook");
 
@@ -506,7 +506,7 @@ describe("shared companion MCP adapter", () => {
   test("a new note or diagram without a named notebook is saved in the inbox", async () => {
     const f = await setup();
     const inboxId = `${scope.workspaceId}_inbox`;
-    f.sqlite.query("INSERT INTO notebooks(id, workspace_id, name, slug) VALUES (?, ?, '等待分类', 'inbox')").run(inboxId, scope.workspaceId);
+    f.sqlite.query("INSERT INTO notebooks(id, workspace_id, name, slug) VALUES (?, ?, 'Inbox', 'inbox')").run(inboxId, scope.workspaceId);
     const tools = createCompanionTools({ ...f, scope, signal: new AbortController().signal, assertActive: async () => {}, sources: [] });
     const note = await tools.create_memo.execute({ title: "Inbox note", contentMarkdown: "Saved without asking" });
     expect(note.memo.notebookId).toBe(inboxId);
@@ -534,7 +534,7 @@ describe("shared companion MCP adapter", () => {
     expect(explicitDiagramKind(message)).toBeUndefined();
     const f = await setup();
     const inboxId = `${scope.workspaceId}_inbox`;
-    f.sqlite.query("INSERT INTO notebooks(id, workspace_id, name, slug) VALUES (?, ?, '等待分类', 'inbox')").run(inboxId, scope.workspaceId);
+    f.sqlite.query("INSERT INTO notebooks(id, workspace_id, name, slug) VALUES (?, ?, 'Inbox', 'inbox')").run(inboxId, scope.workspaceId);
     const agentInput = { ...f.input, message };
     const definitions = companionToolDefinitions(agentInput);
     expect(definitions.find(tool => tool.name === "create_diagram_memo").description).toContain("create_infographic_memo");
@@ -566,7 +566,7 @@ describe("shared companion MCP adapter", () => {
       title: "腾讯 2025 年营收占比",
       infographic: true,
     });
-    expect(JSON.stringify(created)).not.toContain("edgeever-infographic-v1");
+    expect(JSON.stringify(created)).not.toContain("ponder-infographic-v1");
     const stored = await getMemoDetail(f.db, scope.workspaceId, created.id);
     const infographic = parseInfographicDocument(stored.contentMarkdown);
     expect(infographic.syntax).toContain("infographic chart-pie-donut-plain-text");
@@ -575,7 +575,7 @@ describe("shared companion MCP adapter", () => {
     const read = await tools.get_memo.execute({ memoId: created.id });
     expect(read.infographic).toMatchObject({ template: "chart-pie-donut-plain-text" });
     expect(read.message).toContain("infographic");
-    expect(JSON.stringify(read)).not.toContain("edgeever-infographic-v1");
+    expect(JSON.stringify(read)).not.toContain("ponder-infographic-v1");
     await expect(tools.update_memo.execute({ memoId: created.id, contentMarkdown: "# no" })).rejects.toThrow(
       "This is an infographic. Do not replace it with update_memo.",
     );
@@ -595,7 +595,7 @@ describe("shared companion MCP adapter", () => {
     const blocked = await tools.ask_user_question.execute({
       questions: [{ id: "notebook", prompt: "流程图要保存到哪个笔记本？请提供笔记本名称。", inputType: "free_text" }],
     });
-    expect(blocked).toMatchObject({ waiting: false, error: expect.stringContaining("等待分类") });
+    expect(blocked).toMatchObject({ waiting: false, error: expect.stringContaining("inbox") });
     expect(run.pause.ask).toBe(false);
     expect(run.questions).toEqual([]);
     const allowed = await tools.ask_user_question.execute({

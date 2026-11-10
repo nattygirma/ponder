@@ -19,7 +19,7 @@ describe("desktop crash diagnostics", () => {
 
   test("retains packaged asset locations without exposing the installation path", () => {
     expect(sanitizeDesktopDiagnosticText(
-      "at render (file:///Applications/EdgeEver.app/Contents/Resources/web/assets/index-a1b2.js:42:7)",
+      "at render (file:///Applications/Ponder.app/Contents/Resources/web/assets/index-a1b2.js:42:7)",
     )).toBe("at render (file:///[app]/assets/index-a1b2.js:42:7)");
   });
 
@@ -35,44 +35,7 @@ describe("desktop crash diagnostics", () => {
     expect(normalizeDesktopDiagnostic(null)).toMatchObject({ kind: "unknown", message: "" });
   });
 
-  test("builds a public issue draft containing sanitized diagnostics and system information", () => {
-    const issueUrl = buildDesktopDiagnosticIssueUrl({
-      diagnostic: { kind: "react-error", message: "failed at https://private.example.com" },
-      systemInfo: {
-        appVersion: "1.31.0",
-        platform: "darwin",
-        architecture: "x64",
-        osVersion: "15.6",
-        osRelease: "24.6.0",
-        electron: "38.0.0",
-        chrome: "140.0.0.0",
-        gpu: "Intel UHD Graphics 630",
-        gpuFeatures: "webgl=enabled",
-      },
-    });
-    const url = new URL(issueUrl);
-    expect(url.origin + url.pathname).toBe("https://github.com/tianma-if/edgeever/issues/new");
-    expect(url.searchParams.get("template")).toBe("bug.yml");
-    expect(url.searchParams.get("client")).toBe("macOS");
-    expect(url.searchParams.get("title")).toContain("darwin x64");
-    expect(url.searchParams.get("system-info")).toContain("- appVersion: 1.31.0");
-    expect(url.searchParams.get("diagnostics")).toContain('"appVersion": "1.31.0"');
-    expect(url.searchParams.get("diagnostics")).toContain("Intel UHD Graphics 630");
-    expect(url.searchParams.get("diagnostics")).not.toContain("private.example.com");
-    expect(url.searchParams.get("system-info")).not.toContain("private.example.com");
-    expect(issueUrl.length).toBeLessThan(8_000);
-  });
-
-  test("keeps even non-ASCII crash reports within a practical issue URL limit", () => {
-    const issueUrl = buildDesktopDiagnosticIssueUrl({
-      diagnostic: {
-        kind: "react-error",
-        message: "错".repeat(2_000),
-        stack: "栈".repeat(2_000),
-        componentStack: "组件".repeat(2_000),
-      },
-      systemInfo: { appVersion: "1.31.0", platform: "darwin", architecture: "x64" },
-    });
-    expect(issueUrl.length).toBeLessThan(8_000);
+  test("sends crash reports to the AppKeep site without putting diagnostics in the link", () => {
+    expect(buildDesktopDiagnosticIssueUrl()).toBe("https://appkeep.io");
   });
 });

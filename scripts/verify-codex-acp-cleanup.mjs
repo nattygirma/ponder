@@ -9,7 +9,7 @@ import { createAcpHostRuntime, stopAcpChild } from "../apps/desktop/src/main/acp
 
 const entry = path.resolve(process.argv[2] ?? "");
 assert.ok(process.argv[2] && existsSync(entry), "Pass the installed codex-acp dist/index.js");
-const root = await mkdtemp(path.join(tmpdir(), "edgeever-acp-codex-smoke-"));
+const root = await mkdtemp(path.join(tmpdir(), "ponder-acp-codex-smoke-"));
 const home = path.join(root, "home");
 await mkdir(home);
 let child;

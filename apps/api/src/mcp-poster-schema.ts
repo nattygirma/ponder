@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PosterElementSchema, POSTER_TEMPLATES } from "@edgeever/shared";
+import { PosterElementSchema, POSTER_TEMPLATES } from "@ponder/shared";
 import { posterPatchSchema } from "./mcp-poster-tools";
 
 // MCP and OpenAI-style function tools share the same field validation. Convert

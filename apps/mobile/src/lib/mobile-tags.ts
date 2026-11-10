@@ -1,4 +1,4 @@
-import type { MemoDetail, TagSummary } from "@edgeever/shared";
+import type { MemoDetail, TagSummary } from "@ponder/shared";
 
 export const memoHasExactTag = (tags: readonly string[] | null | undefined, tag: string) => {
   const normalized = tag.trim().toLocaleLowerCase();

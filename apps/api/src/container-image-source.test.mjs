@@ -10,7 +10,7 @@ describe("container image source diagnostics", () => {
   });
 
   test("does not expose custom image references through the classification", () => {
-    expect(resolveContainerImageSource("registry.internal.example/team/edgeever:latest")).toBe("custom");
+    expect(resolveContainerImageSource("registry.internal.example/team/ponder:latest")).toBe("custom");
     expect(resolveContainerImageSource("ghcr.io/tianma-if/edgeever-fork")).toBe("custom");
     expect(resolveContainerImageSource("  ")).toBe("unknown");
     expect(resolveContainerImageSource(undefined)).toBe("unknown");

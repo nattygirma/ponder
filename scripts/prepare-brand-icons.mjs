@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { prepareDesktopIcons } from "./prepare-desktop-icons.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const sourcePath = path.join(projectRoot, "assets/brand/edgeever-icon.svg");
+const sourcePath = path.join(projectRoot, "assets/brand/ponder-icon.svg");
 const adaptiveForegroundSourcePath = path.join(projectRoot, "apps/mobile/assets/adaptive-icon-foreground.svg");
 const adaptiveTransparentSourcePath = path.join(projectRoot, "apps/mobile/assets/adaptive-icon-transparent.svg");
 const source = await readFile(sourcePath);
@@ -24,7 +24,7 @@ const pngTargets = [
   ["apps/site/public/icon-512.png", 512, { preserveAlpha: true }],
   ["apps/site/public/apple-touch-icon.png", 180, { background: "#16a06e" }],
   ["apps/mobile/assets/icon.png", 512, { background: "#16a06e" }],
-  ["apps/ios/EdgeEver/Resources/Assets.xcassets/AppIcon.appiconset/icon.png", 1024, { background: "#16a06e" }],
+  ["apps/ios/Ponder/Resources/Assets.xcassets/AppIcon.appiconset/icon.png", 1024, { background: "#16a06e" }],
   ["apps/extension/public/icons/icon-16.png", 16, { preserveAlpha: true }],
   ["apps/extension/public/icons/icon-32.png", 32, { preserveAlpha: true }],
   ["apps/extension/public/icons/icon-48.png", 48, { preserveAlpha: true }],

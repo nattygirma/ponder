@@ -2,11 +2,11 @@
 // or the one named by the page URL. Must stay import-free.
 (() => {
   const root = globalThis as typeof globalThis & {
-    __edgeeverZhihuTarget?: boolean;
-    __edgeeverZhihuClipPayload?: { requestId?: string };
+    __ponderZhihuTarget?: boolean;
+    __ponderZhihuClipPayload?: { requestId?: string };
   };
-  const payload = root.__edgeeverZhihuClipPayload;
-  delete root.__edgeeverZhihuClipPayload;
+  const payload = root.__ponderZhihuClipPayload;
+  delete root.__ponderZhihuClipPayload;
   if (!payload || typeof payload.requestId !== "string") return;
   const requestId = payload.requestId;
 
@@ -51,8 +51,8 @@
   const textOf = (node: Element | null) => clean(node?.textContent || "");
 
   const readMarked = (node: Element) => {
-    const kind = node.getAttribute("data-edgeever-zhihu-kind");
-    const id = node.getAttribute("data-edgeever-zhihu-id") || "";
+    const kind = node.getAttribute("data-ponder-zhihu-kind");
+    const id = node.getAttribute("data-ponder-zhihu-id") || "";
     if ((kind === "answer" || kind === "article") && /^\d+$/.test(id)) return { kind, id };
     return null;
   };
@@ -84,12 +84,12 @@
   };
 
   try {
-    const marked = document.querySelector("[data-edgeever-zhihu-target='1']");
+    const marked = document.querySelector("[data-ponder-zhihu-target='1']");
     const fromPage = targetFromLocation(location.hostname, location.pathname);
     const fromMark = marked ? readMarked(marked) : null;
     const chosen = fromMark || (!marked ? fromPage : null);
     if (!chosen) {
-      finish({ ok: false, reason: root.__edgeeverZhihuTarget ? "not-found" : "needs-listener" });
+      finish({ ok: false, reason: root.__ponderZhihuTarget ? "not-found" : "needs-listener" });
       return;
     }
     const scope = marked

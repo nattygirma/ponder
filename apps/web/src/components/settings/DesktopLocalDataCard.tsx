@@ -28,7 +28,7 @@ const localDataResetErrorKeys: Record<DesktopLocalDataResetErrorCode, string> = 
 
 export const DesktopLocalDataCard = () => {
   const { t } = useTranslation();
-  const bridge = window.edgeeverDesktop;
+  const bridge = window.ponderDesktop;
   const [confirmationOpen, setConfirmationOpen] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [errorCode, setErrorCode] = useState<DesktopLocalDataResetErrorCode | null>(null);

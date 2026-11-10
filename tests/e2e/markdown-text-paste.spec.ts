@@ -29,7 +29,7 @@ const dispatchPaste = async (editor: Locator, entries: Record<string, string>) =
 
 const openMemo = async (page: Page, memo: { id: string }) => {
   await page.goto("/");
-  await page.getByRole("button", { name: "全部笔记", exact: true }).click();
+  await page.getByRole("button", { name: "All notes", exact: true }).click();
   await page.locator(`[data-memo-id="${memo.id}"]`).locator("button").first().click();
   const editor = page.locator(".ProseMirror[contenteditable='true']");
   await expect(editor).toBeEditable();
@@ -41,7 +41,7 @@ const openMemo = async (page: Page, memo: { id: string }) => {
 const MARKDOWN = [
   "# 一级标题",
   "",
-  "普通文字中包含 **粗体**、*斜体*、~~删除线~~ 和 `行内代码`。",
+  "普通文字中包含 **粗体**、*斜体*、~~删除线~~ 和 `inline code`。",
   "",
   "- 第一项",
   "- 第二项",
@@ -69,14 +69,14 @@ test("renders Markdown pasted as plain text in the rich-text editor", async ({ p
     await dispatchPaste(editor, { "text/plain": MARKDOWN });
 
     await expect(editor.locator("h1")).toHaveText("一级标题");
-    await expect(editor.locator("strong")).toHaveText("粗体");
-    await expect(editor.locator("em")).toHaveText("斜体");
-    await expect(editor.locator("s")).toHaveText("删除线");
-    await expect(editor.locator("p code")).toHaveText("行内代码");
+    await expect(editor.locator("strong")).toHaveText("Bold");
+    await expect(editor.locator("em")).toHaveText("Italic");
+    await expect(editor.locator("s")).toHaveText("Strikethrough");
+    await expect(editor.locator("p code")).toHaveText("inline code");
     await expect(editor.locator("ul > li")).toHaveCount(2);
     await expect(editor.locator("ol > li")).toHaveCount(2);
-    await expect(editor.locator("blockquote")).toContainText("引用");
-    const codeBlocks = editor.getByRole("button", { name: "复制代码" });
+    await expect(editor.locator("blockquote")).toContainText("Quote");
+    const codeBlocks = editor.getByRole("button", { name: "Copy code" });
     await expect(codeBlocks).toHaveCount(1);
     await expect(editor).toContainText("const count = 1;");
     await expect(editor.locator("table td")).toHaveCount(2);

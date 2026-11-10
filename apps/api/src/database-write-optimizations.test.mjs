@@ -1,11 +1,11 @@
 import { Database } from "bun:sqlite";
 import { describe, expect, test } from "bun:test";
 import { globSync, readFileSync } from "node:fs";
-import { createPosterDocument, serializePosterDocument, parsePosterDocument, markdownToDoc, addTableField, createDefaultTableDocument, serializeTableDocument, updateTableCell } from "@edgeever/shared";
+import { createPosterDocument, serializePosterDocument, parsePosterDocument, markdownToDoc, addTableField, createDefaultTableDocument, serializeTableDocument, updateTableCell } from "@ponder/shared";
 import {
   acquireMaintenanceLease,
   createMemoEditSession,
-  fetchEdgeEverApp,
+  fetchPonderApp,
   mergeMemosRecord,
   updateMemoRecord,
 } from "./index.ts";
@@ -185,7 +185,7 @@ describe("database write optimizations", () => {
   test("keeps a structured table intact and retires an attachment removed from it", async () => {
     const { database, sqlite } = createDatabase();
     const memo = getSeedMemo(sqlite);
-    let document = addTableField(createDefaultTableDocument(), { id: "fld_files", name: "附件", type: "attachment" });
+    let document = addTableField(createDefaultTableDocument(), { id: "fld_files", name: "Attachments", type: "attachment" });
     document = updateTableCell(document, "rec_sample", "fld_files", [{
       resourceId: "res_table_file",
       filename: "brief.pdf",
@@ -205,18 +205,18 @@ describe("database write optimizations", () => {
       actor,
       "owner",
     );
-    expect(saved.memo.contentMarkdown).toContain("edgeever-table-v1");
+    expect(saved.memo.contentMarkdown).toContain("ponder-table-v1");
 
     const replaced = await updateMemoRecord(
       database,
       memo.workspace_id,
       memo.id,
-      { contentMarkdown: "普通笔记" },
+      { contentMarkdown: "Regular note" },
       actor,
       "owner",
     );
     expect(replaced.error).toBe("table_update_required");
-    expect(sqlite.query("SELECT content_markdown FROM memo_contents WHERE memo_id = ?").get(memo.id).content_markdown).toContain("edgeever-table-v1");
+    expect(sqlite.query("SELECT content_markdown FROM memo_contents WHERE memo_id = ?").get(memo.id).content_markdown).toContain("ponder-table-v1");
 
     const removed = await updateMemoRecord(
       database,
@@ -265,12 +265,12 @@ describe("database write optimizations", () => {
     const { database, sqlite } = createDatabase();
     expect(await acquireMaintenanceLease(database, "demo-reset", 60_000)).toStartWith("lease_");
 
-    const response = await fetchEdgeEverApp(
+    const response = await fetchPonderApp(
       new Request("https://notes.example.com/api/v1/demo/reset", { method: "POST" }),
       {
         storage: { db: database, resources: {} },
-        EDGE_EVER_ALLOW_UNAUTHENTICATED: "true",
-        EDGE_EVER_DEMO_MODE: "true",
+        PONDER_ALLOW_UNAUTHENTICATED: "true",
+        PONDER_DEMO_MODE: "true",
       },
       executionContext,
     );
@@ -288,12 +288,12 @@ describe("database write optimizations", () => {
     const resources = {
       put: async () => {},
     };
-    const request = () => fetchEdgeEverApp(
+    const request = () => fetchPonderApp(
       new Request("https://notes.example.com/api/v1/notebooks"),
       {
         storage: { db: database, resources },
-        EDGE_EVER_ALLOW_UNAUTHENTICATED: "true",
-        EDGE_EVER_DEMO_MODE: "true",
+        PONDER_ALLOW_UNAUTHENTICATED: "true",
+        PONDER_DEMO_MODE: "true",
       },
       executionContext,
     );
@@ -301,17 +301,17 @@ describe("database write optimizations", () => {
     expect((await request()).status).toBe(200);
     expect(sqlite.query(
       "SELECT COUNT(*) AS count FROM memos WHERE id IN ('memo_demo_overview', 'memo_demo_overview_en')",
-    ).get().count).toBe(2);
+    ).get().count).toBe(1);
 
     const changesAfterSeed = sqlite.query("SELECT total_changes() AS count").get().count;
     expect((await request()).status).toBe(200);
     expect((await request()).status).toBe(200);
     expect(sqlite.query("SELECT total_changes() AS count").get().count).toBe(changesAfterSeed);
 
-    sqlite.query("UPDATE memos SET title = 'Changed demo title' WHERE id = 'memo_demo_overview'").run();
+    sqlite.query("UPDATE memos SET title = 'Changed demo title' WHERE id = 'memo_demo_overview_en'").run();
     const changesBeforeRepair = sqlite.query("SELECT total_changes() AS count").get().count;
     expect((await request()).status).toBe(200);
-    expect(sqlite.query("SELECT title FROM memos WHERE id = 'memo_demo_overview'").get().title).not.toBe("Changed demo title");
+    expect(sqlite.query("SELECT title FROM memos WHERE id = 'memo_demo_overview_en'").get().title).not.toBe("Changed demo title");
     expect(sqlite.query("SELECT total_changes() AS count").get().count).toBeGreaterThan(changesBeforeRepair);
 
     const changesAfterRepair = sqlite.query("SELECT total_changes() AS count").get().count;
@@ -322,7 +322,7 @@ describe("database write optimizations", () => {
 
   test("touches API tokens at most once per hour", async () => {
     const { database, sqlite } = createDatabase();
-    const token = "edgeever_api_test_token";
+    const token = "ponder_api_test_token";
     const recent = new Date(Date.now() - 5 * 60_000).toISOString();
     sqlite.query(
       `INSERT INTO api_tokens (
@@ -330,11 +330,11 @@ describe("database write optimizations", () => {
        ) VALUES ('tok_touch_test', 'ws_default', 'Touch test', ?, ?, '["read:notebooks"]', ?)`,
     ).run(await sha256(token), token, recent);
 
-    const request = () => fetchEdgeEverApp(
+    const request = () => fetchPonderApp(
       new Request("https://notes.example.com/api/v1/notebooks", {
         headers: { Authorization: `Bearer ${token}` },
       }),
-      { storage: { db: database, resources: {} }, EDGE_EVER_AUTH_PASSWORD: "configured" },
+      { storage: { db: database, resources: {} }, PONDER_APPKEEP: "true" },
       executionContext,
     );
 
@@ -350,7 +350,7 @@ describe("database write optimizations", () => {
 
   test("touches login sessions at most once per hour", async () => {
     const { database, sqlite } = createDatabase();
-    const token = "edgeever_session_test_token";
+    const token = "ponder_session_test_token";
     const recent = new Date(Date.now() - 5 * 60_000).toISOString();
     const now = new Date().toISOString();
     sqlite.query(
@@ -367,11 +367,11 @@ describe("database write optimizations", () => {
        ) VALUES ('session_touch_test', 'user_touch_test', ?, 'test-device', ?, ?, ?)`,
     ).run(await sha256(token), new Date(Date.now() + 60 * 60_000).toISOString(), now, recent);
 
-    const request = () => fetchEdgeEverApp(
+    const request = () => fetchPonderApp(
       new Request("https://notes.example.com/api/v1/notebooks", {
         headers: { Authorization: `Bearer ${token}` },
       }),
-      { storage: { db: database, resources: {} }, EDGE_EVER_AUTH_PASSWORD: "configured" },
+      { storage: { db: database, resources: {} },  },
       executionContext,
     );
 

@@ -9,8 +9,8 @@ export const windowsUpdateInstallerRunning = (name) => {
 };
 
 export const stopWindowsUpdateFixtures = () => {
-  // This name belongs only to the isolated CI fixture, never to EdgeEver.exe.
-  spawnSync("powershell", ["-NoProfile", "-Command", "Get-Process -Name EdgeEverUpdateVerifier -ErrorAction SilentlyContinue | ForEach-Object { taskkill /PID $_.Id /T /F | Out-Null }"], {
+  // This name belongs only to the isolated CI fixture, never to Ponder.exe.
+  spawnSync("powershell", ["-NoProfile", "-Command", "Get-Process -Name PonderUpdateVerifier -ErrorAction SilentlyContinue | ForEach-Object { taskkill /PID $_.Id /T /F | Out-Null }"], {
     stdio: "ignore", timeout: 30_000, windowsHide: true,
   });
 };

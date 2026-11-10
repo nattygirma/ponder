@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { ApiRequestError } from "@edgeever/client";
+import { ApiRequestError } from "@ponder/client";
 import { LocalDatabaseUnavailableError } from "@/lib/local-database-recovery";
 import { MemoSaveRequestError } from "./editor-pane-helpers.ts";
 import { classifyEditorSaveFailure, shouldLeaveEditorAfterSaveError } from "./editor-save-failure.ts";

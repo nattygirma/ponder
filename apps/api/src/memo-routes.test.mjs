@@ -178,7 +178,7 @@ describe("memo route contracts", () => {
       },
     });
     // Browsers encode line breaks in multipart text fields as CRLF.
-    const boundary = "edgeever-boundary";
+    const boundary = "ponder-boundary";
     const part = (name, value) => `--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`;
     const body = [
       part("notebookId", "nb_1"),

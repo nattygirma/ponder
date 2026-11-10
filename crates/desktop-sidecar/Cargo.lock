@@ -75,7 +75,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "edgeever-sidecar"
+name = "ponder-sidecar"
 version = "0.1.0"
 dependencies = [
  "rusqlite",

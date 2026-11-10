@@ -1,4 +1,4 @@
-const DATABASE_NAME = "edgeever-plugin-packages-v1";
+const DATABASE_NAME = "ponder-plugin-packages-v1";
 const DATABASE_VERSION = 2;
 const LEGACY_PACKAGE_STORE = "packages";
 const PACKAGE_STORE = "packageVersions";

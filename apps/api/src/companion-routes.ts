@@ -1,6 +1,6 @@
 import { AiAttachmentSchema, CompanionDiscoveryCompleteSchema, CompanionDiscoverySettingsInputSchema, CompanionIdSchema, CompanionMemoryImportSchema, CompanionMemoryInputSchema, CompanionMemoryUpdateSchema,
   CompanionToolExecuteSchema, CompanionTurnCheckpointSchema, CompanionTurnCompleteSchema,
-  CompanionTurnInputSchema, CompanionTurnResumeSchema, companionTurnLocale, type CompanionSource, type CompanionToolCall } from "@edgeever/shared";
+  CompanionTurnInputSchema, CompanionTurnResumeSchema, companionTurnLocale, type CompanionSource, type CompanionToolCall } from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";

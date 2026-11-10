@@ -16,7 +16,7 @@ afterEach(() => cleanups.splice(0).forEach((cleanup) => cleanup()));
 const setup = () => {
   const sqlite = new Database(":memory:");
   for (const file of globSync("migrations/*.sql").sort()) sqlite.exec(readFileSync(file, "utf8"));
-  const resourcesDirectory = mkdtempSync(join(tmpdir(), "edgeever-duplicate-"));
+  const resourcesDirectory = mkdtempSync(join(tmpdir(), "ponder-duplicate-"));
   cleanups.push(() => {
     sqlite.close();
     rmSync(resourcesDirectory, { recursive: true, force: true });

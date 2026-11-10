@@ -27,12 +27,12 @@ describe("store delivery validation", () => {
       validateStoreDelivery({
         ...validInput,
         platform: "ios",
-        changedFiles: ["apps/ios/EdgeEver/App/RootView.swift"],
+        changedFiles: ["apps/ios/Ponder/App/RootView.swift"],
       }),
     ).toEqual({
       version: "1.7.0",
       versionCode: 56,
-      relevantChanges: ["apps/ios/EdgeEver/App/RootView.swift"],
+      relevantChanges: ["apps/ios/Ponder/App/RootView.swift"],
     });
   });
 
@@ -43,7 +43,7 @@ describe("store delivery validation", () => {
         platform: "both",
         changedFiles: [
           "apps/mobile/src/screens/WorkspaceScreen.tsx",
-          "apps/ios/EdgeEver/App/RootView.swift",
+          "apps/ios/Ponder/App/RootView.swift",
         ],
       }),
     ).toEqual({
@@ -51,7 +51,7 @@ describe("store delivery validation", () => {
       versionCode: 57,
       relevantChanges: [
         "apps/mobile/src/screens/WorkspaceScreen.tsx",
-        "apps/ios/EdgeEver/App/RootView.swift",
+        "apps/ios/Ponder/App/RootView.swift",
       ],
     });
   });
@@ -87,7 +87,7 @@ describe("store delivery validation", () => {
         ...validInput,
         platform: "ios",
         iosVersion: "1.6.99",
-        changedFiles: ["apps/ios/EdgeEver/App/RootView.swift"],
+        changedFiles: ["apps/ios/Ponder/App/RootView.swift"],
       })
     ).toThrow("MARKETING_VERSION to equal 1.7.0");
   });

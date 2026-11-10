@@ -39,7 +39,6 @@ const headingBlock = (source: string, heading: string) => {
 
 describe("App Store listing copy", () => {
   const english = read("apps/mobile/store-assets/app-store/metadata.en-US.md");
-  const chinese = read("apps/mobile/store-assets/app-store/metadata.zh-CN.md");
   const japanese = read("apps/mobile/store-assets/app-store/metadata.ja.md");
 
   test("keeps Japanese fields within App Store Connect limits", () => {
@@ -56,16 +55,16 @@ describe("App Store listing copy", () => {
   });
 
   test("points Japanese listing URLs at the English site and keeps the Evernote disclaimer", () => {
-    expect(field(japanese, "Privacy policy URL")).toBe("https://edgeever.org/en/privacy");
-    expect(japanese).toContain("https://edgeever.org/en/contact");
-    expect(japanese).toContain("https://edgeever.org/en/");
+    expect(field(japanese, "Privacy policy URL")).toBe("https://appkeep.io/privacy");
+    expect(japanese).toContain("https://appkeep.io");
+    expect(japanese).toContain("https://appkeep.io");
     expect(headingBlock(japanese, "Description")).toContain("Evernote Corporation");
     expect(headingBlock(japanese, "Keywords")).not.toContain("Evernote");
   });
 
   test("keeps App Review demo credentials in every App Store locale file", () => {
-    for (const source of [english, chinese, japanese]) {
-      expect(source).toContain("https://demo.edgeever.org");
+    for (const source of [english, japanese]) {
+      expect(source).toContain("https://appkeep.io");
       expect(source).toContain("ee-demo");
       expect(source).toContain("demo#dZ6Q29Zjfor%");
       expect(source).not.toContain("notes.example.com");
@@ -75,13 +74,11 @@ describe("App Store listing copy", () => {
 
 describe("Google Play listing copy", () => {
   const english = read("apps/mobile/store-assets/play/metadata.en-US.md");
-  const chinese = read("apps/mobile/store-assets/play/metadata.zh-CN.md");
   const japanese = read("apps/mobile/store-assets/play/metadata.ja-JP.md");
 
   test("keeps Play listing fields within Console limits", () => {
     for (const [source, titleHeading, shortHeading, fullHeading] of [
       [english, "Title", "Short description", "Full description"],
-      [chinese, "标题", "简短说明", "完整说明"],
       [japanese, "Title", "Short description", "Full description"],
     ] as const) {
       expect(headingBlock(source, titleHeading).length).toBeLessThanOrEqual(PLAY_LIMITS.title);
@@ -96,6 +93,6 @@ describe("Google Play listing copy", () => {
 
   test("tells Japanese Play users that a self-hosted instance is required", () => {
     expect(headingBlock(japanese, "Full description")).toContain("セルフホスト");
-    expect(headingBlock(japanese, "Full description")).toContain("edgeever.org");
+    expect(headingBlock(japanese, "Full description")).toContain("appkeep.io");
   });
 });

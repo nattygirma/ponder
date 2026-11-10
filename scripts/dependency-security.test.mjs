@@ -31,13 +31,13 @@ describe("dependency security at the actual consumer", () => {
   test("infographic CSS cannot load an absolute source map without a source filename", () => {
     const infographicRequire = consumerRequire(webRequire, "@antv/infographic/package.json");
     const postcss = infographicRequire("postcss");
-    const directory = mkdtempSync(join(tmpdir(), "edgeever-css-map-"));
+    const directory = mkdtempSync(join(tmpdir(), "ponder-css-map-"));
     const mapPath = join(directory, "private.map");
     try {
-      writeFileSync(mapPath, JSON.stringify({ version: 3, sources: ["private.txt"], sourcesContent: ["EDGE_EVER_PRIVATE_MAP_CONTENT"], names: [], mappings: "AAAA" }));
+      writeFileSync(mapPath, JSON.stringify({ version: 3, sources: ["private.txt"], sourcesContent: ["PONDER_PRIVATE_MAP_CONTENT"], names: [], mappings: "AAAA" }));
       const result = postcss([]).process(`a { color: green }\n/*# sourceMappingURL=${mapPath} */`, { map: { inline: false } }).sync();
       expect(result.root.source.input.map?.text).toBeUndefined();
-      expect(JSON.stringify(result.map.toJSON())).not.toContain("EDGE_EVER_PRIVATE_MAP_CONTENT");
+      expect(JSON.stringify(result.map.toJSON())).not.toContain("PONDER_PRIVATE_MAP_CONTENT");
       expect(result.css).toContain("color: green");
     } finally {
       rmSync(directory, { recursive: true, force: true });
@@ -85,7 +85,7 @@ describe("dependency security at the actual consumer", () => {
       [consumerRequire(builderRequire, "@electron/osx-sign"), "plist"],
       [consumerRequire(builderRequire, "@electron/universal"), "plist"],
     ];
-    const fixture = { CFBundleIdentifier: "com.edgeever.app", label: "中文 & <EdgeEver>", enabled: true, count: 42, values: ["a", "b"] };
+    const fixture = { CFBundleIdentifier: "com.ponder.app", label: "中文 & <Ponder>", enabled: true, count: 42, values: ["a", "b"] };
     for (const [require, name] of consumers) {
       const plistModule = require(name);
       const plist = plistModule.default ?? plistModule;
@@ -103,13 +103,13 @@ describe("dependency security at the actual consumer", () => {
     const FirefoxProfile = webExtRequire("firefox-profile");
     const AdmZip = profileRequire("adm-zip");
     expect(profileRequire("adm-zip/package.json").version).toBe("0.6.1");
-    const directory = mkdtempSync(join(tmpdir(), "edgeever-firefox-profile-"));
+    const directory = mkdtempSync(join(tmpdir(), "ponder-firefox-profile-"));
     const profile = new FirefoxProfile({ destinationDirectory: directory });
     try {
-      profile.setPreference("edgeever.security.test", "中文 & value");
+      profile.setPreference("ponder.security.test", "中文 & value");
       const encoded = await new Promise((resolve, reject) => profile.encoded((error, data) => error ? reject(error) : resolve(data)));
       const zip = new AdmZip(Buffer.from(encoded, "base64"));
-      expect(zip.readAsText("user.js")).toContain('user_pref("edgeever.security.test", "中文 & value");');
+      expect(zip.readAsText("user.js")).toContain('user_pref("ponder.security.test", "中文 & value");');
     } finally {
       process.removeListener("exit", profile.onExit);
       process.removeListener("SIGINT", profile.onSigInt);

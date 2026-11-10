@@ -24,7 +24,7 @@ const selectEditorText = async (page: Page, editor: Locator, text: string) => {
   }, text);
 
   expect(selected).toBe(text);
-  await expect(page.getByRole("button", { name: "用 AI 处理" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ask AI" })).toBeVisible();
 };
 
 const mockAiReplacement = async (page: Page, replacement: string) => {
@@ -50,14 +50,14 @@ const openMemo = async (page: Page, memoId: string, notebookName: string) => {
 };
 
 const applyAiReplacement = async (page: Page) => {
-  await page.getByRole("button", { name: "用 AI 处理" }).click();
-  const dialog = page.getByRole("dialog", { name: "AI 笔记助手" });
-  await expect(dialog.getByText("生成结果", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Ask AI" }).click();
+  const dialog = page.getByRole("dialog", { name: "AI note assistant" });
+  await expect(dialog.getByText("Generated result", { exact: true })).toBeVisible();
   await expect(dialog.getByText("AI 输出会先作为草稿展示，只有你主动操作后才会修改笔记。", { exact: true })).toHaveCount(0);
-  await expect(dialog.getByText("AI 草稿", { exact: true })).toHaveCount(0);
-  await dialog.getByRole("button", { name: "生成", exact: true }).click();
-  await expect(dialog.getByRole("button", { name: "接受并替换选中内容" })).toBeEnabled();
-  await dialog.getByRole("button", { name: "接受并替换选中内容" }).click();
+  await expect(dialog.getByText("AI draft", { exact: true })).toHaveCount(0);
+  await dialog.getByRole("button", { name: "Generate", exact: true }).click();
+  await expect(dialog.getByRole("button", { name: "Accept and replace selection" })).toBeEnabled();
+  await dialog.getByRole("button", { name: "Accept and replace selection" }).click();
   await expect(dialog).toBeHidden();
 };
 
@@ -125,13 +125,13 @@ test.describe("AI selected-text replacement", () => {
 
     const editor = await openMemo(page, memo.id, notebookName);
     await selectEditorText(page, editor, "- 校对");
-    await page.getByRole("button", { name: "用 AI 处理" }).click();
-    const dialog = page.getByRole("dialog", { name: "AI 笔记助手" });
+    await page.getByRole("button", { name: "Ask AI" }).click();
+    const dialog = page.getByRole("dialog", { name: "AI note assistant" });
     await expect(dialog.getByText("- 校对", { exact: true })).toBeVisible();
     await expect(dialog.getByText("1. - 校对", { exact: true })).toHaveCount(0);
-    await dialog.getByRole("button", { name: "生成", exact: true }).click();
-    await expect(dialog.getByRole("button", { name: "接受并替换选中内容" })).toBeEnabled();
-    await dialog.getByRole("button", { name: "接受并替换选中内容" }).click();
+    await dialog.getByRole("button", { name: "Generate", exact: true }).click();
+    await expect(dialog.getByRole("button", { name: "Accept and replace selection" })).toBeEnabled();
+    await dialog.getByRole("button", { name: "Accept and replace selection" }).click();
     await expect(dialog).toBeHidden();
 
     await expect(editor.locator(":scope > p")).toHaveCount(2);

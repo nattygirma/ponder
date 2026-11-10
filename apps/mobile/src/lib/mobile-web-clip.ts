@@ -27,7 +27,7 @@ export type MobileRenderedWebPage = {
   title?: string;
 };
 
-export type MobileWebClipLocale = "zh-CN" | "en-US" | "ja" | "pl" | "ru";
+export type MobileWebClipLocale = "en-US" | "ja" | "pl" | "ru";
 
 const webClipCopy: Record<MobileWebClipLocale, {
   capturedAtLabel: string;
@@ -37,14 +37,6 @@ const webClipCopy: Record<MobileWebClipLocale, {
   sourceLabel: string;
   unavailableBody: string;
 }> = {
-  "zh-CN": {
-    sourceLabel: "来源",
-    capturedAtLabel: "剪藏时间",
-    unavailableBody: "正文暂时无法抓取，来源链接已保留，可稍后重试。",
-    fallbackTitle: "网页剪藏",
-    imageAlt: "图片",
-    separator: "：",
-  },
   "en-US": {
     sourceLabel: "Source",
     capturedAtLabel: "Captured at",
@@ -171,7 +163,7 @@ export const buildMobileWebClipDraft = async (
 ): Promise<MobileWebClipDraft> => {
   const fetcher = options.fetcher ?? fetch;
   const capturedAt = options.capturedAt ?? new Date();
-  const locale = options.locale ?? "zh-CN";
+  const locale = options.locale ?? "en-US";
   let html = "";
   let finalUrl = sourceUrl;
 
@@ -214,7 +206,7 @@ export const buildMobileWebClipDraftFromRenderedPage = (
   } = {},
 ): MobileWebClipDraft => {
   const capturedAt = options.capturedAt ?? new Date();
-  const locale = options.locale ?? "zh-CN";
+  const locale = options.locale ?? "en-US";
   const copy = webClipCopy[locale];
   const title = normalizeInlineText(page.title ?? "") || hostnameTitle(sourceUrl, locale);
   const body = htmlToMarkdown(page.contentHtml, page.finalUrl || sourceUrl, copy.imageAlt);
@@ -253,7 +245,7 @@ export const extractPageTitle = (html: string) => {
   return titleMatch ? normalizeInlineText(stripTags(titleMatch[1])) : "";
 };
 
-export const htmlToMarkdown = (html: string, baseUrl?: string, imageAlt = "图片") => {
+export const htmlToMarkdown = (html: string, baseUrl?: string, imageAlt = "Images") => {
   if (!html.trim()) {
     return "";
   }
@@ -335,7 +327,7 @@ const buildFallbackDraft = (
   };
 };
 
-const hostnameTitle = (value: string, locale: MobileWebClipLocale = "zh-CN") => {
+const hostnameTitle = (value: string, locale: MobileWebClipLocale = "en-US") => {
   try {
     return new URL(value).hostname;
   } catch {

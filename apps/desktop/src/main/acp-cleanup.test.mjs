@@ -116,7 +116,7 @@ describe("ACP process and workspace cleanup", () => {
       import { tmpdir } from "node:os";
       import path from "node:path";
       import { removeAcpWorkspace, stopAcpChild } from ${JSON.stringify(new URL("./acp-host.mjs", import.meta.url).href)};
-      const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-lock-"));
+      const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-lock-"));
       const child = spawn(process.execPath, ["-e", 'process.stdout.write("ready"); process.stdin.resume()'], {
         cwd: directory, stdio: ["pipe", "pipe", "ignore"], windowsHide: true, shell: false,
       });
@@ -139,7 +139,7 @@ describe("ACP process and workspace cleanup", () => {
     { needsLogin: false, connectionFails: true, cleanupFails: true },
   ]) {
     test(`closes a real ACP process before cleanup (${connectionFails ? "connection failure" : needsLogin ? "login required" : "connected"}${cleanupFails ? ", cleanup failure preserves probe status" : ""})`, async () => {
-      const directory = await mkdtemp(path.join(tmpdir(), "edgeever-acp-lifecycle-"));
+      const directory = await mkdtemp(path.join(tmpdir(), "ponder-acp-lifecycle-"));
       const script = path.join(directory, "agent.mjs");
       await writeFile(script, `
         import { createInterface } from "node:readline";

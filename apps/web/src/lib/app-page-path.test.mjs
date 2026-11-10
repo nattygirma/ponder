@@ -28,8 +28,8 @@ describe("app page paths", () => {
     expect(resolveAppAssetUrl("/extensions/registry.json", "/", "https://notes.example.com/plugins")).toBe(
       "https://notes.example.com/extensions/registry.json",
     );
-    expect(resolveAppAssetUrl("/extensions/registry.json", "./", "file:///Applications/EdgeEver.app/Contents/Resources/web/index.html")).toBe(
-      "file:///Applications/EdgeEver.app/Contents/Resources/web/extensions/registry.json",
+    expect(resolveAppAssetUrl("/extensions/registry.json", "./", "file:///Applications/Ponder.app/Contents/Resources/web/index.html")).toBe(
+      "file:///Applications/Ponder.app/Contents/Resources/web/extensions/registry.json",
     );
     expect(resolveAppAssetUrl("https://cdn.example.com/registry.json", "./", "file:///app/index.html")).toBe(
       "https://cdn.example.com/registry.json",
@@ -56,7 +56,7 @@ describe("app page paths", () => {
 
   test("keeps the existing packaged desktop data scope after leaving file URLs", () => {
     expect(getPersistentDataScopeOrigin("null")).toBe("null");
-    expect(getPersistentDataScopeOrigin("edgeever-app://app")).toBe("null");
+    expect(getPersistentDataScopeOrigin("ponder-app://app")).toBe("null");
     expect(getPersistentDataScopeOrigin("https://notes.example.com")).toBe("https://notes.example.com");
   });
 });

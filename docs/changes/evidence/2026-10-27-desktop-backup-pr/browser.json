@@ -20,7 +20,7 @@
           "action": "select-history",
           "input": {
             "backupSetId": "fixture-backup-set",
-            "name": "EdgeEver-2026-10-25_110000.edgeever.enc"
+            "name": "Ponder-2026-10-25_110000.ponder.enc"
           }
         },
         {
@@ -33,7 +33,7 @@
           "action": "delete-history",
           "input": {
             "backupSetId": "fixture-backup-set",
-            "name": "EdgeEver-2026-10-25_110000.edgeever.enc"
+            "name": "Ponder-2026-10-25_110000.ponder.enc"
           }
         }
       ]

@@ -190,7 +190,7 @@ export const createS3CompatibleStorageAdapter = (
   config: S3CompatibleStorageConfig,
   client?: S3Client,
 ): StorageAdapter => {
-  const selfHosted = createSelfHostedStorageAdapter(sqlite, ".edgeever-unused-resources");
+  const selfHosted = createSelfHostedStorageAdapter(sqlite, ".ponder-unused-resources");
   return {
     db: selfHosted.db,
     resources: createS3BlobStore(config, client),

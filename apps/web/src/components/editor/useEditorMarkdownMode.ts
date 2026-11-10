@@ -7,7 +7,7 @@ import {
   type RefObject,
 } from "react";
 import type { Editor } from "@tiptap/react";
-import type { TiptapDoc } from "@edgeever/shared";
+import type { TiptapDoc } from "@ponder/shared";
 import {
   analyzeMarkdownModeContent,
   createMarkdownModeSnapshot,

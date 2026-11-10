@@ -15,6 +15,6 @@ describe("AudioAttachmentPlayer", () => {
     expect(markup).toContain('preload="metadata"');
     expect(markup).toContain('src="/api/v1/resources/audio-1/blob"');
     expect(markup).toContain('aria-label="interview.flac"');
-    expect(markup).toContain("data-edgeever-audio-player");
+    expect(markup).toContain("data-ponder-audio-player");
   });
 });

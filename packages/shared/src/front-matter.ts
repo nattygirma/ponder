@@ -2,7 +2,7 @@ import { isMap, parseDocument } from "yaml";
 import type { TiptapDoc, TiptapNode } from "./content";
 
 // An existing schema node keeps properties readable in older clients.
-export const FRONT_MATTER_LANGUAGE = "edgeever-frontmatter";
+export const FRONT_MATTER_LANGUAGE = "ponder-frontmatter";
 const MAX_PROPERTY_SOURCE_LENGTH = 64 * 1024;
 type NotePropertiesParseOptions = { maxSourceLength?: number };
 
@@ -25,7 +25,7 @@ export const parseNoteProperties = (source: string, options: NotePropertiesParse
 
 /** Only a leading, closed property header is special; ordinary rules stay Markdown. */
 export const splitMarkdownFrontMatter = (markdown: string, options: NotePropertiesParseOptions = {}) => {
-  const legacy = /^(`{3,}|~{3,})edgeever-frontmatter[ \t]*\r?\n([\s\S]*?)^\1[ \t]*(?:\r?\n|$)/m.exec(markdown);
+  const legacy = /^(`{3,}|~{3,})ponder-frontmatter[ \t]*\r?\n([\s\S]*?)^\1[ \t]*(?:\r?\n|$)/m.exec(markdown);
   if (legacy?.index === 0) {
     const source = legacy[2]!.replace(/\r?\n$/, "").replace(/\r\n?/g, "\n");
     return { source, body: markdown.slice(legacy[0].length), ...parseNoteProperties(source, options) };

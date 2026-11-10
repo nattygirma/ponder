@@ -1,4 +1,4 @@
 # Cloudflare Deploy to Cloudflare uses this file to request the required
 # Worker Secret during one-click setup. Leave the value empty in source control;
 # every installation must choose its own strong password.
-EDGE_EVER_AUTH_PASSWORD=
+PONDER_AUTH_PASSWORD=

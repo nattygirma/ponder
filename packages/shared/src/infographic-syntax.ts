@@ -99,7 +99,7 @@ export const parseGeneratedOfficialData = (output: string, template: string): Re
   const source = isRecord(parsed.data) ? parsed.data : parsed;
   const family = officialTemplateFamily(template);
   const field = { chart: "values", comparison: "compares", hierarchy: "root", list: "lists", quadrant: "compares", relation: "nodes", sequence: "sequences" }[family];
-  const data: Record<string, unknown> = { title: stringValue(source.title) || "信息图" };
+  const data: Record<string, unknown> = { title: stringValue(source.title) || "Infographic" };
   if (typeof source.desc === "string" || typeof source.description === "string") data.desc = stringValue(source.desc ?? source.description);
   if (family === "hierarchy") {
     const root = normalizedDatum(source.root);

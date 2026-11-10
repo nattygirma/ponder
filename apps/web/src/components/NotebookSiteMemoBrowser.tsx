@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getMemoDisplayTitle, type NotebookSiteMemo } from "@edgeever/shared";
+import { getMemoDisplayTitle, type NotebookSiteMemo } from "@ponder/shared";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { api, getConfiguredDesktopApiBaseUrl } from "@/lib/api";

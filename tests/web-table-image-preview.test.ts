@@ -18,7 +18,7 @@ describe("table image attachment actions", () => {
   });
 
   test("names the image actions in every locale", () => {
-    for (const locale of ["zh-CN", "en-US", "ja"]) {
+    for (const locale of ["en-US", "ja"]) {
       const source = readSource(`../packages/shared/src/i18n/${locale}.ts`);
       expect(source).toContain("openAttachment:");
       expect(source).toContain("copyImage:");

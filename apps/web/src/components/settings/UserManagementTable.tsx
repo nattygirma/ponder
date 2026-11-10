@@ -1,6 +1,6 @@
 import { KeyRound } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { InstanceUser, ResourceStorageSummary } from "@edgeever/shared";
+import type { InstanceUser, ResourceStorageSummary } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { ButtonTooltip } from "@/components/ui/button-tooltip";
 import { Switch } from "@/components/ui/switch";

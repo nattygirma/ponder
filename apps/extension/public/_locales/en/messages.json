@@ -1,12 +1,12 @@
 {
   "extensionName": {
-    "message": "EdgeEver Web Clipper"
+    "message": "Ponder Web Clipper"
   },
   "extensionDescription": {
-    "message": "Save webpages, selections, images, and Hacker News posts to your self-hosted EdgeEver instance."
+    "message": "Save webpages, selections, images, and Hacker News posts to your self-hosted Ponder instance."
   },
   "actionTitle": {
-    "message": "Save to EdgeEver"
+    "message": "Save to Ponder"
   },
   "webClipper": {
     "message": "Web Clipper"
@@ -26,14 +26,14 @@
   "completePluginConfiguration": {
     "message": "Please complete the extension setup"
   },
-  "savedToEdgeEver": {
-    "message": "Saved to EdgeEver."
+  "savedToPonder": {
+    "message": "Saved to Ponder."
   },
   "saveFailed": {
     "message": "Failed to save."
   },
   "optionsTitle": {
-    "message": "EdgeEver Web Clipper settings"
+    "message": "Ponder Web Clipper settings"
   },
   "diagnosticsTitle": {
     "message": "About & diagnostics"
@@ -90,10 +90,10 @@
     "message": "Unknown"
   },
   "instanceAddress": {
-    "message": "EdgeEver instance URL"
+    "message": "Ponder instance URL"
   },
   "tokenPlaceholder": {
-    "message": "Create one in EdgeEver settings"
+    "message": "Create one in Ponder settings"
   },
   "defaultNotebook": {
     "message": "Default notebook"
@@ -108,7 +108,7 @@
     "message": "Save settings"
   },
   "projectAndSource": {
-    "message": "GitHub project & source"
+    "message": "AppKeep"
   },
   "reportIssue": {
     "message": "Report an issue"
@@ -140,13 +140,13 @@
     "message": "Failed to save settings."
   },
   "missingSettingsDetails": {
-    "message": "Enter the EdgeEver instance URL and API token in the extension settings first."
+    "message": "Enter the Ponder instance URL and API token in the extension settings first."
   },
   "instancePermissionRequired": {
-    "message": "Allow the extension to access your EdgeEver instance."
+    "message": "Allow the extension to access your Ponder instance."
   },
   "requestFailed": {
-    "message": "EdgeEver request failed ($STATUS$).",
+    "message": "Ponder request failed ($STATUS$).",
     "placeholders": {
       "status": {
         "content": "$1"
@@ -166,7 +166,7 @@
     "message": "Keyword"
   },
   "noAvailableNotebooks": {
-    "message": "No notebooks are available in EdgeEver."
+    "message": "No notebooks are available in Ponder."
   },
   "currentPageNotFound": {
     "message": "Could not find the current page."
@@ -189,10 +189,10 @@
     "message": "No further details were provided"
   },
   "instanceNetworkFailed": {
-    "message": "Could not connect to the EdgeEver instance. Check the instance URL, network connection, and CORS settings."
+    "message": "Could not connect to the Ponder instance. Check the instance URL, network connection, and CORS settings."
   },
   "saveFailedWithReason": {
-    "message": "Could not save to EdgeEver: $DETAIL$",
+    "message": "Could not save to Ponder: $DETAIL$",
     "placeholders": {
       "detail": {
         "content": "$1"
@@ -202,11 +202,11 @@
   "emptyPageContent": {
     "message": "(No readable content was found on this page)"
   },
-  "saveSelectionToEdgeEver": {
-    "message": "Save selection to EdgeEver"
+  "saveSelectionToPonder": {
+    "message": "Save selection to Ponder"
   },
   "selectionSaveHint": {
-    "message": "Select text on a page, right-click, and choose “Save selection to EdgeEver”. It is saved as a new note in the default notebook selected below."
+    "message": "Select text on a page, right-click, and choose “Save selection to Ponder”. It is saved as a new note in the default notebook selected below."
   },
   "savingSelection": {
     "message": "Saving the selection…"
@@ -220,11 +220,11 @@
   "selectionNoteFallbackTitle": {
     "message": "Selection"
   },
-  "saveImageToEdgeEver": {
-    "message": "Save image to EdgeEver"
+  "saveImageToPonder": {
+    "message": "Save image to Ponder"
   },
   "imageSaveHint": {
-    "message": "Right-click an image on a webpage and choose “Save image to EdgeEver”. It is saved as a new note in the default notebook selected below."
+    "message": "Right-click an image on a webpage and choose “Save image to Ponder”. It is saved as a new note in the default notebook selected below."
   },
   "savingImage": {
     "message": "Saving the image…"
@@ -242,7 +242,7 @@
     "message": "This image format cannot be saved into a note yet. PNG, JPEG, GIF, WebP, and AVIF are supported."
   },
   "imagePermissionIntro": {
-    "message": "This page cannot read the image file. After you allow the site that hosts it, EdgeEver saves it as a new note in the clipper's default notebook. Only the image you chose is read."
+    "message": "This page cannot read the image file. After you allow the site that hosts it, Ponder saves it as a new note in the clipper's default notebook. Only the image you chose is read."
   },
   "imagePermissionHost": {
     "message": "Site: $HOST$",
@@ -265,7 +265,7 @@
     "message": "Site access was not allowed, so the image was not saved."
   },
   "imageResourceScopeRequired": {
-    "message": "This API token cannot write attachments. Create a full-access token in EdgeEver settings."
+    "message": "This API token cannot write attachments. Create a full-access token in Ponder settings."
   },
   "imageNoteFallbackTitle": {
     "message": "Image"
@@ -274,16 +274,16 @@
     "message": "Image"
   },
   "imageSaveWindowTitle": {
-    "message": "Save image to EdgeEver"
+    "message": "Save image to Ponder"
   },
   "imageSaveExpired": {
     "message": "This save has expired. Right-click the image and try again."
   },
-  "saveTweetToEdgeEver": {
-    "message": "Save post to EdgeEver"
+  "saveTweetToPonder": {
+    "message": "Save post to Ponder"
   },
   "tweetSaveHint": {
-    "message": "On X, right-click a post and choose “Save post to EdgeEver”. The post text, including text behind Show more, and the photos go into one new note in the same default notebook."
+    "message": "On X, right-click a post and choose “Save post to Ponder”. The post text, including text behind Show more, and the photos go into one new note in the same default notebook."
   },
   "savingTweet": {
     "message": "Saving this post…"
@@ -316,16 +316,16 @@
     "message": "Post"
   },
   "tweetSaveWindowTitle": {
-    "message": "Save post to EdgeEver"
+    "message": "Save post to Ponder"
   },
   "tweetTimeLabel": {
     "message": "Time"
   },
-  "saveGithubRepoToEdgeEver": {
-    "message": "Save repository info to EdgeEver"
+  "saveGithubRepoToPonder": {
+    "message": "Save repository info to Ponder"
   },
   "githubRepoSaveHint": {
-    "message": "On a GitHub repository page or code tree, right-click the page background, the description, or the README text and choose “Save repository info to EdgeEver”. The address and description are saved as a new note in the default notebook selected above. Issue, discussion, and single-file pages are left unsaved."
+    "message": "On a GitHub repository page or code tree, right-click the page background, the description, or the README text and choose “Save repository info to Ponder”. The address and description are saved as a new note in the default notebook selected above. Issue, discussion, and single-file pages are left unsaved."
   },
   "savingGithubRepo": {
     "message": "Saving this repository…"
@@ -351,11 +351,11 @@
   "githubRepoTopicsLabel": {
     "message": "Topics"
   },
-  "saveXhsToEdgeEver": {
-    "message": "Save note to EdgeEver"
+  "saveXhsToPonder": {
+    "message": "Save note to Ponder"
   },
   "xhsSaveHint": {
-    "message": "On Xiaohongshu, right-click the note text and choose “Save note to EdgeEver”. The title, text, and photos go into one new note. Comments are left out. Right-clicking a photo still saves that image only."
+    "message": "On Xiaohongshu, right-click the note text and choose “Save note to Ponder”. The title, text, and photos go into one new note. Comments are left out. Right-clicking a photo still saves that image only."
   },
   "savingXhs": {
     "message": "Saving this note…"
@@ -391,13 +391,13 @@
     "message": "Xiaohongshu note"
   },
   "xhsSaveWindowTitle": {
-    "message": "Save note to EdgeEver"
+    "message": "Save note to Ponder"
   },
   "xhsLocationLabel": {
     "message": "Location"
   },
-  "saveZhihuToEdgeEver": {
-    "message": "Save answer or article to EdgeEver"
+  "saveZhihuToPonder": {
+    "message": "Save answer or article to Ponder"
   },
   "zhihuQuestionLabel": {
     "message": "Question"
@@ -415,7 +415,7 @@
     "message": "Body"
   },
   "zhihuSaveHint": {
-    "message": "On Zhihu, right-click the answer or article text and choose “Save answer or article to EdgeEver”. The title, author, text, and photos go into one new note. Comments are left out. Right-clicking a photo still saves that image only."
+    "message": "On Zhihu, right-click the answer or article text and choose “Save answer or article to Ponder”. The title, author, text, and photos go into one new note. Comments are left out. Right-clicking a photo still saves that image only."
   },
   "savingZhihu": {
     "message": "Saving this Zhihu answer or article…"
@@ -451,10 +451,10 @@
     "message": "Zhihu answer or article"
   },
   "zhihuSaveWindowTitle": {
-    "message": "Save answer or article to EdgeEver"
+    "message": "Save answer or article to Ponder"
   },
-  "saveRedditToEdgeEver": {
-    "message": "Save Reddit post to EdgeEver"
+  "saveRedditToPonder": {
+    "message": "Save Reddit post to Ponder"
   },
   "savingReddit": {
     "message": "Saving this Reddit post…"
@@ -477,8 +477,8 @@
   "redditLinkLabel": {
     "message": "Linked page"
   },
-  "saveVideoNoteToEdgeEver": {
-    "message": "Save video note to EdgeEver"
+  "saveVideoNoteToPonder": {
+    "message": "Save video note to Ponder"
   },
   "savingVideoNote": {
     "message": "Saving this video note…"
@@ -552,17 +552,17 @@
   "videoNoteFallbackTitle": {
     "message": "Video note"
   },
-  "saveHackerNewsToEdgeEver": {
-    "message": "Save Hacker News post to EdgeEver"
+  "saveHackerNewsToPonder": {
+    "message": "Save Hacker News post to Ponder"
   },
-  "saveV2exToEdgeEver": {
-    "message": "Save V2EX topic to EdgeEver"
+  "saveV2exToPonder": {
+    "message": "Save V2EX topic to Ponder"
   },
-  "saveXiaoyuzhouToEdgeEver": {
-    "message": "Save Xiaoyuzhou episode to EdgeEver"
+  "saveXiaoyuzhouToPonder": {
+    "message": "Save Xiaoyuzhou episode to Ponder"
   },
   "savingPlatformClip": {
-    "message": "Saving this page to EdgeEver…"
+    "message": "Saving this page to Ponder…"
   },
   "platformNotDetail": {
     "message": "Open a supported post, topic, or episode detail page, then try again."
@@ -580,7 +580,7 @@
     "message": "Text saved. Some images still use external links."
   },
   "platformSavedWithImages": {
-    "message": "Saved to EdgeEver with all images archived."
+    "message": "Saved to Ponder with all images archived."
   },
   "platformNoShowNotes": {
     "message": "This episode has no Show Notes."
@@ -606,20 +606,20 @@
   "platformPodcastLabel": {
     "message": "Podcast"
   },
-  "saveFacebookToEdgeEver": {
-    "message": "Save Facebook post to EdgeEver"
+  "saveFacebookToPonder": {
+    "message": "Save Facebook post to Ponder"
   },
-  "saveInstagramToEdgeEver": {
-    "message": "Save Instagram post to EdgeEver"
+  "saveInstagramToPonder": {
+    "message": "Save Instagram post to Ponder"
   },
-  "saveLinkedinToEdgeEver": {
-    "message": "Save LinkedIn post to EdgeEver"
+  "saveLinkedinToPonder": {
+    "message": "Save LinkedIn post to Ponder"
   },
-  "saveThreadsToEdgeEver": {
-    "message": "Save Threads post to EdgeEver"
+  "saveThreadsToPonder": {
+    "message": "Save Threads post to Ponder"
   },
-  "saveBlueskyToEdgeEver": {
-    "message": "Save Bluesky post to EdgeEver"
+  "saveBlueskyToPonder": {
+    "message": "Save Bluesky post to Ponder"
   },
   "socialSelectPost": {
     "message": "Open the post detail page, or right-click the target post again to save it."
@@ -645,8 +645,8 @@
   "platformXiaoyuzhou": {
     "message": "Xiaoyuzhou"
   },
-  "saveSubstackNoteToEdgeEver": {
-    "message": "Save Substack Note to EdgeEver"
+  "saveSubstackNoteToPonder": {
+    "message": "Save Substack Note to Ponder"
   },
   "adaptedPlatformsTitle": {
     "message": "Deeply adapted platforms"
@@ -708,11 +708,11 @@
   "clipNotifications": {
     "message": "Clipping notifications"
   },
-  "saveBossToEdgeEver": {
-    "message": "Save BOSS Zhipin job to EdgeEver"
+  "saveBossToPonder": {
+    "message": "Save BOSS Zhipin job to Ponder"
   },
-  "saveXueqiuToEdgeEver": {
-    "message": "Save Xueqiu post to EdgeEver"
+  "saveXueqiuToPonder": {
+    "message": "Save Xueqiu post to Ponder"
   },
   "platformBoss": {
     "message": "BOSS Zhipin"
@@ -729,32 +729,32 @@
   "platformWechat": {
     "message": "WeChat"
   },
-  "saveWechatToEdgeEver": {
-    "message": "Save WeChat to EdgeEver"
+  "saveWechatToPonder": {
+    "message": "Save WeChat to Ponder"
   },
   "platformJike": {
     "message": "Jike"
   },
-  "saveJikeToEdgeEver": {
-    "message": "Save Jike to EdgeEver"
+  "saveJikeToPonder": {
+    "message": "Save Jike to Ponder"
   },
   "platformSspai": {
     "message": "SSPAI"
   },
-  "saveSspaiToEdgeEver": {
-    "message": "Save SSPAI to EdgeEver"
+  "saveSspaiToPonder": {
+    "message": "Save SSPAI to Ponder"
   },
   "platformJuejin": {
     "message": "Juejin"
   },
-  "saveJuejinToEdgeEver": {
-    "message": "Save Juejin to EdgeEver"
+  "saveJuejinToPonder": {
+    "message": "Save Juejin to Ponder"
   },
   "platformDouban": {
     "message": "Douban"
   },
-  "saveDoubanToEdgeEver": {
-    "message": "Save Douban to EdgeEver"
+  "saveDoubanToPonder": {
+    "message": "Save Douban to Ponder"
   },
   "platformOfficialAccountLabel": {
     "message": "Official account"
@@ -763,7 +763,7 @@
     "message": "Source list"
   },
   "doubanSelectComment": {
-    "message": "Right-click the short comment and choose “Save Douban to EdgeEver”, or capture selected text."
+    "message": "Right-click the short comment and choose “Save Douban to Ponder”, or capture selected text."
   },
   "pageCaptureRestricted": {
     "message": "Content restricted"
@@ -813,7 +813,7 @@
     "message": "Reselect"
   },
   "regionSave": {
-    "message": "Save to EdgeEver"
+    "message": "Save to Ponder"
   },
   "regionCancel": {
     "message": "Cancel"

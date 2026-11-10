@@ -3,9 +3,9 @@ import {
   parseNoteImagePreferences,
   updateNoteImagePreference,
   type NoteImagePreferences,
-} from "@edgeever/shared/note-image-preferences";
+} from "@ponder/shared/note-image-preferences";
 
-export const MOBILE_NOTE_IMAGE_PREFERENCES_KEY = "edgeever.mobile.noteImagePreferences";
+export const MOBILE_NOTE_IMAGE_PREFERENCES_KEY = "ponder.mobile.noteImagePreferences";
 
 type PreferenceStorage = {
   getItem: (key: string) => Promise<string | null>;

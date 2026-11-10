@@ -3,7 +3,6 @@ import { enUS } from "./i18n/en-US.ts";
 import { ja } from "./i18n/ja.ts";
 import { pl } from "./i18n/pl.ts";
 import { ru } from "./i18n/ru.ts";
-import { zhCN } from "./i18n/zh-CN.ts";
 import { CompanionTurnInputSchema, companionTurnLocale, conversationLanguage, translationTargetInstruction } from "./companion.ts";
 
 const locale = (message, recent, fallback) => conversationLanguage(message, recent, fallback);
@@ -54,14 +53,14 @@ describe("companion conversation language", () => {
 
   test("maps any UI locale to a companion turn locale", () => {
     expect(companionTurnLocale("ru-RU")).toBe("ru");
-    expect(companionTurnLocale("zh-TW")).toBe("zh-CN");
+    expect(companionTurnLocale("zh-TW")).toBe("en-US");
     expect(companionTurnLocale("de-DE")).toBe("en-US");
     expect(companionTurnLocale(null)).toBe("en-US");
     expect(CompanionTurnInputSchema.shape.locale.parse("ru")).toBe("ru");
   });
 
   test("generated translation actions in every interface language are not conversation evidence", () => {
-    for (const catalog of [zhCN, enUS, ja, pl, ru]) {
+    for (const catalog of [enUS, ja, pl, ru]) {
       const { selection, skillPrompts } = catalog.aiAssistant.sidebar;
       const prompts = [
         skillPrompts.translate,

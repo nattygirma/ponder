@@ -102,10 +102,10 @@ try {
     await recoveredBridge.close();
   }
 
-  const script = fileURLToPath(new URL("../../scripts/edgeever-mcp-stdio.mjs", import.meta.url));
+  const script = fileURLToPath(new URL("../../scripts/ponder-mcp-stdio.mjs", import.meta.url));
   child = spawn(process.execPath, [script], {
     stdio: ["pipe", "pipe", "pipe"],
-    env: { ...process.env, EDGEEVER_URL: bridge.url, EDGEEVER_TOKEN: bridge.secret },
+    env: { ...process.env, PONDER_URL: bridge.url, PONDER_TOKEN: bridge.secret },
   });
   let stderr = "";
   child.stderr.on("data", (chunk) => { stderr += chunk.toString("utf8"); });
@@ -123,7 +123,7 @@ try {
   const response = await responsePromise;
   assert.deepEqual(response.result, { tools: [] });
   assert.equal(authorizations.at(-1), `Bearer ${sessionToken}`);
-  writeFileSync(process.env.EDGE_EVER_TEST_RESULT_PATH, JSON.stringify({ security: true, invalidSession: true, stdio: true, retryRecovery: true, noWriteReplay: true }));
+  writeFileSync(process.env.PONDER_TEST_RESULT_PATH, JSON.stringify({ security: true, invalidSession: true, stdio: true, retryRecovery: true, noWriteReplay: true }));
 } catch (error) {
   console.error(error);
   process.exitCode = 1;

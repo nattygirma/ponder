@@ -1,10 +1,10 @@
-import type { MemoDetail } from "@edgeever/shared";
+import type { MemoDetail } from "@ponder/shared";
 
-export const SYNC_QUEUE_CHANGED_EVENT = "edgeever:sync-queue-changed";
-export const SYNC_QUEUE_DEFERRED_EVENT = "edgeever:sync-queue-deferred";
-export const MEMO_ID_REMAPPED_EVENT = "edgeever:memo-id-remapped";
-export const NOTEBOOK_ID_REMAPPED_EVENT = "edgeever:notebook-id-remapped";
-export const MEMO_SYNC_ACKNOWLEDGED_EVENT = "edgeever:memo-sync-acknowledged";
+export const SYNC_QUEUE_CHANGED_EVENT = "ponder:sync-queue-changed";
+export const SYNC_QUEUE_DEFERRED_EVENT = "ponder:sync-queue-deferred";
+export const MEMO_ID_REMAPPED_EVENT = "ponder:memo-id-remapped";
+export const NOTEBOOK_ID_REMAPPED_EVENT = "ponder:notebook-id-remapped";
+export const MEMO_SYNC_ACKNOWLEDGED_EVENT = "ponder:memo-sync-acknowledged";
 
 export const notifySyncQueueChanged = () => {
   window.dispatchEvent(new CustomEvent(SYNC_QUEUE_CHANGED_EVENT));

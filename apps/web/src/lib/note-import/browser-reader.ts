@@ -1,4 +1,4 @@
-import type { ImportDocument, ImportFile, ImportFormat, ImportIndex, ImportNote, ImportReader, ImportResource, ImportSummary } from "@edgeever/shared/note-import/types";
+import type { ImportDocument, ImportFile, ImportFormat, ImportIndex, ImportNote, ImportReader, ImportResource, ImportSummary } from "@ponder/shared/note-import/types";
 
 export class BrowserImportReader implements ImportReader {
   private worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });

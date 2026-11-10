@@ -1,5 +1,5 @@
-import { FONT_CATALOG, isRemoteNoteImageFont } from "@edgeever/shared/font-catalog-data";
-import type { BodyFontId } from "@edgeever/shared/font-loader";
+import { FONT_CATALOG, isRemoteNoteImageFont } from "@ponder/shared/font-catalog-data";
+import type { BodyFontId } from "@ponder/shared/font-loader";
 import { createFontLoadState } from "./font-load-state";
 
 /** Editor and interface requests have separate generations, feedback and retry handlers. */
@@ -21,14 +21,14 @@ const createFontWatcher = (ui = false) => {
       let last = "";
       const refresh = () => {
         if (!active) return;
-        const text = ui ? document.body.textContent ?? "" : Array.from(document.querySelectorAll<HTMLElement>(".edgeever-editor .ProseMirror, .edgeever-mobile-tiptap-content, .edgeever-editor textarea, .edgeever-editor .cm-content"))
+        const text = ui ? document.body.textContent ?? "" : Array.from(document.querySelectorAll<HTMLElement>(".ponder-editor .ProseMirror, .ponder-mobile-tiptap-content, .ponder-editor textarea, .ponder-editor .cm-content"))
           .map(node => node instanceof HTMLTextAreaElement ? node.value : node.textContent ?? "").join(" ");
         const characters = Array.from(new Set(Array.from(text))).sort().join("");
         if (characters === last && state.getSnapshot() !== "idle") return;
         last = characters;
         const name = isRemoteNoteImageFont(font) ? `${FONT_CATALOG[font].zh} ${FONT_CATALOG[font].en}` : "";
         void state.run(async () => {
-          const { loadBodyFont } = await import("@edgeever/shared/font-loader");
+          const { loadBodyFont } = await import("@ponder/shared/font-loader");
           if (!active) return;
           return loadBodyFont(font, `${name} ${characters}`);
         }).catch(() => { /* Keep the local fallback; retry on reconnect or explicit request. */ });

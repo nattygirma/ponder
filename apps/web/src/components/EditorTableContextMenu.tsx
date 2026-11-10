@@ -106,7 +106,7 @@ export const EditorTableContextMenu = ({ editor, readOnly, children }: {
       const { dom, text } = editor.view.serializeForClipboard(editor.state.selection.content());
       try {
         // Legacy clipboard helpers change the DOM selection. Let the modal scope exit first.
-        const legacy = !window.edgeeverDesktop?.isAvailable && !(navigator.clipboard && "ClipboardItem" in window);
+        const legacy = !window.ponderDesktop?.isAvailable && !(navigator.clipboard && "ClipboardItem" in window);
         if (legacy) { await session?.closed; if (!unchanged()) return; }
         await copyHtmlToClipboard(dom.innerHTML, text);
         if (legacy && unchanged()) restoreEditorFocus(session);
@@ -134,7 +134,7 @@ export const EditorTableContextMenu = ({ editor, readOnly, children }: {
     pending.current = true;
     setBusy(true);
     try {
-      const desktop = window.edgeeverDesktop;
+      const desktop = window.ponderDesktop;
       // Read in the user gesture. The desktop bridge returns a snapshot instead
       // of dispatching a delayed native paste into whichever input has focus.
       const clipboard = desktop?.isAvailable && desktop.readClipboard

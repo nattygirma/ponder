@@ -1,4 +1,4 @@
-import type { ObjectStorageSettings } from "@edgeever/shared";
+import type { ObjectStorageSettings } from "@ponder/shared";
 import { AppError } from "./app-error";
 import { decryptSecret, encryptSecret } from "./secret-encryption";
 import type { BlobStoreAdapter, DatabaseAdapter } from "./storage-contract";
@@ -13,30 +13,30 @@ const resolveCredentialEncryptionKey = (value: string | undefined) => {
 };
 
 const deriveObjectStorageCredentialKey = (value: string | undefined) => value
-  ? `edgeever:object-storage:v1:${value}`
+  ? `ponder:object-storage:v1:${value}`
   : undefined;
 
 export type ObjectStorageCredentialEnvironment = {
-  EDGE_EVER_AUTH_PASSWORD?: string;
-  EDGE_EVER_AUTH_PASSWORD_HASH?: string;
-  EDGE_EVER_AUTH_PASSWORD_FALLBACK?: string;
+  PONDER_AUTH_PASSWORD?: string;
+  PONDER_AUTH_PASSWORD_HASH?: string;
+  PONDER_AUTH_PASSWORD_FALLBACK?: string;
   /** Legacy decryption fallback for credentials saved before auth-derived keys. */
-  EDGE_EVER_STORAGE_ENCRYPTION_KEY?: string;
+  PONDER_STORAGE_ENCRYPTION_KEY?: string;
 };
 
 const resolveAuthDerivedObjectStorageEncryptionKeys = (
   environment: ObjectStorageCredentialEnvironment,
 ) => [
-  deriveObjectStorageCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_AUTH_PASSWORD)),
-  deriveObjectStorageCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_AUTH_PASSWORD_HASH)),
+  deriveObjectStorageCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_AUTH_PASSWORD)),
+  deriveObjectStorageCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_AUTH_PASSWORD_HASH)),
 ].filter(Boolean) as string[];
 
 export const resolveObjectStorageEncryptionKeys = (
   environment: ObjectStorageCredentialEnvironment,
 ) => [
   ...resolveAuthDerivedObjectStorageEncryptionKeys(environment),
-  deriveObjectStorageCredentialKey(resolveCredentialEncryptionKey(environment.EDGE_EVER_AUTH_PASSWORD_FALLBACK)),
-  resolveCredentialEncryptionKey(environment.EDGE_EVER_STORAGE_ENCRYPTION_KEY),
+  deriveObjectStorageCredentialKey(resolveCredentialEncryptionKey(environment.PONDER_AUTH_PASSWORD_FALLBACK)),
+  resolveCredentialEncryptionKey(environment.PONDER_STORAGE_ENCRYPTION_KEY),
 ].filter(Boolean) as string[];
 
 export const resolvePrimaryObjectStorageEncryptionKey = (
@@ -59,11 +59,11 @@ export type ObjectStorageConfigRow = {
 
 type ObjectStorageEnvironment = {
   storage: { db: DatabaseAdapter; resources: BlobStoreAdapter };
-  EDGE_EVER_AUTH_PASSWORD?: string;
-  EDGE_EVER_AUTH_PASSWORD_HASH?: string;
-  EDGE_EVER_AUTH_PASSWORD_FALLBACK?: string;
-  EDGE_EVER_STORAGE_ENCRYPTION_KEY?: string;
-  EDGE_EVER_R2_BUCKET_NAME?: string;
+  PONDER_AUTH_PASSWORD?: string;
+  PONDER_AUTH_PASSWORD_HASH?: string;
+  PONDER_AUTH_PASSWORD_FALLBACK?: string;
+  PONDER_STORAGE_ENCRYPTION_KEY?: string;
+  PONDER_R2_BUCKET_NAME?: string;
 };
 
 const selectConfigSql = `SELECT id, provider, display_name, endpoint, region, bucket, access_key_id,
@@ -163,7 +163,7 @@ export const resolveObjectStorage = async (env: ObjectStorageEnvironment, config
   if (!row || row.provider === "builtin") {
     return {
       configId: BUILTIN_STORAGE_CONFIG_ID,
-      bucketName: env.EDGE_EVER_R2_BUCKET_NAME?.trim() || "edgeever-resources",
+      bucketName: env.PONDER_R2_BUCKET_NAME?.trim() || "ponder-resources",
       store: env.storage.resources,
     };
   }

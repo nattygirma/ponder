@@ -1,4 +1,5 @@
 import { DEFAULT_MEMO_TITLE } from "./content";
+import { isDefaultMemoTitle } from "./memo-title";
 import type { MemoDetail, Notebook } from "./types";
 
 export type SyncEntityType = "memo" | "notebook";
@@ -107,7 +108,7 @@ export type SameDeviceMemoSyncRecovery = "ack" | "rebase" | "conflict";
 
 const normalizeMemoSyncTitle = (value: unknown) => {
   const title = typeof value === "string" ? value.trim() : "";
-  return title || DEFAULT_MEMO_TITLE;
+  return !title || isDefaultMemoTitle(title) ? DEFAULT_MEMO_TITLE : title;
 };
 
 const normalizeMemoSyncTags = (value: unknown) =>

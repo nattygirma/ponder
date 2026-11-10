@@ -7,16 +7,16 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash, randomBytes } from "node:crypto";
-import { fetchEdgeEverApp } from "../../../../api/src/index.ts";
+import { fetchPonderApp } from "../../../../api/src/index.ts";
 import { createSelfHostedStorageAdapter } from "../../../../api/src/self-hosted-storage-adapter.ts";
 import { RESOURCE_UPLOAD_PART_BYTES } from "../../../../api/src/resource-upload-service.ts";
-import { createEdgeEverClient } from "../../../../../packages/client/src/index.ts";
+import { createPonderClient } from "../../../../../packages/client/src/index.ts";
 
 const require = createRequire(new URL("../../../package.json", import.meta.url));
 const electron = require("electron");
-const trace = (...values) => { if (process.env.EDGE_EVER_BACKUP_TRACE === "1") console.error(...values); };
+const trace = (...values) => { if (process.env.PONDER_BACKUP_TRACE === "1") console.error(...values); };
 for (const proxy of [true, false]) test(`Electron backups export and restore through ${proxy ? "the session proxy" : "a direct connection"}`, async () => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-electron-backup-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-electron-backup-"));
   const cleanup = [];
   const paths = [];
   const auth = [];
@@ -28,7 +28,7 @@ for (const proxy of [true, false]) test(`Electron backups export and restore thr
       const folder = join(directory, name); await mkdir(folder);
       const database = new Database(join(folder, "database.sqlite"));
       for (const file of (await readdir("migrations")).filter(name => name.endsWith(".sql")).sort()) database.exec(await readFile(join("migrations", file), "utf8"));
-      const environment = { storage: createSelfHostedStorageAdapter(database, join(folder, "resources")), EDGE_EVER_ALLOW_UNAUTHENTICATED: "true", EDGE_EVER_RUNTIME: "self-hosted-bun" };
+      const environment = { storage: createSelfHostedStorageAdapter(database, join(folder, "resources")), PONDER_ALLOW_UNAUTHENTICATED: "true", PONDER_RUNTIME: "self-hosted-bun" };
       const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch(request) {
         const path = new URL(request.url).pathname;
         if (path === "/__fixture/status") return Response.json({ hanging });
@@ -37,7 +37,7 @@ for (const proxy of [true, false]) test(`Electron backups export and restore thr
         if (path.startsWith("/failure/")) return Response.json({ error: { code: "fixture_unavailable", message: "Fixture unavailable" } }, { status: 503 });
         if (request.headers.get("authorization") === "Bearer fixture-bearer") { paths.push(`${name}:${request.method} ${path}${new URL(request.url).search}`); auth.push({ authorization: request.headers.get("authorization"), cookie: request.headers.get("cookie") }); }
         trace(name, request.method, path);
-        return fetchEdgeEverApp(request, environment, { waitUntil() {}, passThroughOnException() {} }).then(response => {
+        return fetchPonderApp(request, environment, { waitUntil() {}, passThroughOnException() {} }).then(response => {
           if (name === "source" && request.method === "GET" && /^\/api\/v1\/resources\/[^/]+\/blob$/.test(path)) attachmentCacheHeaders.push({ path, cacheControl: response.headers.get("cache-control") });
           trace(name, request.method, path, response.status); return response;
         });
@@ -48,12 +48,12 @@ for (const proxy of [true, false]) test(`Electron backups export and restore thr
         // Release them and require a complete close before deleting fixture files.
         Bun.gc(true); database.close(true);
       });
-      return { server, database, folder, url: `http://127.0.0.1:${server.port}`, client: createEdgeEverClient({ baseUrl: `http://127.0.0.1:${server.port}` }) };
+      return { server, database, folder, url: `http://127.0.0.1:${server.port}`, client: createPonderClient({ baseUrl: `http://127.0.0.1:${server.port}` }) };
     };
     const source = await instance("source"); const target = await instance("target");
     const { notebook } = await source.client.createNotebook({ name: "Network backup" });
     const { memo } = await source.client.createMemo({ notebookId: notebook.id, title: "Proxy round trip", contentMarkdown: "Streaming backup and restore" });
-    const bytes = randomBytes(Number(process.env.EDGE_EVER_BACKUP_ATTACHMENT_MIB ?? 32) * 1024 * 1024 + 11);
+    const bytes = randomBytes(Number(process.env.PONDER_BACKUP_ATTACHMENT_MIB ?? 32) * 1024 * 1024 + 11);
     const { resource } = await source.client.uploadMemoResource(memo.id, new File([new Uint8Array([1])], "stream.bin", { type: "application/octet-stream" }));
     const row = source.database.query("SELECT object_key FROM resources WHERE id=?").get(resource.id);
     await writeFile(join(source.folder, "resources", row.object_key), bytes);
@@ -88,7 +88,7 @@ for (const proxy of [true, false]) test(`Electron backups export and restore thr
       target: proxy ? target.url.replace("127.0.0.1", "backup-fixture.invalid") : target.url,
       control: `${source.url}/__fixture/status`, proxy: proxy ? `http=127.0.0.1:${forwarder.port}` : null,
       mutableResourceUrl: mutableResource.url,
-      baseline: process.env.EDGE_EVER_BACKUP_BASELINE === "1" };
+      baseline: process.env.PONDER_BACKUP_BASELINE === "1" };
     const settingsPath = join(directory, "settings.json"); await writeFile(settingsPath, JSON.stringify(settings));
     const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE;
     const child = spawn(electron, [fileURLToPath(new URL("./electron-network-runner.mjs", import.meta.url)), settingsPath], { env, stdio: ["ignore", "pipe", "pipe"] });
@@ -106,7 +106,7 @@ for (const proxy of [true, false]) test(`Electron backups export and restore thr
     const code = await Promise.race([exited, deadline]).finally(() => clearTimeout(timer));
     expect(code, stderr).toBe(0);
     const report = JSON.parse(stdout.trim().split("\n").findLast(line => line.startsWith("{")));
-    if (process.env.EDGE_EVER_BACKUP_REPORT) await writeFile(`${process.env.EDGE_EVER_BACKUP_REPORT}-${proxy ? "proxy" : "direct"}.json`, JSON.stringify({ ...report, archive: undefined, paths, proxyRequests }, null, 2));
+    if (process.env.PONDER_BACKUP_REPORT) await writeFile(`${process.env.PONDER_BACKUP_REPORT}-${proxy ? "proxy" : "direct"}.json`, JSON.stringify({ ...report, archive: undefined, paths, proxyRequests }, null, 2));
     expect(report.archiveBytes).toBeGreaterThan(bytes.length);
     expect(report.workersExited).toBe(settings.baseline ? 0 : 6);
     expect(report.repeatedExport).toBe(true);
@@ -124,7 +124,7 @@ for (const proxy of [true, false]) test(`Electron backups export and restore thr
     expect(mutableCacheHeaders).toHaveLength(2);
     expect(mutableCacheHeaders.every(({ cacheControl }) => cacheControl?.includes("private") && cacheControl.includes("max-age=3600"))).toBe(true);
     // Two exports, one unchanged-source check and one restore. Only the large
-    // restore's part count grows with EDGE_EVER_BACKUP_ATTACHMENT_MIB.
+    // restore's part count grows with PONDER_BACKUP_ATTACHMENT_MIB.
     expect(paths, JSON.stringify(paths)).toHaveLength(61 + Math.ceil(bytes.length / RESOURCE_UPLOAD_PART_BYTES));
     expect(proxyRequests > 0).toBe(proxy);
   } finally { for (const close of cleanup.reverse()) await close(); await rm(directory, { recursive: true, force: true }); }

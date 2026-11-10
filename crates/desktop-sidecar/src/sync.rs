@@ -9,7 +9,7 @@ pub(crate) fn sync_status(database: &Connection) -> Result<Value, String> {
     let count = |status: &str| -> Result<i64, String> {
         database
             .query_row(
-                "SELECT COUNT(*) FROM _edgeever_sidecar_outbox WHERE status = ?1",
+                "SELECT COUNT(*) FROM _ponder_sidecar_outbox WHERE status = ?1",
                 [status],
                 |row| row.get(0),
             )
@@ -29,49 +29,49 @@ fn reset_sync_mirror(database: &Connection) -> Result<(), String> {
         .unchecked_transaction()
         .map_err(|e| e.to_string())?;
     tx.execute_batch(
-        "CREATE TEMP TABLE IF NOT EXISTS _edgeever_bootstrap_preserved_memos (id TEXT PRIMARY KEY);
-         CREATE TEMP TABLE IF NOT EXISTS _edgeever_bootstrap_preserved_notebooks (id TEXT PRIMARY KEY);
-         DELETE FROM _edgeever_bootstrap_preserved_memos;
-         DELETE FROM _edgeever_bootstrap_preserved_notebooks;
-         INSERT OR IGNORE INTO _edgeever_bootstrap_preserved_memos (id)
+        "CREATE TEMP TABLE IF NOT EXISTS _ponder_bootstrap_preserved_memos (id TEXT PRIMARY KEY);
+         CREATE TEMP TABLE IF NOT EXISTS _ponder_bootstrap_preserved_notebooks (id TEXT PRIMARY KEY);
+         DELETE FROM _ponder_bootstrap_preserved_memos;
+         DELETE FROM _ponder_bootstrap_preserved_notebooks;
+         INSERT OR IGNORE INTO _ponder_bootstrap_preserved_memos (id)
          SELECT m.id FROM memos m
          WHERE EXISTS (
-           SELECT 1 FROM _edgeever_sidecar_outbox o
+           SELECT 1 FROM _ponder_sidecar_outbox o
            WHERE o.entity_id = m.id OR instr(o.payload_json, m.id) > 0
          );
-         INSERT OR IGNORE INTO _edgeever_bootstrap_preserved_notebooks (id)
+         INSERT OR IGNORE INTO _ponder_bootstrap_preserved_notebooks (id)
          SELECT n.id FROM notebooks n
          WHERE EXISTS (
-           SELECT 1 FROM _edgeever_sidecar_outbox o
+           SELECT 1 FROM _ponder_sidecar_outbox o
            WHERE o.entity_id = n.id OR instr(o.payload_json, n.id) > 0
          );
-         INSERT OR IGNORE INTO _edgeever_bootstrap_preserved_notebooks (id)
+         INSERT OR IGNORE INTO _ponder_bootstrap_preserved_notebooks (id)
          SELECT DISTINCT m.notebook_id
          FROM memos m
-         INNER JOIN _edgeever_bootstrap_preserved_memos p ON p.id = m.id;
+         INNER JOIN _ponder_bootstrap_preserved_memos p ON p.id = m.id;
          WITH RECURSIVE preserved_ancestors(id, parent_id) AS (
            SELECT n.id, n.parent_id
            FROM notebooks n
-           INNER JOIN _edgeever_bootstrap_preserved_notebooks p ON p.id = n.id
+           INNER JOIN _ponder_bootstrap_preserved_notebooks p ON p.id = n.id
            UNION
            SELECT parent.id, parent.parent_id
            FROM notebooks parent
            INNER JOIN preserved_ancestors child ON child.parent_id = parent.id
          )
-         INSERT OR IGNORE INTO _edgeever_bootstrap_preserved_notebooks (id)
+         INSERT OR IGNORE INTO _ponder_bootstrap_preserved_notebooks (id)
          SELECT id FROM preserved_ancestors;
          DELETE FROM resources
-         WHERE memo_id NOT IN (SELECT id FROM _edgeever_bootstrap_preserved_memos);
+         WHERE memo_id NOT IN (SELECT id FROM _ponder_bootstrap_preserved_memos);
          DELETE FROM memos
-         WHERE id NOT IN (SELECT id FROM _edgeever_bootstrap_preserved_memos);
+         WHERE id NOT IN (SELECT id FROM _ponder_bootstrap_preserved_memos);
          UPDATE notebooks SET parent_id = NULL
-         WHERE id NOT IN (SELECT id FROM _edgeever_bootstrap_preserved_notebooks);
+         WHERE id NOT IN (SELECT id FROM _ponder_bootstrap_preserved_notebooks);
          DELETE FROM notebooks
-         WHERE id NOT IN (SELECT id FROM _edgeever_bootstrap_preserved_notebooks);
-         DELETE FROM _edgeever_sidecar_meta
+         WHERE id NOT IN (SELECT id FROM _ponder_bootstrap_preserved_notebooks);
+         DELETE FROM _ponder_sidecar_meta
          WHERE key IN ('sync.cursor', 'sync.identity', 'sync.last_synced_at')
             OR key LIKE 'memo.remap-base:%';
-         INSERT INTO _edgeever_sidecar_meta (key, value, updated_at)
+         INSERT INTO _ponder_sidecar_meta (key, value, updated_at)
          VALUES ('sync.bootstrap.reset_pending', '1', strftime('%Y-%m-%dT%H:%M:%fZ','now'))
          ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at;",
     )
@@ -95,7 +95,7 @@ pub(crate) fn prepare_sync_bootstrap(
     }
 
     let outbox_count = database
-        .query_row("SELECT COUNT(*) FROM _edgeever_sidecar_outbox", [], |row| {
+        .query_row("SELECT COUNT(*) FROM _ponder_sidecar_outbox", [], |row| {
             row.get::<_, i64>(0)
         })
         .map_err(|e| e.to_string())?;
@@ -142,9 +142,9 @@ pub(crate) fn sync_outbox_list(database: &Connection, params: &Value) -> Result<
         .clamp(1, 200);
     let include_conflicts = bool_param(params, "includeConflicts", false);
     let sql = if include_conflicts {
-        "SELECT id, kind, entity_id, payload_json, attempt_count, status, last_error, version, last_error_code, retryable, next_attempt_at, created_at, updated_at FROM _edgeever_sidecar_outbox WHERE status IN ('pending', 'error', 'conflict') ORDER BY id LIMIT ?1"
+        "SELECT id, kind, entity_id, payload_json, attempt_count, status, last_error, version, last_error_code, retryable, next_attempt_at, created_at, updated_at FROM _ponder_sidecar_outbox WHERE status IN ('pending', 'error', 'conflict') ORDER BY id LIMIT ?1"
     } else {
-        "SELECT id, kind, entity_id, payload_json, attempt_count, status, last_error, version, last_error_code, retryable, next_attempt_at, created_at, updated_at FROM _edgeever_sidecar_outbox WHERE status = 'pending' OR (status = 'error' AND retryable = 1 AND (next_attempt_at IS NULL OR next_attempt_at <= strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY id LIMIT ?1"
+        "SELECT id, kind, entity_id, payload_json, attempt_count, status, last_error, version, last_error_code, retryable, next_attempt_at, created_at, updated_at FROM _ponder_sidecar_outbox WHERE status = 'pending' OR (status = 'error' AND retryable = 1 AND (next_attempt_at IS NULL OR next_attempt_at <= strftime('%Y-%m-%dT%H:%M:%fZ','now'))) ORDER BY id LIMIT ?1"
     };
     let mut statement = database.prepare(sql).map_err(|e| e.to_string())?;
     let rows = statement.query_map([limit], |row| {
@@ -162,7 +162,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
         .ok_or_else(|| "Missing outbox id".to_owned())?;
     let (kind, entity_id, payload_json, current_version): (String, String, String, i64) = database
         .query_row(
-            "SELECT kind, entity_id, payload_json, version FROM _edgeever_sidecar_outbox WHERE id = ?1",
+            "SELECT kind, entity_id, payload_json, version FROM _ponder_sidecar_outbox WHERE id = ?1",
             [id],
             |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
         )
@@ -195,7 +195,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
                 .unwrap_or("");
             let payload_text: String = database
                 .query_row(
-                    "SELECT payload_json FROM _edgeever_sidecar_outbox WHERE id = ?1",
+                    "SELECT payload_json FROM _ponder_sidecar_outbox WHERE id = ?1",
                     [id],
                     |row| row.get(0),
                 )
@@ -216,7 +216,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
             )
             .map_err(|e| e.to_string())?;
             tx.execute(
-                "UPDATE _edgeever_sidecar_outbox
+                "UPDATE _ponder_sidecar_outbox
                  SET payload_json = ?1, status = 'pending', last_error = NULL,
                      updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
                  WHERE id = ?2",
@@ -297,7 +297,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
                     )
                     .map_err(|e| e.to_string())?;
             }
-            let mut pending = database.prepare("SELECT id, entity_id, payload_json FROM _edgeever_sidecar_outbox WHERE id <> ?1").map_err(|e| e.to_string())?;
+            let mut pending = database.prepare("SELECT id, entity_id, payload_json FROM _ponder_sidecar_outbox WHERE id <> ?1").map_err(|e| e.to_string())?;
             let rows: Vec<(i64, String, String)> = pending
                 .query_map([id], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
                 .map_err(|e| e.to_string())?
@@ -328,7 +328,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
                 } else {
                     outbox_entity
                 };
-                database.execute("UPDATE _edgeever_sidecar_outbox SET entity_id = ?1, payload_json = ?2, version = version + 1,
+                database.execute("UPDATE _ponder_sidecar_outbox SET entity_id = ?1, payload_json = ?2, version = version + 1,
                   status = CASE WHEN status = 'error' AND last_error_code = 'memo_not_found' THEN 'pending' ELSE status END,
                   retryable = CASE WHEN status = 'error' AND last_error_code = 'memo_not_found' THEN 1 ELSE retryable END,
                   next_attempt_at = CASE WHEN status = 'error' AND last_error_code = 'memo_not_found' THEN NULL ELSE next_attempt_at END
@@ -388,7 +388,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
                 )
                 .map_err(|e| e.to_string())?;
             }
-            let mut pending = tx.prepare("SELECT id, entity_id, payload_json FROM _edgeever_sidecar_outbox WHERE id <> ?1").map_err(|e| e.to_string())?;
+            let mut pending = tx.prepare("SELECT id, entity_id, payload_json FROM _ponder_sidecar_outbox WHERE id <> ?1").map_err(|e| e.to_string())?;
             let rows: Vec<(i64, String, String)> = pending
                 .query_map([id], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
                 .map_err(|e| e.to_string())?
@@ -414,7 +414,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
                 } else {
                     outbox_entity
                 };
-                tx.execute("UPDATE _edgeever_sidecar_outbox SET entity_id = ?1, payload_json = ?2, version = version + 1,
+                tx.execute("UPDATE _ponder_sidecar_outbox SET entity_id = ?1, payload_json = ?2, version = version + 1,
                   status = CASE WHEN status = 'error' AND last_error_code = 'not_found' THEN 'pending' ELSE status END,
                   retryable = CASE WHEN status = 'error' AND last_error_code = 'not_found' THEN 1 ELSE retryable END,
                   next_attempt_at = CASE WHEN status = 'error' AND last_error_code = 'not_found' THEN NULL ELSE next_attempt_at END
@@ -424,7 +424,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
             // Commit the remap and acknowledgement together. Otherwise a crash
             // can leave an already-created notebook queued for another create.
             let deleted = tx.execute(
-                "DELETE FROM _edgeever_sidecar_outbox WHERE id = ?1 AND (?2 IS NULL OR version = ?2)",
+                "DELETE FROM _ponder_sidecar_outbox WHERE id = ?1 AND (?2 IS NULL OR version = ?2)",
                 rusqlite::params![id, requested_version],
             ).map_err(|e| e.to_string())?;
             tx.commit().map_err(|e| e.to_string())?;
@@ -459,7 +459,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
                     )
                     .map_err(|e| e.to_string())?;
             }
-            let mut pending = database.prepare("SELECT id, entity_id, payload_json FROM _edgeever_sidecar_outbox WHERE id <> ?1").map_err(|e| e.to_string())?;
+            let mut pending = database.prepare("SELECT id, entity_id, payload_json FROM _ponder_sidecar_outbox WHERE id <> ?1").map_err(|e| e.to_string())?;
             let rows: Vec<(i64, String, String)> = pending
                 .query_map([id], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
                 .map_err(|e| e.to_string())?
@@ -482,7 +482,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
                 } else {
                     outbox_entity
                 };
-                database.execute("UPDATE _edgeever_sidecar_outbox SET entity_id = ?1, payload_json = ?2, version = version + 1 WHERE id = ?3", rusqlite::params![next_entity, payload.to_string(), outbox_id]).map_err(|e| e.to_string())?;
+                database.execute("UPDATE _ponder_sidecar_outbox SET entity_id = ?1, payload_json = ?2, version = version + 1 WHERE id = ?3", rusqlite::params![next_entity, payload.to_string(), outbox_id]).map_err(|e| e.to_string())?;
             }
         }
     }
@@ -491,12 +491,12 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
         .map_err(|e| e.to_string())?;
     let deleted = if let Some(version) = requested_version {
         tx.execute(
-            "DELETE FROM _edgeever_sidecar_outbox WHERE id = ?1 AND version = ?2",
+            "DELETE FROM _ponder_sidecar_outbox WHERE id = ?1 AND version = ?2",
             rusqlite::params![id, version],
         )
         .map_err(|e| e.to_string())?
     } else {
-        tx.execute("DELETE FROM _edgeever_sidecar_outbox WHERE id = ?1", [id])
+        tx.execute("DELETE FROM _ponder_sidecar_outbox WHERE id = ?1", [id])
             .map_err(|e| e.to_string())?
     };
     if deleted == 1
@@ -519,7 +519,7 @@ pub(crate) fn sync_outbox_ack(database: &Connection, params: &Value) -> Result<V
             // Delete only older conflicted edits after the server accepted the
             // delete. A failed delete must leave its local draft recoverable.
             tx.execute(
-                "DELETE FROM _edgeever_sidecar_outbox WHERE kind = 'memo.update' AND entity_id = ?1 AND status = 'conflict' AND id < ?2",
+                "DELETE FROM _ponder_sidecar_outbox WHERE kind = 'memo.update' AND entity_id = ?1 AND status = 'conflict' AND id < ?2",
                 rusqlite::params![memo_id, id],
             ).map_err(|e| e.to_string())?;
         }
@@ -551,9 +551,9 @@ pub(crate) fn sync_outbox_fail(database: &Connection, params: &Value) -> Result<
         .unwrap_or(true);
     let next_attempt_at = params.get("nextAttemptAt").and_then(Value::as_str);
     let updated = if let Some(version) = params.get("version").and_then(Value::as_i64) {
-        database.execute("UPDATE _edgeever_sidecar_outbox SET status = ?1, attempt_count = attempt_count + 1, last_error = ?2, last_error_code = ?3, retryable = ?4, next_attempt_at = ?5, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?6 AND version = ?7", rusqlite::params![status, error, error_code, retryable, next_attempt_at, id, version]).map_err(|e| e.to_string())?
+        database.execute("UPDATE _ponder_sidecar_outbox SET status = ?1, attempt_count = attempt_count + 1, last_error = ?2, last_error_code = ?3, retryable = ?4, next_attempt_at = ?5, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?6 AND version = ?7", rusqlite::params![status, error, error_code, retryable, next_attempt_at, id, version]).map_err(|e| e.to_string())?
     } else {
-        database.execute("UPDATE _edgeever_sidecar_outbox SET status = ?1, attempt_count = attempt_count + 1, last_error = ?2, last_error_code = ?3, retryable = ?4, next_attempt_at = ?5, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?6", rusqlite::params![status, error, error_code, retryable, next_attempt_at, id]).map_err(|e| e.to_string())?
+        database.execute("UPDATE _ponder_sidecar_outbox SET status = ?1, attempt_count = attempt_count + 1, last_error = ?2, last_error_code = ?3, retryable = ?4, next_attempt_at = ?5, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?6", rusqlite::params![status, error, error_code, retryable, next_attempt_at, id]).map_err(|e| e.to_string())?
     };
     Ok(json!({ "ok": true, "superseded": updated == 0 }))
 }
@@ -566,12 +566,12 @@ pub(crate) fn sync_outbox_retry(database: &Connection, params: &Value) -> Result
     let version = params.get("version").and_then(Value::as_i64);
     let updated = if let Some(version) = version {
         database.execute(
-            "UPDATE _edgeever_sidecar_outbox SET status = 'pending', retryable = 1, next_attempt_at = NULL, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?1 AND version = ?2 AND status = 'error'",
+            "UPDATE _ponder_sidecar_outbox SET status = 'pending', retryable = 1, next_attempt_at = NULL, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?1 AND version = ?2 AND status = 'error'",
             rusqlite::params![id, version],
         )
     } else {
         database.execute(
-            "UPDATE _edgeever_sidecar_outbox SET status = 'pending', retryable = 1, next_attempt_at = NULL, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?1 AND status = 'error'",
+            "UPDATE _ponder_sidecar_outbox SET status = 'pending', retryable = 1, next_attempt_at = NULL, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id = ?1 AND status = 'error'",
             [id],
         )
     }
@@ -594,7 +594,7 @@ pub(crate) fn sync_outbox_recover_memo_update(
     let requested_version = params.get("version").and_then(Value::as_i64);
     let (kind, payload_text, version, status): (String, String, i64, String) = database
         .query_row(
-            "SELECT kind, payload_json, version, status FROM _edgeever_sidecar_outbox WHERE id = ?1",
+            "SELECT kind, payload_json, version, status FROM _ponder_sidecar_outbox WHERE id = ?1",
             [id],
             |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?)),
         )
@@ -631,14 +631,14 @@ pub(crate) fn sync_outbox_recover_memo_update(
     enqueue_change(database, "memo.update", &recovered_id, &payload)?;
     let removed = database
         .execute(
-            "DELETE FROM _edgeever_sidecar_outbox WHERE id = ?1 AND version = ?2 AND status = 'error'",
+            "DELETE FROM _ponder_sidecar_outbox WHERE id = ?1 AND version = ?2 AND status = 'error'",
             rusqlite::params![id, version],
         )
         .map_err(|e| e.to_string())?;
     if removed == 0 {
         database
             .execute(
-                "DELETE FROM _edgeever_sidecar_outbox WHERE entity_id = ?1",
+                "DELETE FROM _ponder_sidecar_outbox WHERE entity_id = ?1",
                 [&recovered_id],
             )
             .ok();
@@ -657,11 +657,11 @@ pub(crate) fn sync_outbox_discard(database: &Connection, params: &Value) -> Resu
         .ok_or_else(|| "Missing outbox id".to_owned())?;
     let removed = if let Some(version) = params.get("version").and_then(Value::as_i64) {
         database.execute(
-            "DELETE FROM _edgeever_sidecar_outbox WHERE id = ?1 AND version = ?2",
+            "DELETE FROM _ponder_sidecar_outbox WHERE id = ?1 AND version = ?2",
             rusqlite::params![id, version],
         )
     } else {
-        database.execute("DELETE FROM _edgeever_sidecar_outbox WHERE id = ?1", [id])
+        database.execute("DELETE FROM _ponder_sidecar_outbox WHERE id = ?1", [id])
     }
     .map_err(|e| e.to_string())?;
     if removed == 0 {
@@ -840,9 +840,9 @@ fn apply_one_sync_change(
     let entity_id = string_param(change, "entityId")?;
     if rebuilding {
         let preserved_table = if entity_type == "notebook" {
-            "_edgeever_bootstrap_preserved_notebooks"
+            "_ponder_bootstrap_preserved_notebooks"
         } else {
-            "_edgeever_bootstrap_preserved_memos"
+            "_ponder_bootstrap_preserved_memos"
         };
         let preserved = tx
             .query_row(

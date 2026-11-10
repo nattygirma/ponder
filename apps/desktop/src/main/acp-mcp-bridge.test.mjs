@@ -7,13 +7,13 @@ import { fileURLToPath } from "node:url";
 
 test("ACP bridge protects the session and connects the packaged MCP adapter", () => {
   const harness = fileURLToPath(new URL("../../../../tests/fixtures/acp-mcp-bridge-stdio-harness.mjs", import.meta.url));
-  const directory = mkdtempSync(join(tmpdir(), "edgeever-acp-mcp-test-"));
+  const directory = mkdtempSync(join(tmpdir(), "ponder-acp-mcp-test-"));
   try {
     const resultPath = join(directory, "result.json");
     const result = spawnSync("node", [harness], {
       encoding: "utf8",
       timeout: 10_000,
-      env: { ...process.env, EDGE_EVER_TEST_RESULT_PATH: resultPath },
+      env: { ...process.env, PONDER_TEST_RESULT_PATH: resultPath },
     });
     expect(result.status, result.stderr).toBe(0);
     expect(JSON.parse(readFileSync(resultPath, "utf8"))).toEqual({

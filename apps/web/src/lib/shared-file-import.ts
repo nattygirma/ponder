@@ -1,4 +1,4 @@
-import { docToMarkdown, markdownToDoc, type TiptapDoc } from "@edgeever/shared";
+import { docToMarkdown, markdownToDoc, type TiptapDoc } from "@ponder/shared";
 import { screenshotNoteContent } from "./screenshot-import";
 
 const IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "gif", "webp"]);
@@ -18,7 +18,7 @@ export const sharedFileTitle = (filename: string) => {
 const escapeLabel = (value: string) => value.replace(/[\\[\]]/g, "\\$&");
 
 export const sharedFileAttachmentMarkdown = (filename: string, url: string) =>
-  `[附件：${escapeLabel(filename || "file")}](${url})`;
+  `[Attachment: ${escapeLabel(filename || "file")}](${url})`;
 
 const isImageFile = (filename: string, mimeType: string) =>
   mimeType.toLowerCase().startsWith("image/") || IMAGE_EXTENSIONS.has(extensionOf(filename));

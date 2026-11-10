@@ -8,7 +8,7 @@ For any Release that rebuilds desktop assets, first point the release shell at
 the repository-external Ed25519 key used for the Windows update manifest:
 
 ```bash
-export EDGE_EVER_WINDOWS_UPDATE_SIGNING_KEY=/absolute/path/to/windows-update-ed25519-private.pem
+export PONDER_WINDOWS_UPDATE_SIGNING_KEY=/absolute/path/to/windows-update-ed25519-private.pem
 ```
 
 ```bash
@@ -17,13 +17,12 @@ bun run release -- \
   --issue-title "Improve the release workflow" \
   --label enhancement \
   --change-en "Run required release checks in parallel." \
-  --change-zh "并行执行发布所需检查。" \
   --change-locale "ja:必要なリリースチェックを並列実行します。" \
   --change-commit "abcdef1" \
   --change-issue "123:en"
 ```
 
-Repeat `--change-en`, `--change-zh`, `--change-locale ja:`, `--change-commit`, and `--change-issue` as matching groups.
+Repeat `--change-en`, `--change-locale ja:`, `--change-commit`, and `--change-issue` as matching groups.
 Japanese What's New is required because the App Store listing includes Japanese.
 One change may cover multiple comma-separated commits:
 
@@ -82,13 +81,13 @@ releases without these records cannot use this entry point.
 - GitHub generates its native Contributors avatar section from `@username`
   mentions throughout the notes, including individual items.
 
-Place individual credits in `--change-zh` / `--change-en`. For a consolidated
+Place individual credits in `--change-en`. For a consolidated
 list, repeat `--contributor alice`; the script appends
-`贡献者 / Contributors：@alice` after the bilingual notes. This option does not
+`Contributors: @alice` after the notes. This option does not
 infer contributors automatically. Resuming an existing Draft preserves its
 notes; edit the Draft directly to adjust credits.
 
-## EdgeEver-Specific Behavior
+## Ponder-Specific Behavior
 
 - Stable tags and Release titles use `vX.Y.Z`. Pass `--bump` explicitly and
   follow SemVer; do not compress user-visible new capabilities or new platforms

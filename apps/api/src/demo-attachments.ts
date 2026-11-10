@@ -10,8 +10,8 @@ export type DemoAttachmentSeed = {
 export const DEMO_ATTACHMENT_RESOURCES: DemoAttachmentSeed[] = [
   {
     id: "res_demo_meeting_notes_docx",
-    memoId: "memo_demo_overview",
-    filename: "edgeever-meeting-notes.docx",
+    memoId: "memo_demo_overview_en",
+    filename: "ponder-meeting-notes.docx",
     mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     encoding: "base64",
     content:
@@ -19,8 +19,8 @@ export const DEMO_ATTACHMENT_RESOURCES: DemoAttachmentSeed[] = [
   },
   {
     id: "res_demo_product_brief_pdf",
-    memoId: "memo_demo_overview",
-    filename: "edgeever-product-brief.pdf",
+    memoId: "memo_demo_overview_en",
+    filename: "ponder-product-brief.pdf",
     mimeType: "application/pdf",
     encoding: "base64",
     content:
@@ -28,7 +28,7 @@ export const DEMO_ATTACHMENT_RESOURCES: DemoAttachmentSeed[] = [
   },
   {
     id: "res_demo_feature_matrix_csv",
-    memoId: "memo_demo_overview",
+    memoId: "memo_demo_overview_en",
     filename: "feature-matrix.csv",
     mimeType: "text/csv",
     encoding: "utf8",
@@ -36,8 +36,8 @@ export const DEMO_ATTACHMENT_RESOURCES: DemoAttachmentSeed[] = [
   },
   {
     id: "res_demo_attachment_bundle_zip",
-    memoId: "memo_demo_overview",
-    filename: "edgeever-attachment-demo.zip",
+    memoId: "memo_demo_overview_en",
+    filename: "ponder-attachment-demo.zip",
     mimeType: "application/zip",
     encoding: "base64",
     content:
@@ -53,8 +53,6 @@ export const decodeDemoAttachment = (resource: DemoAttachmentSeed): Uint8Array =
   const binary = atob(resource.content);
   return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 };
-
-export const DEMO_ATTACHMENT_MARKDOWN_ZH = "";
 
 export const DEMO_ATTACHMENT_MARKDOWN_EN = "";
 

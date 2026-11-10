@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { POSTER_DESIGN_TEMPLATES, createPosterDocument } from '@edgeever/shared';
+import { POSTER_DESIGN_TEMPLATES, createPosterDocument } from '@ponder/shared';
 import {
   paperListCurrentCopy,
   paperListSampleCopy,
@@ -9,7 +9,7 @@ import {
   posterTemplateSelectionCopy,
 } from './paper-list-content';
 
-const starter = { title: '写下你的标题', subtitle: '把想法变成值得分享的作品', badge: '' };
+const starter = { title: 'Your headline', subtitle: 'Turn ideas into something worth sharing', badge: '' };
 const source = () => ({ ...createPosterDocument(starter.title, starter.subtitle), copy: starter });
 
 test('selecting the list template on a fresh poster seeds two complete entries', () => {
@@ -54,10 +54,10 @@ test('edited row subtitles survive save and reapply alongside the body', () => {
   document.elements = [
     { ...text, id: 'design_1', name: 'paper-list:row:0:heading', text: '《书名》', sourceText: undefined },
     { ...text, id: 'design_2', name: 'paper-list:row:0:subtitle', text: '修改后的副标题', sourceText: '修改后的副标题' },
-    { ...text, id: 'design_3', name: 'paper-list:row:0:body', text: '正文', sourceText: undefined },
+    { ...text, id: 'design_3', name: 'paper-list:row:0:body', text: 'Body', sourceText: undefined },
   ];
   const copy = paperListCurrentCopy(document, paperListSampleCopy(true));
-  expect(parsePaperListRow(copy.subtitle)).toEqual({ heading: '《书名》', subtitle: '修改后的副标题', body: '正文' });
+  expect(parsePaperListRow(copy.subtitle)).toEqual({ heading: '《书名》', subtitle: '修改后的副标题', body: 'Body' });
 });
 
 
@@ -112,8 +112,8 @@ test('every catalog template has distinct bilingual initial sample copy tailored
   expect(zhTitles.size).toBe(POSTER_DESIGN_TEMPLATES.length);
   expect(enTitles.size).toBe(POSTER_DESIGN_TEMPLATES.length);
   expect(posterTemplateSampleCopy('compare', true).subtitle).toContain('|');
-  expect(posterTemplateSampleCopy('brush', true).subtitle.split('、')).toHaveLength(3);
-  expect(posterTemplateSampleCopy('bento', true).subtitle.split('、')).toHaveLength(3);
+  expect(posterTemplateSampleCopy('brush', true).subtitle.split(', ')).toHaveLength(3);
+  expect(posterTemplateSampleCopy('bento', true).subtitle.split(', ')).toHaveLength(3);
   expect(posterTemplateSampleCopy('notes', true).subtitle.split('\n')).toHaveLength(3);
 });
 
@@ -151,7 +151,7 @@ test('edited checklist and compare items reconstruct into subtitle copy', () => 
     ],
   };
   const updatedBento = paperListCurrentCopy(bentoDoc, bentoDoc.copy);
-  expect(updatedBento.subtitle).toBe('回顾最初目标、分析核心数据、提炼下次行动');
+  expect(updatedBento.subtitle).toBe('回顾最初目标, 分析核心数据, 提炼下次行动');
   expect(posterTemplateSelectionCopy(bentoDoc, updatedBento, 'folio', true, starter)).toEqual(updatedBento);
 
   const compareDoc = {

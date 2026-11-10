@@ -1,7 +1,7 @@
 .git
 .github
 .codex-tmp
-.edgeever-data
+.ponder-data
 .env*
 .idea
 .wrangler*

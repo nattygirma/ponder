@@ -1,4 +1,4 @@
-import { isValidMemoShareSlug, MEMO_SHARE_SLUG_MAX_LENGTH } from "@edgeever/shared";
+import { isValidMemoShareSlug, MEMO_SHARE_SLUG_MAX_LENGTH } from "@ponder/shared";
 import { Check, LoaderCircle, X } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";

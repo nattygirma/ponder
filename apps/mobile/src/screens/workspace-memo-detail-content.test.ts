@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { markdownToDoc, resolveMemoContentMarkdown } from "@edgeever/shared";
+import { markdownToDoc, resolveMemoContentMarkdown } from "@ponder/shared";
 
 describe("mobile memo detail content", () => {
   test("keeps JSON divider nodes when the Markdown compatibility copy is stale", () => {

@@ -8,18 +8,18 @@ import { createHash } from "node:crypto";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 const root = process.cwd();
-const { fetchEdgeEverApp } = await import(join(root, "apps/api/src/index.ts"));
+const { fetchPonderApp } = await import(join(root, "apps/api/src/index.ts"));
 const { createSelfHostedStorageAdapter } = await import(join(root, "apps/api/src/self-hosted-storage-adapter.ts"));
-const { createEdgeEverClient } = await import(join(root, "packages/client/src/index.ts"));
-const directory = await mkdtemp(join(tmpdir(), "edgeever-backup-large-")); const servers = []; const dbs = []; const children = [];
+const { createPonderClient } = await import(join(root, "packages/client/src/index.ts"));
+const directory = await mkdtemp(join(tmpdir(), "ponder-backup-large-")); const servers = []; const dbs = []; const children = [];
 const create = async (name) => {
  const folder = join(directory, name); await mkdir(folder);
  const db = new Database(join(folder, "db.sqlite")); dbs.push(db);
  for (const file of (await readdir("migrations")).filter(n => n.endsWith(".sql")).sort()) db.exec(await readFile(join("migrations", file), "utf8"));
  const resources = join(folder, "objects");
- const env = { storage: createSelfHostedStorageAdapter(db, resources), EDGE_EVER_ALLOW_UNAUTHENTICATED: "true", EDGE_EVER_RUNTIME: "self-hosted-bun" };
- const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch: r => fetchEdgeEverApp(r, env, { waitUntil() {}, passThroughOnException() {} }) }); servers.push(server);
- const baseUrl = `http://127.0.0.1:${server.port}`; return { db, server, resources, baseUrl, client: createEdgeEverClient({ baseUrl }) };
+ const env = { storage: createSelfHostedStorageAdapter(db, resources), PONDER_ALLOW_UNAUTHENTICATED: "true", PONDER_RUNTIME: "self-hosted-bun" };
+ const server = Bun.serve({ hostname: "127.0.0.1", port: 0, fetch: r => fetchPonderApp(r, env, { waitUntil() {}, passThroughOnException() {} }) }); servers.push(server);
+ const baseUrl = `http://127.0.0.1:${server.port}`; return { db, server, resources, baseUrl, client: createPonderClient({ baseUrl }) };
 };
 const node = execFileSync("node", ["-p", "process.execPath"], { encoding: "utf8" }).trim();
 let peakRssKiB = 0; let stage = "export"; const peaks = {};
@@ -42,7 +42,7 @@ try {
  const size=900*1024*1024;
  for(let i=0;i<5;i++) {const {resource}=await source.client.uploadMemoResource(memo.id,new File([new Uint8Array([0])],`part-${i}.bin`,{type:"application/octet-stream"}));const row=source.db.query("SELECT object_key FROM resources WHERE id=?").get(resource.id); const file=await open(join(source.resources,row.object_key),"r+");try{await file.truncate(size);}finally{await file.close();}source.db.query("UPDATE resources SET byte_size=?,sha256=NULL WHERE id=?").run(size,resource.id);}
  console.log("Large source ready",{bytes:5*size});
- const path=join(directory,"large.zip");const job=launch({operation:"export",context:{baseUrl:source.baseUrl,accountId:null,token:""},path,version:{edgeeverVersion:"2.2.0",buildId:"large-acceptance"}});
+ const path=join(directory,"large.zip");const job=launch({operation:"export",context:{baseUrl:source.baseUrl,accountId:null,token:""},path,version:{ponderVersion:"2.2.0",buildId:"large-acceptance"}});
  const exported=await job.next("done");if(exported.size<=2**32)throw new Error("Archive is not >4 GiB");console.log("Large export complete",{bytes:exported.size,seconds:(Date.now()-started)/1000});
  source.server.stop(true);
  stage = "scan"; const target=await create("target");const staging=join(directory,"private");await mkdir(staging,{mode:0o700});
@@ -51,5 +51,5 @@ try {
  console.log("Large scan complete",{seconds:(Date.now()-started)/1000});stage = "restore"; restore.child.send({type:"confirm"});await restore.next("done");
  for(const row of target.db.query("SELECT object_key,sha256,byte_size FROM resources WHERE memo_id=?").all(memo.id)){const file=join(target.resources,row.object_key);if((await stat(file)).size!==size)throw new Error("Restored length differs");const hash=createHash("sha256");for await(const chunk of createReadStream(file))hash.update(chunk);if(hash.digest("hex")!==row.sha256)throw new Error("Restored digest differs");}
  const result={archiveBytes:exported.size,resources:5,resourceBytes:size,seconds:(Date.now()-started)/1000,peakWorkerRssMiB:Math.round(peakRssKiB/1024),phasePeaks:peaks,restored:true,sourceDisconnected:true};
- if (process.env.EDGE_EVER_BACKUP_REPORT) await writeFile(process.env.EDGE_EVER_BACKUP_REPORT,JSON.stringify(result,null,2));console.log(result); if (peaks.restore.rss > 1024**3) throw new Error("Restoring a 4.7 GB archive exceeded the 1 GiB RSS acceptance budget");
+ if (process.env.PONDER_BACKUP_REPORT) await writeFile(process.env.PONDER_BACKUP_REPORT,JSON.stringify(result,null,2));console.log(result); if (peaks.restore.rss > 1024**3) throw new Error("Restoring a 4.7 GB archive exceeded the 1 GiB RSS acceptance budget");
 } finally {for(const child of children)if(child.connected)child.kill("SIGTERM");for(const server of servers)server.stop(true);for(const db of dbs)db.close();await rm(directory,{recursive:true,force:true});}

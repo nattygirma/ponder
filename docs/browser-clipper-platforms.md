@@ -1,7 +1,5 @@
 # Browser platform clips
 
-[简体中文](browser-clipper-platforms.zh-CN.md)
-
 Related to [Issue #493](https://github.com/tianma-if/edgeever/issues/493) and the [implementation plan](browser-clipper-platform-expansion-plan.md). Platform adapters were merged through #505, #521 and #578; cross-browser and signed-in live acceptance continues in the [Issue #588 acceptance matrix](browser-clipper-acceptance-588.md). The records below retain their original code, environment and acceptance boundaries.
 
 The 2026-10-18 follow-up covers the specified current Jike Web feed, signed-in LinkedIn company feed, Bluesky quoted feed and complete Substack article in Edge/Firefox. See the matrix above for repairs and remaining browser-environment limits.
@@ -40,7 +38,7 @@ The audit identified two targeted live gaps: a Medium code story and a Threads q
 
 Round eleven closes both checks using the signed-in native Edge extension: public Medium story `1a538c9389fe` preserves all characters/newlines in 40 code blocks and their 38 JavaScript/two XML languages. Reopening with sources/CDNs blocked produces 551 actual syntax spans. Threads text quote `@mosseri/DeAlGo0I71T` and photo quote `@mkbhd/DehHSaCnEmU` save/reopen with main and quoted captions, quoted actor and original photo intact. Independent source downloads match archived image bytes. These targeted gaps are closed without extending latest-build coverage to every layout or browser. Risk, checks and cleanup are recorded in [round eleven of #588](browser-clipper-acceptance-588.md).
 
-#493 retains its development-delivery closure boundary; #587 store delivery/update, #588 browsers/signed-in flows and #589 full BOSS jobs remain separate. Initial read-only audit evidence: `/private/tmp/edgeever-issue-493-audit-20261018`; repair/live evidence: `/private/tmp/edgeever-issue-588-20261017-uz6mqhpj/evidence/eleventh`. No commit, push, deployment or GitHub issue update.
+#493 retains its development-delivery closure boundary; #587 store delivery/update, #588 browsers/signed-in flows and #589 full BOSS jobs remain separate. Initial read-only audit evidence: `/private/tmp/ponder-issue-493-audit-20261018`; repair/live evidence: `/private/tmp/ponder-issue-588-20261017-uz6mqhpj/evidence/eleventh`. No commit, push, deployment or GitHub issue update.
 
 ## 2026-10-15 PR submission verification
 
@@ -191,7 +189,7 @@ Real browser DOM context-menu events also verify exact short-comment pointer tar
 
 The **28-sample Chromium persistence test passed in 52.7 seconds**, covering the ten new detail fixtures and all eighteen prior samples. Each saves through the actual built extension and local API, checks stored body and expected image references, reopens the Web editor after blocking sources, verifies all article images, and rejects unreadable variants without a second note. Two separate HTML-safety checks also passed. The editor's source-less ProseMirror separator images and its own code-copy controls are excluded from article-content assertions; archived text and every expected attachment remain checked.
 
-The local development request-forwarding layer twice reset connections at unrelated editor metadata requests. The test now uses the same workerd origin for the built Web, API and extension when `EDGE_EVER_CLIPPER_TEST_INSTANCE_URL` is supplied. Without that variable it uses the normal configured base URL. The owned local server was restarted after the Web build to refresh its asset manifest; no product API changes, retries or larger timeouts were added. API readback confirmed zero test clips and zero test tokens after cleanup. The browser task space was closed. No commit, push, PR or publication was performed; the installed main-workspace extension was not replaced. To preview these adapters, load `edgeever-clipper-p2/apps/extension/dist` and refresh the source page.
+The local development request-forwarding layer twice reset connections at unrelated editor metadata requests. The test now uses the same workerd origin for the built Web, API and extension when `PONDER_CLIPPER_TEST_INSTANCE_URL` is supplied. Without that variable it uses the normal configured base URL. The owned local server was restarted after the Web build to refresh its asset manifest; no product API changes, retries or larger timeouts were added. API readback confirmed zero test clips and zero test tokens after cleanup. The browser task space was closed. No commit, push, PR or publication was performed; the installed main-workspace extension was not replaced. To preview these adapters, load `ponder-clipper-p2/apps/extension/dist` and refresh the source page.
 
 2026-10-14 additional review: fixed concurrent toolbar and context-menu captures exchanging selected text, and navigation during restricted selection capture/save. Toolbar saving now joins the existing clip queue once; the clicked tab and source URL are fixed before waiting. The queued job, captured response and post-notebook save each verify the original URL where generic/selection capture is used. Inner platform/video queue calls were removed to avoid nested waiting. This also covers a concurrent generic toolbar capture; no new queue, retry, API or metadata prerequisite was introduced. Seven actual-bundle regressions cover the two concurrent entry combinations, active-tab switching while queued, Jike/Douban navigation during injection or notebook lookup, and a timed-out capture replying after the next queued capture starts. Generic page/selection messages now carry a request ID; only the matching pending request consumes a reply, and timeout/injection cleanup cannot clear a later request.
 
@@ -199,7 +197,7 @@ Additional-review validation: **3,078 unit tests and 17 integration tests passed
 
 ## Phase 2: BOSS Zhipin, Xueqiu and Xiaoyuzhou (2026-10-12)
 
-The baseline is official `3855efb3`; P1 merged through [PR #521](https://github.com/tianma-if/edgeever/pull/521). P2 is implemented in contribution workspace `edgeever-clipper-p2`, branch `feat/clipper-phase2`, preserving unrelated work in the original workspace.
+The baseline is official `3855efb3`; P1 merged through [PR #521](https://github.com/tianma-if/edgeever/pull/521). P2 is implemented in contribution workspace `ponder-clipper-p2`, branch `feat/clipper-phase2`, preserving unrelated work in the original workspace.
 
 | Platform | Current behavior | Explicit limits |
 | --- | --- | --- |
@@ -221,7 +219,7 @@ Login-badge validation: 248 extension tests and root typechecking pass. The 18-s
 
 2026-10-13 review fixes: withdraw unsupported BOSS metadata/salary-format prerequisites, Xueqiu detail author/time-link prerequisites and generic expand-class refusal. Stock tags and Markdown consume the same sanitized body, excluding stocks linked from controls or scripts. Retain the actual 24-tag instance limit and withdraw the unsupported 15-character stock-code cap. CSS filtering distinguishes subtree hiding from descendant-overridable `visibility`: remove hidden own text while retaining explicitly visible descendants; BOSS availability and Xiaoyuzhou extraction follow the same boundary. Both BOSS fixtures further remove unused action redirects, tracking and security parameters.
 
-Post-review validation: the serialized full non-E2E run passes 3,031 unit tests and 17 integration tests. Root/mobile typechecking, Web and Chromium/Firefox extension builds pass; Firefox lint has 0 errors and 2 existing dependency warnings. The Chromium computed-visibility and inert-HTML safety tests pass. Several unchanged tests timed out during the initial parallel run; isolated checks and the final full rerun pass without changing those tests or production infrastructure. The 18-sample integration rerun did not complete: the local development API proxy first returned 503/timeouts. With `EDGE_EVER_CLIPPER_TEST_INSTANCE_URL` reaching the same workerd directly, Xiaoyuzhou and BOSS save and API body readback pass, but editor reopening times out while loading the local Vite page. At a host load of about 38, the final rerun again times out navigating to Web. Test timeouts and production flows were not changed. Earlier 18-sample passing records describe their respective revisions only; this review does not claim a full E2E acceptance pass. Test notes and tokens from this review were cleaned up, with API readback confirming none remained.
+Post-review validation: the serialized full non-E2E run passes 3,031 unit tests and 17 integration tests. Root/mobile typechecking, Web and Chromium/Firefox extension builds pass; Firefox lint has 0 errors and 2 existing dependency warnings. The Chromium computed-visibility and inert-HTML safety tests pass. Several unchanged tests timed out during the initial parallel run; isolated checks and the final full rerun pass without changing those tests or production infrastructure. The 18-sample integration rerun did not complete: the local development API proxy first returned 503/timeouts. With `PONDER_CLIPPER_TEST_INSTANCE_URL` reaching the same workerd directly, Xiaoyuzhou and BOSS save and API body readback pass, but editor reopening times out while loading the local Vite page. At a host load of about 38, the final rerun again times out navigating to Web. Test timeouts and production flows were not changed. Earlier 18-sample passing records describe their respective revisions only; this review does not claim a full E2E acceptance pass. Test notes and tokens from this review were cleaned up, with API readback confirming none remained.
 
 ## Phase 1: five social platforms (2026-10-10)
 
@@ -242,7 +240,7 @@ Signed-out real pages were sampled in Ego Chromium; all five pointer targets wer
 The PR includes this implementation and its regression checks. 210 extension tests, root/mobile typechecking, Web and Chromium/Firefox builds pass. Firefox lint retains two upstream Readability warnings. Authenticated feeds, Edge/Firefox runtime saves and Firefox Android remain unverified.
 
 
-The eight-platform Chromium E2E passes (three earlier adapters plus Phase 1), including all expected image resources and reopened editor images, unreadable-page refusal and cleanup. Wrangler 4.112.0’s development proxy intermittently returns `503` on POST with “Your worker restarted mid-request.” This run used `EDGE_EVER_CLIPPER_TEST_INSTANCE_URL=http://127.0.0.1:64641` to reach the same local workerd API directly; that internal port must be resolved again for a new dev process. The default instance URL remains the test base URL. No production API or runtime code was changed. The installed Ego development extension was reloaded; existing source tabs need refreshing for the new target listener.
+The eight-platform Chromium E2E passes (three earlier adapters plus Phase 1), including all expected image resources and reopened editor images, unreadable-page refusal and cleanup. Wrangler 4.112.0’s development proxy intermittently returns `503` on POST with “Your worker restarted mid-request.” This run used `PONDER_CLIPPER_TEST_INSTANCE_URL=http://127.0.0.1:64641` to reach the same local workerd API directly; that internal port must be resolved again for a new dev process. The default instance URL remains the test base URL. No production API or runtime code was changed. The installed Ego development extension was reloaded; existing source tabs need refreshing for the new target listener.
 
 2026-10-11: Fixed Instagram carousels with individual slide captions being rejected as unreadable. The reader establishes readable content using the target permalink and the visible slide caption, while retaining every loaded slide caption and media cover, replacing a truncated parent prefix with complete slide text and preserving independent parent text. The live Google post `DeKe6teEpya` yielded the loaded parent caption and 20 covers (one video, 19 photos); regression checks cover different visible slides, hidden cards, unrelated text and missing carousel items. Videos themselves are not downloaded. The added sample passes Chromium E2E through the actual extension and local API, including all 20 archived images and reopening the note with source hosts blocked; this run used the default local instance URL.
 
@@ -272,7 +270,7 @@ Medium continues to use the generic page-clip entry point, with added story-bloc
 
 ## Usage
 
-Configure the extension's EdgeEver instance and API token, open a detail page, and save from the toolbar or its platform command in the page-background context menu.
+Configure the extension's Ponder instance and API token, open a detail page, and save from the toolbar or its platform command in the page-background context menu.
 
 | Platform | Detail page | Saved content |
 | --- | --- | --- |
@@ -296,7 +294,7 @@ The body is saved first, followed by the existing image-copy workflow: up to 30 
 - Download, upload, rewrite or budget failures preserve the note and report “Text saved. Some images still use external links.” Images beyond the 30-image limit count as uncopied.
 - If the user edits the note during copying, their version is retained. The clip does not overwrite it or create another note.
 
-Image archival means that EdgeEver instance resources can serve the images, not a new promise of complete offline client access.
+Image archival means that Ponder instance resources can serve the images, not a new promise of complete offline client access.
 
 ## Verification record
 

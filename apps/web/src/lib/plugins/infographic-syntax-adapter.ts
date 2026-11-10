@@ -1,5 +1,5 @@
 import { getTemplate, getTheme, getTemplates, getThemes, parseSyntax } from "@antv/infographic";
-import type { InfographicSyntaxAdapter } from "@edgeever/shared";
+import type { InfographicSyntaxAdapter } from "@ponder/shared";
 
 export const infographicSyntaxAdapter: InfographicSyntaxAdapter = {
   parse: syntax => {

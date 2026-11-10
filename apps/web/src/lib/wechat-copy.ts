@@ -15,7 +15,7 @@ import {
   parseNoteProseQuoteStyle,
   type NoteProsePaletteColors,
   type NoteProseStylePreferences,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import katex from "katex";
 import "katex/contrib/mhchem";
 import { common, createLowlight } from "lowlight";
@@ -146,13 +146,13 @@ const applyLegacyWeChatStyles = (
   };
 
   root.style.cssText = `${textStyle} background-color: #ffffff; word-break: break-word;`;
-  root.querySelectorAll("[data-edgeever-video-note]").forEach((element) => element.remove());
+  root.querySelectorAll("[data-ponder-video-note]").forEach((element) => element.remove());
 
   root.querySelectorAll<HTMLElement>("*").forEach((element) => {
     if (element.closest("[data-ee-math]")) return;
     const tagName = element.tagName.toLowerCase();
     const isMergeDivider =
-      tagName === "hr" && element.matches("[data-edgeever-merge-divider], .edgeever-merge-divider");
+      tagName === "hr" && element.matches("[data-ponder-merge-divider], .ponder-merge-divider");
     const quoted = (tagName === "p" || tagName === "li") && element.closest("blockquote");
     const cell = tagName === "p" ? element.closest("th, td") : null;
     const baseStyle = cell
@@ -186,13 +186,13 @@ const applyLegacyWeChatStyles = (
         `<section data-ee-publish-chrome="true" data-ee-cover-card="true" style="padding: 28px 24px 22px;">`,
         `<section data-ee-publish-chrome="true" style="margin-bottom: 18px; font-size: 0;">`,
         `<span data-ee-publish-chrome="true" style="display: inline-block; width: 6px; height: 6px; background: ${accent}; border-radius: 50%; vertical-align: middle;"><span leaf=""><br></span></span>`,
-        `<span data-ee-publish-chrome="true" style="display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 3px; color: ${accent}; vertical-align: middle; margin-left: 8px;">FEATURED · 深度实测</span>`,
+        `<span data-ee-publish-chrome="true" style="display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 3px; color: ${accent}; vertical-align: middle; margin-left: 8px;">FEATURED · In depth</span>`,
         `</section>`,
         `<p data-ee-publish-chrome="true" style="font-size: ${metrics.fontSize * 1.75}px; font-weight: 900; color: #111827; margin: 0 0 14px; line-height: 1.2; letter-spacing: -0.5px;">${titleHtml}</p>`,
         `<section data-ee-publish-chrome="true" style="width: 48px; height: 3px; background: ${accent}; border-radius: 2px;"><span leaf=""><br></span></section>`,
         `</section>`,
         `<section data-ee-publish-chrome="true" style="${colors ? accentGradient : "background: #f3f4f6;"} padding: 10px 24px; font-size: 0;">`,
-        `<span data-ee-publish-chrome="true" style="display: inline-block; font-size: 11px; color: ${colors ? "rgba(255,255,255,0.92)" : "#374151"}; font-weight: 600; letter-spacing: 0.8px; vertical-align: middle;">EDGEEVER · 精选笔记</span>`,
+        `<span data-ee-publish-chrome="true" style="display: inline-block; font-size: 11px; color: ${colors ? "rgba(255,255,255,0.92)" : "#374151"}; font-weight: 600; letter-spacing: 0.8px; vertical-align: middle;">PONDER · Selected notes</span>`,
         `</section>`,
       ].join("");
     });
@@ -208,7 +208,7 @@ const applyLegacyWeChatStyles = (
         const rawText = (heading.textContent || "")
           .replace(/^\s*(?:第[一二三四五六七八九十百\d]+[章节部分篇]\s*[：:·.\s]*|\d+\s*[.、·:：]\s*|[一二三四五六七八九十]+\s*[、.．]\s*)/u, "")
           .trim();
-        const shortTitle = rawText.slice(0, 6) || `章节 ${num}`;
+        const shortTitle = rawText.slice(0, 6) || `Part ${num}`;
         const subTitle = rawText.length > 6 ? rawText.slice(6, 18) : `PART ${num}`;
         const isHighlighted = index < h2ListForToc.length - 1 || h2ListForToc.length === 2 && index === 0;
         const useAccentGradient = isHighlighted && Boolean(colors);
@@ -231,7 +231,7 @@ const applyLegacyWeChatStyles = (
       }).join("");
       toc.innerHTML = [
         `<section data-ee-publish-chrome="true" style="margin-bottom: 10px;">`,
-        `<p data-ee-publish-chrome="true" style="font-size: 10px; color: #9ca3af; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">${h2ListForToc.length} PARTS · 全文导览</p>`,
+        `<p data-ee-publish-chrome="true" style="font-size: 10px; color: #9ca3af; margin: 0; text-transform: uppercase; letter-spacing: 2px; font-weight: 600;">${h2ListForToc.length} PARTS · Contents</p>`,
         `</section>`,
         `<section data-ee-publish-chrome="true" style="display: flex; flex-wrap: wrap; align-items: stretch; font-size: 0;">${cardsHtml}</section>`,
       ].join("");
@@ -539,7 +539,7 @@ const embedMermaidForWeChat = async (root: HTMLElement, editor?: Editor) => {
   }
 
   const renderedBlocks = editor
-    ? Array.from(editor.view.dom.querySelectorAll<HTMLElement>(".edgeever-mermaid-code-block"))
+    ? Array.from(editor.view.dom.querySelectorAll<HTMLElement>(".ponder-mermaid-code-block"))
     : [];
   await Promise.all(codeBlocks.map(async (codeBlock, index) => {
     const source = codeBlock.textContent?.trim();
@@ -630,7 +630,7 @@ const embedImagesForWeChat = async (root: HTMLElement, originalImages: HTMLImage
 };
 
 const convertImageGalleriesForWeChat = (root: HTMLElement) => {
-  root.querySelectorAll<HTMLElement>("[data-edgeever-image-gallery]").forEach((gallery) => {
+  root.querySelectorAll<HTMLElement>("[data-ponder-image-gallery]").forEach((gallery) => {
     const images = Array.from(gallery.children).filter(
       (child): child is HTMLImageElement => child.tagName === "IMG",
     );
@@ -796,7 +796,7 @@ const embedMarkdownMath = (markdown: string) => {
       const lineBreak = markdown.indexOf("\n", index);
       const lineEnd = lineBreak < 0 ? markdown.length : lineBreak;
       const line = markdown.slice(index, lineEnd);
-      // Scan each cell on its own so `$10+/月` in one cell cannot close on `$5+/月` in the next.
+      // Scan each cell on its own so `$10+/mo` in one cell cannot close on `$5+/mo` in the next.
       if (/^\s*\|.*\|\s*$/u.test(line) && !line.includes("$$")) {
         output += line.split("|").map((cell) => embedInlineMath(cell)).join("|");
         if (lineBreak >= 0) output += "\n";

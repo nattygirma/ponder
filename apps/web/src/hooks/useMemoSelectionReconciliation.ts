@@ -9,6 +9,7 @@ export const useMemoSelectionReconciliation = ({
   pendingCreatedMemoIdRef,
   pendingOpenedMemoIdRef,
   createdMemoEditId,
+  keepSelectionOutsideList = false,
 }: {
   memos: ReadonlyArray<{ id: string }>;
   selectedMemoId: string | null;
@@ -18,6 +19,8 @@ export const useMemoSelectionReconciliation = ({
   pendingCreatedMemoIdRef: RefObject<string | null>;
   pendingOpenedMemoIdRef: RefObject<string | null>;
   createdMemoEditId: string | null;
+  /** The page tree can open a page the paged note list has not loaded. */
+  keepSelectionOutsideList?: boolean;
 }) => {
   // Call only for explicit list/notebook actions, never for a programmatic
   // note open: its guard must survive the destination list's first page.
@@ -31,11 +34,18 @@ export const useMemoSelectionReconciliation = ({
   useEffect(() => {
     const selectedMemoInList = selectedMemoId ? memos.some((memo) => memo.id === selectedMemoId) : false;
     if (rendererRecoveryMode) return;
+    if (keepSelectionOutsideList && selectedMemoId) return;
     if (creatingMemoSelectionRef.current || pendingCreatedMemoIdRef.current) return;
 
     if (pendingOpenedMemoIdRef.current) {
-      if (!memos.some((memo) => memo.id === pendingOpenedMemoIdRef.current)) return;
+      const openedMemoId = pendingOpenedMemoIdRef.current;
+      if (!memos.some((memo) => memo.id === openedMemoId)) return;
       pendingOpenedMemoIdRef.current = null;
+      // The open may not have rendered yet, and the first note in the list must not replace it.
+      if (selectedMemoId !== openedMemoId) {
+        setSelectedMemoId(openedMemoId);
+        return;
+      }
     }
 
     if (createdMemoEditId && selectedMemoId === createdMemoEditId) {
@@ -47,7 +57,7 @@ export const useMemoSelectionReconciliation = ({
       return;
     }
     if (!selectedMemoId || !selectedMemoInList) setSelectedMemoId(memos[0].id);
-  }, [createdMemoEditId, creatingMemoSelectionRef, memos, pendingCreatedMemoIdRef, pendingOpenedMemoIdRef, rendererRecoveryMode, selectedMemoId, setSelectedMemoId]);
+  }, [keepSelectionOutsideList, createdMemoEditId, creatingMemoSelectionRef, memos, pendingCreatedMemoIdRef, pendingOpenedMemoIdRef, rendererRecoveryMode, selectedMemoId, setSelectedMemoId]);
 
   return clearPendingMemoSelection;
 };

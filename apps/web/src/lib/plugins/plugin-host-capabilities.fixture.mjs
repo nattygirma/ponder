@@ -38,7 +38,7 @@ export default {
         });
         await context.ui.openNote("note-1", { search: "Updated note" });
         await context.ui.panels.open("capability-panel", { state: { resourceId: updatedResource.id } });
-        globalThis.edgeeverPluginCapabilityResult = {
+        globalThis.ponderPluginCapabilityResult = {
           notebook, moved, pinned, revisions, resources, resourceText: await resourceBlob.text(), uploaded, updatedResource, endpoint, note, edited,
           contentQuery, templates, createdTemplate, updatedTemplate, templatedNote, editorDocument, editedEditorDocument,
           insertedEmbed,

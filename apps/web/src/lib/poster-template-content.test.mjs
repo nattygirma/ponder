@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { PosterDocumentSchema, createPosterDocument, parsePosterDocument, serializePosterDocument } from "@edgeever/shared";
+import { PosterDocumentSchema, createPosterDocument, parsePosterDocument, serializePosterDocument } from "@ponder/shared";
 import { compilePosterMemo } from "../../../api/src/mcp-poster-tools";
 import { composePosterTemplate, hasPosterSections, posterTemplateHeaderHeight } from "./poster-template-content";
 
@@ -52,10 +52,10 @@ test("legacy card-1-bg and badge-text formats compose cleanly without ghost badg
     height: 1440,
     background: "#f4efe4",
     templateId: "editorial",
-    copy: { badge: "EDGEEVER", title: "大标题", subtitle: "副标题" },
+    copy: { badge: "PONDER", title: "大标题", subtitle: "副标题" },
     elements: [
       { id: "accent-bar", name: "accent-bar", type: "rect", x: 96, y: 110, width: 120, height: 12, fill: "#16a06e", rotation: 0, opacity: 1 },
-      { id: "badge-text", name: "badge-text", type: "text", role: "badge", text: "EDGEEVER", x: 96, y: 150, width: 888, height: 40, rotation: 0, opacity: 1, fill: "#0f766e", fontSize: 24, fontFamily: "sans-serif", fontWeight: "bold", textAlign: "left" },
+      { id: "badge-text", name: "badge-text", type: "text", role: "badge", text: "PONDER", x: 96, y: 150, width: 888, height: 40, rotation: 0, opacity: 1, fill: "#0f766e", fontSize: 24, fontFamily: "sans-serif", fontWeight: "bold", textAlign: "left" },
       { id: "heading", name: "heading", type: "text", role: "title", text: "大标题", x: 96, y: 220, width: 888, height: 220, rotation: 0, opacity: 1, fill: "#07130b", fontSize: 84, fontFamily: "serif", fontWeight: "bold", textAlign: "left" },
       { id: "subtitle", name: "subtitle", type: "text", role: "subtitle", text: "副标题", x: 96, y: 470, width: 888, height: 80, rotation: 0, opacity: 1, fill: "#3f3f46", fontSize: 32, fontFamily: "sans-serif", fontWeight: "normal", textAlign: "left" },
       { id: "card-1-bg", name: "card-1-bg", type: "rect", x: 96, y: 590, width: 888, height: 220, fill: "#ffffff", rotation: 0, opacity: 1 },

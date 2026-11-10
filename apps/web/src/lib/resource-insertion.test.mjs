@@ -3,7 +3,7 @@ import { Editor } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import StarterKit from "@tiptap/starter-kit";
 import { closeHistory, history, undo, redo } from "@tiptap/pm/history";
-import { FileAttachment, ImageGallery, IMAGE_GALLERY_NODE_TYPE } from "@edgeever/shared";
+import { FileAttachment, ImageGallery, IMAGE_GALLERY_NODE_TYPE } from "@ponder/shared";
 import { insertUploadedResources } from "./resource-insertion";
 import { getResourceInsertionTarget } from "./resource-insertion-target";
 
@@ -26,9 +26,9 @@ describe("uploaded resources beside an existing gallery", () => {
     const attachment = {
       type: "paragraph",
       content: [{
-        type: "edgeeverFileAttachment",
+        type: "ponderFileAttachment",
         attrs: {
-          url: "edgeever-staged://stage_word_1",
+          url: "ponder-staged://stage_word_1",
           label: "附件：软件外包合同.docx",
           filename: "软件外包合同.docx",
           mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

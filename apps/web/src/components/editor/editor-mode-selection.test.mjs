@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Editor } from "@tiptap/core";
-import { createEdgeEverDocumentExtensions, markdownToDoc } from "@edgeever/shared";
-import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
+import { createPonderDocumentExtensions, markdownToDoc } from "@ponder/shared";
+import { createPonderMathematics } from "@ponder/shared/mathematics";
 import { ensureTestWindowDom } from "../../lib/restore-test-global.mjs";
 import { docToEditableMarkdown } from "./editor-mode-content.ts";
 import { markdownOffsetToRichPosition, richPositionToMarkdownOffset } from "./editor-mode-selection.ts";
@@ -9,7 +9,7 @@ import { markdownOffsetToRichPosition, richPositionToMarkdownOffset } from "./ed
 const createEditor = (source) => {
   ensureTestWindowDom();
   return new Editor({
-    extensions: createEdgeEverDocumentExtensions({ mathematics: createEdgeEverMathematics() }),
+    extensions: createPonderDocumentExtensions({ mathematics: createPonderMathematics() }),
     content: markdownToDoc(source),
   });
 };
@@ -51,7 +51,7 @@ describe("Markdown mode cursor mapping", () => {
   });
 
   test("declines unsafe positions inside Markdown syntax", () => {
-    const editor = createEditor("[EdgeEver](https://edgeever.org)");
+    const editor = createEditor("[Ponder](https://appkeep.io)");
     const source = docToEditableMarkdown(editor.getJSON());
 
     expect(markdownOffsetToRichPosition(editor.schema, editor.state.doc, source, source.indexOf("https") + 2)).toBeNull();

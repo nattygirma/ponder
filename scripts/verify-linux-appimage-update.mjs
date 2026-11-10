@@ -41,15 +41,15 @@ await new Promise((resolveListen, rejectListen) => {
   server.listen(0, "127.0.0.1", resolveListen);
 });
 
-const testDirectory = mkdtempSync(join(tmpdir(), "edgeever-linux-appimage-update-"));
+const testDirectory = mkdtempSync(join(tmpdir(), "ponder-linux-appimage-update-"));
 const logPath = join(testDirectory, "logs", "desktop.log");
 const output = [];
 const child = spawn(oldAppImage, [], {
   env: {
     ...process.env,
-    EDGE_EVER_DESKTOP_UPDATE_TEST: "1",
-    EDGE_EVER_DESKTOP_UPDATE_TEST_FEED_URL: `http://127.0.0.1:${server.address().port}/`,
-    EDGE_EVER_DESKTOP_UPDATE_TEST_USER_DATA: testDirectory,
+    PONDER_DESKTOP_UPDATE_TEST: "1",
+    PONDER_DESKTOP_UPDATE_TEST_FEED_URL: `http://127.0.0.1:${server.address().port}/`,
+    PONDER_DESKTOP_UPDATE_TEST_USER_DATA: testDirectory,
   },
   stdio: ["ignore", "pipe", "pipe"],
 });

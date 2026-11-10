@@ -1,7 +1,7 @@
 import { learnCompanionPreferences, refreshCompanionPreferences, applicableMemories } from "./companion-learning";
 import { selectCompanionMemories } from "./companion-memory-context";
 import { CompanionDiscoveryOutputSchema, companionTurnLocale, type CompanionDiscoveryOutput, type CompanionDiscoveryItem, type CompanionDiscoverySettings,
-  type CompanionDiscoverySettingsInput, type MemoDetail } from "@edgeever/shared";
+  type CompanionDiscoverySettingsInput, type MemoDetail } from "@ponder/shared";
 import type { DatabaseAdapter } from "./storage-contract";
 import type { CompanionScope } from "./companion-service";
 import { beginCompanionTurn, checkpointCompanionTurn, listCompanionMemories, saveCompanionMemory, getCompanionTurn, companionRevision } from "./companion-service";

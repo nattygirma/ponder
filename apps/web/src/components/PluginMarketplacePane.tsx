@@ -5,7 +5,7 @@ import * as m from "motion/react-m";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { PluginManagerCard } from "@/components/settings/PluginManagerCard";
-import type { EdgeEverPluginHost } from "@/lib/plugins/plugin-host";
+import type { PonderPluginHost } from "@/lib/plugins/plugin-host";
 import { contentEnterMotion } from "@/lib/motion";
 import { WORKSPACE_PAGE_TITLE_CLASSNAME } from "@/lib/workspace-ui";
 import { ExecutionCenterButton } from "@/components/execution/ExecutionCenterButton";
@@ -16,7 +16,7 @@ export const PluginMarketplacePane = ({
   onClose,
   onOpenExecutionCenter,
 }: {
-  host: EdgeEverPluginHost;
+  host: PonderPluginHost;
   onClose: () => void;
   onOpenExecutionCenter: () => void;
 }) => {

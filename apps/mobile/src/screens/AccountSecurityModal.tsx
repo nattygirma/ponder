@@ -1,4 +1,4 @@
-import { ApiRequestError } from "@edgeever/client";
+import { ApiRequestError } from "@ponder/client";
 import { useMutation } from "@tanstack/react-query";
 import { KeyRound } from "../components/icons";
 import { useEffect, useState } from "react";
@@ -25,8 +25,8 @@ export const AccountSecurityPanel = ({
   const passwordMutation = useMutation({
     mutationFn: async () => {
       if (!client) throw new Error("Client is not ready");
-      if (newPassword.length < 8) throw new Error("新密码至少需要 8 个字符。");
-      if (newPassword !== confirmPassword) throw new Error("两次输入的新密码不一致。");
+      if (newPassword.length < 8) throw new Error("The new password must be at least 8 characters.");
+      if (newPassword !== confirmPassword) throw new Error("The new passwords do not match.");
       return client.changePassword({ currentPassword, newPassword, confirmPassword });
     },
     onSuccess: () => {
@@ -43,8 +43,8 @@ export const AccountSecurityPanel = ({
   }, [active]);
 
   const errorMessage = (error: unknown) => {
-    if (error instanceof ApiRequestError && error.code === "invalid_current_password") return "当前密码不正确。";
-    return error instanceof Error ? error.message : "操作失败，请稍后再试";
+    if (error instanceof ApiRequestError && error.code === "invalid_current_password") return "The current password is incorrect.";
+    return error instanceof Error ? error.message : "Something went wrong. Please try again.";
   };
 
   return (
@@ -52,18 +52,18 @@ export const AccountSecurityPanel = ({
       <View style={styles.hero}>
         <KeyRound color="#15803d" size={22} />
         <View style={styles.flex}>
-          <Text style={styles.cardTitle}>修改密码</Text>
-          <Text style={styles.help}>修改后会保留当前设备登录，并退出其他设备上的登录会话。</Text>
+          <Text style={styles.cardTitle}>Change password</Text>
+          <Text style={styles.help}>Keeps this device signed in and signs out other sessions.</Text>
         </View>
       </View>
-      <Field label="当前密码" onChangeText={setCurrentPassword} value={currentPassword} />
-      <Field label="新密码" onChangeText={setNewPassword} value={newPassword} />
-      <Field label="确认新密码" onChangeText={setConfirmPassword} value={confirmPassword} />
+      <Field label="Current password" onChangeText={setCurrentPassword} value={currentPassword} />
+      <Field label="New password" onChangeText={setNewPassword} value={newPassword} />
+      <Field label="Confirm new password" onChangeText={setConfirmPassword} value={confirmPassword} />
       {passwordMutation.error ? <Text style={styles.error}>{errorMessage(passwordMutation.error)}</Text> : null}
-      {passwordMutation.isSuccess ? <Text accessibilityLiveRegion="polite" style={styles.success}>密码已修改成功。</Text> : null}
+      {passwordMutation.isSuccess ? <Text accessibilityLiveRegion="polite" style={styles.success}>Password changed successfully.</Text> : null}
       <PrimaryButton
         disabled={passwordMutation.isPending}
-        label={passwordMutation.isPending ? "修改中..." : "修改密码"}
+        label={passwordMutation.isPending ? "Changing..." : "Change password"}
         onPress={() => passwordMutation.mutate()}
       />
     </View>

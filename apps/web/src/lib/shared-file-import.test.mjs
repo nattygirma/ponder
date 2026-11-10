@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { FILE_ATTACHMENT_NODE_TYPE, PDF_ATTACHMENT_NODE_TYPE } from "@edgeever/shared";
+import { FILE_ATTACHMENT_NODE_TYPE, PDF_ATTACHMENT_NODE_TYPE } from "@ponder/shared";
 import { createSharedFileMemo, sharedFileTitle } from "./shared-file-import.ts";
 
 const memo = {
@@ -31,14 +31,14 @@ describe("shared file note", () => {
         createdTitle = input.title;
         return { memo: { ...memo, title: input.title } };
       },
-      uploadResource: async () => ({ url: "edgeever-staged://sheet" }),
+      uploadResource: async () => ({ url: "ponder-staged://sheet" }),
       updateMemo: async (created, content) => {
         updated = content;
         return { memo: { ...created, contentMarkdown: content.contentMarkdown } };
       },
     });
     expect(createdTitle).toBe("云晰科技爆单键盘项目功能梳理表");
-    expect(result.contentMarkdown).toContain("edgeever-staged://sheet");
+    expect(result.contentMarkdown).toContain("ponder-staged://sheet");
     expect(JSON.stringify(updated.contentJson)).toContain(FILE_ATTACHMENT_NODE_TYPE);
   });
 
@@ -49,13 +49,13 @@ describe("shared file note", () => {
       filename: "photo.png",
       file: new File(["png"], "photo.png", { type: "image/png" }),
       createMemo: async (input) => ({ memo: { ...memo, title: input.title } }),
-      uploadResource: async () => ({ url: "edgeever-staged://photo.png", filename: "photo.png" }),
+      uploadResource: async () => ({ url: "ponder-staged://photo.png", filename: "photo.png" }),
       updateMemo: async (created, content) => {
         updated = content;
         return { memo: { ...created, contentMarkdown: content.contentMarkdown } };
       },
     });
-    expect(updated.contentMarkdown).toContain("![photo.png](edgeever-staged://photo.png)");
+    expect(updated.contentMarkdown).toContain("![photo.png](ponder-staged://photo.png)");
     expect(updated.contentJson.content.some((node) => node.type === "image")).toBe(true);
   });
 
@@ -66,7 +66,7 @@ describe("shared file note", () => {
       filename: "brief.pdf",
       file: new File(["pdf"], "brief.pdf", { type: "application/pdf" }),
       createMemo: async () => ({ memo }),
-      uploadResource: async () => ({ url: "edgeever-staged://brief.pdf", filename: "brief.pdf" }),
+      uploadResource: async () => ({ url: "ponder-staged://brief.pdf", filename: "brief.pdf" }),
       updateMemo: async (_created, content) => {
         updated = content;
         return { memo: { ...memo, contentMarkdown: content.contentMarkdown } };
@@ -88,7 +88,7 @@ describe("shared file note", () => {
       },
       uploadResource: async () => {
         uploads.push(true);
-        return { url: "edgeever-staged://unused" };
+        return { url: "ponder-staged://unused" };
       },
       updateMemo: async () => { throw new Error("should not update"); },
     });

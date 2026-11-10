@@ -5,7 +5,7 @@ import { createSelfHostedStorageAdapter } from "./self-hosted-storage-adapter.ts
 import { getDiscoverySettings, saveDiscoverySettings, checkDiscoveries, listDiscoveries, acknowledgeDiscovery } from "./companion-discovery.ts";
 import { createMemoRecord, getMemoDetail, updateMemoRecord } from "./memo-service.ts";
 import { applyCompanionAction, getCompanionAction } from "./companion-actions.ts";
-import { CompanionDiscoverySettingsInputSchema } from "@edgeever/shared";
+import { CompanionDiscoverySettingsInputSchema } from "@ponder/shared";
 import { MockLanguageModelV4 } from "ai/test";
 import { generateCompanionDiscovery } from "../../../packages/client/src/discovery-direct.ts";
 import { clearCompanionHistory, listCompanionTurns } from "./companion-service.ts";
@@ -18,7 +18,7 @@ async function setup(kind = "merge") {
   const sqlite = new Database(":memory:"); databases.push(sqlite);
   for (const file of globSync("migrations/*.sql").sort()) sqlite.exec(readFileSync(file, "utf8"));
   sqlite.exec("INSERT INTO workspaces(id, name) VALUES ('ws_test', 'Test'), ('ws_other', 'Other'); INSERT INTO notebooks(id, workspace_id, name) VALUES ('ideas', 'ws_test', 'Ideas'), ('child', 'ws_test', 'Child'), ('excluded', 'ws_other', 'Private'); UPDATE notebooks SET parent_id = 'ideas' WHERE id = 'child';");
-  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-discovery-test-unused");
+  const storage = createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-discovery-test-unused");
   const db = storage.db;
   const auth = { kind: "user", actorType: "user", actorId: "owner", workspaceId: scope.workspaceId, scopes: [], role: "member" };
   const context = { env: { storage }, get: () => auth };
@@ -105,7 +105,7 @@ describe("quiet discoveries", () => {
     const allowNextCheck = () => f.sqlite.exec("UPDATE companion_discovery_settings SET last_check_at = '2020-01-01', last_cursor = -1");
     await updateMemoRecord(f.db, scope.workspaceId, f.notes[0].id, { contentMarkdown: "Project changed details" }, actor, "owner");
     allowNextCheck(); await f.run(); expect(f.calls()).toBe(2);
-    f.options.locale = "zh-CN";
+    f.options.locale = "ja";
     allowNextCheck(); await f.run(); expect(f.calls()).toBe(3);
     await f.enable(); allowNextCheck(); await f.run(); expect(f.calls()).toBe(4);
     f.sqlite.exec("INSERT INTO ai_workspace_settings(workspace_id, created_at, updated_at) VALUES ('ws_test', '2026-01-01', '2026-01-01');");

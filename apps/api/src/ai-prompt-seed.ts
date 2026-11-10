@@ -1,4 +1,4 @@
-import { DEFAULT_AI_PROMPT_SEEDS, defaultAiPromptId } from "@edgeever/shared";
+import { DEFAULT_AI_PROMPT_SEEDS, defaultAiPromptId } from "@ponder/shared";
 import type { DatabaseAdapter } from "./storage-contract";
 import { isoNow } from "./entity-utils";
 

@@ -1,18 +1,18 @@
-import { resolveResourceUploadMimeType, type ResourceListItem, type TiptapDoc } from "@edgeever/shared";
+import { resolveResourceUploadMimeType, type ResourceListItem, type TiptapDoc } from "@ponder/shared";
 import { getConfiguredDesktopApiBaseUrl } from "@/lib/api";
 
-export const isDesktopResourceRuntime = () => Boolean(typeof window !== "undefined" && window.edgeeverDesktop?.isAvailable);
+export const isDesktopResourceRuntime = () => Boolean(typeof window !== "undefined" && window.ponderDesktop?.isAvailable);
 
 const RESOURCE_PATH_PATTERN = /\/api\/v1\/resources\/([^/]+)\/blob(?:$|[?#])/;
 
 const getResourceId = (url: string) => {
-  if (url.startsWith("edgeever-resource://")) {
+  if (url.startsWith("ponder-resource://")) {
     const parsed = new URL(url);
     return decodeURIComponent(parsed.pathname.replace(/^\//, ""));
   }
 
   try {
-    const base = getConfiguredDesktopApiBaseUrl() || "http://edgeever.local";
+    const base = getConfiguredDesktopApiBaseUrl() || "http://ponder.local";
     const parsed = new URL(url, base);
     const match = parsed.pathname.match(RESOURCE_PATH_PATTERN);
     return match ? decodeURIComponent(match[1]) : null;
@@ -22,13 +22,13 @@ const getResourceId = (url: string) => {
 };
 
 export const toDesktopResourceUrl = (url: string) => {
-  if (!isDesktopResourceRuntime() || url.startsWith("edgeever-resource://") || url.startsWith("edgeever-staged://")) return url;
+  if (!isDesktopResourceRuntime() || url.startsWith("ponder-resource://") || url.startsWith("ponder-staged://")) return url;
   const resourceId = getResourceId(url);
-  return resourceId ? `edgeever-resource://resource/${encodeURIComponent(resourceId)}` : url;
+  return resourceId ? `ponder-resource://resource/${encodeURIComponent(resourceId)}` : url;
 };
 
 export const toDesktopResourceDownloadUrl = (url: string, filename: string) => {
-  if (!isDesktopResourceRuntime() || (!url.startsWith("edgeever-resource://") && !url.startsWith("edgeever-staged://"))) return url;
+  if (!isDesktopResourceRuntime() || (!url.startsWith("ponder-resource://") && !url.startsWith("ponder-staged://"))) return url;
   try {
     const parsed = new URL(url);
     parsed.searchParams.set("download", filename);
@@ -39,7 +39,7 @@ export const toDesktopResourceDownloadUrl = (url: string, filename: string) => {
 };
 
 export const toApiResourceUrl = (url: string) => {
-  if (!url.startsWith("edgeever-resource://")) return url;
+  if (!url.startsWith("ponder-resource://")) return url;
   const resourceId = getResourceId(url);
   return resourceId ? `/api/v1/resources/${encodeURIComponent(resourceId)}/blob` : url;
 };
@@ -60,11 +60,11 @@ export const mapTiptapResourceUrls = (doc: TiptapDoc, mapper: (url: string) => s
 };
 
 export const mapMarkdownResourceUrls = (markdown: string | undefined, mapper: (url: string) => string) =>
-  markdown?.replace(/(?:edgeever-resource:\/\/resource\/[^\s)"']+|\/api\/v1\/resources\/[^\s)"']+\/blob)/g, mapper) ?? markdown;
+  markdown?.replace(/(?:ponder-resource:\/\/resource\/[^\s)"']+|\/api\/v1\/resources\/[^\s)"']+\/blob)/g, mapper) ?? markdown;
 
 export const stageDesktopResource = async (memoId: string, file: File) => {
   if (!isDesktopResourceRuntime()) return null;
-  const bridge = window.edgeeverDesktop!;
+  const bridge = window.ponderDesktop!;
   const staged = await bridge.beginStagedResource({
     memoId,
     name: file.name,
@@ -99,7 +99,7 @@ export const createStagedResourceListItem = (
   height: null,
   createdAt: now,
   updatedAt: now,
-  url: `edgeever-staged://${item.id}`,
+  url: `ponder-staged://${item.id}`,
   memoTitle: null,
   memoExcerpt: null,
   memoDeleted: false,

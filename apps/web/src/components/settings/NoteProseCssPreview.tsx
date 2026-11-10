@@ -1,22 +1,22 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import type { NoteProseFontSize, NoteProseLineHeight } from "@edgeever/shared";
+import type { NoteProseFontSize, NoteProseLineHeight } from "@ponder/shared";
 import { NOTE_PROSE_CSS_PREVIEW_DARK_CLASS, previewNoteProseCss } from "@/lib/css-sandbox";
 
 const previewBaseCss = `
 :host { display: block; }
-.edgeever-editor {
+.ponder-editor {
   background: #f8fafb;
   color: #27272a;
 }
-.${NOTE_PROSE_CSS_PREVIEW_DARK_CLASS} .edgeever-editor {
+.${NOTE_PROSE_CSS_PREVIEW_DARK_CLASS} .ponder-editor {
   background: #222325;
   color: #dedede;
 }
 .ProseMirror {
   margin: 0;
   padding: 12px 16px 14px;
-  font-family: var(--editor-body-font-family, var(--edgeever-system-font-family, ui-sans-serif, system-ui, sans-serif));
+  font-family: var(--editor-body-font-family, var(--ponder-system-font-family, ui-sans-serif, system-ui, sans-serif));
   font-size: var(--preview-font-size, 16px);
   line-height: var(--preview-line-height, 1.65);
 }
@@ -72,12 +72,12 @@ export const NoteProseCssPreview = ({
     const root = host.shadowRoot ?? host.attachShadow({ mode: "open" });
     const style = document.createElement("style");
     style.textContent = `${previewBaseCss}\n${previewCss}`;
-    // Scoped dark rules are `.note-prose-css-preview-dark .edgeever-editor .ProseMirror …`.
+    // Scoped dark rules are `.note-prose-css-preview-dark .ponder-editor .ProseMirror …`.
     // The class has to wrap the editor, or those rules never match.
     const scope = document.createElement("div");
     if (dark) scope.className = NOTE_PROSE_CSS_PREVIEW_DARK_CLASS;
     const frame = document.createElement("div");
-    frame.className = "edgeever-editor";
+    frame.className = "ponder-editor";
     frame.style.setProperty("--preview-font-size", `${fontSize}px`);
     frame.style.setProperty("--preview-line-height", String(lineHeight));
     const prose = document.createElement("div");

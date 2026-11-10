@@ -4,9 +4,9 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const conceptPath = path.join(projectRoot, "assets/brand/edgeever-concept-open-cat.png");
-const iconPath = path.join(projectRoot, "assets/brand/edgeever-icon.svg");
-const markPath = path.join(projectRoot, "assets/brand/edgeever-mark.svg");
+const conceptPath = path.join(projectRoot, "assets/brand/ponder-concept-open-cat.png");
+const iconPath = path.join(projectRoot, "assets/brand/ponder-icon.svg");
+const markPath = path.join(projectRoot, "assets/brand/ponder-mark.svg");
 const adaptiveMarkPath = path.join(projectRoot, "apps/mobile/assets/adaptive-icon-foreground.svg");
 
 const source = await readFile(conceptPath);
@@ -212,11 +212,11 @@ const sourceCropInset = 72;
 const sourceCropSize = width - sourceCropInset * 2;
 const scale = Number((tileSize / sourceCropSize).toFixed(8));
 const transform = `translate(${tileInset} ${tileInset}) scale(${scale}) translate(-${sourceCropInset} -${sourceCropInset})`;
-const title = "  <title id=\"title\">EdgeEver</title>\n  <desc id=\"desc\">An open cat face in near-black on the EdgeEver green rounded tile.</desc>\n";
+const title = "  <title id=\"title\">Ponder</title>\n  <desc id=\"desc\">An open cat face in near-black on the Ponder green rounded tile.</desc>\n";
 const sharedPath = `    <path fill=\"#07130b\" fill-rule=\"evenodd\" d=\"${pathData}\" />\n`;
 const transformedMark = `  <g transform=\"${transform}\">\n${sharedPath}  </g>\n`;
 const iconSvg = `<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ${iconSize} ${iconSize}\" role=\"img\" aria-labelledby=\"title desc\">\n${title}  <rect x=\"${tileInset}\" y=\"${tileInset}\" width=\"${tileSize}\" height=\"${tileSize}\" rx=\"${tileRadius}\" fill=\"#16a06e\" />\n${transformedMark}</svg>\n`;
-const markSvg = `<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ${iconSize} ${iconSize}\" role=\"img\" aria-label=\"EdgeEver\">\n${transformedMark}</svg>\n`;
+const markSvg = `<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 ${iconSize} ${iconSize}\" role=\"img\" aria-label=\"Ponder\">\n${transformedMark}</svg>\n`;
 
 await writeFile(iconPath, iconSvg);
 await writeFile(markPath, markSvg);

@@ -3,7 +3,7 @@ import { getSchema } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import { AllSelection, NodeSelection, TextSelection } from "@tiptap/pm/state";
-import { ImageGallery, IMAGE_GALLERY_NODE_TYPE } from "@edgeever/shared";
+import { ImageGallery, IMAGE_GALLERY_NODE_TYPE } from "@ponder/shared";
 import { hasAiTextSelection, shouldShowAiBubbleMenu } from "./useAiBubbleMenu.ts";
 
 const visibleState = {

@@ -51,7 +51,7 @@ pub(crate) fn note_list_metadata(markdown: &str) -> Value {
     metadata.insert("infographic".to_owned(), json!(is_infographic(markdown)));
     metadata.insert(
         "poster".to_owned(),
-        json!(markdown.contains("<!-- edgeever-poster-v1:")),
+        json!(markdown.contains("<!-- ponder-poster-v1:")),
     );
     match table_preview(markdown) {
         Some(preview) => {
@@ -144,7 +144,7 @@ fn optional_string(object: &Map<String, Value>, key: &str, max_units: Option<usi
 }
 
 fn diagram_preview(markdown: &str) -> Option<DiagramPreview> {
-    let value = decode_json(&marker_payload(markdown, "edgeever-diagram-v1")?)?;
+    let value = decode_json(&marker_payload(markdown, "ponder-diagram-v1")?)?;
     let document = value.as_object()?;
     let kind = document.get("kind")?.as_str()?;
     if !matches!(kind, "mind-map" | "flowchart" | "architecture") {
@@ -339,7 +339,7 @@ fn preview_labels(kind: &str, nodes: &[SummaryNode]) -> Vec<String> {
 }
 
 fn table_preview(markdown: &str) -> Option<TablePreview> {
-    let value = decode_json(&marker_payload(markdown, "edgeever-table-v1")?)?;
+    let value = decode_json(&marker_payload(markdown, "ponder-table-v1")?)?;
     let document = value.as_object()?;
     if document.get("schemaVersion").and_then(Value::as_u64) != Some(1) {
         return None;
@@ -392,7 +392,7 @@ fn parse_field(value: &Value) -> Option<(String, String)> {
     let raw_name = field.get("name").and_then(Value::as_str).unwrap_or("");
     let collapsed = collapse_js_whitespace(raw_name);
     let name = if collapsed.is_empty() {
-        "字段".to_owned()
+        "Field".to_owned()
     } else {
         collapsed
     };
@@ -428,7 +428,7 @@ fn first_marker_body<'a>(markdown: &'a str, marker: &str) -> Option<&'a str> {
 }
 
 fn infographic_payload(markdown: &str) -> Option<String> {
-    let marker = "edgeever-infographic-v1:";
+    let marker = "ponder-infographic-v1:";
     let mut offset = 0;
     while let Some(relative) = markdown[offset..].find("<!--") {
         let comment = offset + relative + 4;
@@ -569,9 +569,9 @@ mod tests {
     fn plain_and_broken_notes_stay_ordinary() {
         for markdown in [
             "ordinary note",
-            "<!-- edgeever-infographic-v1:broken -->",
-            "<!-- edgeever-diagram-v1:broken -->",
-            "<!-- edgeever-table-v1:not-json -->",
+            "<!-- ponder-infographic-v1:broken -->",
+            "<!-- ponder-diagram-v1:broken -->",
+            "<!-- ponder-table-v1:not-json -->",
         ] {
             let metadata = note_list_metadata(markdown);
             assert_eq!(
@@ -589,19 +589,19 @@ mod tests {
     #[test]
     fn infographic_marker_from_js_base64_is_recognized_with_history() {
         assert_eq!(
-            note_list_metadata(&wrap("edgeever-infographic-v1", INFOGRAPHIC_FIXTURE))
+            note_list_metadata(&wrap("ponder-infographic-v1", INFOGRAPHIC_FIXTURE))
                 ["infographic"],
             true
         );
         assert_eq!(
             note_list_metadata(&wrap(
-                "edgeever-infographic-v1",
+                "ponder-infographic-v1",
                 INFOGRAPHIC_HISTORY_FIXTURE
             ))["infographic"],
             true
         );
         let broken_history = wrap(
-            "edgeever-infographic-v1",
+            "ponder-infographic-v1",
             &encode_json(
                 r#"{"schemaVersion":1,"syntax":"ok","history":[{"id":"one","prompt":42,"createdAt":"2026-10-02T00:00:00.000Z","kind":"refined","resultTitle":""}]}"#,
             ),
@@ -614,7 +614,7 @@ mod tests {
         let payload = encode_json(
             r#"{"schemaVersion":1,"kind":"mind-map","nodes":[{"id":"root","label":"根","x":0,"y":0,"width":1,"height":1,"shape":"topic"},{"id":"child","label":"  分支  主题  ","x":1,"y":1,"width":1,"height":1,"shape":"topic","parentId":"root"}],"edges":[{"id":"edge","source":"root","target":"child"}]}"#,
         );
-        let wrapped = format!("<!-- edgeever-diagram-v1:\n{payload}\n-->");
+        let wrapped = format!("<!-- ponder-diagram-v1:\n{payload}\n-->");
         let metadata = note_list_metadata(&wrapped);
         assert_eq!(metadata["diagramKind"], "mind-map");
         assert_eq!(metadata["diagramPreview"]["nodeCount"], 2);
@@ -631,13 +631,13 @@ mod tests {
         let payload = encode_json(
             r#"{"schemaVersion":1,"fields":[{"id":"fld_name","name":" 名称 ","type":"text"},{"id":"fld_status","name":"","type":"select"}],"records":[{"id":"rec_1","cells":{}}]}"#,
         );
-        let metadata = note_list_metadata(&wrap("edgeever-table-v1", &payload));
+        let metadata = note_list_metadata(&wrap("ponder-table-v1", &payload));
         assert_eq!(metadata["structuredTable"], true);
         assert_eq!(metadata["tablePreview"]["fieldCount"], 2);
         assert_eq!(metadata["tablePreview"]["recordCount"], 1);
         assert_eq!(
             metadata["tablePreview"]["fieldNames"],
-            serde_json::json!(["名称", "字段"])
+            serde_json::json!(["名称", "Field"])
         );
         assert!(metadata.get("contentMarkdown").is_none());
     }

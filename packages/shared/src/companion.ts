@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { isAiTextAttachment, type AiAttachmentMediaType } from "./ai-assistant";
-import { localeEnglishNames, matchSupportedLocale } from "./i18n/locales";
+import { localeEnglishNames, matchSupportedLocale, type SupportedLocale } from "./i18n/locales";
 
 export const COMPANION_MATH_FORMAT_INSTRUCTION = String.raw`In user-facing replies, write inline LaTeX as \(...\) and display LaTeX as $$...$$ on separate lines. Write monetary amounts with ordinary dollar signs, such as $5 and $10. Do not use $...$ for inline math. Preserve quoted source text and note content exactly when the task requires it.`;
 
@@ -46,8 +46,17 @@ export type CompanionTurnInput = z.infer<typeof CompanionTurnInputSchema>;
 
 type ConversationLanguage = CompanionTurnInput["locale"];
 
+// Chinese stays a conversation language so people who write in it still get
+// replies in it, even though it is no longer an interface language.
+const conversationLanguageNames: Record<ConversationLanguage, string> = {
+  ...localeEnglishNames,
+  "zh-CN": "Simplified Chinese",
+};
+
+export const conversationLanguageName = (locale: ConversationLanguage) => conversationLanguageNames[locale];
+
 /** A UI locale as a companion turn locale; unknown values fall back to English. */
-export const companionTurnLocale = (locale?: string | null): ConversationLanguage =>
+export const companionTurnLocale = (locale?: string | null): SupportedLocale =>
   matchSupportedLocale(locale) ?? "en-US";
 
 const requestText = (message: string) =>
@@ -114,7 +123,7 @@ export const conversationLanguage = (
 export const translationTargetInstruction = (
   language: ReturnType<typeof conversationLanguage>,
 ): string => {
-  const name = localeEnglishNames[language.locale];
+  const name = conversationLanguageName(language.locale);
   return `For a translation request without an explicit target language, use the language of the current user request, then recent user messages, and only then the interface language. The best available signal for this turn is ${name} (${language.source}). If the source text is mainly in another language, translate into ${name} without asking. If the source is already mainly in ${name}, use an explicit target from this same translation task; otherwise ask which other language the user wants. An explicit target for this text always takes precedence; an older request about different text does not.`;
 };
 

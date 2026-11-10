@@ -1,6 +1,6 @@
 import { validateTableCells, tableFieldInput as fieldInput, ensureUniqueTableFieldName as unique, applyTableSchemaOperations as schema, StructuredNoteError,
   docToText, markdownToDoc, stripTableDocumentMarker, type MemoDetail, type TableDocument,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { AppError } from "./app-error";
 import type { DatabaseAdapter } from "./storage-contract";
 
@@ -29,7 +29,7 @@ export const tableCellPatch = async (db: DatabaseAdapter, memoId: string, docume
 export const tableFieldInput: typeof fieldInput = (...args) => { try { return fieldInput(...args); } catch (error) { return translate(error); } };
 export const ensureUniqueTableFieldName: typeof unique = (...args) => { try { return unique(...args); } catch (error) { return translate(error); } };
 export const applyTableSchemaOperations: typeof schema = (...args) => { try { return schema(...args); } catch (error) { return translate(error); } };
-export { tableSchemaImpact } from "@edgeever/shared";
+export { tableSchemaImpact } from "@ponder/shared";
 
 const translate = (error: unknown): never => {
   if (error instanceof StructuredNoteError) throw new AppError(error.code, error.message, error.status);

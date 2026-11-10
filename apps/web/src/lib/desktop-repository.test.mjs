@@ -7,7 +7,7 @@ const originalWindow = Object.getOwnPropertyDescriptor(globalThis, "window");
 globalThis.window = {
   location: { hostname: "notes.example.com", origin: "https://notes.example.com" },
   dispatchEvent: () => true,
-  edgeeverDesktop: {
+  ponderDesktop: {
     isAvailable: true,
     listStagedResources: async () => [],
     listStagedResourceAliases: async (memoId) => memoId === "memo_alias"
@@ -24,10 +24,10 @@ globalThis.window = {
               type: "doc",
               content: [{
                 type: "image",
-                attrs: { alt: filename, src: "edgeever-staged://stage_dead" },
+                attrs: { alt: filename, src: "ponder-staged://stage_dead" },
               }],
             },
-            contentMarkdown: `![${filename}](edgeever-staged://stage_dead)\n\n`,
+            contentMarkdown: `![${filename}](ponder-staged://stage_dead)\n\n`,
           },
         };
       }
@@ -120,17 +120,17 @@ describe("desktop repository memo saves", () => {
           type: "doc",
           content: [{
             type: "image",
-            attrs: { alt: "screenshot.webp", src: "edgeever-staged://stage_dead" },
+            attrs: { alt: "screenshot.webp", src: "ponder-staged://stage_dead" },
           }],
         },
-        contentMarkdown: "![screenshot.webp](edgeever-staged://stage_dead)\n\n",
+        contentMarkdown: "![screenshot.webp](ponder-staged://stage_dead)\n\n",
         tags: [],
       },
     );
 
     expect(lastRequest.method).toBe("memo.update");
     expect(lastRequest.params.contentMarkdown).toContain("/api/v1/resources/res_shot/blob");
-    expect(lastRequest.params.contentMarkdown).not.toContain("edgeever-staged://");
+    expect(lastRequest.params.contentMarkdown).not.toContain("ponder-staged://");
     expect(lastRequest.params.contentJson.content[0].attrs.src).toBe("/api/v1/resources/res_shot/blob");
   });
 
@@ -140,9 +140,9 @@ describe("desktop repository memo saves", () => {
       {
         title: "Image",
         contentJson: { type: "doc", content: [{ type: "image", attrs: {
-          alt: "unrelated-original-name.jpg", src: "edgeever-staged://stage_exact",
+          alt: "unrelated-original-name.jpg", src: "ponder-staged://stage_exact",
         } }] },
-        contentMarkdown: "![unrelated-original-name.jpg](edgeever-staged://stage_exact)",
+        contentMarkdown: "![unrelated-original-name.jpg](ponder-staged://stage_exact)",
         tags: [],
       },
     );
@@ -157,9 +157,9 @@ describe("desktop repository memo saves", () => {
       {
         title: "Image",
         contentJson: { type: "doc", content: [{ type: "image", attrs: {
-          alt: "missing.jpg", src: "edgeever-staged://stage_missing",
+          alt: "missing.jpg", src: "ponder-staged://stage_missing",
         } }] },
-        contentMarkdown: "![missing.jpg](edgeever-staged://stage_missing)",
+        contentMarkdown: "![missing.jpg](ponder-staged://stage_missing)",
         tags: [],
       },
     )).rejects.toThrow("missing staged resource");
@@ -170,15 +170,15 @@ describe("desktop repository memo saves", () => {
 describe("desktop repository memo reads", () => {
   test("rewrites a dead staged screenshot URL when opening the memo", async () => {
     const result = await createDesktopRepository().getMemo("memo_shot");
-    expect(result.memo.contentMarkdown).toContain("edgeever-resource://resource/res_shot");
-    expect(result.memo.contentMarkdown).not.toContain("edgeever-staged://");
-    expect(result.memo.contentJson.content[0].attrs.src).toBe("edgeever-resource://resource/res_shot");
+    expect(result.memo.contentMarkdown).toContain("ponder-resource://resource/res_shot");
+    expect(result.memo.contentMarkdown).not.toContain("ponder-staged://");
+    expect(result.memo.contentJson.content[0].attrs.src).toBe("ponder-resource://resource/res_shot");
   });
 
   test("recovers an imported WeChat image after jpg compression changed its extension", async () => {
     const result = await createDesktopRepository().getMemo("memo_wechat");
-    expect(result.memo.contentJson.content[0].attrs.src).toBe("edgeever-resource://resource/res_wechat");
-    expect(result.memo.contentMarkdown).toContain("edgeever-resource://resource/res_wechat");
+    expect(result.memo.contentJson.content[0].attrs.src).toBe("ponder-resource://resource/res_wechat");
+    expect(result.memo.contentMarkdown).toContain("ponder-resource://resource/res_wechat");
   });
 });
 
@@ -191,16 +191,16 @@ describe("guarded desktop plugin saves", () => {
   });
 
   test("reports conflicts and refuses unsupported old hosts without an unguarded fallback", async () => {
-    const request = window.edgeeverDesktop.sidecarRequest;
+    const request = window.ponderDesktop.sidecarRequest;
     const memo = { id: "guarded", revision: 2, contentHash: "base", title: "Title", tags: [], contentMarkdown: "Original", contentJson: { type: "doc", content: [] } };
     try {
       for (const [message, code] of [["NOTE_CONFLICT: Changed locally", "NOTE_CONFLICT"], ["Unknown sidecar method: memo.updateGuarded", "HOST_UPGRADE_REQUIRED"]]) {
         const calls = [];
-        window.edgeeverDesktop.sidecarRequest = async method => { calls.push(method); throw new Error(message); };
+        window.ponderDesktop.sidecarRequest = async method => { calls.push(method); throw new Error(message); };
         await expect(createDesktopRepository().updateMemo(memo, { title: "Title", contentJson: memo.contentJson, tags: [] }, { guardLocalSnapshot: true })).rejects.toMatchObject({ code });
         expect(calls).toEqual(["memo.updateGuarded"]);
       }
-    } finally { window.edgeeverDesktop.sidecarRequest = request; }
+    } finally { window.ponderDesktop.sidecarRequest = request; }
   });
 });
 
@@ -211,7 +211,7 @@ describe("desktop note duplication", () => {
     const { pauseDesktopSyncForImport } = await import("./desktop-sync.ts");
     const resumeSync = await pauseDesktopSyncForImport();
     const { api } = await import("./api.ts");
-    const request = window.edgeeverDesktop.sidecarRequest;
+    const request = window.ponderDesktop.sidecarRequest;
     const duplicate = api.duplicateMemo;
     const onLine = Object.getOwnPropertyDescriptor(globalThis.navigator, "onLine");
     Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
@@ -221,7 +221,7 @@ describe("desktop note duplication", () => {
       apiCalls.push({ memoId, input });
       return { memo: { id: "memo_copy", title: input.title, contentMarkdown: "Copy", contentJson: { type: "doc", content: [] } } };
     };
-    window.edgeeverDesktop.sidecarRequest = async (method, params) => {
+    window.ponderDesktop.sidecarRequest = async (method, params) => {
       calls.push({ method, params });
       // Like the sidecar (crates/desktop-sidecar/src/sync.rs): the list holds
       // pending, error and conflict items in queue order, at most 200 of them.
@@ -240,7 +240,7 @@ describe("desktop note duplication", () => {
       await run({ calls, apiCalls });
     } finally {
       resumeSync();
-      window.edgeeverDesktop.sidecarRequest = request;
+      window.ponderDesktop.sidecarRequest = request;
       api.duplicateMemo = duplicate;
       if (onLine) Object.defineProperty(globalThis.navigator, "onLine", onLine);
       else delete globalThis.navigator.onLine;
@@ -323,7 +323,7 @@ const { cancelPendingDesktopImportMemo } = await import("./desktop-repository.ts
 // Routes sidecar RPCs to `handlers` and records every call and dispatched event.
 const withSidecar = async (handlers, run, { online = true, bridge = {} } = {}) => {
   const { api } = await import("./api.ts");
-  const desktop = window.edgeeverDesktop;
+  const desktop = window.ponderDesktop;
   const original = { ...desktop };
   const dispatchEvent = window.dispatchEvent;
   const onLine = Object.getOwnPropertyDescriptor(globalThis.navigator, "onLine");
@@ -370,11 +370,11 @@ const desktopTemplate = (id, overrides = {}) => ({
 
 describe("desktop repository bridge", () => {
   test("rejects every request when the desktop bridge is unavailable", async () => {
-    window.edgeeverDesktop.isAvailable = false;
+    window.ponderDesktop.isAvailable = false;
     try {
-      await expect(createDesktopRepository().listNotebooks()).rejects.toThrow("EdgeEver desktop bridge is unavailable");
+      await expect(createDesktopRepository().listNotebooks()).rejects.toThrow("Ponder desktop bridge is unavailable");
     } finally {
-      window.edgeeverDesktop.isAvailable = true;
+      window.ponderDesktop.isAvailable = true;
     }
   });
 
@@ -403,7 +403,7 @@ describe("desktop repository bridge", () => {
       await repository.deleteMemo("memo-1");
       expect(await repository.restoreMemo("memo-1")).toEqual({ memo: { id: "memo-1" }, queued: true });
       expect(events).toHaveLength(15);
-      expect(new Set(events)).toEqual(new Set(["edgeever:sync-queue-changed"]));
+      expect(new Set(events)).toEqual(new Set(["ponder:sync-queue-changed"]));
       expect(calls.find((call) => call.method === "notebook.update").params).toEqual({ notebookId: "nb-1", name: "B" });
       expect(calls.find((call) => call.method === "template.update").params).toEqual({ templateId: "tpl-1", name: "U" });
       expect(calls.find((call) => call.method === "memo.delete").params).toEqual({ memoId: "memo-1", permanent: false });
@@ -414,7 +414,7 @@ describe("desktop repository bridge", () => {
     await withSidecar({ "memo.delete": () => ({ ok: true }) }, async ({ calls, events }) => {
       expect(await cancelPendingDesktopImportMemo("memo-import")).toEqual({ ok: true });
       expect(calls).toEqual([{ method: "memo.delete", params: { memoId: "memo-import", permanent: true, cancelPendingCreate: true } }]);
-      expect(events).toEqual(["edgeever:sync-queue-changed"]);
+      expect(events).toEqual(["ponder:sync-queue-changed"]);
     });
   });
 });
@@ -480,7 +480,7 @@ describe("desktop repository resources", () => {
     await withSidecar({ "resource.cache": () => ({ ok: true }) }, async ({ calls, stubApi }) => {
       stubApi({ uploadMemoResource: async () => ({ resource: desktopResource("res-up") }) });
       const { resource } = await createDesktopRepository().uploadMemoResource("memo-1", new File(["abc"], "a.txt"));
-      expect(resource.url).toBe("edgeever-resource://resource/res-up");
+      expect(resource.url).toBe("ponder-resource://resource/res-up");
       expect(calls).toEqual([{ method: "resource.cache", params: { resource: desktopResource("res-up") } }]);
     });
   });
@@ -498,7 +498,7 @@ describe("desktop repository resources", () => {
     await withSidecar({ "resource.delete": () => ({ ok: true }), "resource.cache": () => ({ ok: true }) }, async ({ calls, stubApi }) => {
       stubApi({ updateResourceContent: async (id) => ({ resource: desktopResource(id, { byteSize: 9 }) }) });
       const { resource } = await createDesktopRepository().updateResource("res-1", new File(["x"], "a.txt"), "hash");
-      expect(resource.url).toBe("edgeever-resource://resource/res-1");
+      expect(resource.url).toBe("ponder-resource://resource/res-1");
       expect(calls.map((call) => call.method)).toEqual(["resource.delete", "resource.cache"]);
     });
   });
@@ -520,8 +520,8 @@ describe("desktop repository resources", () => {
       stubApi({ listResources: async () => { refreshes += 1; return { resources: [desktopResource("res-1")], summary: emptySummary }; } });
       const result = await createDesktopRepository().listResources();
       expect(result.resources.map((resource) => resource.url)).toEqual([
-        "edgeever-staged://stage-1",
-        "edgeever-resource://resource/res-1",
+        "ponder-staged://stage-1",
+        "ponder-resource://resource/res-1",
         "https://cdn.example.com/res-abs",
       ]);
       expect(result.summary).toEqual({ totalCount: 3, totalBytes: 16, imageCount: 1, attachmentCount: 2 });
@@ -543,7 +543,7 @@ describe("desktop repository resources", () => {
     }, async ({ stubApi }) => {
       stubApi({ listResources: async () => ({ resources: [desktopResource("res-2")], summary: { ...emptySummary, totalCount: 1 } }) });
       const result = await createDesktopRepository().listResources();
-      expect(result.resources.map((resource) => resource.url)).toEqual(["edgeever-resource://resource/res-2"]);
+      expect(result.resources.map((resource) => resource.url)).toEqual(["ponder-resource://resource/res-2"]);
       expect(cached).toEqual(["res-2"]);
     });
   });
@@ -563,7 +563,7 @@ describe("desktop repository resources", () => {
       });
       const repository = createDesktopRepository();
       const renamed = await repository.renameResource("res-1", "new.txt");
-      expect(renamed.resource).toMatchObject({ filename: "new.txt", url: "edgeever-resource://resource/res-1" });
+      expect(renamed.resource).toMatchObject({ filename: "new.txt", url: "ponder-resource://resource/res-1" });
       expect(await repository.deleteResource("res-1")).toEqual({ ok: true });
       expect(calls.map((call) => call.method)).toEqual(["resource.cache", "resource.delete"]);
     });
@@ -590,9 +590,9 @@ describe("desktop repository notes", () => {
       "memo.merge": () => ({ memo: { id: "memo-merged", contentJson: { type: "doc", content: [{ type: "image", attrs: { src: "/api/v1/resources/res-1/blob" } }] }, contentMarkdown: "![a](/api/v1/resources/res-1/blob)" } }),
     }, async ({ events }) => {
       const { memo } = await createDesktopRepository().mergeMemos({ memoIds: ["a", "b"] });
-      expect(memo.contentJson.content[0].attrs.src).toBe("edgeever-resource://resource/res-1");
-      expect(memo.contentMarkdown).toBe("![a](edgeever-resource://resource/res-1)");
-      expect(events).toEqual(["edgeever:sync-queue-changed"]);
+      expect(memo.contentJson.content[0].attrs.src).toBe("ponder-resource://resource/res-1");
+      expect(memo.contentMarkdown).toBe("![a](ponder-resource://resource/res-1)");
+      expect(events).toEqual(["ponder:sync-queue-changed"]);
     });
   });
 
@@ -630,7 +630,7 @@ describe("desktop repository notes", () => {
       expect(calls.map((call) => call.method)).toEqual(["sync.apply", "sync.outbox.list", "sync.outbox.ack", "sync.outbox.discard"]);
       expect(calls[2].params).toEqual({ id: 1, version: 3, remoteMemo: cloud });
       expect(calls[3].params).toEqual({ id: 2 });
-      expect(events).toEqual(["edgeever:sync-queue-changed"]);
+      expect(events).toEqual(["ponder:sync-queue-changed"]);
     });
   });
 
@@ -669,9 +669,9 @@ describe("desktop repository notes", () => {
       "memo.restoreRevision": () => ({ memo: { id: "memo-1", contentJson: { type: "doc", content: [] }, contentMarkdown: "![x](/api/v1/resources/res-9/blob)" } }),
     }, async ({ calls, events }) => {
       const { memo } = await createDesktopRepository().restoreMemoRevision("memo-1", "rev-1");
-      expect(memo.contentMarkdown).toBe("![x](edgeever-resource://resource/res-9)");
+      expect(memo.contentMarkdown).toBe("![x](ponder-resource://resource/res-9)");
       expect(calls[0].params).toEqual({ memoId: "memo-1", revisionId: "rev-1" });
-      expect(events).toEqual(["edgeever:sync-queue-changed"]);
+      expect(events).toEqual(["ponder:sync-queue-changed"]);
     });
   });
 

@@ -477,7 +477,7 @@ pub(crate) fn cache_resource(database: &Connection, params: &Value) -> Result<Va
         .ok_or_else(|| "Missing resource payload".to_owned())?;
     let id = string_param(resource, "id")?;
     let memo_id = string_param(resource, "memoId")?;
-    database.execute("INSERT INTO resources (id, memo_id, original_memo_id, bucket_name, object_key, kind, mime_type, filename, byte_size, sha256, width, height, metadata_json) VALUES (?1, ?2, ?3, 'edgeever-resources', ?1, ?4, ?5, ?6, ?7, ?8, ?9, ?10, '{}') ON CONFLICT(id) DO UPDATE SET memo_id=excluded.memo_id, kind=excluded.kind, mime_type=excluded.mime_type, filename=excluded.filename, byte_size=excluded.byte_size, sha256=excluded.sha256, width=excluded.width, height=excluded.height, is_deleted=0, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')", rusqlite::params![id, memo_id, resource.get("originalMemoId").and_then(Value::as_str), string_param(resource, "kind")?, resource.get("mimeType").and_then(Value::as_str), resource.get("filename").and_then(Value::as_str), resource.get("byteSize").and_then(Value::as_i64).unwrap_or(0), resource.get("sha256").and_then(Value::as_str), resource.get("width").and_then(Value::as_i64), resource.get("height").and_then(Value::as_i64)]).map_err(|e| e.to_string())?;
+    database.execute("INSERT INTO resources (id, memo_id, original_memo_id, bucket_name, object_key, kind, mime_type, filename, byte_size, sha256, width, height, metadata_json) VALUES (?1, ?2, ?3, 'ponder-resources', ?1, ?4, ?5, ?6, ?7, ?8, ?9, ?10, '{}') ON CONFLICT(id) DO UPDATE SET memo_id=excluded.memo_id, kind=excluded.kind, mime_type=excluded.mime_type, filename=excluded.filename, byte_size=excluded.byte_size, sha256=excluded.sha256, width=excluded.width, height=excluded.height, is_deleted=0, updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now')", rusqlite::params![id, memo_id, resource.get("originalMemoId").and_then(Value::as_str), string_param(resource, "kind")?, resource.get("mimeType").and_then(Value::as_str), resource.get("filename").and_then(Value::as_str), resource.get("byteSize").and_then(Value::as_i64).unwrap_or(0), resource.get("sha256").and_then(Value::as_str), resource.get("width").and_then(Value::as_i64), resource.get("height").and_then(Value::as_i64)]).map_err(|e| e.to_string())?;
     Ok(json!({ "ok": true }))
 }
 
@@ -563,7 +563,7 @@ mod appearance_tests {
 
     #[test]
     fn appearance_survives_local_edits_and_sync_and_can_be_disabled() {
-        let root = std::env::temp_dir().join(now_id("edgeever-bold-test"));
+        let root = std::env::temp_dir().join(now_id("ponder-bold-test"));
         let migrations = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../migrations");
         let database = crate::database::open_database(&root, &migrations).unwrap();
         let created = create_notebook(&database, &json!({"name": "Heimnetz"})).unwrap();
@@ -580,7 +580,7 @@ mod appearance_tests {
         assert_eq!(renamed["textColor"], "#dc2626");
         let before = notebook_value(&database, id, false).unwrap();
         let queued: i64 = database
-            .query_row("SELECT COUNT(*) FROM _edgeever_sidecar_outbox", [], |row| {
+            .query_row("SELECT COUNT(*) FROM _ponder_sidecar_outbox", [], |row| {
                 row.get(0)
             })
             .unwrap();
@@ -597,7 +597,7 @@ mod appearance_tests {
             assert_eq!(notebook_value(&database, id, false).unwrap(), before);
             assert_eq!(
                 database
-                    .query_row("SELECT COUNT(*) FROM _edgeever_sidecar_outbox", [], |row| {
+                    .query_row("SELECT COUNT(*) FROM _ponder_sidecar_outbox", [], |row| {
                         row.get::<_, i64>(0)
                     })
                     .unwrap(),
@@ -606,7 +606,7 @@ mod appearance_tests {
         }
 
         let payload: String = database.query_row(
-            "SELECT payload_json FROM _edgeever_sidecar_outbox WHERE kind = 'notebook.update' ORDER BY id LIMIT 1",
+            "SELECT payload_json FROM _ponder_sidecar_outbox WHERE kind = 'notebook.update' ORDER BY id LIMIT 1",
             [], |row| row.get(0),
         ).unwrap();
         assert_eq!(

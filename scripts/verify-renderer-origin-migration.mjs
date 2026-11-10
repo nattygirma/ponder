@@ -21,7 +21,7 @@ protocol.registerSchemesAsPrivileged([{
   privileges: { standard: true, secure: true, supportFetchAPI: true, corsEnabled: true, stream: true, codeCache: true },
 }]);
 
-const testDirectory = mkdtempSync(join(tmpdir(), "edgeever-renderer-origin-"));
+const testDirectory = mkdtempSync(join(tmpdir(), "ponder-renderer-origin-"));
 const userDataDirectory = join(testDirectory, "profile");
 const webRoot = join(testDirectory, "web");
 const legacyEntryPath = join(webRoot, "index.html");
@@ -51,9 +51,9 @@ const seedLegacyStorage = async () => {
     transaction.onerror = () => reject(transaction.error);
     transaction.onabort = () => reject(transaction.error);
   });
-  localStorage.setItem("edgeever.test.origin-migration", "preserved");
+  localStorage.setItem("ponder.test.origin-migration", "preserved");
 
-  const localOpen = indexedDB.open("edgeever-local", 1);
+  const localOpen = indexedDB.open("ponder-local", 1);
   localOpen.onupgradeneeded = () => localOpen.result.createObjectStore("drafts", { keyPath: "memoId" });
   const local = await requestResult(localOpen);
   const localTransaction = local.transaction("drafts", "readwrite");
@@ -62,7 +62,7 @@ const seedLegacyStorage = async () => {
   await localCompleted;
   local.close();
 
-  const packageOpen = indexedDB.open("edgeever-plugin-packages-v1", 2);
+  const packageOpen = indexedDB.open("ponder-plugin-packages-v1", 2);
   packageOpen.onupgradeneeded = () => {
     const store = packageOpen.result.createObjectStore("packageVersions", { keyPath: ["pluginId", "version"] });
     store.createIndex("pluginId", "pluginId");
@@ -74,7 +74,7 @@ const seedLegacyStorage = async () => {
   await packageCompleted;
   packages.close();
 
-  const secretOpen = indexedDB.open("edgeever-plugin-secrets-v1", 1);
+  const secretOpen = indexedDB.open("ponder-plugin-secrets-v1", 1);
   secretOpen.onupgradeneeded = () => {
     secretOpen.result.createObjectStore("keys");
     secretOpen.result.createObjectStore("secrets", { keyPath: "id" });
@@ -101,21 +101,21 @@ const inspectStorage = async () => {
     transaction.onerror = () => reject(transaction.error);
     transaction.onabort = () => reject(transaction.error);
   });
-  const local = await requestResult(indexedDB.open("edgeever-local"));
+  const local = await requestResult(indexedDB.open("ponder-local"));
   const localTransaction = local.transaction("drafts", "readonly");
   const localCompleted = transactionDone(localTransaction);
   const draft = await requestResult(localTransaction.objectStore("drafts").get("draft-1"));
   await localCompleted;
   local.close();
 
-  const packages = await requestResult(indexedDB.open("edgeever-plugin-packages-v1"));
+  const packages = await requestResult(indexedDB.open("ponder-plugin-packages-v1"));
   const packageTransaction = packages.transaction("packageVersions", "readonly");
   const packageCompleted = transactionDone(packageTransaction);
   const pluginPackage = await requestResult(packageTransaction.objectStore("packageVersions").get(["org.edgeever.test", "1.0.0"]));
   await packageCompleted;
   packages.close();
 
-  const secrets = await requestResult(indexedDB.open("edgeever-plugin-secrets-v1"));
+  const secrets = await requestResult(indexedDB.open("ponder-plugin-secrets-v1"));
   const secretTransaction = secrets.transaction(["keys", "secrets"], "readonly");
   const secretCompleted = transactionDone(secretTransaction);
   const key = await requestResult(secretTransaction.objectStore("keys").get("device-master-key"));
@@ -125,7 +125,7 @@ const inspectStorage = async () => {
   const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: encrypted.iv }, key, encrypted.ciphertext);
   return {
     origin: window.location.origin,
-    localStorageValue: localStorage.getItem("edgeever.test.origin-migration"),
+    localStorageValue: localStorage.getItem("ponder.test.origin-migration"),
     draftTitle: draft?.title,
     packageVersion: pluginPackage?.version,
     secret: new TextDecoder().decode(plaintext),

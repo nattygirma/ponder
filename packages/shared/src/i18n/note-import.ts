@@ -51,7 +51,7 @@ export const noteImportEnUS = {
   },
   "errors": {
     "preflightErrors": "Fix the preflight errors before importing.",
-    "unsupportedImportServer": "Update the EdgeEver server to use native import.",
+    "unsupportedImportServer": "Update the Ponder server to use native import.",
     "missingParent": "The destination notebook is no longer available.",
     "destinationChanged": "A retry must use the original destination.",
     "uncertainNotebook": "Notebook creation is unconfirmed. Check the destination before starting another import.",
@@ -123,7 +123,7 @@ export const noteImportZhCN = {
   },
   "errors": {
     "preflightErrors": "请先修正预检错误。",
-    "unsupportedImportServer": "请升级 EdgeEver 服务端后使用原生导入。",
+    "unsupportedImportServer": "请升级 Ponder 服务端后使用原生导入。",
     "missingParent": "目标笔记本已不可用。",
     "destinationChanged": "重试必须使用原来的导入位置。",
     "uncertainNotebook": "笔记本创建结果待确认，请先检查目标目录，不要重复导入。",
@@ -267,7 +267,7 @@ export const noteImportPl = {
   },
   "errors": {
     "preflightErrors": "Najpierw popraw błędy skanowania.",
-    "unsupportedImportServer": "Zaktualizuj serwer EdgeEver, aby użyć importu.",
+    "unsupportedImportServer": "Zaktualizuj serwer Ponder, aby użyć importu.",
     "missingParent": "Notes docelowy nie jest już dostępny.",
     "destinationChanged": "Ponowienie musi używać pierwotnego miejsca docelowego.",
     "uncertainNotebook": "Wynik tworzenia notesu jest nieznany. Sprawdź miejsce docelowe przed kolejnym importem.",
@@ -339,7 +339,7 @@ export const noteImportRu = {
   },
   "errors": {
     "preflightErrors": "Сначала исправьте ошибки проверки.",
-    "unsupportedImportServer": "Обновите сервер EdgeEver для использования импорта.",
+    "unsupportedImportServer": "Обновите сервер Ponder для использования импорта.",
     "missingParent": "Целевой блокнот больше недоступен.",
     "destinationChanged": "При повторе используйте исходное назначение.",
     "uncertainNotebook": "Создание блокнота не подтверждено. Проверьте назначение перед новым импортом.",

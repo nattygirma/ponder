@@ -15,7 +15,7 @@ import { join, resolve } from "node:path";
 assert.ok(process.argv[2], "Pass the locally built desktop executable as the first argument.");
 const executablePath = resolve(process.argv[2]);
 const only = process.argv[3]?.split(",") ?? null;
-const directory = await mkdtemp(join(tmpdir(), "edgeever-note-window-e2e-"));
+const directory = await mkdtemp(join(tmpdir(), "ponder-note-window-e2e-"));
 const profile = join(directory, "profile");
 const results = [];
 let application;
@@ -28,7 +28,7 @@ let baseUrl;
 // sidecar is matched, by its data directory.
 const sidecarPids = () => {
   try {
-    return execFileSync("pgrep", ["-f", `edgeever-sidecar --data-dir ${profile}`]).toString().trim().split("\n").filter(Boolean);
+    return execFileSync("pgrep", ["-f", `ponder-sidecar --data-dir ${profile}`]).toString().trim().split("\n").filter(Boolean);
   } catch {
     return [];
   }
@@ -104,27 +104,27 @@ const launch = async () => {
   application = await electron.launch({
     executablePath,
     args: [`--user-data-dir=${profile}`, ...displayArgs],
-    env: { ...process.env, EDGE_EVER_DISABLE_AUTO_UPDATE: "1" },
+    env: { ...process.env, PONDER_DISABLE_AUTO_UPDATE: "1" },
     timeout: 60_000,
   });
   // Startup can briefly open a renderer-origin migration window before the main window.
   const deadline = Date.now() + 60_000;
   let main;
   while (Date.now() < deadline && !main) {
-    main = application.windows().find((window) => window.url().startsWith("edgeever-app://app/index.html") && !window.url().includes("noteWindow="));
+    main = application.windows().find((window) => window.url().startsWith("ponder-app://app/index.html") && !window.url().includes("noteWindow="));
     if (!main) await new Promise((resolveWait) => setTimeout(resolveWait, 100));
   }
   assert.ok(main, "The packaged main window must open");
-  await main.waitForSelector('[data-edgeever-renderer-ready="true"]', { state: "attached", timeout: 60_000 });
-  await main.evaluate(() => localStorage.setItem("edgeever.locale.preference", "en-US"));
+  await main.waitForSelector('[data-ponder-renderer-ready="true"]', { state: "attached", timeout: 60_000 });
+  await main.evaluate(() => localStorage.setItem("ponder.locale.preference", "en-US"));
   await main.reload();
-  await main.waitForSelector('[data-edgeever-renderer-ready="true"]', { state: "attached", timeout: 60_000 });
+  await main.waitForSelector('[data-ponder-renderer-ready="true"]', { state: "attached", timeout: 60_000 });
   page = main;
   note = undefined;
   // Wait until the first sync brought the test notebook into local storage.
   // The sidecar can still be starting right after the reload.
   await expect.poll(() => page.evaluate(async (id) => {
-    const { notebooks } = await window.edgeeverDesktop.sidecarRequest("notebook.list");
+    const { notebooks } = await window.ponderDesktop.sidecarRequest("notebook.list");
     return notebooks.some((notebook) => notebook.id === id);
   }, notebookId).catch(() => false), { timeout: 60_000 }).toBe(true);
   // Search covers the selected notebook, and a seeded demo notebook is selected first.
@@ -143,7 +143,7 @@ const reportStartupState = async () => {
     text: document.body.innerText.slice(0, 1500),
   })).catch((error) => ({ error: String(error) }));
   console.log("Main window at startup failure:", JSON.stringify(state, null, 2));
-  if (process.env.EDGE_EVER_E2E_SCREENSHOT) await page.screenshot({ path: process.env.EDGE_EVER_E2E_SCREENSHOT }).catch(() => undefined);
+  if (process.env.PONDER_E2E_SCREENSHOT) await page.screenshot({ path: process.env.PONDER_E2E_SCREENSHOT }).catch(() => undefined);
 };
 
 const noteWindowPage = async (memoId, timeout = 20_000) => {
@@ -217,7 +217,7 @@ const closeNotice = async () => {
   await page.getByRole("button", { name: /OK|Close|Got it/i }).first().click({ timeout: 2_000 }).catch(() => undefined);
 };
 const outboxStatuses = (memoId) => page.evaluate(async (id) => {
-  const { items } = await window.edgeeverDesktop.sidecarRequest("sync.outbox.list", { limit: 200, includeConflicts: true });
+  const { items } = await window.ponderDesktop.sidecarRequest("sync.outbox.list", { limit: 200, includeConflicts: true });
   return items.filter((item) => item.entityId === id).map((item) => item.status);
 }, memoId);
 
@@ -257,7 +257,7 @@ try {
   });
 
   await step("A2: opening the note again from any entry focuses the same window", async () => {
-    assert.deepEqual(await page.evaluate((id) => window.edgeeverDesktop.openNoteWindow(id), memoA.id), { opened: false });
+    assert.deepEqual(await page.evaluate((id) => window.ponderDesktop.openNoteWindow(id), memoA.id), { opened: false });
     await focusMain();
     await clickMenuItem("openNoteWindow");
     await expect.poll(focusedUrl).toContain(`noteWindow=${memoA.id}`);
@@ -271,10 +271,10 @@ try {
   });
 
   await step("A3: a note window cannot open windows, switch accounts or change the instance", async () => {
-    await assert.rejects(note.evaluate((id) => window.edgeeverDesktop.openNoteWindow(id), memoB.id));
-    await assert.rejects(note.evaluate(() => window.edgeeverDesktop.setAccountScope("someone-else")));
-    await assert.rejects(note.evaluate(() => window.edgeeverDesktop.setApiBaseUrl("http://127.0.0.1:1")));
-    assert.equal((await note.evaluate(() => window.edgeeverDesktop.noteWindows())).length, 0);
+    await assert.rejects(note.evaluate((id) => window.ponderDesktop.openNoteWindow(id), memoB.id));
+    await assert.rejects(note.evaluate(() => window.ponderDesktop.setAccountScope("someone-else")));
+    await assert.rejects(note.evaluate(() => window.ponderDesktop.setApiBaseUrl("http://127.0.0.1:1")));
+    assert.equal((await note.evaluate(() => window.ponderDesktop.noteWindows())).length, 0);
   });
 
   await step("B1: closing the note window saves pending edits and returns the note", async () => {
@@ -292,7 +292,7 @@ try {
     await chooseOpenInNewWindow();
     note = await noteWindowPage(memoA.id);
     await expect(noteEditor()).toContainText("typed-in-window", { timeout: 20_000 });
-    assert.equal(await note.evaluate((id) => window.edgeeverDesktop.openMemoInMainWindow(id), memoB.id), true);
+    assert.equal(await note.evaluate((id) => window.ponderDesktop.openMemoInMainWindow(id), memoB.id), true);
     await expect(mainEditor()).toContainText("Bravo body", { timeout: 20_000 });
     await chooseOpenInNewWindow();
     assert.ok(await noteWindowPage(memoB.id));
@@ -378,9 +378,9 @@ try {
   });
 
   await step("H2: a note the window cannot show is reported and leaves no window", async () => {
-    await assert.rejects(page.evaluate(() => window.edgeeverDesktop.openNoteWindow("memo_does_not_exist")), /note-unavailable/);
+    await assert.rejects(page.evaluate(() => window.ponderDesktop.openNoteWindow("memo_does_not_exist")), /note-unavailable/);
     await waitForNoteWindowClosed("memo_does_not_exist");
-    assert.deepEqual(await page.evaluate(() => window.edgeeverDesktop.noteWindows()), []);
+    assert.deepEqual(await page.evaluate(() => window.ponderDesktop.noteWindows()), []);
   });
 
   await step("I1: a change made on another device reaches the open note window after sync", async () => {

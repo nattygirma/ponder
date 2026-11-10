@@ -13,9 +13,9 @@ describe("normalizeExternalLinkHref", () => {
   });
 
   test("accepts https URLs", () => {
-    expect(normalizeExternalLinkHref("https://www.edgeever.org/docs")).toEqual({
+    expect(normalizeExternalLinkHref("https://appkeep.io")).toEqual({
       ok: true,
-      href: "https://www.edgeever.org/docs",
+      href: "https://appkeep.io/",
     });
   });
 
@@ -54,9 +54,9 @@ describe("normalizeExternalLinkHref", () => {
 
   test("accepts internal note and resource hrefs", () => {
     expect(normalizeExternalLinkHref("#memo=note_1")).toEqual({ ok: true, href: "#memo=note_1" });
-    expect(normalizeExternalLinkHref("edgeever-resource://res_1")).toEqual({
+    expect(normalizeExternalLinkHref("ponder-resource://res_1")).toEqual({
       ok: true,
-      href: "edgeever-resource://res_1",
+      href: "ponder-resource://res_1",
     });
   });
 
@@ -87,8 +87,8 @@ describe("link href classifiers", () => {
 
 describe("markdown helpers", () => {
   test("formats a markdown link", () => {
-    expect(formatMarkdownLink("EdgeEver", "https://www.edgeever.org")).toBe(
-      "[EdgeEver](https://www.edgeever.org)"
+    expect(formatMarkdownLink("Ponder", "https://appkeep.io")).toBe(
+      "[Ponder](https://appkeep.io)"
     );
   });
 

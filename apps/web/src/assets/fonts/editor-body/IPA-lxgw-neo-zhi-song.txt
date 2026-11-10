@@ -1,9 +1,9 @@
-EdgeEver Zhi Song is a subset of LXGW Neo ZhiSong v1.067 (霞鹜新致宋).
+Ponder Zhi Song is a subset of LXGW Neo ZhiSong v1.067 (霞鹜新致宋).
 Source: https://github.com/lxgw/LxgwNeoZhiSong/releases/tag/v1.067
 This file is a derived program under the IPA Font License Agreement v1.0.
 Its font name and file name do not use the original IPA font name.
 
-To use an original IPA Mincho instead of this subset, install IPAexMincho or IPAmjMincho from https://moji.or.jp/ipafont/ipafontdownload/ and choose Custom in EdgeEver's note text font or interface font, using that installed family name.
+To use an original IPA Mincho instead of this subset, install IPAexMincho or IPAmjMincho from https://moji.or.jp/ipafont/ipafontdownload/ and choose Custom in Ponder's note text font or interface font, using that installed family name.
 
 The IPA Font License Agreement v1.0 follows.
 

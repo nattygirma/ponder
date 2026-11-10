@@ -1,2 +1,2 @@
-export { PLATFORMS, platformFor } from "@edgeever/shared";
-export type { Platform, Zone } from "@edgeever/shared";
+export { PLATFORMS, platformFor } from "@ponder/shared";
+export type { Platform, Zone } from "@ponder/shared";

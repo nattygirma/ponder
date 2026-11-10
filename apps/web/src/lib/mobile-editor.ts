@@ -2,9 +2,9 @@ import { getAppEntryPath, getAppPagePath } from "@/lib/app-page-path";
 
 export const STANDALONE_MOBILE_EDITOR_PATH = getAppPagePath("mobile-edit.html", import.meta.env.BASE_URL);
 export const MOBILE_EDITOR_RETURN_PARAM = "mobileEditorReturn";
-const STANDALONE_MOBILE_EDITOR_MEMO_KEY = "edgeever-standalone-mobile-editor-memo-id";
-const STANDALONE_MOBILE_EDITOR_RETURN_KEY = "edgeever-standalone-mobile-editor-return-memo-id";
-const STANDALONE_MOBILE_EDITOR_RETURN_PREVIEW_KEY = "edgeever-standalone-mobile-editor-return-preview";
+const STANDALONE_MOBILE_EDITOR_MEMO_KEY = "ponder-standalone-mobile-editor-memo-id";
+const STANDALONE_MOBILE_EDITOR_RETURN_KEY = "ponder-standalone-mobile-editor-return-memo-id";
+const STANDALONE_MOBILE_EDITOR_RETURN_PREVIEW_KEY = "ponder-standalone-mobile-editor-return-preview";
 
 export type MobileEditorReturnPreview = {
   memoId: string;

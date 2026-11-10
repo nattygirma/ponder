@@ -37,12 +37,12 @@ describe("plugin settings navigation", () => {
     const groups = getPluginToolbarGroups({
       extensions: [{ manifest: { type: "plugin", id: "tasks" }, enabled: true }],
       commands: [
-        { pluginId: "tasks", id: "open-dashboard", title: "打开待办任务面板", menu: false },
+        { pluginId: "tasks", id: "open-dashboard", title: "Open Tasks dashboard", menu: false },
         { pluginId: "tasks", id: "insert-task", title: "在光标处插入待办任务", listed: false },
         { pluginId: "tasks", id: "create-or-edit", title: "创建或编辑任务", listed: false },
       ],
       panels: [
-        { pluginId: "tasks", id: "tasks", title: "待办任务", purpose: "dashboard" },
+        { pluginId: "tasks", id: "tasks", title: "Tasks", purpose: "dashboard" },
         { pluginId: "tasks", id: "edit-task", title: "创建或编辑任务", purpose: "workflow" },
       ],
     });
@@ -56,8 +56,8 @@ describe("plugin settings navigation", () => {
   test("hides a dashboard opener command even when menu is left at the default", () => {
     const groups = getPluginToolbarGroups({
       extensions: [{ manifest: { type: "plugin", id: "tasks" }, enabled: true }],
-      commands: [{ pluginId: "tasks", id: "open-dashboard", title: "打开待办任务面板" }],
-      panels: [{ pluginId: "tasks", id: "tasks", title: "待办任务", purpose: "dashboard" }],
+      commands: [{ pluginId: "tasks", id: "open-dashboard", title: "Open Tasks dashboard" }],
+      panels: [{ pluginId: "tasks", id: "tasks", title: "Tasks", purpose: "dashboard" }],
     });
     expect(groups[0].actions.map((action) => `${action.type}:${action.id}`)).toEqual(["panel:tasks"]);
   });

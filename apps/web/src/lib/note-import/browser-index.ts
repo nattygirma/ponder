@@ -1,11 +1,11 @@
 import Dexie, { type Table } from "dexie";
-import type { ImportIndex, ImportKind } from "@edgeever/shared/note-import/types";
+import type { ImportIndex, ImportKind } from "@ponder/shared/note-import/types";
 
 type RecordRow = { id: string; importId: string; kind: ImportKind; key: string; value: unknown };
 class ImportDatabase extends Dexie {
   records!: Table<RecordRow, string>;
   constructor() {
-    super("edgeever-note-imports");
+    super("ponder-note-imports");
     this.version(1).stores({ records: "id, importId, [importId+kind]" });
   }
 }

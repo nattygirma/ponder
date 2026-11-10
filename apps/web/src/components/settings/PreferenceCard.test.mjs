@@ -24,10 +24,10 @@ describe("editor body font preference", () => {
     expect(preferenceCard).toContain("AppWindow");
     expect(preferenceCard).toContain("CUSTOM_FONT_SUGGESTIONS");
     expect(preferenceCard).toContain('t("settings.editorBodyFontSuggestions")');
-    expect(editorFonts).toContain("html[data-editor-body-font] .edgeever-editor .ProseMirror");
+    expect(editorFonts).toContain("html[data-editor-body-font] .ponder-editor .ProseMirror");
     expect(editorFonts).toContain("html[data-ui-font]");
-    expect(editorFonts).toContain("html[data-ui-font]:not([data-editor-body-font]) .edgeever-editor[data-editor-theme=\"default\"] .ProseMirror");
-    expect(editorFonts).toContain("html[data-ui-font] .edgeever-public-share");
+    expect(editorFonts).toContain("html[data-ui-font]:not([data-editor-body-font]) .ponder-editor[data-editor-theme=\"default\"] .ProseMirror");
+    expect(editorFonts).toContain("html[data-ui-font] .ponder-public-share");
     for (const fileName of ["kai.woff2", "kai-screen.woff2", "fangsong.woff2", "song.woff2", "zhi-song.woff2", "hei.woff2", "source-serif-4-regular.woff2", "OFL-lxgw-wenkai.txt", "OFL-zhuque-fangsong.txt", "OFL-source-han-serif.txt", "OFL-source-serif-4.txt", "IPA-lxgw-neo-zhi-song.txt"]) {
       expect(existsSync(new URL(`../../assets/fonts/editor-body/${fileName}`, import.meta.url))).toBe(true);
     }
@@ -36,7 +36,7 @@ describe("editor body font preference", () => {
   test("scopes code source fonts to the explicit code font preference", () => {
     const editorFonts = readFileSync(new URL("../../styles/editor-body-fonts.css", import.meta.url), "utf8");
     const rules = [...editorFonts.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^{}]*)\}/g)];
-    const codeSourceRules = rules.filter(([, selectors]) => selectors.includes(".edgeever-code-source"));
+    const codeSourceRules = rules.filter(([, selectors]) => selectors.includes(".ponder-code-source"));
 
     expect(codeSourceRules.length).toBeGreaterThan(0);
     for (const [, selectors, declarations] of codeSourceRules) {

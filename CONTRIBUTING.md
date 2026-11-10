@@ -1,14 +1,12 @@
-# Contributing to EdgeEver
+# Contributing to Ponder
 
-[简体中文](CONTRIBUTING.zh-CN.md) | English
-
-Thank you for contributing to EdgeEver. A Fork used for Cloudflare deployment can also be used for code contributions, but deployment and development must use different branches.
+Thank you for contributing to Ponder. A Fork used for Cloudflare deployment can also be used for code contributions, but deployment and development must use different branches.
 
 ## Keep the deployment branch separate
 
-If your Fork is used to deploy EdgeEver:
+If your Fork is used to deploy Ponder:
 
-- Treat the Fork's `main` as a deployment-only branch managed by **Update deployed EdgeEver**.
+- Treat the Fork's `main` as a deployment-only branch managed by **Update deployed Ponder**.
 - Do not develop features directly on that `main` branch.
 - Do not use GitHub **Sync fork** to update the deployment `main` during routine development or deployment updates.
 - Create each contribution branch directly from the official repository's latest `upstream/main`.
@@ -20,8 +18,8 @@ The deployment workflow only updates the Fork's `main`. It does not modify your 
 Clone your Fork and add the official repository as `upstream`:
 
 ```sh
-git clone https://github.com/<your-account>/edgeever.git
-cd edgeever
+git clone https://github.com/<your-account>/ponder.git
+cd ponder
 git remote add upstream https://github.com/tianma-if/edgeever.git
 git fetch upstream
 ```
@@ -41,7 +39,7 @@ git push -u origin feat/short-description
 Open a Pull Request from:
 
 ```text
-<your-account>/edgeever:feat/short-description
+<your-account>/ponder:feat/short-description
     -> tianma-if/edgeever:main
 ```
 
@@ -81,4 +79,4 @@ Platform-specific changes may require additional checks.
 
 ## Customized deployments
 
-Keeping personal product changes permanently on the deployed `main` is a customized deployment, not the normal contribution workflow. Customized deployments must opt in with `EDGE_EVER_PRESERVE_FORK_CHANGES=true` and maintain their own upstream merges. You do not need this setting when contributing through a separate branch.
+Keeping personal product changes permanently on the deployed `main` is a customized deployment, not the normal contribution workflow. Customized deployments must opt in with `PONDER_PRESERVE_FORK_CHANGES=true` and maintain their own upstream merges. You do not need this setting when contributing through a separate branch.

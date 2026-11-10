@@ -1,4 +1,4 @@
-name: Build EdgeEver iOS
+name: Build Ponder iOS
 
 on:
   push:
@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: edgeever-ios-${{ github.ref }}
+  group: ponder-ios-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -43,7 +43,7 @@ jobs:
       - name: Resolve packages
         working-directory: apps/ios
         run: |
-          xcodebuild -project EdgeEver.xcodeproj -scheme EdgeEver \
+          xcodebuild -project Ponder.xcodeproj -scheme Ponder \
             -resolvePackageDependencies \
             -destination 'generic/platform=iOS Simulator'
 
@@ -52,14 +52,14 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild build \
-            -project EdgeEver.xcodeproj \
-            -scheme EdgeEver \
+            -project Ponder.xcodeproj \
+            -scheme Ponder \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty || true
           xcodebuild build \
-            -project EdgeEver.xcodeproj \
-            -scheme EdgeEver \
+            -project Ponder.xcodeproj \
+            -scheme Ponder \
             -destination 'generic/platform=iOS Simulator' \
             CODE_SIGNING_ALLOWED=NO
 
@@ -67,7 +67,7 @@ jobs:
         working-directory: apps/ios
         run: |
           DEST="$(
-            xcodebuild -project EdgeEver.xcodeproj -scheme EdgeEver -showdestinations 2>/dev/null \
+            xcodebuild -project Ponder.xcodeproj -scheme Ponder -showdestinations 2>/dev/null \
               | sed -n 's/.*name:\(iPhone[^,}]*\).*/\1/p' \
               | sed 's/[[:space:]]*$//' \
               | head -1
@@ -77,8 +77,8 @@ jobs:
           fi
           echo "Using simulator: $DEST"
           xcodebuild test \
-            -project EdgeEver.xcodeproj \
-            -scheme EdgeEver \
+            -project Ponder.xcodeproj \
+            -scheme Ponder \
             -destination "platform=iOS Simulator,name=$DEST" \
             CODE_SIGNING_ALLOWED=NO \
-            -only-testing:EdgeEverTests
+            -only-testing:PonderTests

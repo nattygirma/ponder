@@ -3,7 +3,7 @@ import {
   AiPromptTemplateUpdateSchema,
   RestoreJsonAiPromptsSchema,
   type JsonBackupAiPrompt,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import type { AppContext, AppEnv, Bindings } from "./api-context";

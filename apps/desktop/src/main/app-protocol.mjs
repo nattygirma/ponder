@@ -3,7 +3,7 @@ import { realpath, stat } from "node:fs/promises";
 import { extname, isAbsolute, relative, resolve } from "node:path";
 import { Readable } from "node:stream";
 
-export const DESKTOP_APP_SCHEME = "edgeever-app";
+export const DESKTOP_APP_SCHEME = "ponder-app";
 export const DESKTOP_APP_HOST = "app";
 export const DESKTOP_APP_ORIGIN = `${DESKTOP_APP_SCHEME}://${DESKTOP_APP_HOST}`;
 export const DESKTOP_APP_ENTRY_URL = `${DESKTOP_APP_ORIGIN}/index.html`;

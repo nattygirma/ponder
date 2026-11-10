@@ -34,7 +34,7 @@ describe("note image export helpers", () => {
     expect(markup).toContain("#idea");
     expect(markup).toContain("2026-08-22 19:00");
     expect(markup).toContain("Hello World");
-    expect(markup).toContain("EdgeEver");
+    expect(markup).toContain("Ponder");
   });
 
   test("keeps terminal decoration separate from manual font choice", () => {
@@ -49,10 +49,10 @@ describe("note image export helpers", () => {
       showBranding: false,
     });
 
-    expect(markup).not.toContain("edgeever-terminal-header");
+    expect(markup).not.toContain("ponder-terminal-header");
     expect(markup).not.toContain("dot-red");
     expect(markup).not.toContain("dot-green");
-    expect(markup).not.toContain("edgeever-card-footer");
+    expect(markup).not.toContain("ponder-card-footer");
   });
 
   test("generates valid card CSS with selected theme variables", () => {
@@ -83,8 +83,8 @@ describe("note image export helpers", () => {
     });
 
     expect(markup).toContain('data-theme="frame"');
-    expect(markup).toContain("edgeever-brand-logo");
-    expect(markup).not.toContain("edgeever-meta-notebook");
+    expect(markup).toContain("ponder-brand-logo");
+    expect(markup).not.toContain("ponder-meta-notebook");
 
     const editorialCss = generateCardCss({
       theme: "editorial",
@@ -93,7 +93,7 @@ describe("note image export helpers", () => {
       cardWidth: "standard",
     });
     expect(editorialCss).toContain('data-theme="frame"');
-    expect(editorialCss).toContain("edgeever-brand-logo");
+    expect(editorialCss).toContain("ponder-brand-logo");
   });
 
   test("resolves legacy film exports to the book template", () => {
@@ -107,7 +107,7 @@ describe("note image export helpers", () => {
     });
 
     expect(markup).toContain('data-theme="book"');
-    expect(markup).toContain("edgeever-brand-logo");
+    expect(markup).toContain("ponder-brand-logo");
   });
 });
 

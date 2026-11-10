@@ -29,7 +29,7 @@ import {
   resolveFlowchartTheme,
   type DiagramStructure,
   type DiagramTheme,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { MemoEditorToolbarDivider, MemoEditorToolbarRow } from "@/components/MemoEditorToolbarChrome";
 import {

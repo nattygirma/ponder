@@ -1,3 +1,6 @@
+import Collaboration from "@tiptap/extension-collaboration";
+import CollaborationCaret from "@tiptap/extension-collaboration-caret";
+import { CollabPresence, useCollabSession, type HttpYjsProvider } from "@/components/teams/collab";
 import { autoUpdate } from "@floating-ui/react-dom";
 import { AI_ASSISTANT_LAUNCHER_POSITION } from "@/lib/ai-assistant-launcher";
 import { editorClipboardTextSerializer } from "@/lib/editor-clipboard";
@@ -133,7 +136,7 @@ import { EDITOR_CONTENT_MAX_WIDTH, EDITOR_OUTLINE_WIDTH } from "@/lib/workspace-
 import {
   resolveResourceUploadMimeType,
   countMemoCharacters,
-  createEdgeEverDocumentExtensions,
+  createPonderDocumentExtensions,
   getFrontMatterSource,
   getMappedNoteProperties,
   parseNoteProperties,
@@ -161,11 +164,11 @@ import {
   isAiSelectionSnapshotCurrent,
   parseMemoLinkHref,
   getMemoDisplayTitle,
-} from "@edgeever/shared";
-import { NEW_IMAGE_WIDTH_PERCENT } from "@edgeever/shared/image-display";
-import { EdgeEverLink } from "@edgeever/shared/editor-link";
-import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
-import { codeBlockLowlight, EdgeEverCodeBlock } from "@/lib/code-block";
+} from "@ponder/shared";
+import { NEW_IMAGE_WIDTH_PERCENT } from "@ponder/shared/image-display";
+import { PonderLink } from "@ponder/shared/editor-link";
+import { createPonderMathematics } from "@ponder/shared/mathematics";
+import { codeBlockLowlight, PonderCodeBlock } from "@/lib/code-block";
 import { activeExternalImageHost, uploadImageWithPicGo } from "@/lib/picgo";
 import { compressImageForUpload } from "@/lib/image-compression";
 import { LOCAL_DATABASE_INTERRUPTED_EVENT, localDb, selectNewestLocalDraft, type MemoUpdateSyncPayload } from "@/lib/local-db";
@@ -179,7 +182,7 @@ import { useNoteProseStylePreference } from "@/lib/note-prose-style-preference";
 import { createClientUuid } from "@/lib/client-id";
 import { isLocalMemoId, remapLocalDraftMemoId } from "@/lib/local-mirror";
 import { shouldAcceptRemoteMemoDetail } from "@/lib/memo-detail-freshness";
-import type { EdgeEverRepository } from "@/lib/repository";
+import type { PonderRepository } from "@/lib/repository";
 import {
   EDITOR_LOCAL_SAVE_DELAY_MS,
   formatShortcutBinding,
@@ -268,6 +271,24 @@ import { PdfAttachment } from "./editor/PdfAttachment";
 import { FileAttachment } from "./editor/FileAttachment";
 import { createInlineFieldExtension } from "./editor/InlineField";
 import { createPluginEmbedExtension } from "./editor/PluginEmbed";
+import { PAGE_TREE_QUERY_KEY, usePages } from "./pages/PagesProvider";
+import { BlockHandle, createBlockHandleExtension, type BlockHandleController } from "./pages/BlockHandle";
+import { MenuSearch } from "./pages/MenuSearch";
+import { PageBreadcrumbs, PageCover, PageHeader, PageLocationChip } from "./pages/PageHeader";
+import { SELECTION_BUBBLE_OPTIONS, SelectionBubble, shouldShowSelectionBubble } from "./pages/SelectionBubble";
+import { createNotionShortcuts } from "./pages/notionShortcuts";
+import { PageShareButton } from "./teams/Teams";
+import { formatRelativeTime } from "@/lib/relative-time";
+import { ALargeSmall, CornerUpRight, Link as LinkIcon, Star as StarIcon } from "lucide-react";
+import { DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
+import { EditorDatabaseEmbed, RowProperties } from "./database/DatabasePane";
+import { AppMark, useConnections } from "./pages/Connections";
+import { EditorLinkPreview, LinkPreviewPaste } from "./pages/LinkPreviewBlock";
+import { PageComments, type PageCommentsController } from "./comments/PageComments";
+import { usePageAccess, useViewer } from "./teams/Teams";
+import { anchorFromBlock, anchorFromSelection, createCommentHighlights } from "./comments/CommentHighlights";
+import { EditorSubPage } from "./pages/SubPageBlock";
+import { SUB_PAGE_NODE_TYPE } from "@ponder/shared";
 import { useEditorDocumentActions } from "./editor/useEditorDocumentActions";
 import { useEditorSaveStatus } from "./editor/useEditorSaveStatus";
 import { getEditorSaveChrome } from "./editor/editor-save-chrome";
@@ -296,7 +317,7 @@ import {
   shouldInsertPendingEditorFiles,
   usablePendingInsertFiles,
 } from "./editor/editor-pending-insert";
-import type { EdgeEverPluginHost, PluginEditorAdapter } from "@/lib/plugins/plugin-host";
+import type { PonderPluginHost, PluginEditorAdapter } from "@/lib/plugins/plugin-host";
 import {
   useEditorResourceActions,
   type AttachmentMenuTarget,
@@ -328,10 +349,17 @@ import {
   type MobilePlainTextElement,
 } from "./editor/editor-pane-helpers";
 
+// Module-level so the menu isn't reconfigured on each render, which would repaint the editor and loop.
+/** Page text width, the same measure Notion uses. */
+const PAGE_CONTENT_MAX_WIDTH = "720px";
+const COMMENT_BUBBLE_OPTIONS = { placement: "bottom" as const };
+const shouldShowCommentBubble = ({ editor: current }: { editor: Editor }) =>
+  current.isEditable && Boolean(anchorFromSelection(current));
+
 type EditorPaneProps = {
   onCreatePoster?: (memo: MemoDetail, text: string) => Promise<void>;
   memo: MemoDetail | null;
-  repository: EdgeEverRepository;
+  repository: PonderRepository;
   desktopFocusMode: boolean;
   onToggleDesktopFocusMode: () => void;
   noteProse: ResolvedNoteProse;
@@ -377,19 +405,24 @@ type EditorPaneProps = {
   beforeCompanionApply?: () => Promise<void>;
   onCompanionNotesChanged?: () => Promise<void>;
   onOpenCompanionNote?: (id: string, notebookId: string) => void;
-  pluginHost: EdgeEverPluginHost;
+  pluginHost: PonderPluginHost;
   pluginNavigationRequest?: { id: number; noteId: string; search: string } | null;
   onOpenExecutionCenter: () => void;
   demoMode?: boolean;
 };
 
 type RichEditorPaneProps = EditorPaneProps & {
+  collab?: HttpYjsProvider | null;
   onRequestMobileNativeEdit?: () => void;
 };
 
 export const EditorPane = (props: EditorPaneProps) => {
   const { t } = useTranslation();
   const readOnly = props.isTrashView || Boolean(props.memo?.isDeleted);
+  const viewer = useViewer();
+  // Shared workspaces edit through the live session; personal notes keep their own save path.
+  const collabMemoId = viewer?.teamRole && props.memo && !readOnly ? props.memo.id : null;
+  const collab = useCollabSession(collabMemoId, viewer);
   const { editingActive, requestEdit } = useStandaloneMobileEditor({
     memoId: props.memo?.id ?? null,
     mobileDefaultEditMemoId: props.mobileDefaultEditMemoId,
@@ -406,9 +439,24 @@ export const EditorPane = (props: EditorPaneProps) => {
     );
   }
 
+  if (collabMemoId && !collab.provider) {
+    return (
+      <div className="flex h-full min-h-0 flex-col items-center justify-center gap-2 bg-transparent text-sm text-slate-500">
+        {collab.failed ? (
+          <>
+            <span>{t("pages.collab.failed")}</span>
+            <button type="button" className="rounded-md border border-slate-200 px-2 py-1 text-slate-700 hover:bg-slate-50" onClick={collab.retry}>{t("pages.collab.retry")}</button>
+          </>
+        ) : t("pages.collab.opening")}
+      </div>
+    );
+  }
+
   return (
     <RichEditorPane
       {...props}
+      key={collab.provider ? `${collabMemoId}:${collab.provider.generation}` : "personal"}
+      collab={collab.provider}
       mobileDefaultEditMemoId={props.mobileDefaultEditMemoId}
       onRequestMobileNativeEdit={requestEdit}
     />
@@ -465,6 +513,7 @@ const RichEditorPane = ({
   onOpenExecutionCenter,
   demoMode = false,
   onRequestMobileNativeEdit,
+  collab,
 }: RichEditorPaneProps) => {
   const { t, i18n } = useTranslation();
   const { markdownTheme } = useMarkdownTheme();
@@ -586,6 +635,9 @@ const RichEditorPane = ({
   const [phonePreviewOpen, setPhonePreviewOpen] = useState(readEditorPhonePreviewPreference);
   const [memoIdCopyNotice, setMemoIdCopyNotice] = useState<{ status: "copied" | "error"; id: string } | null>(null);
   const [resourceCopyNotice, setResourceCopyNotice] = useState<"copied" | "error" | null>(null);
+  const [driveSaveFailed, setDriveSaveFailed] = useState(false);
+  const connections = useConnections();
+  const googleConnected = connections.data?.accounts.some((account) => account.provider === "google" && account.status === "active") ?? false;
   const resourceCopyNoticeTimerRef = useRef<number | null>(null);
   const handledSaveAndSyncTokenRef = useRef(saveAndSyncToken);
   const handledReadingProtectionToggleTokenRef = useRef(readingProtectionToggleToken);
@@ -679,12 +731,19 @@ const RichEditorPane = ({
   });
   const isMemoShared = Boolean(shareStatusQuery.data?.share);
   const mobileDefaultEditRequested = Boolean(memo?.id && memo.id === mobileDefaultEditMemoId && !readOnly);
-  const mobileEditingActive = isMobileEditing || mobileDefaultEditRequested;
+  const mobileEditingActive = !collab && (isMobileEditing || mobileDefaultEditRequested);
 
+  const viewer = useViewer();
+  const teamRestricted = Boolean(viewer?.teamRole && viewer.teamRole !== "owner");
+  const pageAccess = usePageAccess(memo?.id, teamRestricted);
+  const accessReadOnly = teamRestricted && pageAccess.data?.level !== "edit";
   const effectiveReadOnly = readOnly
+    || accessReadOnly
     || (isMobileViewport && !mobileEditingActive)
     || (!isMobileViewport && desktopReadingProtection);
   const useMobilePlainTextEditor = isMobileViewport && mobileEditingActive && !readOnly;
+  const collabRef = useRef(collab ?? null);
+  const collabFieldsTimerRef = useRef(0);
 
   const toggleDesktopReadingProtection = useCallback(() => {
     setDesktopReadingProtection((protectedMode) => {
@@ -746,7 +805,7 @@ const RichEditorPane = ({
   const openMathFormulaRef = useRef<(kind?: "inline" | "block", range?: { from: number; to: number }) => void>(() => undefined);
   const mathFormulaDraftRef = useRef<MathFormulaDraft | null>(null);
   const mathClickRef = useRef<(node: { attrs: Record<string, unknown> }, pos: number, kind: "inline" | "block") => void>(() => undefined);
-  const mathematicsExtensionsRef = useRef(createEdgeEverMathematics({
+  const mathematicsExtensionsRef = useRef(createPonderMathematics({
     onInlineClick: (node, pos) => mathClickRef.current(node, pos, "inline"),
     onBlockClick: (node, pos) => mathClickRef.current(node, pos, "block"),
   }));
@@ -780,6 +839,11 @@ const RichEditorPane = ({
       attachment: "",
       "note-link": "",
       "external-link": "",
+      "sub-page": "",
+      callout: "",
+      "columns-2": "",
+      "columns-3": "",
+      database: "",
     },
   });
   slashCommandLabelsRef.current = {
@@ -816,8 +880,18 @@ const RichEditorPane = ({
       attachment: t("editorToolbar.attachment"),
       "note-link": t("editorToolbar.noteLink"),
       "external-link": t("editorToolbar.externalLink"),
+      "sub-page": t("pages.subPage"),
+      callout: t("pages.callout"),
+      "columns-2": t("pages.columns2"),
+      "columns-3": t("pages.columns3"),
+      database: t("pages.database"),
     },
   };
+  const pages = usePages();
+  const pagesRef = useRef(pages);
+  pagesRef.current = pages;
+  const createSubPageRef = useRef<() => Promise<void>>(async () => undefined);
+  const createDatabaseRef = useRef<() => Promise<void>>(async () => undefined);
   const slashCommandActionsRef = useRef<SlashCommandActions | null>(null);
   if (!slashCommandActionsRef.current) {
     slashCommandActionsRef.current = {
@@ -826,6 +900,9 @@ const RichEditorPane = ({
       openExternalLinkPicker: () => openExternalLinkDialogRef.current(),
       openNoteLinkPicker: () => setNoteLinkPickerOpen(true),
       openMathFormula: (kind, range) => openMathFormulaRef.current(kind, range),
+      pagesAvailable: () => Boolean(pagesRef.current?.enabled),
+      createSubPage: () => void createSubPageRef.current(),
+      createDatabase: () => void createDatabaseRef.current(),
     };
   }
   const slashCommandExtensionRef = useRef<ReturnType<typeof createSlashCommandExtension> | null>(null);
@@ -857,6 +934,20 @@ const RichEditorPane = ({
         return result.memos;
       },
     });
+  }
+  const extraLinkTriggersRef = useRef<ReturnType<typeof createNoteLinkSuggestionExtension>[] | null>(null);
+  if (!extraLinkTriggersRef.current) {
+    extraLinkTriggersRef.current = ["[[", "+"].map((char) => createNoteLinkSuggestionExtension({
+      char,
+      isEnabled: () => Boolean(pagesRef.current?.enabled),
+      getCurrentMemoId: () => memoRef.current?.id ?? null,
+      getLabels: () => noteLinkSuggestionLabelsRef.current,
+      searchMemos: async (query) => (await repository.listMemos({ q: query, limit: 20, includeTotal: false })).memos,
+    }));
+  }
+  const notionShortcutsRef = useRef<ReturnType<typeof createNotionShortcuts> | null>(null);
+  if (!notionShortcutsRef.current) {
+    notionShortcutsRef.current = createNotionShortcuts(() => Boolean(pagesRef.current?.enabled));
   }
   const hydratingRef = useRef(false);
   const hydratedMemoIdRef = useRef<string | null>(null);
@@ -1085,7 +1176,7 @@ const RichEditorPane = ({
         filename: uploadFile.name,
         mimeType: uploadFile.type || null,
         byteSize: uploadFile.size,
-        url: `edgeever-staged://${staged.id}`,
+        url: `ponder-staged://${staged.id}`,
       };
     }
   }, [repository, t]);
@@ -1194,7 +1285,7 @@ const RichEditorPane = ({
             return {
               type: "paragraph",
               content: [{
-                type: "edgeeverPdfAttachment",
+                type: "ponderPdfAttachment",
                 attrs: {
                   url: resource.url,
                   label: t("editor.attachmentLabel", { filename }),
@@ -1209,7 +1300,7 @@ const RichEditorPane = ({
           return {
             type: "paragraph",
             content: [{
-              type: "edgeeverFileAttachment",
+              type: "ponderFileAttachment",
               attrs: {
                 url: resource.url,
                 label: t("editor.attachmentLabel", { filename }),
@@ -1285,27 +1376,40 @@ const RichEditorPane = ({
     return true;
   }, [markDirtyStatus, queryClient, resourceInsertionLimit, t, uploadEditorResource]);
 
+  const blockHandleRef = useRef<BlockHandleController | null>(null);
+  if (!blockHandleRef.current) blockHandleRef.current = createBlockHandleExtension();
+  const commentsRef = useRef<PageCommentsController>({ anchors: [], startThread: () => undefined, openThread: () => undefined, startPageComment: () => undefined });
+  const commentHighlightsRef = useRef<ReturnType<typeof createCommentHighlights> | null>(null);
+  if (!commentHighlightsRef.current) {
+    commentHighlightsRef.current = createCommentHighlights(() => commentsRef.current.anchors, (threadId) => commentsRef.current.openThread(threadId));
+  }
   const pluginEmbedExtension = useMemo(() => createPluginEmbedExtension(pluginHost), [pluginHost]);
   const inlineFieldExtension = useMemo(() => createInlineFieldExtension(i18n.getFixedT(i18n.language)), [i18n, i18n.language]);
   const editor = useEditor({
     extensions: [
-      ...createEdgeEverDocumentExtensions({
+      ...createPonderDocumentExtensions({
         mathematics: mathematicsExtensionsRef.current,
         starterKit: {
           codeBlock: false,
           link: false,
           dropcursor: { color: "#16A06E", width: 2 },
+          // The live session keeps a per-person undo history instead.
+          ...(collab ? { undoRedo: false as const } : {}),
         },
         image: false,
         gallery: EditableImageGallery,
         pdf: PdfAttachment,
         file: FileAttachment,
         pluginEmbed: pluginEmbedExtension,
+        subPage: EditorSubPage,
+        databaseEmbed: EditorDatabaseEmbed,
+        linkPreview: EditorLinkPreview,
         table: { table: { renderWrapper: true } },
       }),
-      EdgeEverLink.configure({ openOnClick: false }),
+      PonderLink.configure({ openOnClick: false }),
+      LinkPreviewPaste,
       inlineFieldExtension,
-      EdgeEverCodeBlock.configure({ lowlight: codeBlockLowlight, defaultLanguage: "plaintext" }),
+      PonderCodeBlock.configure({ lowlight: codeBlockLowlight, defaultLanguage: "plaintext" }),
       ThemeBlock,
       ResizableImage.configure({
         allowBase64: false,
@@ -1319,15 +1423,27 @@ const RichEditorPane = ({
       }),
       slashCommandExtensionRef.current,
       noteLinkSuggestionExtensionRef.current,
+      ...extraLinkTriggersRef.current,
+      notionShortcutsRef.current,
+      blockHandleRef.current.extension,
+      commentHighlightsRef.current,
+      ...(collab
+        ? [
+            Collaboration.configure({ document: collab.doc, field: "default" }),
+            CollaborationCaret.configure({ provider: collab, user: collab.user }),
+          ]
+        : []),
     ],
-    content: memo
+    content: collab
+      ? undefined
+      : memo
       ? resolveMemoContentDoc(memo.contentJson, memo.contentMarkdown)
       : { type: "doc", content: [{ type: "paragraph" }] },
     editable: Boolean(memo && !effectiveReadOnly && editorIsHydratedForCurrentMemo),
     editorProps: {
       clipboardTextSerializer: editorClipboardTextSerializer,
       attributes: {
-        class: "edgeever-note-rich-editor prose prose-slate max-w-none focus:outline-none min-h-[240px] lg:min-h-[180px]",
+        class: "ponder-note-rich-editor prose prose-slate max-w-none focus:outline-none min-h-[240px] lg:min-h-[180px]",
         spellcheck: spellcheckEnabled ? "true" : "false",
       },
       handleKeyDown: (view, event) => {
@@ -1374,6 +1490,8 @@ const RichEditorPane = ({
         const shortcutKey = event.key.toLowerCase();
         // Command on Apple, Control elsewhere. Control stays free for macOS text movement.
         if (isPrimaryModifierPressed(event) && !event.altKey && !event.shiftKey && shortcutKey === "k") {
+          // In the page layout Cmd+K is search unless there is text to link.
+          if (pagesRef.current?.enabled && view.state.selection.empty) return false;
           event.preventDefault();
           openExternalLinkDialogRef.current();
           return true;
@@ -1509,7 +1627,7 @@ const RichEditorPane = ({
     hydratingRef,
     onUnsafeRichTableEdit: setRichTableEditBlocked,
   });
-  const useMarkdownSourceEditor = !useMobilePlainTextEditor && isMarkdownMode;
+  const useMarkdownSourceEditor = !collab && !useMobilePlainTextEditor && isMarkdownMode;
   headingShortcutSurfaceRef.current = {
     markdown: useMarkdownSourceEditor,
     plainText: useMobilePlainTextEditor,
@@ -1607,7 +1725,7 @@ const RichEditorPane = ({
       .insertContent({
         type: "text",
         text: selectedText || getMemoDisplayTitle(target.title, t("common.untitledMemo")),
-        marks: [{ type: "link", attrs: { href: createMemoLinkHref(target.id), class: "edgeever-note-link" } }],
+        marks: [{ type: "link", attrs: { href: createMemoLinkHref(target.id), class: "ponder-note-link" } }],
       })
       .run();
     setNoteLinkPickerOpen(false);
@@ -2151,6 +2269,7 @@ const RichEditorPane = ({
     (nextTitle = memoFieldsRef.current.title, nextTagsText = memoFieldsRef.current.tagsText, nextMobilePlainText = getMobilePlainTextValue()) => {
       const currentMemo = memoRef.current;
       const currentEditor = editorRef.current;
+      if (collabRef.current) return Promise.resolve();
 
       if (
         !currentMemo ||
@@ -2181,7 +2300,35 @@ const RichEditorPane = ({
   );
   persistResourceInsertionDraftRef.current = () => persistCurrentDraft();
 
+  const pushCollabFields = useCallback(() => {
+    const provider = collabRef.current;
+    const memoId = memoRef.current?.id;
+    if (!provider || !memoId) return;
+    window.clearTimeout(collabFieldsTimerRef.current);
+    collabFieldsTimerRef.current = window.setTimeout(() => {
+      const fields = memoFieldsRef.current;
+      if (fields.memoId !== memoId) return;
+      provider.noteTitle(fields.title);
+      void api.updatePageFields(memoId, { title: fields.title, tags: parseTagsText(fields.tagsText) }).then(() => {
+        void queryClient.invalidateQueries({ queryKey: PAGE_TREE_QUERY_KEY });
+        void queryClient.invalidateQueries({ queryKey: ["memos"], refetchType: "inactive" });
+      });
+    }, 500);
+  }, [queryClient]);
+
+  useEffect(() => {
+    if (!collab) return;
+    return collab.onTitle((nextTitle) => {
+      const currentId = memoRef.current?.id;
+      if (!currentId || memoFieldsRef.current.memoId !== currentId) return;
+      memoFieldsRef.current = { ...memoFieldsRef.current, title: nextTitle };
+      setMemoFields((fields) => (fields.memoId === currentId ? { ...fields, title: nextTitle } : fields));
+      void queryClient.invalidateQueries({ queryKey: PAGE_TREE_QUERY_KEY });
+    });
+  }, [collab, queryClient]);
+
   const markDirty = useCallback(() => {
+    if (collabRef.current) return;
     const currentMemo = memoRef.current;
     if (
       hydratingRef.current ||
@@ -2475,7 +2622,7 @@ const RichEditorPane = ({
       setMobilePlainText(immediateDraft.contentMarkdown);
       setMobilePlainTextElementValue(mobileTextAreaRef.current, immediateDraft.contentMarkdown);
       hydrateMarkdownSource(memo.id, immediateDraft.contentJson, immediateDraft.contentMarkdown);
-      if (isEditorReady(currentEditor)) {
+      if (isEditorReady(currentEditor) && !collabRef.current) {
         try {
           resetEditorDocument(currentEditor, immediateDraft.contentJson);
         } catch (err) {
@@ -2565,7 +2712,7 @@ const RichEditorPane = ({
       ) {
         const [listed, staged] = await Promise.all([
           repository.listResources().catch(() => ({ resources: [] as Array<{ memoId?: string; url: string; filename?: string | null; kind?: string | null }> })),
-          window.edgeeverDesktop?.listStagedResources?.().catch(() => []) ?? Promise.resolve([]),
+          window.ponderDesktop?.listStagedResources?.().catch(() => []) ?? Promise.resolve([]),
         ]);
         if (cancelled) return;
         const liveStagedIds = new Set((staged ?? []).filter((item) => item.memoId === memo.id).map((item) => item.id));
@@ -2685,7 +2832,7 @@ const RichEditorPane = ({
       const keptLiveMarkdown = hydrateMarkdownSource(memo.id, nextContent, nextMarkdown);
       setMobilePlainTextElementValue(mobileTextAreaRef.current, nextMarkdown);
 
-      if (isEditorReady(currentEditor) && shouldReplaceDocument && !keptLiveMarkdown) {
+      if (isEditorReady(currentEditor) && shouldReplaceDocument && !keptLiveMarkdown && !collabRef.current) {
         try {
           if (sameMemo) {
             currentEditor.commands.setContent(nextContent);
@@ -2773,7 +2920,7 @@ const RichEditorPane = ({
 
   useEffect(() => {
     if (!isEditorReady(editor)) {
-      window.edgeeverDesktop?.setRichTextHeadingShortcutActive?.(false);
+      window.ponderDesktop?.setRichTextHeadingShortcutActive?.(false);
       return;
     }
 
@@ -2783,7 +2930,7 @@ const RichEditorPane = ({
         && editor.isFocused
         && !surface.markdown
         && !surface.plainText;
-      window.edgeeverDesktop?.setRichTextHeadingShortcutActive?.(active);
+      window.ponderDesktop?.setRichTextHeadingShortcutActive?.(active);
     };
     editor.on("focus", syncHeadingShortcutTarget);
     editor.on("blur", syncHeadingShortcutTarget);
@@ -2791,12 +2938,12 @@ const RichEditorPane = ({
     return () => {
       editor.off("focus", syncHeadingShortcutTarget);
       editor.off("blur", syncHeadingShortcutTarget);
-      window.edgeeverDesktop?.setRichTextHeadingShortcutActive?.(false);
+      window.ponderDesktop?.setRichTextHeadingShortcutActive?.(false);
     };
   }, [editor, effectiveReadOnly, hydratedEditorMemoId, memo, useMarkdownSourceEditor, useMobilePlainTextEditor]);
 
   useEffect(() => {
-    const unsubscribe = window.edgeeverDesktop?.onHeadingShortcut?.((level) => {
+    const unsubscribe = window.ponderDesktop?.onHeadingShortcut?.((level) => {
       if (level !== 0) return;
       const surface = headingShortcutSurfaceRef.current;
       if (surface.markdown || surface.plainText) return;
@@ -2915,10 +3062,10 @@ const RichEditorPane = ({
     };
 
     window.addEventListener(MEMO_SYNC_ACKNOWLEDGED_EVENT, handleMemoSyncAcknowledged);
-    window.addEventListener("edgeever:sync-completed", handleSyncCompleted);
+    window.addEventListener("ponder:sync-completed", handleSyncCompleted);
     return () => {
       window.removeEventListener(MEMO_SYNC_ACKNOWLEDGED_EVENT, handleMemoSyncAcknowledged);
-      window.removeEventListener("edgeever:sync-completed", handleSyncCompleted);
+      window.removeEventListener("ponder:sync-completed", handleSyncCompleted);
     };
   }, []);
 
@@ -2994,7 +3141,7 @@ const RichEditorPane = ({
 
     window.addEventListener("pagehide", persistBeforeSuspend);
     document.addEventListener("visibilitychange", persistWhenHidden);
-    const stopHibernatePrepare = window.edgeeverDesktop?.onHibernatePrepare?.(async () => {
+    const stopHibernatePrepare = window.ponderDesktop?.onHibernatePrepare?.(async () => {
       await persistCurrentDraft(title, tagsText, getMobilePlainTextValue());
     });
 
@@ -3400,7 +3547,7 @@ const RichEditorPane = ({
     target.kind === "image" ? t("editor.imageActions.failed") : t("editor.attachmentActions.failed"), [t]);
 
   const fetchResourceResponse = useCallback(async (target: ResourceMenuTarget) => {
-    const response = target.url.startsWith("edgeever-resource:") || target.url.startsWith("edgeever-staged:")
+    const response = target.url.startsWith("ponder-resource:") || target.url.startsWith("ponder-staged:")
       ? await fetch(target.url)
       : await api.getResourceResponse(target.url);
     if (!response.ok) throw new Error(response.statusText || getResourceActionFailure(target));
@@ -3563,10 +3710,10 @@ const RichEditorPane = ({
 
     startResourceAction();
     try {
-      if (target.kind === "image" && target.url.startsWith("edgeever-staged://") && window.edgeeverDesktop) {
+      if (target.kind === "image" && target.url.startsWith("ponder-staged://") && window.ponderDesktop) {
         const stagedUrl = new URL(target.url);
         const stagedId = decodeURIComponent(stagedUrl.hostname || stagedUrl.pathname.replace(/^\//, ""));
-        if (stagedId) await window.edgeeverDesktop.removeStagedResource(stagedId);
+        if (stagedId) await window.ponderDesktop.removeStagedResource(stagedId);
       } else if (target.resourceId && !target.resourceId.startsWith("local_resource_")) {
         await repository.deleteResource(target.resourceId);
         await queryClient.invalidateQueries({ queryKey: ["resources"] });
@@ -4040,9 +4187,61 @@ const RichEditorPane = ({
     && !hasUnsavedChanges;
   const saveStatusLabel = `${saveLabel} · ${t("editor.characterCount", { count: characterCount })}`;
 
+  const pageMode = Boolean(pages?.enabled && !isMobileViewport && !useMarkdownSourceEditor);
+  createSubPageRef.current = async () => {
+    if (!memo || !pagesRef.current) return;
+    const page = await pagesRef.current.createPage({ parentId: memo.id, reveal: false });
+    if (!page) return;
+    editor?.chain().focus().insertContent({ type: SUB_PAGE_NODE_TYPE, attrs: { memoId: page.id, title: "" } }).run();
+  };
+  createDatabaseRef.current = async () => {
+    if (!memo) return;
+    const { database } = await api.createDatabase({ parentId: memo.id });
+    pagesRef.current?.refresh();
+    editor?.chain().focus().insertContent({
+      type: "ponderDatabase",
+      attrs: { databaseId: database.id, viewId: database.views[0]?.id ?? "" },
+    }).run();
+  };
+  const renderTitleInput = (className: string) => (
+              <MemoTitleInput
+                ref={titleInputRef}
+                className={className}
+                value={title}
+                readOnly={effectiveReadOnly}
+                multiline={pageMode}
+                onKeyDown={pageMode ? (event) => {
+                  if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+                  event.preventDefault();
+                  editor?.commands.focus("start");
+                } : undefined}
+                onValueChange={(nextTitle) => {
+                  if (memoFieldsRef.current.memoId === memo.id) memoFieldsRef.current = { ...memoFieldsRef.current, title: nextTitle };
+                  setMemoFields((fields) => fields.memoId === memo.id
+                    ? { ...fields, title: nextTitle }
+                    : fields);
+                  updatePropertyField("title", nextTitle);
+                  pagesRef.current?.renameLocally(memo.id, nextTitle);
+                  persistCurrentDraft(nextTitle, tagsText, getMobilePlainTextValue());
+                  markDirty();
+                  pushCollabFields();
+                }}
+                placeholder={pageMode ? t("pages.sidebar.newPage") : t("common.untitledMemo")}
+              />
+  );
+
+  const pageNode = pageMode && memo ? pages?.getPage(memo.id) : undefined;
+  const pageStyle = pageNode?.style ?? null;
+  const setPageStyle = (patch: NonNullable<typeof pageStyle>) => {
+    if (memo) void pages?.updatePage(memo.id, { style: { ...pageStyle, ...patch } });
+  };
+  const copyPageLink = () => {
+    if (memo && pages) void copyTextToClipboard(pages.pageLink(memo.id));
+  };
+
   return (
     <div className="relative flex h-full min-w-0 bg-transparent">
-      <div ref={editorColumnRef} className="relative flex h-full min-w-0 min-h-0 flex-1 flex-col">
+      <div ref={editorColumnRef} data-editor-column="" className="relative flex h-full min-w-0 min-h-0 flex-1 flex-col">
       {selectionActionBar}
       <ExternalLinkDialog
         open={externalLinkDialogOpen}
@@ -4095,8 +4294,8 @@ const RichEditorPane = ({
           onInsert={insertMemoLink}
         />
       )}
-      <header className="shrink-0 border-b border-[var(--workspace-divider)] bg-transparent">
-        <div className={MEMO_EDITOR_TOP_ROW_CLASS_NAME}>
+      <header className={cn("shrink-0 border-b bg-transparent", pageMode ? "border-transparent" : "border-[var(--workspace-divider)]")}>
+        <div className={cn(MEMO_EDITOR_TOP_ROW_CLASS_NAME, pageMode && "h-11 min-h-11")}>
           <div
             className={cn(
               "flex min-w-0 flex-1",
@@ -4132,26 +4331,12 @@ const RichEditorPane = ({
                 <ChevronLeft className="h-4 w-4" />
               </Button>
             )}
-            titleInput={(
-              <MemoTitleInput
-                ref={titleInputRef}
-                className="w-full min-w-0 px-2"
-                value={title}
-                readOnly={effectiveReadOnly}
-                onValueChange={(nextTitle) => {
-                  if (memoFieldsRef.current.memoId === memo.id) memoFieldsRef.current = { ...memoFieldsRef.current, title: nextTitle };
-                  setMemoFields((fields) => fields.memoId === memo.id
-                    ? { ...fields, title: nextTitle }
-                    : fields);
-                  updatePropertyField("title", nextTitle);
-                  persistCurrentDraft(nextTitle, tagsText, getMobilePlainTextValue());
-                  markDirty();
-                }}
-                placeholder={t("common.untitledMemo")}
-              />
-            )}
+            titleInput={pageMode && memo
+              ? <PageBreadcrumbs memoId={memo.id} fallbackTitle={title} location={<PageLocationChip notebookId={memo.notebookId} options={notebookOptions} disabled={effectiveReadOnly} onMove={(id) => void handleNotebookChange(id)} />} />
+              : renderTitleInput("w-full min-w-0 px-2")}
           />
           <MemoEditorMetadataRow
+            hideNotebook={pageMode}
             rowClassName={MEMO_EDITOR_METADATA_ROW_CLASS_NAME}
             contentMarkdown={currentMarkdownForAi}
             disabled={effectiveReadOnly}
@@ -4172,10 +4357,12 @@ const RichEditorPane = ({
               updatePropertyField("tags", parseTagsText(nextTagsText));
               persistCurrentDraft(title, nextTagsText, getMobilePlainTextValue());
               markDirty();
+              pushCollabFields();
             }}
             trailingActions={(
               <>
-                {!readOnly && (
+                {collab ? <CollabPresence provider={collab} /> : null}
+                {!readOnly && !pageMode && (
                   <IconTooltip label={`${t(desktopReadingProtection ? "editor.disableReadingProtection" : "editor.enableReadingProtection")} (${formatShortcutBinding(shortcutSettings.toggleReadingProtection)})`}>
                     <Button
                       className={cn(
@@ -4201,8 +4388,10 @@ const RichEditorPane = ({
 
           <div ref={setHeaderStatusCluster} className="absolute right-1 top-0 flex h-full shrink-0 items-center gap-1 sm:right-2">
             <div className="flex min-w-0 items-center gap-1.5">
-              <span className="hidden shrink-0 whitespace-nowrap text-xs tabular-nums text-slate-400 sm:inline">
-                {t("editor.characterCount", { count: characterCount })}
+              <span className="hidden shrink-0 whitespace-nowrap text-xs tabular-nums text-slate-400 sm:inline" data-page-edited={pageMode ? "" : undefined}>
+                {pageMode && memo
+                  ? t("pages.topBar.edited", { time: formatRelativeTime(memo.updatedAt, i18n.language) })
+                  : t("editor.characterCount", { count: characterCount })}
               </span>
             {imageUploadState !== "idle" && (
               <span
@@ -4220,6 +4409,7 @@ const RichEditorPane = ({
                     : t("editor.uploadState.fileUploading")}
               </span>
             )}
+            {pageMode && savedQuietly ? null : (
             <IconTooltip label={saveStatusReason ? `${saveStatusLabel}. ${saveStatusReason}` : saveStatusLabel}>
             <m.span
               key={`${saveState}-${String(hasUnsavedChanges)}`}
@@ -4245,6 +4435,7 @@ const RichEditorPane = ({
               {savedQuietly ? null : saveLabel}
             </m.span>
             </IconTooltip>
+            )}
             <IconTooltip label={saveStatusReason ? `${mobileStatusLabel}. ${saveStatusReason}` : mobileStatusLabel}>
             <m.span
               key={`${imageUploadState}-${saveState}-${String(hasUnsavedChanges)}`}
@@ -4259,13 +4450,15 @@ const RichEditorPane = ({
             </m.span>
             </IconTooltip>
             </div>
-            <MemoEditorToolbarDivider className="mx-0.5 hidden h-4 sm:block" />
+            {pageMode ? null : <MemoEditorToolbarDivider className="mx-0.5 hidden h-4 sm:block" />}
             <div className="flex items-center gap-0.5">
-            <MemoEditorFocusModeButton
-              desktopFocusMode={desktopFocusMode}
-              onToggleDesktopFocusMode={onToggleDesktopFocusMode}
-            />
-            {!readOnly && (!mobileEditingActive || isMemoShared) && (
+            {pageMode ? null : (
+              <MemoEditorFocusModeButton
+                desktopFocusMode={desktopFocusMode}
+                onToggleDesktopFocusMode={onToggleDesktopFocusMode}
+              />
+            )}
+            {!readOnly && !pageMode && (!mobileEditingActive || isMemoShared) && (
               <IconTooltip label={t(isLocalMemoId(memo.id) ? "sharing.afterSync" : isMemoShared ? "sharing.manage" : "sharing.action")}>
                 <Button
                   className="h-8 w-8 text-slate-500"
@@ -4330,6 +4523,161 @@ const RichEditorPane = ({
               </Button>
             )}
             <MemoEditorHeaderActions
+              hideRepositoryLink={pageMode}
+              pageMenu={pageMode && memo ? (
+                <>
+                  <MenuSearch placeholder={t("pages.block.searchActions")} />
+                  {pageNode ? (
+                    <DropdownMenuItem className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700" onClick={copyPageLink}>
+                      <LinkIcon className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                      {t("pages.topBar.copyLink")}
+                    </DropdownMenuItem>
+                  ) : null}
+                  <DropdownMenuItem className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700" onClick={() => void copyTextToClipboard(currentMarkdownForAi)}>
+                    <Copy className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    {t("pages.topBar.copyContents")}
+                  </DropdownMenuItem>
+                  {!readOnly && onDuplicateMemo ? (
+                    <DropdownMenuItem className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700" onClick={() => onDuplicateMemo(memo)}>
+                      <CopyPlus className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                      {t("editor.duplicate")}
+                    </DropdownMenuItem>
+                  ) : null}
+                  {effectiveReadOnly ? null : (
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700">
+                        <CornerUpRight className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                        {t("pages.topBar.moveTo")}
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="max-h-72 w-56 overflow-y-auto">
+                        {notebookOptions.map((notebook) => (
+                          <DropdownMenuItem key={notebook.id} disabled={notebook.id === memo.notebookId} onClick={() => void handleNotebookChange(notebook.id)}>
+                            {notebook.id === pages?.rootNotebookId ? t("pages.topBar.topLevel") : notebook.selectLabel}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  )}
+                  <DropdownMenuItem className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700" onClick={() => setHistoryOpen(true)}>
+                    <History className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                    {t("pages.topBar.versionHistory")}
+                  </DropdownMenuItem>
+                  {effectiveReadOnly ? null : (
+                    <DropdownMenuItem className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700" onClick={() => openAiAssistantRef.current()}>
+                      <Sparkles className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                      {t("pages.topBar.useWithAi")}
+                    </DropdownMenuItem>
+                  )}
+                  {googleConnected && editor ? (
+                    <DropdownMenuItem
+                      className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700"
+                      onClick={() => {
+                        // Opened now, while the click still counts, because browsers block tabs opened later.
+                        const tab = window.open("about:blank", "_blank");
+                        if (tab) tab.opener = null;
+                        api.savePageToDrive({ title: memo.title ?? "", html: editor.getHTML() }).then(
+                          ({ url }) => { if (tab) tab.location.href = url; },
+                          () => {
+                            tab?.close();
+                            setDriveSaveFailed(true);
+                            window.setTimeout(() => setDriveSaveFailed(false), 3000);
+                          },
+                        );
+                      }}
+                    >
+                      <AppMark app="drive" className="h-4 w-4" />
+                      {t("pages.topBar.saveToDrive")}
+                    </DropdownMenuItem>
+                  ) : null}
+                  <DropdownMenuSeparator className="my-1 h-px bg-slate-100" />
+                  {pageNode && !effectiveReadOnly ? (
+                    <DropdownMenuSub>
+                      <DropdownMenuSubTrigger className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700">
+                        <ALargeSmall className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                        {t("pages.topBar.appearance")}
+                      </DropdownMenuSubTrigger>
+                      <DropdownMenuSubContent className="w-52">
+                        <div className="px-2 pb-1 pt-1 text-xs text-slate-500">{t("pages.topBar.font")}</div>
+                        <div className="grid grid-cols-3 gap-1 px-1 pb-1" data-page-fonts>
+                          {([["default", "pages.topBar.fontDefault", "font-sans"], ["serif", "pages.topBar.fontSerif", "font-serif"], ["mono", "pages.topBar.fontMono", "font-mono"]] as const).map(([font, label, fontClass]) => (
+                            <button
+                              key={font}
+                              type="button"
+                              aria-pressed={(pageStyle?.font ?? "default") === font}
+                              className={cn("flex flex-col items-center rounded py-1 text-xs text-slate-600 hover:bg-slate-100", (pageStyle?.font ?? "default") === font && "bg-slate-100 text-slate-950")}
+                              onClick={() => setPageStyle({ font })}
+                            >
+                              <span className={cn("text-lg leading-6", fontClass)}>Ag</span>
+                              {t(label)}
+                            </button>
+                          ))}
+                        </div>
+                        <DropdownMenuCheckboxItem checked={Boolean(pageStyle?.small)} onSelect={(event) => { event.preventDefault(); setPageStyle({ small: !pageStyle?.small }); }}>{t("pages.topBar.smallText")}</DropdownMenuCheckboxItem>
+                        <DropdownMenuCheckboxItem checked={Boolean(pageStyle?.wide)} onSelect={(event) => { event.preventDefault(); setPageStyle({ wide: !pageStyle?.wide }); }}>{t("pages.topBar.fullWidth")}</DropdownMenuCheckboxItem>
+                      </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                  ) : null}
+                  {readOnly ? null : (
+                    <DropdownMenuItem
+                      className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700"
+                      aria-checked={desktopReadingProtection}
+                      role="menuitemcheckbox"
+                      onSelect={(event) => { event.preventDefault(); toggleDesktopReadingProtection(); }}
+                    >
+                      <Lock className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                      <span className="flex-1">{t("pages.topBar.lockPage")}</span>
+                      {desktopReadingProtection ? <Check className="h-4 w-4 text-slate-500" aria-hidden="true" /> : null}
+                    </DropdownMenuItem>
+                  )}
+                  {effectiveReadOnly ? null : (
+                    <DropdownMenuItem className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700" onClick={() => void onDeleted(memo.id)}>
+                      <Trash2 className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                      {t("pages.topBar.moveToTrash")}
+                    </DropdownMenuItem>
+                  )}
+                </>
+              ) : undefined}
+              pageMenuFooter={pageMode && memo ? (
+                <div className="px-3 pb-1.5 pt-1 text-xs text-slate-500" data-page-menu-footer>
+                  <div>{t("pages.topBar.lastEdited")}</div>
+                  <div>{new Date(memo.updatedAt).toLocaleString(i18n.language, { dateStyle: "medium", timeStyle: "short" })}</div>
+                  <div>{t("pages.topBar.words", { count: editor?.getText().trim().split(/\s+/).filter(Boolean).length ?? 0 })}</div>
+                </div>
+              ) : undefined}
+              textNoteActions={pageMode && memo ? (
+                <div className="flex items-center gap-0.5 text-sm text-slate-700" data-page-top-actions>
+                  <PageShareButton
+                    memoId={memo.id}
+                    fallback={readOnly ? null : (
+                      <button type="button" className="flex items-center gap-1 rounded px-1.5 py-1 hover:bg-slate-100" data-page-share onClick={() => setShareOpen(true)}>
+                        <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+                        {t("pages.topBar.share")}
+                      </button>
+                    )}
+                  />
+                  {pageNode ? (
+                    <IconTooltip label={t("pages.topBar.copyLink")}>
+                      <Button className="h-8 w-8" size="icon" variant="ghost" aria-label={t("pages.topBar.copyLink")} onClick={copyPageLink}>
+                        <LinkIcon className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                    </IconTooltip>
+                  ) : null}
+                  {pageNode ? (
+                    <IconTooltip label={t(pageNode.isPinned ? "pages.topBar.unfavorite" : "pages.topBar.favorite")}>
+                      <Button
+                        className="h-8 w-8"
+                        size="icon"
+                        variant="ghost"
+                        aria-label={t(pageNode.isPinned ? "pages.topBar.unfavorite" : "pages.topBar.favorite")}
+                        aria-pressed={pageNode.isPinned}
+                        onClick={() => pages?.toggleFavorite(memo.id)}
+                      >
+                        <StarIcon className={cn("h-4 w-4", pageNode.isPinned && "fill-amber-400 text-amber-500")} aria-hidden="true" />
+                      </Button>
+                    </IconTooltip>
+                  ) : null}
+                </div>
+              ) : undefined}
               moreButtonClassName={cn(!mobileEditingActive && !readOnly && "hidden sm:inline-flex")}
               moreMenuClassName="w-56 rounded-md"
               onOpenExecutionCenter={onOpenExecutionCenter}
@@ -4386,6 +4734,7 @@ const RichEditorPane = ({
                   <ReplaceAll className="h-4 w-4 text-slate-500" />
                   {t("editor.replaceCurrentMemo")}
                 </DropdownMenuItem>
+                {!pageMode && (
                 <DropdownMenuItem
                   className="flex h-9 w-full items-center gap-2 px-3 text-left text-xs text-slate-700 hover:bg-slate-50 cursor-pointer outline-none"
                   onClick={() => {
@@ -4395,6 +4744,7 @@ const RichEditorPane = ({
                   <History className="h-4 w-4 text-slate-500" />
                   {t("editor.versionHistory")}
                 </DropdownMenuItem>
+                )}
                 {!readOnly && (
                   <DropdownMenuItem
                     className={cn(
@@ -4408,7 +4758,7 @@ const RichEditorPane = ({
                     {t(isLocalMemoId(memo.id) ? "sharing.afterSync" : isMemoShared ? "sharing.manage" : "sharing.action")}
                   </DropdownMenuItem>
                 )}
-                {!readOnly && onDuplicateMemo && (
+                {!readOnly && !pageMode && onDuplicateMemo && (
                   <DropdownMenuItem
                     className="flex h-9 w-full items-center gap-2 px-3 text-left text-xs text-slate-700 hover:bg-slate-50 cursor-pointer outline-none"
                     // The server copies the saved note, so wait until every edit is saved.
@@ -4493,6 +4843,7 @@ const RichEditorPane = ({
                       {t("templates.saveAsTemplate")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator className="my-1 h-px bg-slate-100" />
+                    {pageMode ? null : (
                     <DropdownMenuItem
                       className="flex h-9 w-full items-center gap-2 px-3 text-left text-xs text-rose-700 hover:bg-rose-50 cursor-pointer outline-none"
                       onClick={() => void onDeleted(memo.id)}
@@ -4501,6 +4852,7 @@ const RichEditorPane = ({
                       <Trash2 className="h-4 w-4" />
                       {t("editor.deleteMemo")}
                     </DropdownMenuItem>
+                    )}
                   </>
                 )}
                 </>
@@ -4526,7 +4878,7 @@ const RichEditorPane = ({
             onClose={closeNoteSearch}
           />
         ) : null}
-        {(!isMobileViewport || (mobileToolbarOpen && !useMobilePlainTextEditor)) && (
+        {!pageMode && (!isMobileViewport || (mobileToolbarOpen && !useMobilePlainTextEditor)) && (
           <EditorToolbar
             editor={editor}
             readOnly={effectiveReadOnly}
@@ -4572,7 +4924,7 @@ const RichEditorPane = ({
           "--memo-content-divider-spacing": `${MEMO_CONTENT_STYLE.divider.marginVertical}px`,
         } as CSSProperties}
         className={cn(
-          "edgeever-editor relative h-full min-h-0 bg-transparent",
+          "ponder-editor relative h-full min-h-0 bg-transparent",
           MEMO_EDITOR_READING_GUTTER_PROPERTIES_CLASS_NAME,
           useMobilePlainTextEditor
             ? "overflow-visible"
@@ -4589,6 +4941,7 @@ const RichEditorPane = ({
               dangerouslySetInnerHTML={{ __html: sanitizeAndScopeCss(noteProse.customCss) }}
             />
           ) : null}
+        {pageMode ? <PageCover memoId={memo.id} readOnly={effectiveReadOnly} /> : null}
         <div
           onClickCapture={
             !useMobilePlainTextEditor && !useMarkdownSourceEditor
@@ -4616,8 +4969,28 @@ const RichEditorPane = ({
               useMarkdownSourceEditor && "flex h-full min-h-0 flex-col",
               isDesktopColumn && "mx-auto",
             )}
-            style={isDesktopColumn ? { maxWidth: EDITOR_CONTENT_MAX_WIDTH } : undefined}
+            style={isDesktopColumn ? { maxWidth: pageMode ? (pageStyle?.wide ? "min(100%, 1400px)" : PAGE_CONTENT_MAX_WIDTH) : EDITOR_CONTENT_MAX_WIDTH } : undefined}
+            data-page-column={pageMode ? "" : undefined}
+            data-page-font={pageStyle?.font && pageStyle.font !== "default" ? pageStyle.font : undefined}
+            data-page-small={pageStyle?.small ? "" : undefined}
           >
+            {pageMode ? (
+              <PageHeader
+                memoId={memo.id}
+                readOnly={effectiveReadOnly}
+                titleInput={renderTitleInput("ponder-page-title-input w-full min-w-0 px-0")}
+              />
+            ) : null}
+            {pageMode ? <RowProperties memoId={memo.id} /> : null}
+            {pageMode ? (
+              <PageComments
+                key={memo.id}
+                memoId={memo.id}
+                editor={editor}
+                readOnly={effectiveReadOnly}
+                controllerRef={commentsRef}
+              />
+            ) : null}
             {useMobilePlainTextEditor ? (
               <>
                 <textarea
@@ -4632,7 +5005,7 @@ const RichEditorPane = ({
                   inputMode="text"
                   name="memo-body"
                   spellCheck={spellcheckEnabled}
-                  data-edgeever-mobile-editor="plain-textarea"
+                  data-ponder-mobile-editor="plain-textarea"
                   aria-label={t("editor.noteBodyAria")}
                   className="block min-h-[60dvh] w-full resize-none border border-slate-200 bg-card px-4 py-3 pr-32 text-base leading-7 text-slate-950 outline-none placeholder:text-slate-400 sm:px-7"
                   placeholder={t("editor.placeholder")}
@@ -4715,17 +5088,43 @@ const RichEditorPane = ({
                 onFocusCapture={handleEditorFocusCapture}
                 onBlurCapture={handleEditorBlurCapture}
               >
-                <BubbleMenu
-                  editor={editor}
-                  shouldShow={aiBubbleMenu.shouldShow}
-                  options={aiBubbleMenu.options}
-                >
-                  <SelectionAiActions
-                    onExplain={() => requestSelectionAi("explain")}
-                    onTranslate={() => requestSelectionAi("translate")}
-                    onAsk={() => requestSelectionAi("ask")}
-                  />
-                </BubbleMenu>
+                {pageMode ? null : (
+                  <BubbleMenu
+                    editor={editor}
+                    shouldShow={aiBubbleMenu.shouldShow}
+                    options={aiBubbleMenu.options}
+                  >
+                    <SelectionAiActions
+                      onExplain={() => requestSelectionAi("explain")}
+                      onTranslate={() => requestSelectionAi("translate")}
+                      onAsk={() => requestSelectionAi("ask")}
+                    />
+                  </BubbleMenu>
+                )}
+                {pageMode && !effectiveReadOnly && editor ? (
+                  <BubbleMenu
+                    editor={editor}
+                    pluginKey="selectionBubbleMenu"
+                    shouldShow={shouldShowSelectionBubble}
+                    options={SELECTION_BUBBLE_OPTIONS}
+                  >
+                    <SelectionBubble
+                      editor={editor}
+                      showAi={aiBubbleMenu.enabled}
+                      linkActive={externalLinkActive}
+                      onAsk={() => requestSelectionAi("ask")}
+                      onExplain={() => requestSelectionAi("explain")}
+                      onTranslate={() => requestSelectionAi("translate")}
+                      onLink={openExternalLinkDialog}
+                      onMath={() => openMathFormula()}
+                      onSkill={requestSelectionAi}
+                      onComment={() => {
+                        const anchor = anchorFromSelection(editor);
+                        if (anchor) commentsRef.current.startThread(anchor);
+                      }}
+                    />
+                  </BubbleMenu>
+                ) : null}
                 {noteProseStyle.showMagazineCover ? (
                   <EditorMagazineHeader
                     editor={editor}
@@ -4740,6 +5139,7 @@ const RichEditorPane = ({
                     <EditorContent editor={editor} />
                   </AttachmentTranscriptContext.Provider>
                 </EditorTableContextMenu>
+                {pageMode && !effectiveReadOnly && editor && blockHandleRef.current ? <BlockHandle pageId={memo?.id ?? null} pageLink={pages && memo ? pages.pageLink(memo.id) : null} onSkill={(kind, pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi(kind); }} onAskAi={(pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi("ask"); }} onComment={(pos, node) => { const anchor = anchorFromBlock(editor, pos, node); if (anchor) commentsRef.current.startThread(anchor); }} editor={editor} controller={blockHandleRef.current} /> : null}
               </div>
             )}
           </div>
@@ -4852,6 +5252,8 @@ const RichEditorPane = ({
           {t(resourceCopyNotice === "copied" ? "editor.resourceActions.copied" : "editor.resourceActions.copyFailed")}
         </ClipboardCopyNotice>
       )}
+
+      {driveSaveFailed && <ClipboardCopyNotice status="error">{t("pages.topBar.saveToDriveFailed")}</ClipboardCopyNotice>}
 
       {wechatCopyState === "copying" && <WeChatCopyProgress />}
 

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, type RefObject } from "react";
-import { ApiRequestError } from "@edgeever/client";
+import { ApiRequestError } from "@ponder/client";
 import { useQuery } from "@tanstack/react-query";
 import type { LocalTiptapEditorRef } from "../components/LocalTiptapEditor";
 import { buildMobileAiStreamBridgePayload, parseMobileSelectionAiRequest } from "../lib/mobile-ai-selection";
@@ -17,7 +17,7 @@ export const useMobileSelectionAi = ({
 }: {
   client: MobileAiClient | null | undefined;
   editorRef: RefObject<LocalTiptapEditorRef | null>;
-  resolvedLocale: "zh-CN" | "en-US" | "ja" | "pl" | "ru";
+  resolvedLocale: "en-US" | "ja" | "pl" | "ru";
   titleRef: RefObject<string>;
 }) => {
   const activeRequestRef = useRef<{ requestId: string; controller: AbortController } | null>(null);

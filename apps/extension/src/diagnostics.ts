@@ -53,7 +53,7 @@ export const getDiagnosticInfo = async (settings: ExtensionSettings): Promise<Di
 };
 
 export const diagnosticText = (info: DiagnosticInfo) => [
-  "EdgeEver Web Clipper diagnostics",
+  "Ponder Web Clipper diagnostics",
   `Extension version: ${info.extensionVersion}`,
   `Manifest version: ${info.manifestVersion}`,
   `Browser: ${info.browser}`,

@@ -3,8 +3,8 @@ import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { useTranslation } from "react-i18next";
 import { ArrowUp, Download, FileText, Loader2, PanelRightClose, Plus, Sparkles, X } from "lucide-react";
-import type { CompanionAction, CompanionAnswer, CompanionEvent, CompanionFailureDiagnostics, CompanionTurn, CompanionTurnInput } from "@edgeever/shared";
-import { buildRevisionDiffRows, companionFailureDiagnostics, createMemoLinkHref } from "@edgeever/shared";
+import type { CompanionAction, CompanionAnswer, CompanionEvent, CompanionFailureDiagnostics, CompanionTurn, CompanionTurnInput } from "@ponder/shared";
+import { buildRevisionDiffRows, companionFailureDiagnostics, createMemoLinkHref } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
@@ -74,6 +74,7 @@ import {
   type SelectionAiLanguage,
   type SelectionAiPin,
   type SelectionAiRequest,
+  type SelectionAiKind,
 } from "@/lib/selection-ai";
 import { cn } from "@/lib/utils";
 import { CompanionQuestionForm } from "../CompanionQuestionForm";
@@ -180,18 +181,20 @@ type AiSidebarProps = AiSidebarFocus & {
   infographic?: InfographicSidebarController | null;
 };
 
-const SELECTION_TURN_STORAGE = "edgeever.aiSidebar.selectionTurns";
+const SELECTION_TURN_STORAGE = "ponder.invalidSidebar.selectionTurns";
 
-const readSelectionTurnKinds = (): Record<string, "explain" | "translate"> => {
+type SelectionTurnKind = "explain" | "translate" | "rewrite";
+
+const readSelectionTurnKinds = (): Record<string, SelectionTurnKind> => {
   if (typeof window === "undefined") return {};
   try {
     const raw = window.sessionStorage.getItem(SELECTION_TURN_STORAGE);
     if (!raw) return {};
     const parsed = JSON.parse(raw) as unknown;
     if (!parsed || typeof parsed !== "object") return {};
-    const next: Record<string, "explain" | "translate"> = {};
+    const next: Record<string, SelectionTurnKind> = {};
     for (const [id, kind] of Object.entries(parsed)) {
-      if (kind === "explain" || kind === "translate") next[id] = kind;
+      if (kind === "explain" || kind === "translate" || kind === "rewrite") next[id] = kind;
     }
     return next;
   } catch {
@@ -378,7 +381,7 @@ function SelectionReplyActions({
   onReplace,
   onRetranslate,
 }: {
-  kind: "explain" | "translate";
+  kind: SelectionTurnKind;
   response: string;
   pinned: boolean;
   busy: boolean;
@@ -407,7 +410,7 @@ function SelectionReplyActions({
         >
           {copied ? t("aiAssistant.sidebar.selection.copied") : t("aiAssistant.sidebar.selection.copy")}
         </Button>
-        {kind === "translate" && pinned ? (
+        {kind !== "explain" && pinned ? (
           <Button
             type="button"
             size="sm"
@@ -689,7 +692,7 @@ function AiSidebarSession({
   const [useMemory, setUseMemory] = useState(false);
   const [includeCurrentNote, setIncludeCurrentNote] = useState(false);
   const [composerFocusToken, setComposerFocusToken] = useState(0);
-  const [selectionTurnKinds, setSelectionTurnKinds] = useState<Record<string, "explain" | "translate">>(readSelectionTurnKinds);
+  const [selectionTurnKinds, setSelectionTurnKinds] = useState<Record<string, SelectionTurnKind>>(readSelectionTurnKinds);
   const alive = useRef(true);
   const handledSelectionRequestId = useRef<string | null>(null);
   const locked = useRef(false);
@@ -1246,7 +1249,7 @@ function AiSidebarSession({
     }
   }, [applyStreamEvent, attachments, explainError, i18n.resolvedLanguage, includeCurrentNote, recoverTurn, restoreAttachments, t, threadId, useMemory]);
 
-  const rememberSelectionTurn = useCallback((id: string, kind: "explain" | "translate") => {
+  const rememberSelectionTurn = useCallback((id: string, kind: SelectionTurnKind) => {
     setSelectionTurnKinds((current) => {
       const next = { ...current, [id]: kind };
       const ids = Object.keys(next);
@@ -1262,7 +1265,7 @@ function AiSidebarSession({
     });
   }, []);
 
-  const selectionMessage = useCallback((kind: "explain" | "translate", language?: SelectionAiLanguage) => {
+  const selectionMessage = useCallback((kind: Exclude<SelectionAiKind, "ask">, language?: SelectionAiLanguage) => {
     if (!selectionPin) return "";
     const quote = selectionPin.displayText || selectionPin.sentText;
     const notice = selectionPin.truncated
@@ -1270,7 +1273,9 @@ function AiSidebarSession({
       : "";
     const instruction = kind === "explain"
       ? t("aiAssistant.sidebar.selection.explainPrompt")
-      : language
+      : kind !== "translate"
+        ? t(`pages.skills.${kind}Prompt`)
+        : language
         ? t("aiAssistant.sidebar.selection.translateLanguagePrompt", {
             language: t(`aiAssistant.sidebar.selection.languageNames.${language}`),
           })
@@ -1299,7 +1304,7 @@ function AiSidebarSession({
     if (!message) return;
     handledSelectionRequestId.current = request.id;
     void launch(message, { readOnly: true }).then((id) => {
-      rememberSelectionTurn(id, request.kind === "explain" ? "explain" : "translate");
+      rememberSelectionTurn(id, request.kind === "explain" || request.kind === "translate" ? request.kind : "rewrite");
     }).catch(() => undefined);
   }, [busy, launch, loading, rememberSelectionTurn, selectionMessage, selectionPin, selectionRequest]);
 
@@ -1621,7 +1626,7 @@ function AiSidebarSession({
                         />
                         <a
                           className="inline-flex items-center gap-1 rounded px-1 py-0.5 text-xs text-slate-600 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
-                          download={`edgeever-image-${turn.id.slice(0, 8)}-${index + 1}.${image.mediaType === "image/jpeg" ? "jpg" : image.mediaType === "image/webp" ? "webp" : image.mediaType === "image/gif" ? "gif" : "png"}`}
+                          download={`ponder-image-${turn.id.slice(0, 8)}-${index + 1}.${image.mediaType === "image/jpeg" ? "jpg" : image.mediaType === "image/webp" ? "webp" : image.mediaType === "image/gif" ? "gif" : "png"}`}
                           href={`data:${image.mediaType};base64,${image.base64}`}
                         >
                           <Download className="size-3.5" aria-hidden="true" />

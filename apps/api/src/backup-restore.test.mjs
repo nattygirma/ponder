@@ -4,7 +4,7 @@ import { globSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Hono } from "hono";
-import { DEFAULT_MEMO_TITLE, emptyDoc } from "@edgeever/shared";
+import { DEFAULT_MEMO_TITLE, emptyDoc } from "@ponder/shared";
 import { AppError } from "./app-error.ts";
 import { registerBackupRoutes } from "./backup-routes.ts";
 import { apiError } from "./http-errors.ts";
@@ -29,7 +29,7 @@ afterEach(() => cleanups.splice(0).forEach((cleanup) => cleanup()));
 const installation = () => {
   const sqlite = new Database(":memory:");
   for (const file of globSync("migrations/*.sql").sort()) sqlite.exec(readFileSync(file, "utf8"));
-  const resourcesDirectory = mkdtempSync(join(tmpdir(), "edgeever-backup-"));
+  const resourcesDirectory = mkdtempSync(join(tmpdir(), "ponder-backup-"));
   cleanups.push(() => {
     sqlite.close();
     rmSync(resourcesDirectory, { recursive: true, force: true });

@@ -5,7 +5,7 @@ import { claimPosterRender } from "./poster-render-service";
 import { registerPosterRenderRoutes } from "./poster-render-routes";
 import { Hono } from "hono";
 import { callMcpTool } from "./index.ts";
-import { createPosterDocument, serializePosterDocument, parsePosterDocument, addTableField, parseDiagramDocument, parseInfographicDocument, parseTableDocument, serializeTableDocument, createDefaultTableDocument } from "@edgeever/shared";
+import { createPosterDocument, serializePosterDocument, parsePosterDocument, addTableField, parseDiagramDocument, parseInfographicDocument, parseTableDocument, serializeTableDocument, createDefaultTableDocument } from "@ponder/shared";
 
 class SqliteD1PreparedStatement {
   constructor(db, sql, bindings = []) {
@@ -281,7 +281,7 @@ describe("MCP template and AI instruction management", () => {
     });
 
     expect(created).toMatchObject({ diagramKind: kind, memo: { title: "Generated diagram", tags: ["design"] } });
-    expect(JSON.stringify(created.memo)).not.toContain("edgeever-diagram-v1");
+    expect(JSON.stringify(created.memo)).not.toContain("ponder-diagram-v1");
     expect(created.diagram.nodes[0].layout).toBeUndefined();
     const stored = sqlite.query("SELECT content_markdown FROM memo_contents WHERE memo_id = ?").get(created.memo.id);
     const diagram = parseDiagramDocument(stored.content_markdown);
@@ -323,13 +323,13 @@ describe("MCP template and AI instruction management", () => {
       },
     });
     expect(created).toMatchObject({ infographic: true, template: "chart-pie-donut-plain-text", memo: { title: "腾讯 2025 年营收占比" } });
-    expect(JSON.stringify(created.memo)).not.toContain("edgeever-infographic-v1");
+    expect(JSON.stringify(created.memo)).not.toContain("ponder-infographic-v1");
     const stored = sqlite.query("SELECT content_markdown FROM memo_contents WHERE memo_id = ?").get(created.memo.id);
     const infographic = parseInfographicDocument(stored.content_markdown);
     expect(infographic.syntax).toContain("value 52");
     const read = await callMcpTool(context, auth, "get_memo", { memoId: created.memo.id });
     expect(read.infographic).toEqual({ template: "chart-pie-donut-plain-text" });
-    expect(read.memo.contentMarkdown).not.toContain("edgeever-infographic-v1");
+    expect(read.memo.contentMarkdown).not.toContain("ponder-infographic-v1");
     await expect(callMcpTool(context, auth, "update_memo", {
       memoId: created.memo.id, contentMarkdown: "# replaced",
     })).rejects.toMatchObject({ code: "infographic_update_required" });
@@ -373,10 +373,10 @@ describe("MCP template and AI instruction management", () => {
 
     const semantic = await callMcpTool(context, auth, "get_diagram", { memoId: created.memo.id });
     expect(semantic.diagram.nodes[0].layout).toBeUndefined();
-    expect(JSON.stringify(semantic)).not.toContain("edgeever-diagram-v1");
+    expect(JSON.stringify(semantic)).not.toContain("ponder-diagram-v1");
     const genericMemo = await callMcpTool(context, auth, "get_memo", { memoId: created.memo.id });
     expect(genericMemo.diagram.nodes[0].layout).toBeUndefined();
-    expect(JSON.stringify(genericMemo)).not.toContain("edgeever-diagram-v1");
+    expect(JSON.stringify(genericMemo)).not.toContain("ponder-diagram-v1");
     const withLayout = await callMcpTool(context, auth, "get_diagram", { memoId: created.memo.id, includeLayout: true });
     const apiLayout = withLayout.diagram.nodes.find((node) => node.id === "api").layout;
     expect(apiLayout).toMatchObject({ x: expect.any(Number), y: expect.any(Number), width: expect.any(Number), height: expect.any(Number) });
@@ -430,7 +430,7 @@ describe("MCP template and AI instruction management", () => {
     });
     const read = await callMcpTool(context, auth, "get_memo", { memoId: created.memo.id });
     expect(read.structuredTable).toMatchObject({ fieldCount: 3, recordCount: 1 });
-    expect(JSON.stringify(read)).not.toContain("edgeever-table-v1");
+    expect(JSON.stringify(read)).not.toContain("ponder-table-v1");
     await expect(callMcpTool(context, auth, "update_memo", {
       memoId: created.memo.id,
       contentMarkdown: "plain text",
@@ -456,9 +456,9 @@ describe("MCP template and AI instruction management", () => {
 
     const added = await callMcpTool(context, auth, "add_table_record", {
       memoId, expectedRevision: first.revision,
-      cells: { fld_name: "读一本书", fld_status: "进行中" },
+      cells: { fld_name: "读一本书", fld_status: "In progress" },
     });
-    expect(added.record).toMatchObject({ id: added.recordId, cells: { fld_name: "读一本书", fld_status: "进行中" } });
+    expect(added.record).toMatchObject({ id: added.recordId, cells: { fld_name: "读一本书", fld_status: "In progress" } });
     const page = await callMcpTool(context, auth, "get_table_records", { memoId, offset: 1, limit: 1 });
     expect(page.records.map((record) => record.id)).toEqual([added.recordId]);
     const byId = await callMcpTool(context, auth, "get_table_records", { memoId, recordId: added.recordId });
@@ -466,9 +466,9 @@ describe("MCP template and AI instruction management", () => {
 
     const changed = await callMcpTool(context, auth, "update_table_record", {
       memoId, recordId: added.recordId, expectedRevision: added.revision,
-      cells: { fld_status: "完成", fld_date: "2026-09-30" },
+      cells: { fld_status: "Done", fld_date: "2026-09-30" },
     });
-    expect(changed.record.cells).toMatchObject({ fld_name: "读一本书", fld_status: "完成", fld_date: "2026-09-30" });
+    expect(changed.record.cells).toMatchObject({ fld_name: "读一本书", fld_status: "Done", fld_date: "2026-09-30" });
     const deleted = await callMcpTool(context, auth, "delete_table_record", {
       memoId, recordId: added.recordId, expectedRevision: changed.revision,
     });
@@ -514,7 +514,7 @@ describe("MCP template and AI instruction management", () => {
     const { sqlite, auth, context } = createFixture();
     sqlite.query("INSERT INTO notebooks (id, workspace_id, name) VALUES (?, ?, ?)")
       .run("nb_tables", "ws_mcp", "Tables");
-    const document = addTableField(createDefaultTableDocument(), { id: "fld_files", name: "附件", type: "attachment" });
+    const document = addTableField(createDefaultTableDocument(), { id: "fld_files", name: "Attachments", type: "attachment" });
     const table = await callMcpTool(context, auth, "create_memo", {
       notebookId: "nb_tables", contentMarkdown: serializeTableDocument(document),
     });
@@ -556,7 +556,7 @@ describe("MCP template and AI instruction management", () => {
     const memoId = created.memo.id;
     const [customer, stage] = created.fields;
     expect(created.memo.title).toBe("客户跟进");
-    expect(JSON.stringify(created.memo)).not.toContain("edgeever-table-v1");
+    expect(JSON.stringify(created.memo)).not.toContain("ponder-table-v1");
     expect((await callMcpTool(context, auth, "get_table_records", { memoId })).totalRecords).toBe(0);
     const added = await callMcpTool(context, auth, "add_table_record", {
       memoId, expectedRevision: created.revision,
@@ -591,16 +591,16 @@ describe("MCP template and AI instruction management", () => {
     const created = await callMcpTool(context, auth, "create_table_memo", {
       notebookId: "nb_tables", title: "销售线索",
       fields: [
-        { name: "名称", type: "text" },
-        { name: "状态", type: "select", options: ["新建", "完成"] },
+        { name: "Name", type: "text" },
+        { name: "Status", type: "select", options: ["Create", "Done"] },
       ],
     });
     const [nameField, statusField] = created.fields;
     const added = await callMcpTool(context, auth, "add_table_record", {
       memoId: created.memo.id, expectedRevision: created.revision,
-      cells: { [nameField.id]: "机会 A", [statusField.id]: "完成" },
+      cells: { [nameField.id]: "机会 A", [statusField.id]: "Done" },
     });
-    const operations = [{ op: "update_field", fieldId: statusField.id, changes: { options: ["新建"] } }];
+    const operations = [{ op: "update_field", fieldId: statusField.id, changes: { options: ["Create"] } }];
     const preview = await callMcpTool(context, auth, "update_table_schema", {
       memoId: created.memo.id, expectedRevision: added.revision, operations, dryRun: true,
     });
@@ -609,7 +609,7 @@ describe("MCP template and AI instruction management", () => {
       memoId: created.memo.id, expectedRevision: added.revision, operations,
     })).rejects.toMatchObject({ code: "table_data_changes_required" });
     expect((await callMcpTool(context, auth, "get_table_records", { memoId: created.memo.id, recordId: added.recordId }))
-      .records[0].cells[statusField.id]).toBe("完成");
+      .records[0].cells[statusField.id]).toBe("Done");
     const changed = await callMcpTool(context, auth, "update_table_schema", {
       memoId: created.memo.id, expectedRevision: added.revision, operations, allowDataChanges: true,
     });
@@ -631,17 +631,17 @@ describe("MCP template and AI instruction management", () => {
     sqlite.query("INSERT INTO notebooks (id, workspace_id, name) VALUES (?, ?, ?)")
       .run("nb_tables", "ws_mcp", "Tables");
     await expect(callMcpTool(context, auth, "create_table_memo", {
-      notebookId: "nb_tables", title: "Invalid", fields: [{ name: "状态", type: "select" }],
+      notebookId: "nb_tables", title: "Invalid", fields: [{ name: "Status", type: "select" }],
     })).rejects.toMatchObject({ code: "invalid_params" });
     await expect(callMcpTool(context, auth, "create_table_memo", {
       notebookId: "nb_tables", title: "Invalid",
-      fields: [{ name: "名称", type: "text" }, { name: "名称", type: "number" }],
+      fields: [{ name: "Name", type: "text" }, { name: "Name", type: "number" }],
     })).rejects.toMatchObject({ code: "invalid_params" });
     const created = await callMcpTool(context, auth, "create_table_memo", {
-      notebookId: "nb_tables", title: "Valid", fields: [{ name: "名称", type: "text" }],
+      notebookId: "nb_tables", title: "Valid", fields: [{ name: "Name", type: "text" }],
     });
     await expect(callMcpTool(context, { ...auth, scopes: ["read:memos"] }, "create_table_memo", {
-      notebookId: "nb_tables", title: "Denied", fields: [{ name: "名称", type: "text" }],
+      notebookId: "nb_tables", title: "Denied", fields: [{ name: "Name", type: "text" }],
     })).rejects.toMatchObject({ code: "forbidden" });
     await expect(callMcpTool(context, { ...auth, scopes: ["read:memos"] }, "update_table_schema", {
       memoId: created.memo.id, expectedRevision: created.revision,
@@ -663,7 +663,7 @@ describe("MCP template and AI instruction management", () => {
       .run("nb_tables", "ws_mcp", "Tables");
     const created = await callMcpTool(context, auth, "create_table_memo", {
       notebookId: "nb_tables", title: "合同",
-      fields: [{ name: "预算", type: "text" }, { name: "文件", type: "attachment" }],
+      fields: [{ name: "预算", type: "text" }, { name: "Files", type: "attachment" }],
     });
     const [budget, file] = created.fields;
     sqlite.query("INSERT INTO resources (id, memo_id, object_key, kind, filename, mime_type, byte_size) VALUES (?, ?, ?, 'attachment', ?, ?, ?)")
@@ -814,7 +814,7 @@ describe("MCP template and AI instruction management", () => {
       .rejects.toMatchObject({ code: "forbidden" });
 
     const demo = createFixture();
-    demo.context.env.EDGE_EVER_DEMO_MODE = "true";
+    demo.context.env.PONDER_DEMO_MODE = "true";
     await expect(callMcpTool(demo.context, demo.auth, "create_ai_instruction", {
       name: "Denied",
       instruction: "No",

@@ -3,9 +3,9 @@ import { Database } from "bun:sqlite";
 import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { fetchEdgeEverApp } from "./index.ts";
+import { fetchPonderApp } from "./index.ts";
 import { createSelfHostedStorageAdapter } from "./self-hosted-storage-adapter.ts";
-import { createEdgeEverClient } from "../../../packages/client/src/index.ts";
+import { createPonderClient } from "../../../packages/client/src/index.ts";
 
 const temporaryDirectories = [];
 afterEach(async () => {
@@ -13,8 +13,8 @@ afterEach(async () => {
 });
 
 const requestJson = async (environment, path, init = {}) => {
-  const response = await fetchEdgeEverApp(
-    new Request(`http://edgeever.test${path}`, init),
+  const response = await fetchPonderApp(
+    new Request(`http://ponder.test${path}`, init),
     environment,
     { waitUntil: () => undefined, passThroughOnException: () => undefined },
   );
@@ -25,9 +25,9 @@ const requestJson = async (environment, path, init = {}) => {
 
 describe("resource upload integration", () => {
   test("uploads small images directly and assembles large resources through the filesystem adapter", async () => {
-    const directory = await mkdtemp(`${tmpdir()}/edgeever-upload-integration-`);
+    const directory = await mkdtemp(`${tmpdir()}/ponder-upload-integration-`);
     temporaryDirectories.push(directory);
-    const database = new Database(join(directory, "edgeever.sqlite"), { create: true });
+    const database = new Database(join(directory, "ponder.sqlite"), { create: true });
     database.exec("PRAGMA foreign_keys = ON");
     const migrationDirectory = new URL("../../../migrations/", import.meta.url);
     for (const name of (await readdir(migrationDirectory)).filter((value) => value.endsWith(".sql")).sort()) {
@@ -40,8 +40,8 @@ describe("resource upload integration", () => {
     const resourcesDirectory = join(directory, "resources");
     const environment = {
       storage: createSelfHostedStorageAdapter(database, resourcesDirectory),
-      EDGE_EVER_ALLOW_UNAUTHENTICATED: "true",
-      EDGE_EVER_RUNTIME: "self-hosted-bun",
+      PONDER_ALLOW_UNAUTHENTICATED: "true",
+      PONDER_RUNTIME: "self-hosted-bun",
     };
     const notebook = await requestJson(environment, "/api/v1/notebooks", {
       method: "POST",
@@ -55,11 +55,11 @@ describe("resource upload integration", () => {
     });
 
     const uploadPaths = [];
-    const client = createEdgeEverClient({
-      baseUrl: "http://edgeever.test",
+    const client = createPonderClient({
+      baseUrl: "http://ponder.test",
       fetch: (input, init) => {
         uploadPaths.push(new URL(input).pathname);
-        return fetchEdgeEverApp(new Request(input, init), environment,
+        return fetchPonderApp(new Request(input, init), environment,
           { waitUntil: () => undefined, passThroughOnException: () => undefined });
       },
     });
@@ -80,7 +80,7 @@ describe("resource upload integration", () => {
     for (const type of ["image/svg+xml", "", "application/octet-stream"]) {
       const { resource } = await client.uploadMemoResource(memo.memo.id, new File([svg], "diagram.SVG", { type }));
       expect(resource).toMatchObject({ kind: "image", mimeType: "image/svg+xml", filename: "diagram.SVG" });
-      const response = await fetchEdgeEverApp(new Request(`http://edgeever.test${resource.url}`), environment,
+      const response = await fetchPonderApp(new Request(`http://ponder.test${resource.url}`), environment,
         { waitUntil: () => undefined, passThroughOnException: () => undefined });
       expect(response.headers.get("content-disposition")).toStartWith("inline;");
       expect(response.headers.get("content-security-policy")).toContain("sandbox");

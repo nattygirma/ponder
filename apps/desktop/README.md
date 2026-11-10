@@ -1,4 +1,4 @@
-# EdgeEver Desktop
+# Ponder Desktop
 
 The desktop application deliberately reuses the Web renderer from `apps/web`.
 Electron owns the window and OS lifecycle; the Rust sidecar owns local SQLite
@@ -9,7 +9,7 @@ Development prerequisites:
 - Bun dependencies installed with `bun install`
 - Rust toolchain (`cargo`) installed
 - Web dev server available at `http://127.0.0.1:5173`
-- Debug sidecar built at `crates/desktop-sidecar/target/debug/edgeever-sidecar`
+- Debug sidecar built at `crates/desktop-sidecar/target/debug/ponder-sidecar`
 
 Run the shell with:
 
@@ -18,7 +18,7 @@ bun run dev:desktop
 ```
 
 The sidecar can be overridden for development with
-`EDGE_EVER_SIDECAR_PATH=/absolute/path/to/edgeever-sidecar`.
+`PONDER_SIDECAR_PATH=/absolute/path/to/ponder-sidecar`.
 
 ## App icon (macOS Dock)
 
@@ -37,7 +37,7 @@ master), and the macOS menu-bar template icons from the brand mark.
 Packaging validation rejects incomplete ICNS types. Runtime also calls
 `app.dock.setIcon` as a Launch Services / Dock cache fallback.
 
-Preview the committed icon at its real Dock size without starting EdgeEver:
+Preview the committed icon at its real Dock size without starting Ponder:
 
 ```sh
 bun run preview:desktop:icon
@@ -60,16 +60,16 @@ under `release/desktop`. Formal macOS Releases contain separate `arm64` and
 `x64` DMGs; each package includes a Rust sidecar compiled for the same
 architecture. The CI workflow accepts optional signing secrets:
 
-On macOS, users can double-click EdgeEver in the mounted DMG and choose
+On macOS, users can double-click Ponder in the mounted DMG and choose
 **Install and Launch**. The app moves itself to `Applications`, relaunches the
-installed copy, and ejects any mounted EdgeEver installer images so macOS does
+installed copy, and ejects any mounted Ponder installer images so macOS does
 not retain duplicate file-association entries. Dragging the app to
 `Applications` remains supported; launching the installed copy also performs
 the installer-image cleanup.
 
-- `EDGEEVER_MAC_CERTIFICATE_BASE64` and `EDGEEVER_MAC_CERTIFICATE_PASSWORD`
-- `EDGEEVER_APPLE_ID`, `EDGEEVER_APPLE_APP_SPECIFIC_PASSWORD`, and `EDGEEVER_APPLE_TEAM_ID`
-- `EDGEEVER_WINDOWS_CERTIFICATE_BASE64` and `EDGEEVER_WINDOWS_CERTIFICATE_PASSWORD`
+- `PONDER_MAC_CERTIFICATE_BASE64` and `PONDER_MAC_CERTIFICATE_PASSWORD`
+- `PONDER_APPLE_ID`, `PONDER_APPLE_APP_SPECIFIC_PASSWORD`, and `PONDER_APPLE_TEAM_ID`
+- `PONDER_WINDOWS_CERTIFICATE_BASE64` and `PONDER_WINDOWS_CERTIFICATE_PASSWORD`
 
 When these secrets are absent, CI produces unsigned verification artifacts.
 Private signing material is never committed to the repository.
@@ -97,7 +97,7 @@ database in place, restores the staged offline attachment directory when the
 snapshot contains one, applies any newer migrations, and reloads the workspace.
 
 Packaged macOS builds also expose **Settings → Advanced → Clear local data**.
-After an explicit destructive confirmation, EdgeEver stops the local sidecar,
+After an explicit destructive confirmation, Ponder stops the local sidecar,
 removes every account's local SQLite data, unsynced queue, offline attachments,
 caches, backups, settings, and sign-in state, then relaunches into first-run
 setup. Server data and files exported outside the app data directory are never

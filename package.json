@@ -1,5 +1,5 @@
 {
-  "name": "edgeever",
+  "name": "ponder",
   "version": "2.19.0",
   "packageManager": "bun@1.3.14",
   "private": true,
@@ -37,11 +37,11 @@
     "prepare:desktop:icons": "bun scripts/prepare-desktop-icons.mjs",
     "preview:desktop:icon": "bun scripts/preview-macos-dock-icon.mjs",
     "build:android:fast": "bash scripts/build-android-local.sh fast",
-    "build:android:fast:local": "bun --env-file=${EDGE_EVER_ANDROID_ENV_FILE:-$HOME/.config/edgeever/android/signing.env} run build:android:fast",
+    "build:android:fast:local": "bun --env-file=${PONDER_ANDROID_ENV_FILE:-$HOME/.config/ponder/android/signing.env} run build:android:fast",
     "build:android:apk": "bash scripts/build-android-local.sh apk",
-    "build:android:apk:local": "bun --env-file=${EDGE_EVER_ANDROID_ENV_FILE:-$HOME/.config/edgeever/android/signing.env} run build:android:apk",
+    "build:android:apk:local": "bun --env-file=${PONDER_ANDROID_ENV_FILE:-$HOME/.config/ponder/android/signing.env} run build:android:apk",
     "build:android:play": "bash scripts/build-android-local.sh play",
-    "build:android:play:local": "bun --env-file=${EDGE_EVER_ANDROID_ENV_FILE:-$HOME/.config/edgeever/android/signing.env} run build:android:play",
+    "build:android:play:local": "bun --env-file=${PONDER_ANDROID_ENV_FILE:-$HOME/.config/ponder/android/signing.env} run build:android:play",
     "dev:site": "bun --cwd apps/site dev",
     "build": "bun run build:web",
     "build:self-hosted": "bun build scripts/self-hosted-server.mjs --target=bun --format=esm --outdir=dist/self-hosted --sourcemap=none",
@@ -58,7 +58,7 @@
     "check:poster:thumbnails": "bun scripts/prepare-poster-thumbnails.mjs --check",
     "build:web": "vite build --config apps/web/vite.config.ts",
     "build:desktop:sidecar": "cargo build --manifest-path crates/desktop-sidecar/Cargo.toml --release",
-    "build:desktop": "EDGE_EVER_DESKTOP_BUILD=1 bun run prepare:desktop:icons && bun run build:web && bun run build:desktop:sidecar && bun run --cwd apps/desktop dist",
+    "build:desktop": "PONDER_DESKTOP_BUILD=1 bun run prepare:desktop:icons && bun run build:web && bun run build:desktop:sidecar && bun run --cwd apps/desktop dist",
     "benchmark:desktop:sidecar": "bun scripts/benchmark-desktop-sidecar.mjs",
     "verify:web-performance": "bun scripts/verify-web-performance.mjs",
     "verify:web-startup": "bun scripts/verify-web-startup-browser.mjs",
@@ -96,35 +96,35 @@
     "db:migrate:remote": "bun scripts/run-wrangler.mjs d1 migrations apply DB --remote",
     "auth:hash": "bun scripts/hash-password.mjs",
     "auth:reset-password": "bun scripts/reset-password.mjs",
-    "cli": "bun scripts/edgeever.mjs",
+    "cli": "bun scripts/ponder.mjs",
     "import:evernote": "bun scripts/import-evernote-enex-via-mcp.mjs",
-    "mcp:stdio": "bun scripts/edgeever-mcp-stdio.mjs",
+    "mcp:stdio": "bun scripts/ponder-mcp-stdio.mjs",
     "deploy:doctor": "bun scripts/cloudflare-deploy.mjs doctor",
     "deploy:setup": "bun scripts/cloudflare-deploy.mjs setup",
-    "deploy": "bun run build:cloudflare && EDGE_EVER_USE_EXISTING_AUTH_SECRET=true bun run deploy:ci",
-    "deploy:manual": "export EDGE_EVER_DEPLOYMENT_TRIGGER=manual EDGE_EVER_DEPLOYMENT_METHOD=local_cli && bun run deploy:doctor && bun run build:cloudflare && bun run deploy:ci",
+    "deploy": "bun run build:cloudflare && PONDER_USE_EXISTING_AUTH_SECRET=true bun run deploy:ci",
+    "deploy:manual": "export PONDER_DEPLOYMENT_TRIGGER=manual PONDER_DEPLOYMENT_METHOD=local_cli && bun run deploy:doctor && bun run build:cloudflare && bun run deploy:ci",
     "deploy:ci": "bun run db:migrate:remote && bun run deploy:worker && bun run deploy:verify",
     "deploy:worker": "bun scripts/run-wrangler.mjs deploy",
-    "deploy:cloudflare-builds": "EDGE_EVER_USE_EXISTING_AUTH_SECRET=true bun run deploy:ci",
+    "deploy:cloudflare-builds": "PONDER_USE_EXISTING_AUTH_SECRET=true bun run deploy:ci",
     "deploy:verify": "bun scripts/verify-deployment.mjs",
     "demo:sync": "bun scripts/sync-demo.mjs",
     "deploy:builds:setup": "bun scripts/cloudflare-workers-builds.mjs setup",
-    "deploy:site": "bun run build:site && wrangler pages deploy apps/site/dist --project-name=edgeever-official",
+    "deploy:site": "bun run build:site && wrangler pages deploy apps/site/dist --project-name=ponder-official",
     "verify:acp-npm-upgrade": "bun scripts/verify-acp-npm-upgrade.mjs"
   },
   "cloudflare": {
     "bindings": {
       "DB": {
-        "description": "EdgeEver 的 D1 数据库。用于存储 notebooks、memos、memo_contents、resources 元数据、全文搜索索引、修订记录和审计事件。"
+        "description": "D1 database for Ponder: notebooks, memos, memo_contents, resource metadata, the full-text search index, revisions, and audit events."
       },
       "RESOURCES": {
-        "description": "EdgeEver 的 R2 对象存储桶。用于存储笔记内图片、附件和未来导入导出文件；D1 只保存资源元数据和 memo 关联。"
+        "description": "R2 bucket for Ponder: note images, attachments, and future import and export files. D1 stores only resource metadata and memo links."
       },
-      "EDGE_EVER_AUTH_PASSWORD": {
-        "description": "首次登录密码，必填。请设置一个仅用于此实例的强密码；部署后可在个人设置中修改。"
+      "PONDER_AUTH_PASSWORD": {
+        "description": "Required first sign-in password. Set a strong password used only for this instance; you can change it in your profile after deploying."
       },
-      "EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY": {
-        "description": "可选的高级配置。覆盖从实例认证 Secret 自动派生的 AI 凭据加密密钥，用于独立密钥轮换。"
+      "PONDER_CREDENTIALS_ENCRYPTION_KEY": {
+        "description": "Optional advanced setting. Overrides the AI credential encryption key derived from the instance auth secret, for independent key rotation."
       }
     }
   },
@@ -133,14 +133,15 @@
     "@ai-sdk/google": "4.0.93",
     "@ai-sdk/openai-compatible": "3.0.67",
     "@aws-sdk/client-s3": "^3.1095.0",
-    "@edgeever/plugin-api": "workspace:*",
-    "@edgeever/shared": "workspace:*",
+    "@ponder/plugin-api": "workspace:*",
+    "@ponder/shared": "workspace:*",
     "@hono/zod-validator": "0.8.0",
     "@radix-ui/react-checkbox": "^1.3.11",
     "@radix-ui/react-collapsible": "^1.1.20",
     "@radix-ui/react-context-menu": "^2.3.7",
     "@radix-ui/react-dialog": "^1.1.23",
     "@radix-ui/react-dropdown-menu": "^2.1.24",
+    "@radix-ui/react-popover": "^1.3.1",
     "@radix-ui/react-select": "^2.3.7",
     "@radix-ui/react-slot": "^1.3.3",
     "@radix-ui/react-switch": "^1.3.7",
@@ -151,9 +152,12 @@
     "@tanstack/react-virtual": "^3.14.13",
     "@tiptap/core": "3.31.4",
     "@tiptap/extension-collaboration": "3.31.4",
+    "@tiptap/extension-collaboration-caret": "3.31.4",
     "@tiptap/extension-details": "3.31.4",
+    "@tiptap/extension-drag-handle": "3.31.4",
     "@tiptap/extension-image": "3.31.4",
     "@tiptap/extension-list": "3.31.4",
+    "@tiptap/extension-node-range": "3.31.4",
     "@tiptap/extension-placeholder": "3.31.4",
     "@tiptap/extension-table": "3.31.4",
     "@tiptap/extension-text-style": "3.31.4",
@@ -191,7 +195,9 @@
     "vaul": "^1.1.2",
     "webdav": "^5.10.0",
     "workbox-window": "^7.4.1",
+    "y-protocols": "1.0.7",
     "yet-another-react-lightbox": "^3.32.0",
+    "yjs": "13.6.32",
     "zod": "4.6.6"
   },
   "devDependencies": {

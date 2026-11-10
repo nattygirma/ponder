@@ -3,12 +3,13 @@ import type { TiptapDoc, TiptapMark, TiptapNode, TiptapTextNode } from "./conten
 import { FILE_ATTACHMENT_NODE_TYPE } from "./file-attachment";
 import { PDF_ATTACHMENT_NODE_TYPE } from "./pdf-attachment";
 import { PLUGIN_EMBED_NODE_TYPE } from "./plugin-embed";
+import { PAGE_BLOCK_NODE_TYPES } from "./page-blocks";
 import { EMPTY_EXTERNAL_LINK_NODE_TYPE } from "./empty-external-link";
 import type { SupportedLocale } from "./i18n/locales";
 
-export const UNSUPPORTED_BLOCK_NODE_TYPE = "edgeeverUnsupportedBlock" as const;
-export const UNSUPPORTED_INLINE_NODE_TYPE = "edgeeverUnsupportedInline" as const;
-export const UNSUPPORTED_MARK_TYPE = "edgeeverUnsupportedMark" as const;
+export const UNSUPPORTED_BLOCK_NODE_TYPE = "ponderUnsupportedBlock" as const;
+export const UNSUPPORTED_INLINE_NODE_TYPE = "ponderUnsupportedInline" as const;
+export const UNSUPPORTED_MARK_TYPE = "ponderUnsupportedMark" as const;
 
 const FALLBACK_NODE_TYPES = new Set<string>([
   UNSUPPORTED_BLOCK_NODE_TYPE,
@@ -34,13 +35,13 @@ export const NATIVE_EDITOR_NODE_TYPES = new Set<string>([
   "details",
   "detailsSummary",
   "detailsContent",
-  "edgeeverImageGallery",
+  "ponderImageGallery",
   "table",
   "tableRow",
   "tableHeader",
   "tableCell",
-  "edgeeverMergeDivider",
-  "edgeeverVideoNote",
+  "ponderMergeDivider",
+  "ponderVideoNote",
   EMPTY_EXTERNAL_LINK_NODE_TYPE,
   "inlineMath",
   "blockMath",
@@ -62,6 +63,7 @@ const MARKDOWN_EDITOR_NODE_TYPES = new Set<string>([
   FILE_ATTACHMENT_NODE_TYPE,
   PDF_ATTACHMENT_NODE_TYPE,
   PLUGIN_EMBED_NODE_TYPE,
+  ...PAGE_BLOCK_NODE_TYPES,
 ]);
 
 const INLINE_PARENT_TYPES = new Set<string>(["paragraph", "heading"]);
@@ -75,7 +77,6 @@ const getOriginalType = (attrs: Record<string, unknown> | undefined) =>
 // Placeholder text is stored in node attrs by the native editors, which cannot load the
 // lazily bundled web catalogs here, so the prefixes are keyed by locale code instead.
 const UNSUPPORTED_CONTENT_PREFIX: Record<SupportedLocale, string> = {
-  "zh-CN": "暂不支持的内容：",
   "en-US": "Unsupported content: ",
   ja: "未対応のコンテンツ: ",
   pl: "Nieobsługiwana zawartość: ",
@@ -83,7 +84,7 @@ const UNSUPPORTED_CONTENT_PREFIX: Record<SupportedLocale, string> = {
 };
 
 const getFallbackLabel = (type: string, locale?: SupportedLocale) =>
-  `${UNSUPPORTED_CONTENT_PREFIX[locale ?? "en-US"]}${type}`;
+  `${UNSUPPORTED_CONTENT_PREFIX[locale ?? "en-US"] ?? UNSUPPORTED_CONTENT_PREFIX["en-US"]}${type}`;
 
 const fallbackAttrs = (
   node: TiptapNode | TiptapTextNode,
@@ -131,7 +132,7 @@ export const UnsupportedBlock = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: "div[data-edgeever-unsupported-block]" }];
+    return [{ tag: "div[data-ponder-unsupported-block]" }];
   },
 
   renderHTML({ node }) {
@@ -139,9 +140,9 @@ export const UnsupportedBlock = Node.create({
     return [
       "div",
       {
-        "data-edgeever-unsupported-block": "true",
+        "data-ponder-unsupported-block": "true",
         "data-original-type": type,
-        class: "edgeever-unsupported-content edgeever-unsupported-content--block",
+        class: "ponder-unsupported-content ponder-unsupported-content--block",
         contenteditable: "false",
       },
       typeof node.attrs.displayLabel === "string" && node.attrs.displayLabel
@@ -167,7 +168,7 @@ export const UnsupportedInline = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: "span[data-edgeever-unsupported-inline]" }];
+    return [{ tag: "span[data-ponder-unsupported-inline]" }];
   },
 
   renderHTML({ node }) {
@@ -175,9 +176,9 @@ export const UnsupportedInline = Node.create({
     return [
       "span",
       {
-        "data-edgeever-unsupported-inline": "true",
+        "data-ponder-unsupported-inline": "true",
         "data-original-type": type,
-        class: "edgeever-unsupported-content edgeever-unsupported-content--inline",
+        class: "ponder-unsupported-content ponder-unsupported-content--inline",
         contenteditable: "false",
       },
       typeof node.attrs.displayLabel === "string" && node.attrs.displayLabel
@@ -195,13 +196,13 @@ export const UnsupportedMark = Mark.create({
   },
 
   parseHTML() {
-    return [{ tag: "span[data-edgeever-unsupported-mark]" }];
+    return [{ tag: "span[data-ponder-unsupported-mark]" }];
   },
 
   renderHTML() {
     return ["span", {
-      "data-edgeever-unsupported-mark": "true",
-      class: "edgeever-unsupported-mark",
+      "data-ponder-unsupported-mark": "true",
+      class: "ponder-unsupported-mark",
     }, 0];
   },
 });
@@ -301,13 +302,16 @@ const collectText = (node: TiptapNode | TiptapTextNode): string => {
 };
 
 /** Produces a schema-safe secondary Markdown projection without mutating saved JSON. */
+/** Marks Markdown can carry even though the native editors only preserve them. */
+const MARKDOWN_ONLY_MARK_TYPES = new Set<string>(["pageColor"]);
+
 export const projectNativeUnknownContentForMarkdown = (doc: TiptapDoc): TiptapDoc => {
   const visit = (node: TiptapNode | TiptapTextNode, parentType: string): TiptapNode | TiptapTextNode => {
     if (isTextNode(node)) {
       const textNode = node;
       return {
         ...textNode,
-        marks: textNode.marks?.filter((mark) => NATIVE_EDITOR_MARK_TYPES.has(mark.type) && mark.type !== UNSUPPORTED_MARK_TYPE),
+        marks: textNode.marks?.filter((mark) => (NATIVE_EDITOR_MARK_TYPES.has(mark.type) || MARKDOWN_ONLY_MARK_TYPES.has(mark.type)) && mark.type !== UNSUPPORTED_MARK_TYPE),
       };
     }
     if (!MARKDOWN_EDITOR_NODE_TYPES.has(node.type) || FALLBACK_NODE_TYPES.has(node.type)) {

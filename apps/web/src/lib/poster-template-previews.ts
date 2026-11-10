@@ -1,4 +1,4 @@
-import { POSTER_DESIGN_TEMPLATES } from "@edgeever/shared";
+import { POSTER_DESIGN_TEMPLATES } from "@ponder/shared";
 import manifest from "@/assets/poster-template-previews/manifest.json";
 
 const images = import.meta.glob<string>("../assets/poster-template-previews/*.webp", {
@@ -13,7 +13,6 @@ export const POSTER_GALLERY_TEMPLATES = manifest.templates.map(entry => {
     ...descriptor,
     recommended: entry.recommended,
     thumbnails: {
-      zh: images[`../assets/poster-template-previews/${entry.zh.file}`],
       en: images[`../assets/poster-template-previews/${entry.en.file}`],
     },
   };

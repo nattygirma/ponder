@@ -7,7 +7,7 @@ import {
   resolveDeploymentBuildMetadata,
   resolveDeploymentMethod,
   resolveDeploymentTrigger,
-} from "@edgeever/shared/deployment-metadata";
+} from "@ponder/shared/deployment-metadata";
 
 const rootPackage = JSON.parse(readFileSync(resolve(import.meta.dir, "../package.json"), "utf8")) as {
   version: string;
@@ -52,8 +52,8 @@ describe("web build metadata", () => {
 describe("deployment build metadata", () => {
   test("preserves explicit deployment metadata", () => {
     expect(resolveDeploymentBuildMetadata({
-      EDGE_EVER_DEPLOYMENT_TRIGGER: "github_release",
-      EDGE_EVER_DEPLOYMENT_METHOD: "github_actions",
+      PONDER_DEPLOYMENT_TRIGGER: "github_release",
+      PONDER_DEPLOYMENT_METHOD: "github_actions",
     })).toEqual({ trigger: "github_release", method: "github_actions" });
   });
 

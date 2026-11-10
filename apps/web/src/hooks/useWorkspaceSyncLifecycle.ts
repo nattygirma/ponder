@@ -112,8 +112,8 @@ export const useWorkspaceSyncLifecycle = ({
       }
       void runQueuedSync();
     };
-    window.addEventListener("edgeever:sync-queue-changed", handleQueueChanged);
-    return () => window.removeEventListener("edgeever:sync-queue-changed", handleQueueChanged);
+    window.addEventListener("ponder:sync-queue-changed", handleQueueChanged);
+    return () => window.removeEventListener("ponder:sync-queue-changed", handleQueueChanged);
   }, [runQueuedSync]);
 
   useEffect(() => {
@@ -139,7 +139,7 @@ export const useWorkspaceSyncLifecycle = ({
   }, []);
 
   useEffect(() => {
-    const leaseKey = `edgeever.background-refresh:${backgroundRefreshKey}`;
+    const leaseKey = `ponder.background-refresh:${backgroundRefreshKey}`;
     const ownerId = backgroundRefreshOwnerRef.current;
     const runRefresh = createRefreshSingleFlight({
       refresh: () => refreshWorkspaceRef.current("background"),
@@ -147,7 +147,7 @@ export const useWorkspaceSyncLifecycle = ({
     const refreshVisibleWorkspace = () => {
       if (document.visibilityState === "hidden" || isBrowserOffline()) return;
       // Focus and visibility events remain immediate. Periodic refreshes use
-      // a short cross-tab lease so multiple visible EdgeEver tabs do not all
+      // a short cross-tab lease so multiple visible Ponder tabs do not all
       // poll D1 every five minutes.
       void runRefresh().catch(() => {
         // A later focus, visibility, or interval refresh will retry.

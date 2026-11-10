@@ -1,7 +1,7 @@
-import { LEGACY_BODY_FONTS } from "@edgeever/shared/font-resources";
-import type { BodyFontId } from "@edgeever/shared/font-loader";
+import { LEGACY_BODY_FONTS } from "@ponder/shared/font-resources";
+import type { BodyFontId } from "@ponder/shared/font-loader";
 import { useFontPreviewStatus } from "@/lib/use-font-preview-status";
-import { FONT_CATALOG, NOTE_BODY_FONT_MENU_GROUPS, isRemoteNoteImageFont, type RemoteNoteImageFont } from "@edgeever/shared/font-catalog";
+import { FONT_CATALOG, NOTE_BODY_FONT_MENU_GROUPS, isRemoteNoteImageFont, type RemoteNoteImageFont } from "@ponder/shared/font-catalog";
 import { FontLoadFeedback } from "@/components/FontLoadFeedback";
 import { editorFontLoadState, uiFontLoadState, retryEditorCatalogFont, retryUiCatalogFont } from "@/lib/editor-catalog-fonts";
 import { FontLabel } from "@/components/FontLabel";
@@ -15,7 +15,7 @@ import type {
   NoteProsePaletteChoice,
   NoteProseQuoteStyle,
   ResolvedNoteProse,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import {
   DEFAULT_NOTE_PROSE_CSS,
   MAX_NOTE_PROSE_CSS_BYTES,
@@ -32,7 +32,7 @@ import {
   NOTE_PROSE_PALETTES,
   NOTE_PROSE_QUOTE_STYLES,
   noteProseCssDropsDeclarations,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import {
   useNoteProseStylePreference,
   writeNoteProseStylePreference,
@@ -99,10 +99,10 @@ import {
 } from "../ThemeProvider";
 
 const CUSTOM_FONT_SUGGESTIONS = [
-  { label: "苹方 (PingFang SC)", family: "PingFang SC" },
-  { label: "微软雅黑 (Microsoft YaHei)", family: "Microsoft YaHei" },
-  { label: "鸿蒙黑体 (HarmonyOS)", family: "HarmonyOS Sans SC" },
-  { label: "冬青黑体 (Hiragino)", family: "Hiragino Sans GB" },
+  { label: "PingFang SC", family: "PingFang SC" },
+  { label: "Microsoft YaHei", family: "Microsoft YaHei" },
+  { label: "HarmonyOS Sans SC", family: "HarmonyOS Sans SC" },
+  { label: "Hiragino Sans GB", family: "Hiragino Sans GB" },
 ] as const;
 
 const LEGACY_NOTE_BODY_MENU_KEYS = {

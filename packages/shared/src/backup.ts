@@ -7,14 +7,14 @@ import {
 } from "./ai-assistant";
 import type { AiPromptTemplate, MemoDetail, Notebook, Resource } from "./types";
 
-export const EDGEEVER_ZIP_FORMAT = "edgeever-zip";
-export const EDGEEVER_ZIP_FORMAT_VERSION = 2;
+export const PONDER_ZIP_FORMAT = "ponder-zip";
+export const PONDER_ZIP_FORMAT_VERSION = 2;
 
 export type JsonBackupManifest = {
-  format: typeof EDGEEVER_ZIP_FORMAT;
-  formatVersion: 1 | typeof EDGEEVER_ZIP_FORMAT_VERSION;
+  format: typeof PONDER_ZIP_FORMAT;
+  formatVersion: 1 | typeof PONDER_ZIP_FORMAT_VERSION;
   schemaVersion: number;
-  edgeeverVersion: string;
+  ponderVersion: string;
   buildId: string;
   exportedAt: string;
   includesTrash: false;
@@ -58,10 +58,10 @@ export type JsonBackupAiPrompt = AiPromptTemplate;
 const DateTimeSchema = z.string().datetime();
 
 export const JsonBackupManifestSchema = z.object({
-  format: z.literal(EDGEEVER_ZIP_FORMAT),
-  formatVersion: z.union([z.literal(1), z.literal(EDGEEVER_ZIP_FORMAT_VERSION)]),
+  format: z.literal(PONDER_ZIP_FORMAT),
+  formatVersion: z.union([z.literal(1), z.literal(PONDER_ZIP_FORMAT_VERSION)]),
   schemaVersion: z.number().int().positive(),
-  edgeeverVersion: z.string().trim().min(1),
+  ponderVersion: z.string().trim().min(1),
   buildId: z.string().trim().min(1),
   exportedAt: DateTimeSchema,
   includesTrash: z.literal(false),

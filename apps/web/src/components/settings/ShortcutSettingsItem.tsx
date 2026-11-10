@@ -69,7 +69,7 @@ const globalBindingMatchesLocal = (global: DesktopGlobalShortcutBinding, local: 
 };
 
 const devPreviewGlobalShortcutState = (): DesktopGlobalShortcutState | null => (
-  import.meta.env.DEV && typeof window !== "undefined" && !window.edgeeverDesktop?.globalShortcut
+  import.meta.env.DEV && typeof window !== "undefined" && !window.ponderDesktop?.globalShortcut
     ? { binding: null, registered: false, screenshot: null, screenshotRegistered: false }
     : null
 );
@@ -87,8 +87,8 @@ export const ShortcutSettingsItem = ({ shortcutSettings, onShortcutSettingsChang
 
   useEffect(() => {
     let active = true;
-    if (window.edgeeverDesktop?.globalShortcut) {
-      void window.edgeeverDesktop.globalShortcut().then((state) => {
+    if (window.ponderDesktop?.globalShortcut) {
+      void window.ponderDesktop.globalShortcut().then((state) => {
         if (active) setGlobalShortcut(state);
       }).catch(() => {
         if (active) setGlobalMessage(t("shortcuts.global.saveFailed"));
@@ -97,12 +97,12 @@ export const ShortcutSettingsItem = ({ shortcutSettings, onShortcutSettingsChang
     return () => { active = false; };
   }, [t]);
 
-  useEffect(() => () => { void window.edgeeverDesktop?.captureGlobalShortcut(false); }, []);
+  useEffect(() => () => { void window.ponderDesktop?.captureGlobalShortcut(false); }, []);
 
   const beginRecording = async (action: ShortcutAction | GlobalShortcutTarget) => {
     try {
-      if (window.edgeeverDesktop?.captureGlobalShortcut) {
-        await window.edgeeverDesktop.captureGlobalShortcut(true);
+      if (window.ponderDesktop?.captureGlobalShortcut) {
+        await window.ponderDesktop.captureGlobalShortcut(true);
       }
       if (action === "window" || action === "screenshot") {
         setRecordingTarget(action);
@@ -119,7 +119,7 @@ export const ShortcutSettingsItem = ({ shortcutSettings, onShortcutSettingsChang
   const finishRecording = () => {
     setRecordingAction(null);
     setRecordingTarget(null);
-    void window.edgeeverDesktop?.captureGlobalShortcut(false);
+    void window.ponderDesktop?.captureGlobalShortcut(false);
   };
 
   useEffect(() => {
@@ -153,10 +153,10 @@ export const ShortcutSettingsItem = ({ shortcutSettings, onShortcutSettingsChang
       finishRecording();
       setGlobalBusy(true);
       void (async () => {
-        if (window.edgeeverDesktop?.captureGlobalShortcut) {
-          await window.edgeeverDesktop.captureGlobalShortcut(false);
+        if (window.ponderDesktop?.captureGlobalShortcut) {
+          await window.ponderDesktop.captureGlobalShortcut(false);
         }
-        const setter = target === "screenshot" ? window.edgeeverDesktop?.setScreenshotShortcut : window.edgeeverDesktop?.setGlobalShortcut;
+        const setter = target === "screenshot" ? window.ponderDesktop?.setScreenshotShortcut : window.ponderDesktop?.setGlobalShortcut;
         if (setter) {
           const state = await setter(binding);
           if (state) {
@@ -240,7 +240,7 @@ export const ShortcutSettingsItem = ({ shortcutSettings, onShortcutSettingsChang
 
   const disableGlobalShortcut = (target: GlobalShortcutTarget) => {
     setGlobalBusy(true);
-    const setter = target === "screenshot" ? window.edgeeverDesktop?.setScreenshotShortcut : window.edgeeverDesktop?.setGlobalShortcut;
+    const setter = target === "screenshot" ? window.ponderDesktop?.setScreenshotShortcut : window.ponderDesktop?.setGlobalShortcut;
     if (setter) {
       void setter(null).then((state) => {
         if (state) {
@@ -280,7 +280,7 @@ export const ShortcutSettingsItem = ({ shortcutSettings, onShortcutSettingsChang
   ];
 
   const hasUnregisteredGlobal = globalRows.some((row) => row.binding && !row.registered);
-  const isGlobalShortcutAvailable = Boolean(window.edgeeverDesktop?.isAvailable || import.meta.env.DEV);
+  const isGlobalShortcutAvailable = Boolean(window.ponderDesktop?.isAvailable || import.meta.env.DEV);
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-card">

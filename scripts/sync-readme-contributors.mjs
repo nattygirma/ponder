@@ -9,8 +9,6 @@ export const CONTRIBUTORS_END_MARKER = "<!-- readme-contributors:end -->";
 
 export const README_CONTRIBUTOR_SECTIONS = [
   { file: "README.md", heading: "## Contributors" },
-  { file: "README.zh-CN.md", heading: "## 贡献者" },
-  { file: "README.zh-TW.md", heading: "## 貢獻者" },
   { file: "README.ja.md", heading: "## コントリビューター" },
   { file: "README.pl-PL.md", heading: "## Współtwórcy" },
 ];

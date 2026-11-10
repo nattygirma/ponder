@@ -1,6 +1,6 @@
 # Video notes: save captions already available on the page
 
-On a YouTube or Bilibili watch page, the user chooses **Save video note to EdgeEver**. The extension reads the current video's metadata and any captions already provided by the platform. It saves the title, creator, source link, available cover, and captions with links back to the original timestamps. When captions exist and the workspace has an available chat model, it may also generate a summary, outline, and takeaways; failure does not block saving the note.
+On a YouTube or Bilibili watch page, the user chooses **Save video note to Ponder**. The extension reads the current video's metadata and any captions already provided by the platform. It saves the title, creator, source link, available cover, and captions with links back to the original timestamps. When captions exist and the workspace has an available chat model, it may also generate a summary, outline, and takeaways; failure does not block saving the note.
 
 Supported pages are ordinary YouTube videos and Shorts, and ordinary Bilibili videos including multipart videos. Live streams, series, courses, and other pages do not create video notes. Without captions, the note contains source information and a **No captions available for this video** message. It does not start speech transcription. Video notes have no command to extract captions again and do not download videos or audio tracks from external platforms.
 

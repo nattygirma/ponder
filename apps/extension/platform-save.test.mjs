@@ -58,7 +58,7 @@ const harness = (options = {}) => {
   const fetchMock = async (url, init) => {
     calls.requests.push(String(url));
     const path = new URL(url).pathname;
-    if (String(url).startsWith("https://edgeever.test")) {
+    if (String(url).startsWith("https://ponder.test")) {
       if (path === "/api/v1/notebooks") {
         options.notebookRequested?.();
         if (options.notebookGate) await options.notebookGate;
@@ -102,7 +102,7 @@ const harness = (options = {}) => {
         onMessage(message, { id: chrome.runtime.id, tab: { id: 7 }, frameId: 0, url: options.senderUrl || currentUrl }, () => {});
       },
     },
-    storage: { local: { get: async () => ({ instanceUrl: "https://edgeever.test", token: "test-token", notebookId: "" }) } },
+    storage: { local: { get: async () => ({ instanceUrl: "https://ponder.test", token: "test-token", notebookId: "" }) } },
     permissions: { contains: async () => !options.denyInstance },
     declarativeNetRequest: { updateSessionRules:async update=>{
       calls.imageRules.push(update);
@@ -501,8 +501,8 @@ test("a pending saving toast cannot replace the already clicked post with a late
  const h=harness({platform:'bluesky',fixture:'bluesky-feed',pageUrl:'https://bsky.app/profile/bsky.app',feedbackGate:()=>{started();return gate;}});
  const cards=Array.from(h.document.querySelectorAll('[data-testid^="feedItem-by-"]'));
  const urls=cards.slice(0,2).map(card=>Array.from(card.querySelectorAll('a[href]')).map(a=>a.getAttribute('href')).find(href=>/^\/profile\/[^/]+\/post\/[^/]+$/.test(href))).map(path=>'https://bsky.app'+path);
- cards[0].setAttribute('data-edgeever-social-target',urls[0]);const pending=h.menu();await shown;
- cards[0].removeAttribute('data-edgeever-social-target');cards[1].setAttribute('data-edgeever-social-target',urls[1]);release();
+ cards[0].setAttribute('data-ponder-social-target',urls[0]);const pending=h.menu();await shown;
+ cards[0].removeAttribute('data-ponder-social-target');cards[1].setAttribute('data-ponder-social-target',urls[1]);release();
  await pending;expect(h.calls.creates).toHaveLength(1);expect(h.calls.creates[0].contentMarkdown).toContain(urls[0]);expect(h.calls.creates[0].contentMarkdown).not.toContain(urls[1]);
 });
 
@@ -512,9 +512,9 @@ test("queued social menu clips freeze each clicked post before a later right-cli
  const cards=Array.from(h.document.querySelectorAll('[data-testid^="feedItem-by-"]'));
  const urls=cards.slice(0,3).map(card=>Array.from(card.querySelectorAll('a[href]')).map(a=>a.getAttribute('href')).find(href=>/^\/profile\/[^/]+\/post\/[^/]+$/.test(href))).map(path=>'https://bsky.app'+path);
  expect(urls).toHaveLength(3);
- cards[0].setAttribute('data-edgeever-social-target',urls[0]);const first=h.menu();await notebookStarted;
- cards[0].removeAttribute('data-edgeever-social-target');cards[1].setAttribute('data-edgeever-social-target',urls[1]);const second=h.menu();
- await new Promise(r=>setTimeout(r,0));cards[1].removeAttribute('data-edgeever-social-target');cards[2].setAttribute('data-edgeever-social-target',urls[2]);release();
+ cards[0].setAttribute('data-ponder-social-target',urls[0]);const first=h.menu();await notebookStarted;
+ cards[0].removeAttribute('data-ponder-social-target');cards[1].setAttribute('data-ponder-social-target',urls[1]);const second=h.menu();
+ await new Promise(r=>setTimeout(r,0));cards[1].removeAttribute('data-ponder-social-target');cards[2].setAttribute('data-ponder-social-target',urls[2]);release();
  for(let n=0;n<200 && h.calls.creates.length<2;n++) await new Promise(r=>setTimeout(r,5));
  expect(h.calls.creates).toHaveLength(2);expect(h.calls.creates[0].contentMarkdown).toContain(urls[0]);expect(h.calls.creates[1].contentMarkdown).toContain(urls[1]);
  await Promise.race([Promise.all([first,second]),new Promise(r=>setTimeout(r,50))]);
@@ -544,7 +544,7 @@ for(const [platform,pageUrl,selector] of [
 
 test("Douban list menu saves only the selected own short comment", async () => {
   const h=harness({platform:"douban",fixture:"douban-comments",pageUrl:"https://book.douban.com/subject/36864764/comments/",prepare:(doc)=>{
-    doc.querySelector('.comment-item').setAttribute('data-edgeever-social-target','https://book.douban.com/comment/4237804504/');
+    doc.querySelector('.comment-item').setAttribute('data-ponder-social-target','https://book.douban.com/comment/4237804504/');
   }});
   expect(await h.mode()).toEqual({kind:"social-feed"});
   await h.menu();
@@ -734,7 +734,7 @@ for(const [platform,pageUrl,tag,author,time] of [
  expect(h.calls.creates).toHaveLength(1);const memo=h.calls.creates[0];expect(memo.tags).toEqual(['web-clip',tag]);expect(memo.contentMarkdown).toContain(author);expect(memo.contentMarkdown).toContain(time);expect(h.calls.uploads.length).toBeGreaterThan(0);expect(h.calls.saves[0].contentMarkdown).toContain('/api/v1/resources/');
 });
 test('Jike topic menu saves precisely the marked card while toolbar asks for a post or selection',async()=>{
- const h=harness({platform:'jike',fixture:'jike-feed',pageUrl:'https://m.okjike.com/topics/63579abb6724cc583b9bba9a',prepare:doc=>doc.querySelectorAll('.post-item-li')[1].setAttribute('data-edgeever-social-target','https://m.okjike.com/originalPosts/6ace942f756bbb66581c3f96')});
+ const h=harness({platform:'jike',fixture:'jike-feed',pageUrl:'https://m.okjike.com/topics/63579abb6724cc583b9bba9a',prepare:doc=>doc.querySelectorAll('.post-item-li')[1].setAttribute('data-ponder-social-target','https://m.okjike.com/originalPosts/6ace942f756bbb66581c3f96')});
  expect(await h.mode()).toEqual({kind:'social-feed'});expect(await h.toolbar()).toEqual({ok:false,message:'socialSelectPost'});expect(h.calls.creates).toHaveLength(0);
  await h.menu();expect(h.calls.creates).toHaveLength(1);expect(h.calls.creates[0].contentMarkdown).toContain('JimHuiHui');expect(h.calls.creates[0].contentMarkdown).toContain('护城河');expect(h.calls.creates[0].contentMarkdown).not.toContain('Ambi');expect(h.calls.creates[0].tags).toEqual(['web-clip','jike']);expect(h.calls.uploads).toHaveLength(1);
 });
@@ -789,7 +789,7 @@ test('Xueqiu right-click on a truncated feed saves only the selected full public
  const target='https://xueqiu.com/2754211668/411841572';
  const h=harness({platform:'xueqiu',fixture:'xueqiu-feed',pageUrl:'https://www.xueqiu.com/',prepare:doc=>{
   const link=Array.from(doc.querySelectorAll('a[class*="date-and-source_"]')).find(a=>a.getAttribute('href')==='/2754211668/411841572');
-  link.closest('[class*="timeline__item__main_"]').setAttribute('data-edgeever-social-target',target);
+  link.closest('[class*="timeline__item__main_"]').setAttribute('data-ponder-social-target',target);
  },detailLoad:frame=>{
   expect(frame.src).toBe('https://www.xueqiu.com/2754211668/411841572');expect(frame.getAttribute('sandbox')).toBe('allow-same-origin');
   return createWindow(readFileSync(new URL('./fixtures/platforms/xueqiu-feed-detail-second.html',import.meta.url),'utf8'),frame.src).document;
@@ -881,7 +881,7 @@ const webJikePosts=JSON.parse(readFileSync(new URL('./fixtures/platforms/jike-we
 const prepareWebJike=(doc,window)=>{
  const cards=[...doc.querySelectorAll('[data-clickable-feedback]')].filter(c=>c.querySelector('header')&&c.querySelector('[class*="_contentWrapper_"]'));
  cards.forEach((card,i)=>card.__reactProps$fixture={children:{props:{data:structuredClone(webJikePosts[i])}}});
- cards[0].setAttribute('data-edgeever-jike-selected','');let notify=()=>{};
+ cards[0].setAttribute('data-ponder-jike-selected','');let notify=()=>{};
  window.MutationObserver=class{constructor(fn){notify=fn;}observe(){}disconnect(){}};
  cards[0].querySelector('[class*="_expandButton_"]').addEventListener('click',e=>{e.target.textContent='收起';notify();});
  return cards;
@@ -893,7 +893,7 @@ test('native Jike Web feed menu resolves current props and expands only the sele
  const md=h.calls.creates[0].contentMarkdown;expect(md).toContain('https://m.okjike.com/originalPosts/'+webJikePosts[0].id);
  expect(md).toContain('感谢以上即友的创作与分享');expect(md).not.toContain('2026年10月16日');expect(md).not.toContain('收起');
  expect(md).toContain('https://web.okjike.com/u/71b51e1e-ece6-4855-b1d9-98703b7c1507');
- expect(h.calls.requests.every(url=>url.startsWith('https://edgeever.test/'))).toBe(true);
+ expect(h.calls.requests.every(url=>url.startsWith('https://ponder.test/'))).toBe(true);
 });
 
 test('Jike Web card identity recycling during notebook lookup cancels before creating a memo',async()=>{
@@ -908,7 +908,7 @@ for(const stage of ['before-capture','during-notebook-lookup'])test(`Jike Web de
  const a='64c9dd9a2edae6abdc610605',b='6715e824d9dc81724c2ec74d';
  let card,release,entered;const started=new Promise(r=>entered=r),gate=new Promise(r=>release=r);
  const h=harness({platform:'jike',fixture:'jike-web-detail',pageUrl:`https://web.okjike.com/u/5e6497e7-a69f-422b-af6e-baf0fc07b512/post/${stage==='before-capture'?b:a}`,
- prepare:doc=>{card=prepareJikeWebDetail(doc);card.setAttribute('data-edgeever-jike-id',b);},
+ prepare:doc=>{card=prepareJikeWebDetail(doc);card.setAttribute('data-ponder-jike-id',b);},
  ...(stage==='during-notebook-lookup'?{notebookRequested:entered,notebookGate:gate}:{})});
  const pending=h.toolbar();
  if(stage==='during-notebook-lookup'){await started;card.__reactProps$fixture.children.props.data.id=b;release();}

@@ -1,21 +1,21 @@
-appId: org.edgeever.desktop
-productName: EdgeEver
-executableName: EdgeEver
+appId: io.appkeep.ponder.desktop
+productName: Ponder
+executableName: Ponder
 publish:
   provider: github
   owner: tianma-if
-  repo: edgeever
+  repo: ponder
   releaseType: release
 protocols:
-  - name: EdgeEver Deep Link
+  - name: Ponder Deep Link
     schemes:
-      - edgeever
+      - ponder
 fileAssociations:
   - ext:
       - md
       - markdown
     name: Markdown document
-    description: Open a Markdown document in EdgeEver
+    description: Open a Markdown document in Ponder
     role: Editor
 asar: true
 beforePack: ./scripts/prepare-backup-worker.cjs
@@ -42,7 +42,7 @@ extraResources:
   - from: ../../scripts
     to: mcp-bridge
     filter:
-      - edgeever-mcp-stdio.mjs
+      - ponder-mcp-stdio.mjs
       - mcp-http-headers.mjs
   - from: ../web/dist
     to: web
@@ -66,8 +66,8 @@ extraResources:
   - from: ../../crates/desktop-sidecar/target/release
     to: sidecar
     filter:
-      - edgeever-sidecar
-      - edgeever-sidecar.exe
+      - ponder-sidecar
+      - ponder-sidecar.exe
 mac:
   category: public.app-category.productivity
   icon: assets/icon.icns
@@ -75,16 +75,16 @@ mac:
   # PlugIns are skipped by the default signer, and afterSign runs too late to notarize.
   sign: ./scripts/sign-share-extension.cjs
   extraFiles:
-    - from: share-extension/dist/EdgeEverShare.appex
-      to: PlugIns/EdgeEverShare.appex
+    - from: share-extension/dist/PonderShare.appex
+      to: PlugIns/PonderShare.appex
   extendInfo:
-    NSScreenCaptureUsageDescription: "EdgeEver captures a screenshot and saves it as a note."
+    NSScreenCaptureUsageDescription: "Ponder captures a screenshot and saves it as a note."
   target:
     - target: dmg
     - target: zip
-  artifactName: EdgeEver-${version}-mac-${arch}.${ext}
+  artifactName: Ponder-${version}-mac-${arch}.${ext}
 dmg:
-  title: "EdgeEver: double-click to install"
+  title: "Ponder: double-click to install"
   backgroundColor: '#f5f7f6'
   iconSize: 112
   window:
@@ -93,7 +93,7 @@ dmg:
 win:
   target:
     - nsis
-  artifactName: EdgeEver-${version}-windows-${arch}.${ext}
+  artifactName: Ponder-${version}-windows-${arch}.${ext}
 nsis:
   oneClick: true
   perMachine: false
@@ -103,4 +103,4 @@ linux:
   syncDesktopName: true
   target:
     - AppImage
-  artifactName: EdgeEver-${version}-linux-x64.${ext}
+  artifactName: Ponder-${version}-linux-x64.${ext}

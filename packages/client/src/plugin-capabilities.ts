@@ -1,4 +1,4 @@
-import type { PluginAiGenerateRequest, PluginAiStatus, PluginPublicFetchRequest, PluginPublicFetchResponse } from '@edgeever/shared';
+import type { PluginAiGenerateRequest, PluginAiStatus, PluginPublicFetchRequest, PluginPublicFetchResponse } from '@ponder/shared';
 
 type Request = <T>(path: string, init?: RequestInit) => Promise<T>;
 type PublicRequest = (input: PluginPublicFetchRequest, signal?: AbortSignal) => Promise<PluginPublicFetchResponse>;

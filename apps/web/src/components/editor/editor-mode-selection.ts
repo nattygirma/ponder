@@ -1,9 +1,9 @@
 import type { Node as ProseMirrorNode, Schema } from "@tiptap/pm/model";
 import { EditorState } from "@tiptap/pm/state";
-import { markdownToDoc, type TiptapDoc } from "@edgeever/shared";
+import { markdownToDoc, type TiptapDoc } from "@ponder/shared";
 import { docToEditableMarkdown } from "./editor-mode-content";
 
-const CURSOR_MARKER = "\uE000EDGEEVERCURSOR\uE001";
+const CURSOR_MARKER = "\uE000PONDERCURSOR\uE001";
 
 /** Map a rich-text position only if adding a temporary marker leaves the source unchanged. */
 export const richPositionToMarkdownOffset = (

@@ -67,12 +67,12 @@ export const noteProseCssDropsDeclarations = (css: string): boolean => {
 };
 
 /** Starter sheet. Each group sets light layout and color, then :root.dark overrides color only. */
-export const DEFAULT_NOTE_PROSE_CSS = `/* 同一份样式。
- * 浅色写间距和颜色，紧跟着的 :root.dark 只覆盖颜色。
- * 字号和行高由上面的档位决定，写在这里会被丢掉。
+export const DEFAULT_NOTE_PROSE_CSS = `/* One stylesheet for both themes.
+ * Light rules set spacing and color. The :root.dark rule after each one overrides color only.
+ * Font size and line height come from the size presets above and are dropped if written here.
  */
 
-/* 正文。text-indent 是首行缩进，margin-bottom 是段距。 */
+/* Body text. text-indent is the first-line indent and margin-bottom is paragraph spacing. */
 p {
   color: #212121;
   text-indent: 0;
@@ -84,7 +84,7 @@ p {
   color: #dee3e0;
 }
 
-/* 一级标题 */
+/* Heading 1 */
 h1 {
   color: #1a1d21;
   letter-spacing: -0.02em;
@@ -92,7 +92,7 @@ h1 {
   margin-bottom: 0.85rem;
 }
 
-/* 二级标题 */
+/* Heading 2 */
 h2 {
   color: #27272a;
   letter-spacing: -0.015em;
@@ -100,7 +100,7 @@ h2 {
   margin-bottom: 0.6rem;
 }
 
-/* 三级标题 */
+/* Heading 3 */
 h3 {
   color: #27272a;
   letter-spacing: -0.01em;
@@ -108,7 +108,7 @@ h3 {
   margin-bottom: 0.5rem;
 }
 
-/* 四级标题 */
+/* Heading 4 */
 h4 {
   color: #1e293b;
   letter-spacing: -0.006em;
@@ -116,21 +116,21 @@ h4 {
   margin-bottom: 0.45rem;
 }
 
-/* 五级标题 */
+/* Heading 5 */
 h5 {
   color: #334155;
   margin-top: 0.95rem;
   margin-bottom: 0.4rem;
 }
 
-/* 六级标题 */
+/* Heading 6 */
 h6 {
   color: #334155;
   margin-top: 0.85rem;
   margin-bottom: 0.35rem;
 }
 
-/* 深色 · 标题 */
+/* Dark theme: headings */
 :root.dark h1,
 :root.dark h2,
 :root.dark h3,
@@ -140,7 +140,7 @@ h6 {
   color: #dee3e0;
 }
 
-/* 链接 */
+/* Links */
 a {
   color: #334155;
   text-decoration: underline;
@@ -150,7 +150,7 @@ a {
   color: #dee3e0;
 }
 
-/* 粗体 */
+/* Bold */
 strong,
 b {
   color: #212121;
@@ -161,7 +161,7 @@ b {
   color: #dee3e0;
 }
 
-/* 斜体 */
+/* Italic */
 em,
 i {
   color: #212121;
@@ -172,7 +172,7 @@ i {
   color: #dee3e0;
 }
 
-/* 行内代码 */
+/* Inline code */
 code {
   color: #3d4450;
   background-color: #f3f5f7;
@@ -187,7 +187,7 @@ code {
   border-color: #3a403c;
 }
 
-/* 代码块 */
+/* Code blocks */
 pre {
   color: #0f172a;
   background-color: #f8fafc;
@@ -197,7 +197,7 @@ pre {
   margin-bottom: 1rem;
 }
 
-/* 代码块内部不再套一层行内代码的底色 */
+/* Do not repeat the inline code background inside code blocks */
 pre code {
   color: inherit;
   background-color: transparent;
@@ -211,7 +211,7 @@ pre code {
   border-color: #3a403c;
 }
 
-/* 引用 */
+/* Blockquotes */
 blockquote {
   color: #3d4450;
   background-color: #f3f5f7;
@@ -225,7 +225,7 @@ blockquote {
   background-color: #2a2e2c;
 }
 
-/* 分隔线 */
+/* Dividers */
 hr {
   border-color: #e7ebe8;
 }
@@ -234,7 +234,7 @@ hr {
   border-color: #3a403c;
 }
 
-/* 列表 */
+/* Lists */
 ul,
 ol {
   padding-left: 1.5rem;
@@ -254,7 +254,7 @@ li {
   margin-bottom: 0.25rem;
 }
 
-/* 表格 */
+/* Tables */
 th,
 td {
   border-color: #e2e8f0;

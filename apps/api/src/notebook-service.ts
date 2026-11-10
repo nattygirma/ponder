@@ -1,4 +1,4 @@
-import type { Notebook, NotebookCreateInput, NotebookUpdateInput } from "@edgeever/shared";
+import type { Notebook, NotebookCreateInput, NotebookUpdateInput } from "@ponder/shared";
 import type { AuditActor } from "./api-context";
 import { AppError } from "./app-error";
 import { auditStatement } from "./audit";
@@ -68,7 +68,7 @@ export const notebookSelectSql = (tail: string) => `
          n.created_at,
          n.updated_at
   FROM notebooks n
-  LEFT JOIN memos m ON m.notebook_id = n.id AND m.is_deleted = 0
+  LEFT JOIN memos m ON m.notebook_id = n.id AND m.is_deleted = 0 AND m.database_id IS NULL
   ${tail}
 `;
 
@@ -323,13 +323,13 @@ export const deleteNotebookTree = async (
   if (!current) throw new AppError("not_found", "Notebook not found", 404);
   if (isInboxNotebook(current, workspaceId)) {
     if (current.is_deleted) return result([]);
-    throw new AppError("bad_request", "等待分类不能删除。", 400);
+    throw new AppError("bad_request", "The inbox notebook cannot be deleted.", 400);
   }
 
   const tree = await listActiveNotebookTree(db, workspaceId, id);
   if (tree.length === 0) return result([]);
   if (tree.some((notebook) => isInboxNotebook(notebook, workspaceId))) {
-    throw new AppError("bad_request", "等待分类不能删除。", 400);
+    throw new AppError("bad_request", "The inbox notebook cannot be deleted.", 400);
   }
 
   const notebookIds = tree.map((notebook) => notebook.id);

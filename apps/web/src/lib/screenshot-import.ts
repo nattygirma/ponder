@@ -1,4 +1,4 @@
-import { docToMarkdown, markdownToDoc, type TiptapDoc } from "@edgeever/shared";
+import { docToMarkdown, markdownToDoc, type TiptapDoc } from "@ponder/shared";
 
 export const normalizeScreenshotBytes = (value: unknown): Uint8Array => {
   if (value instanceof Uint8Array) {
@@ -59,7 +59,7 @@ export const createScreenshotImportGate = (cooldownMs = 15_000) => {
   };
 };
 
-const SCREENSHOT_IMPORT_GATE_KEY = "__edgeeverScreenshotImportGate";
+const SCREENSHOT_IMPORT_GATE_KEY = "__ponderScreenshotImportGate";
 
 export const getScreenshotImportGate = () => {
   const scope = globalThis as typeof globalThis & {

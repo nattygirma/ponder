@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useSyncExternalStore } from "react";
-import { DEFAULT_NOTE_IMAGE_PREFERENCES } from "@edgeever/shared/note-image-preferences";
+import { DEFAULT_NOTE_IMAGE_PREFERENCES } from "@ponder/shared/note-image-preferences";
 import { createMobileNoteImagePreferenceStore } from "../lib/note-image-preferences";
 
 const store = createMobileNoteImagePreferenceStore(AsyncStorage);

@@ -1,7 +1,7 @@
 import { memo, useRef, type ReactNode } from "react";
-import type { MemoFilterMode, MemoSortMode } from "@edgeever/client";
-import { DEFAULT_MEMO_TITLE, getMemoListTimestamp, getNotebookDescendantMemoCount, type MemoSummary, type Notebook } from "@edgeever/shared";
-import { toggleMobileMemoFilterMode } from "@edgeever/shared/mobile-ui";
+import type { MemoFilterMode, MemoSortMode } from "@ponder/client";
+import { DEFAULT_MEMO_TITLE, getMemoListTimestamp, getNotebookDescendantMemoCount, type MemoSummary, type Notebook } from "@ponder/shared";
+import { toggleMobileMemoFilterMode } from "@ponder/shared/mobile-ui";
 import { FlatList, Platform, RefreshControl, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, MouseButton, PointerType } from "react-native-gesture-handler";
 import { ActivityIndicator, Check, ChevronDown, ChevronLeft, LayoutTemplate, MoreHorizontal, Plus, RotateCcw, Search, Sparkles, Tag, X } from "../components/icons";
@@ -94,45 +94,45 @@ export const NotesView = ({
   const hiddenDescendantMemoCount = !showDescendantNotes && memoView === "notebook" && activeNotebook && !searchActive && !filterActive
     ? getNotebookDescendantMemoCount(notebooks, activeNotebook.id)
     : 0;
-  const searchStatusLabel = translate("正在搜索");
-  const searchResultLabel = translate(`${totalMemoCount} 条结果`);
-  const exitSearchLabel = translate("退出搜索");
+  const searchStatusLabel = translate("Searching");
+  const searchResultLabel = translate(`Results: ${totalMemoCount}`);
+  const exitSearchLabel = translate("Exit search");
   const activeFilterLabel = selectedTag
     ? `#${selectedTag}`
     : memoFilterMode === "pinned"
-      ? translate("置顶")
+      ? translate("Pinned")
       : memoFilterMode === "tagged"
-        ? translate("有标签")
-        : translate("无标签");
-  const filterResultLabel = translate(`筛选：${activeFilterLabel} · ${totalMemoCount} 条`);
-  const resetFilterLabel = translate("重置");
+        ? translate("Tagged")
+        : translate("Untagged");
+  const filterResultLabel = translate(`Filter: ${activeFilterLabel} · ${totalMemoCount} notes`);
+  const resetFilterLabel = translate("Reset");
 
   return (
     <View style={styles.viewBody}>
       <View style={styles.mobileListHeader}>
         {selectionMode ? (
           <View style={styles.mobileSelectionHeader}>
-            <Pressable accessibilityLabel="取消选择" accessibilityRole="button" onPress={onClearSelection} style={styles.mobileSelectionClose}>
+            <Pressable accessibilityLabel="Clear selection" accessibilityRole="button" onPress={onClearSelection} style={styles.mobileSelectionClose}>
               <X color="#64748b" size={19} />
             </Pressable>
-            <Text style={styles.mobileSelectionTitle}>{selectedMemoIds.size > 0 ? translate(`已选择 ${selectedMemoIds.size} 条`) : "选择笔记"}</Text>
+            <Text style={styles.mobileSelectionTitle}>{selectedMemoIds.size > 0 ? translate(`${selectedMemoIds.size} selected`) : "Select note"}</Text>
             <View style={styles.iconButtonPlaceholder} />
           </View>
         ) : null}
         <View style={styles.mobileListTitleRow}>
           <Pressable
-            accessibilityLabel={memoView === "trash" || selectedTag ? "返回笔记列表" : "切换笔记本"}
+            accessibilityLabel={memoView === "trash" || selectedTag ? "Back to notes" : "Switch notebook"}
             accessibilityRole="button"
             onPress={memoView === "trash" ? () => onSetMemoView("notebook") : selectedTag ? onClearTag : onOpenNotebookPicker}
             style={styles.mobileNotebookTitleButton}
           >
             {memoView === "trash" || selectedTag ? <ChevronLeft color="#475569" size={18} /> : null}
             <Text numberOfLines={1} style={styles.mobileNotebookTitle}>
-              {memoView === "trash" ? "回收站" : selectedTag ? `#${selectedTag}` : activeNotebook?.name ?? "全部笔记"}
+              {memoView === "trash" ? "Trash" : selectedTag ? `#${selectedTag}` : activeNotebook?.name ?? "All notes"}
             </Text>
             {memoView === "notebook" && !selectedTag ? <ChevronDown color="#64748b" size={16} /> : null}
           </Pressable>
-          <Pressable accessibilityLabel={selectionMode ? "批量操作" : "列表选项"} accessibilityRole="button" onPress={onOpenActions} style={styles.mobileMoreButton}>
+          <Pressable accessibilityLabel={selectionMode ? "Bulk actions" : "List options"} accessibilityRole="button" onPress={onOpenActions} style={styles.mobileMoreButton}>
             <MoreHorizontal color="#475569" size={20} />
           </Pressable>
         </View>
@@ -142,18 +142,18 @@ export const NotesView = ({
               <View style={[styles.mobileSearchButton, searchActive && styles.mobileSearchButtonActive, searchActive && resolvedTheme === "dark" && styles.mobileSearchButtonActiveDark]}>
                 <Search color={searchActive && resolvedTheme === "dark" ? "rgb(5, 150, 105)" : searchActive ? "#059669" : "#64748b"} size={17} />
                 <TextInput
-                  accessibilityLabel="搜索笔记"
+                  accessibilityLabel="Search notes"
                   autoCapitalize="none"
                   autoCorrect={false}
                   onChangeText={onSearchTextChange}
-                  placeholder="搜索笔记"
+                  placeholder="Search notes"
                   placeholderTextColor="#94a3b8"
                   returnKeyType="search"
                   style={[styles.mobileSearchInput, searchActive && resolvedTheme === "dark" && styles.mobileSearchInputActiveDark]}
                   value={searchText}
                 />
                 {searchText ? (
-                  <Pressable accessibilityLabel="清空搜索" accessibilityRole="button" onPress={() => onSearchTextChange("")} style={styles.mobileSearchClearButton}>
+                  <Pressable accessibilityLabel="Clear search" accessibilityRole="button" onPress={() => onSearchTextChange("")} style={styles.mobileSearchClearButton}>
                     <X color={resolvedTheme === "dark" ? "rgb(100, 116, 139)" : "#64748b"} size={14} />
                   </Pressable>
                 ) : null}
@@ -161,13 +161,13 @@ export const NotesView = ({
               <MobileFilterButton
                 active={memoFilterMode === "pinned"}
                 icon={<Sparkles color={memoFilterMode === "pinned" ? "#ffffff" : "#475569"} size={18} />}
-                label="置顶"
+                label="Pinned"
                 onPress={() => onFilterModeChange(toggleMobileMemoFilterMode(memoFilterMode, "pinned"))}
               />
               <MobileFilterButton
                 active={Boolean(selectedTag)}
                 icon={<Tag color={selectedTag ? "#ffffff" : "#475569"} size={18} />}
-                label={selectedTag ? `#${selectedTag}` : "按标签筛选"}
+                label={selectedTag ? `#${selectedTag}` : "Filter by tag"}
                 onPress={onOpenTagFilter}
               />
           </View>
@@ -199,16 +199,16 @@ export const NotesView = ({
     <MemoList
       emptyActions={memoView === "notebook" && !searchActive && !filterActive
         ? notebooks.length === 0
-          ? [{ label: "新建笔记本", onPress: onOpenNotebookPicker, variant: "primary" as const }]
+          ? [{ label: "New notebook", onPress: onOpenNotebookPicker, variant: "primary" as const }]
           : [
-            { label: "新建笔记", onPress: onCreate, variant: "primary" as const },
+            { label: "New note", onPress: onCreate, variant: "primary" as const },
             ...(onCreateFromTemplate
-              ? [{ label: "从模板新建", onPress: onCreateFromTemplate, variant: "secondary" as const }]
+              ? [{ label: "New from template", onPress: onCreateFromTemplate, variant: "secondary" as const }]
               : []),
           ]
         : undefined}
-      emptyDescription={hiddenDescendantMemoCount > 0 ? `子笔记本中还有 ${hiddenDescendantMemoCount} 条笔记。可以打开子笔记本查看，或在设置中开启“父笔记本中显示子笔记本笔记”。` : searchActive ? "换个关键词再试" : filterActive ? "试试切换筛选条件，或调整搜索关键词。" : memoView === "trash" ? "删除的笔记会显示在这里。" : notebooks.length === 0 ? "先创建一个笔记本，再开始记录。" : "先创建一条笔记，之后可以在这里快速预览、搜索和批量整理。"}
-      emptyTitle={hiddenDescendantMemoCount > 0 ? "本级暂无笔记" : searchActive ? "没有找到匹配笔记" : filterActive ? "没有符合筛选的笔记" : memoView === "trash" ? "回收站为空" : notebooks.length === 0 ? "暂无笔记本" : "暂无笔记"}
+      emptyDescription={hiddenDescendantMemoCount > 0 ? `Its sub-notebooks still contain ${hiddenDescendantMemoCount} notes. Open a sub-notebook to see them, or turn on "Show notes from sub-notebooks" in Settings.` : searchActive ? "Try a different keyword" : filterActive ? "Try another filter or adjust your search keywords." : memoView === "trash" ? "Deleted notes will appear here." : notebooks.length === 0 ? "Create a notebook to start taking notes." : "Create a note first, then preview, search, and organize notes here."}
+      emptyTitle={hiddenDescendantMemoCount > 0 ? "No notes directly in this notebook" : searchActive ? "No matching notes" : filterActive ? "No notes match the filter" : memoView === "trash" ? "Trash is empty" : notebooks.length === 0 ? "No notebooks" : "No notes yet"}
       error={error}
       initialSyncProgress={initialSyncProgress}
       isError={isError}
@@ -278,14 +278,14 @@ const MemoList = ({
   const loadedCount = initialSyncProgress?.loadedCount ?? 0;
   const totalCount = initialSyncProgress?.totalCount ?? 0;
   const progressPercent = totalCount > 0 ? Math.min(100, Math.round((loadedCount / totalCount) * 100)) : 0;
-  const progressTitle = translate("正在同步笔记");
+  const progressTitle = translate("Syncing your notes");
   const progressDescription = totalCount > 0
-    ? translate(`已加载 ${loadedCount} / ${totalCount} 条笔记`)
-    : translate("正在准备首次同步…");
-  const loadingTitle = hasInitialSyncProgress ? progressTitle : translate("正在加载笔记");
+    ? translate(`Loaded ${loadedCount} of ${totalCount} notes`)
+    : translate("Preparing your notes for the first sync…");
+  const loadingTitle = hasInitialSyncProgress ? progressTitle : translate("Loading notes");
   const loadingDescription = hasInitialSyncProgress
     ? progressDescription
-    : translate("正在加载笔记本和笔记…");
+    : translate("Loading notebooks and notes…");
 
   if ((isLoading || hasInitialSyncProgress) && memos.length === 0) {
     return (
@@ -308,12 +308,12 @@ const MemoList = ({
     return (
       <View style={styles.memoListStateWrap}>
         <View style={styles.memoListErrorCard}>
-          <Text style={styles.memoListErrorTitle}>暂时没有拉到笔记</Text>
-          <Text style={styles.memoListErrorDescription}>网络或 PWA 后台恢复可能短暂中断了同步。这里不会把它当作空笔记本。</Text>
+          <Text style={styles.memoListErrorTitle}>No notes fetched yet</Text>
+          <Text style={styles.memoListErrorDescription}>Network or PWA background recovery may have briefly interrupted sync. This is not treated as an empty notebook.</Text>
         {onRetry ? (
-          <Pressable accessibilityLabel="重试加载" accessibilityRole="button" onPress={onRetry} style={styles.memoListRetryButton}>
+          <Pressable accessibilityLabel="Retry loading" accessibilityRole="button" onPress={onRetry} style={styles.memoListRetryButton}>
             <RotateCcw color="#92400e" size={17} />
-            <Text style={styles.memoListRetryText}>重试</Text>
+            <Text style={styles.memoListRetryText}>Retry</Text>
           </Pressable>
         ) : null}
         </View>
@@ -390,15 +390,15 @@ const MemoList = ({
         ) : isError ? (
           <View accessibilityLiveRegion="polite" style={styles.memoSyncErrorBanner}>
             <View style={styles.memoSyncBannerContent}>
-              <Text style={styles.memoSyncErrorBannerTitle}>{translate("同步已暂停")}</Text>
+              <Text style={styles.memoSyncErrorBannerTitle}>{translate("Sync paused")}</Text>
               <Text style={styles.memoSyncErrorBannerDescription}>
-                {translate("已加载的笔记仍可使用，请检查网络后重试。")}
+                {translate("Loaded notes remain available. Check your connection and retry.")}
               </Text>
             </View>
             {onRetry ? (
               <Pressable accessibilityRole="button" onPress={onRetry} style={styles.memoSyncErrorRetryButton}>
                 <RotateCcw color="#92400e" size={15} />
-                <Text style={styles.memoListRetryText}>{translate("重试")}</Text>
+                <Text style={styles.memoListRetryText}>{translate("Retry")}</Text>
               </Pressable>
             ) : null}
           </View>
@@ -465,7 +465,7 @@ const MemoCard = memo(function MemoCard({
       >
         {selectionMode ? (
           <Pressable
-            accessibilityLabel={`${selected ? "取消选择" : "选择"} ${memoTitle}`}
+            accessibilityLabel={`${selected ? "Clear selection" : "Select"} ${memoTitle}`}
             accessibilityRole="button"
             accessibilityState={{ selected }}
             onPress={onPress}
@@ -504,7 +504,7 @@ const MemoCard = memo(function MemoCard({
           </View>
           {listDensity === "preview" ? (
             <Text numberOfLines={2} style={styles.memoExcerpt}>
-              {memo.excerpt || "空笔记"}
+              {memo.excerpt || "Empty note"}
             </Text>
           ) : null}
           <View style={[styles.memoMeta, listDensity === "compact" && styles.memoMetaCompact]}>

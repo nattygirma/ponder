@@ -40,7 +40,7 @@ describe("AI assistant modes", () => {
     expect(chat).toContain("useState<string>(() => crypto.randomUUID())");
     expect(chat).toContain('t("aiAssistant.modes.resumeLast")');
     expect(chat).not.toContain("sessionStorage.getItem");
-    expect(chat).not.toContain("edgeever.assistant.threadId");
+    expect(chat).not.toContain("ponder.assistant.threadId");
     expect(chat).toContain('event.key !== "Enter"');
     expect(chat).toContain("requestSubmit()");
     expect(chat).toContain("useMemory");

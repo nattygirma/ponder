@@ -13,7 +13,7 @@ import {
   type TableDocument,
   type TableField,
   type TableFormFieldSetting,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { AppError } from "./app-error";
 import { getMemoDetail, updateMemoRecord } from "./memo-service";
 import type { DatabaseAdapter } from "./storage-contract";

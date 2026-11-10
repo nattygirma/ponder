@@ -1,6 +1,6 @@
-import { buildAiDirectProviderRequest, extractAiDirectStreamDelta } from "@edgeever/shared/ai-generation";
-import { consumeProviderEventStream } from "@edgeever/shared/provider-event-stream";
-import { normalizeVideoOutline, parseVideoOutlineModelText } from "@edgeever/shared/video-outline";
+import { buildAiDirectProviderRequest, extractAiDirectStreamDelta } from "@ponder/shared/ai-generation";
+import { consumeProviderEventStream } from "@ponder/shared/provider-event-stream";
+import { normalizeVideoOutline, parseVideoOutlineModelText } from "@ponder/shared/video-outline";
 import { normalizeInstanceUrl } from "../extension";
 import { chunkTranscript, formatTimestamp, sectionsFromOutline } from "./transcript";
 import type {
@@ -206,7 +206,7 @@ export const postVideoOutline = async (
     });
     const payload = await response.json().catch(() => null) as { error?: { code?: string }; tldr?: unknown } | null;
     if (response.ok) {
-      const prepared = payload as unknown as import("@edgeever/shared/ai-generation").AiPreparedGeneration;
+      const prepared = payload as unknown as import("@ponder/shared/ai-generation").AiPreparedGeneration;
       const modelUrl = new URL(prepared.baseUrl);
       if (!["http:", "https:"].includes(modelUrl.protocol)) return { ok: false, reason: "failed" };
       const origin = `${modelUrl.protocol}//${modelUrl.hostname}/*`;

@@ -17,7 +17,7 @@ const fixture = () => {
   `);
   const auth = { kind: "agent", actorType: "agent", actorId: "tok_delete", username: "agent",
     displayName: null, scopes: ["read:notebooks", "write:notebooks"], workspaceId: "ws_delete", role: "member" };
-  const db = createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-mcp-delete-unused").db;
+  const db = createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-mcp-delete-unused").db;
   const context = { env: { storage: { db } }, get: key => key === "auth" ? auth : undefined };
   const call = args => callMcpTool(context, auth, "delete_notebook", args);
   return { sqlite, auth, db, context, call };

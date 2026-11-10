@@ -5,7 +5,7 @@ export default {
       title: "Count recent notes",
       async run() {
         const result = await context.notes.query({ sort: "updated-desc", limit: 10 });
-        context.ui.showNotice(`EdgeEver returned ${result.notes.length} recent notes.`);
+        context.ui.showNotice(`Ponder returned ${result.notes.length} recent notes.`);
       },
     });
     const disposeUppercase = context.commands.register({

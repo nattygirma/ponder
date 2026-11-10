@@ -16,7 +16,7 @@ const screenshotResource = {
 
 describe("staged resource repair", () => {
   test("reads the staged id from desktop placeholder URLs", () => {
-    expect(stagedResourceIdFromUrl("edgeever-staged://stage_1")).toBe("stage_1");
+    expect(stagedResourceIdFromUrl("ponder-staged://stage_1")).toBe("stage_1");
     expect(stagedResourceIdFromUrl("/api/v1/resources/res_shot/blob")).toBeNull();
   });
 
@@ -28,11 +28,11 @@ describe("staged resource repair", () => {
           type: "image",
           attrs: {
             alt: "screenshot-20260918-225321.webp",
-            src: "edgeever-staged://stage_1789743202770_hu8zo7lrxco",
+            src: "ponder-staged://stage_1789743202770_hu8zo7lrxco",
           },
         }],
       },
-      contentMarkdown: "![screenshot-20260918-225321.webp](edgeever-staged://stage_1789743202770_hu8zo7lrxco)\n\n",
+      contentMarkdown: "![screenshot-20260918-225321.webp](ponder-staged://stage_1789743202770_hu8zo7lrxco)\n\n",
     })).toEqual([{
       stagedId: "stage_1789743202770_hu8zo7lrxco",
       filename: "screenshot-20260918-225321.webp",
@@ -47,12 +47,12 @@ describe("staged resource repair", () => {
           type: "image",
           attrs: {
             alt: "screenshot-20260918-225321.webp",
-            src: "edgeever-staged://stage_dead",
+            src: "ponder-staged://stage_dead",
             width: 50,
           },
         }, { type: "paragraph" }],
       },
-      contentMarkdown: "![screenshot-20260918-225321.webp](edgeever-staged://stage_dead)\n\n",
+      contentMarkdown: "![screenshot-20260918-225321.webp](ponder-staged://stage_dead)\n\n",
     };
 
     expect(repairMemoStagedResourceUrls(memo, [screenshotResource])).toEqual({
@@ -73,7 +73,7 @@ describe("staged resource repair", () => {
 
   test("keeps a staged URL while the local staging file is still present", () => {
     const memo = {
-      contentMarkdown: "![screenshot.webp](edgeever-staged://stage_live)",
+      contentMarkdown: "![screenshot.webp](ponder-staged://stage_live)",
     };
     expect(repairMemoStagedResourceUrls(memo, [screenshotResource], new Set(["stage_live"])))
       .toEqual(memo);
@@ -85,10 +85,10 @@ describe("staged resource repair", () => {
     const memo = {
       contentJson: { type: "doc", content: [{ type: "image", attrs: {
         alt: "微信图片_202609231723_1.jpg",
-        src: "edgeever-staged://stage_missing",
+        src: "ponder-staged://stage_missing",
         width: 35,
       } }] },
-      contentMarkdown: "![微信图片_202609231723_1.jpg](edgeever-staged://stage_missing)",
+      contentMarkdown: "![微信图片_202609231723_1.jpg](ponder-staged://stage_missing)",
     };
     const resourceUrl = "/api/v1/resources/res_wechat/blob";
     const repaired = repairMemoStagedResourceUrls(memo, [{
@@ -121,12 +121,12 @@ describe("staged resource repair", () => {
 
   test("does not consume a longer staged id that only shares a prefix", () => {
     const memo = {
-      contentMarkdown: "![one](edgeever-staged://stage_1) ![ten](edgeever-staged://stage_10)",
+      contentMarkdown: "![one](ponder-staged://stage_1) ![ten](ponder-staged://stage_10)",
     };
     expect(repairMemoStagedResourceUrls(memo, [{
       url: "/api/v1/resources/res_one/blob",
       filename: "one",
       kind: "image",
-    }]).contentMarkdown).toBe("![one](/api/v1/resources/res_one/blob) ![ten](edgeever-staged://stage_10)");
+    }]).contentMarkdown).toBe("![one](/api/v1/resources/res_one/blob) ![ten](ponder-staged://stage_10)");
   });
 });

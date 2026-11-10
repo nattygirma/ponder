@@ -1,7 +1,5 @@
 # Third-party note import implementation plan
 
-[简体中文](third-party-import-plan.zh-CN.md)
-
 Related: [Issue #657](https://github.com/tianma-if/edgeever/issues/657). Sections 1–8 describe the implemented contract; section 9 describes the implemented D1 optimization and acceptance. [Acceptance scope and results](changes/evidence/2026-10-27-third-party-import/README.md).
 
 ## 1. Approach and first-release boundaries
@@ -19,7 +17,7 @@ All three sources and all file, directory, and archive forms requested by the Is
 | Location | Reusable capability | Integration |
 | --- | --- | --- |
 | `apps/web/src/components/SettingsPane.tsx` | Web uses `DataExportCard`; desktop uses `DesktopScheduledBackupCard` | Keep both backup entries; replace the guide card with third-party import and retain its guide link |
-| `packages/shared/src/backup-archive.ts` | Uses `@zip.js/zip.js` 2.24.0 for ZIP64, entry reads, and streaming restore | Reuse the dependency and reading approach without requiring an EdgeEver manifest or changing the backup format |
+| `packages/shared/src/backup-archive.ts` | Uses `@zip.js/zip.js` 2.24.0 for ZIP64, entry reads, and streaming restore | Reuse the dependency and reading approach without requiring a Ponder manifest or changing the backup format |
 | `apps/api/src/memo-service.ts::importMemosRecord` | Batches of 1–25 notes, per-item results, imported timestamps, and `source + externalId` idempotency through the database adapter | Add a thin REST entry that reuses this service; retain existing MCP semantics |
 | `packages/client/src/index.ts` | Creation accepts timestamps; resources support multipart uploads; document updates require edit sessions and version protection | Add import methods and the optional update timestamp fields already supported by the server |
 | `apps/web/src/lib/desktop-sync.ts` | `pauseDesktopSyncForImport()` waits for active sync and returns a release function | Hold it after confirmation, release on every exit path, and refresh only after releasing |
@@ -56,7 +54,7 @@ Use **client-side parsing with shared server-side writes**, rather than separate
 
 - Preserve valid source instants as timezone-qualified ISO timestamps. Retain and warn about missing or timezone-ambiguous values rather than presenting invented times as original. Omitted fields retain the existing creation API default of the import time.
 - Whether `_resources`, `assets`, or similar directories become notebooks depends on whether they contain notes or ancestors of notes—not their name alone. Resource-only directories do not become empty notebooks.
-- Repeated references to one attachment in one note create one upload. Across notes, upload separately under existing resource ownership rules. Preflight attachment counts mean planned EdgeEver resources, not unique source files. Resources unrelated to any note are listed as not imported.
+- Repeated references to one attachment in one note create one upload. Across notes, upload separately under existing resource ownership rules. Preflight attachment counts mean planned Ponder resources, not unique source files. Resources unrelated to any note are listed as not imported.
 - Rewrite actual image/link targets, not code blocks, inline code, or matching plain text.
 - Preserve external URIs in standard Markdown, including HTTP(S), FTP and Obsidian app links, without local-attachment lookup, target reads or new preflight warnings. Existing link-opening and rendering-safety policies remain unchanged.
 - Normalized paths must stay within the selected root. Continue rejecting `file:` URIs and Windows drive forms, including drive-relative paths, under existing local-path rules; Wiki targets remain literal filenames. Do not follow archive symlinks or extract archives to arbitrary user directories. Report multiple entries mapping to one normalized path as ambiguous.
@@ -125,7 +123,7 @@ Acceptance follows real user flows:
 
 - Operate every source from Settings. Preflight counts match actual new data; cancelling preflight leaves databases and object storage unchanged. Use lawful sanitized exports or exports created for testing, not personal libraries.
 - Run the same core flows through Cloudflare local D1/R2 and Docker SQLite/object-storage adapters. Read back full paths, titles, tags, original creation/modification times, and resource associations. Create existing data in the baseline version, upgrade to the version with the new API, then import and confirm existing data and old editing/backup entries retain their contracts.
-- Reopen imported notes after making source directories unavailable; images and attachments must load from EdgeEver resources. Check actual content and link positions, not merely HTTP 200. Reuse applicable evidence for unchanged guide, EdgeEver ZIP v1/v2, and encrypted desktop restore behavior.
+- Reopen imported notes after making source directories unavailable; images and attachments must load from Ponder resources. Check actual content and link positions, not merely HTTP 200. Reuse applicable evidence for unchanged guide, Ponder ZIP v1/v2, and encrypted desktop restore behavior.
 - Use a first-note-success, second-note-resource-failure, third-note-not-started flow. Check accurate results, task-local retries without duplicate first/second notes, and no overwrite after concurrent edits. Desktop sync must resume after success, failure, and cancellation; local timestamp readback must match the server after refresh.
 - Fix note counts and body sizes, then compare multi-attachment archives totaling about 1 GiB and 4 GiB, keeping each file within current upload limits. Record browser/desktop versions, peak heap/RSS, active buffers, and temporary disk use. Memory must not grow roughly in proportion to total attachment bytes; the UI must remain cancellable without whole-archive memory copies. Separately cover a single large ENEX base64 field, not only Vaults containing many small files.
 - Compare real Worker/IndexedDB preflight as note count grows, and import multiple large bodies through the real API. Result pages must retain baselines without full Markdown/JSON/text, while retries and concurrent-edit protection still work.

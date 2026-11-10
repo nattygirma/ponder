@@ -1,4 +1,4 @@
-import { normalizeTags, type TagSummary } from "@edgeever/shared";
+import { normalizeTags, type TagSummary } from "@ponder/shared";
 import type { AuditActor } from "./api-context";
 import { AppError } from "./app-error";
 import { auditStatement } from "./audit";

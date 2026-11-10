@@ -3,10 +3,10 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "@edgeever/ios-editor",
+      "name": "@ponder/ios-editor",
       "dependencies": {
         "@antv/x6": "3.1.8",
-        "@edgeever/shared": "file:../../../packages/shared",
+        "@ponder/shared": "file:../../../packages/shared",
         "@tiptap/core": "3.31.4",
         "@tiptap/extension-code-block": "3.31.4",
         "@tiptap/extension-details": "3.31.4",
@@ -53,7 +53,7 @@
 
     "@dagrejs/graphlib": ["@dagrejs/graphlib@4.0.5", "", {}, "sha512-7xrBTqIts3o+PMUZX97wSc+7TUbW+/rULzGNCTP6yooNVDXbzw4Wutg/H/xOutTB/c/k0YqOAavgPh4/Zk9PFA=="],
 
-    "@edgeever/shared": ["@edgeever/shared@file:../../../packages/shared", { "dependencies": { "@dagrejs/dagre": "3.1.1", "@tiptap/core": "3.31.4", "@tiptap/extension-details": "3.31.4", "@tiptap/extension-image": "3.31.4", "@tiptap/extension-link": "3.31.4", "@tiptap/extension-list": "3.31.4", "@tiptap/extension-mathematics": "3.31.4", "@tiptap/extension-table": "3.31.4", "@tiptap/markdown": "3.31.4", "@tiptap/pm": "3.31.4", "@tiptap/starter-kit": "3.31.4", "js-base64": "3.9.3", "katex": "0.18.2", "yaml": "2.8.3", "zod": "4.4.3" } }],
+    "@ponder/shared": ["@ponder/shared@file:../../../packages/shared", { "dependencies": { "@dagrejs/dagre": "3.1.1", "@tiptap/core": "3.31.4", "@tiptap/extension-details": "3.31.4", "@tiptap/extension-image": "3.31.4", "@tiptap/extension-link": "3.31.4", "@tiptap/extension-list": "3.31.4", "@tiptap/extension-mathematics": "3.31.4", "@tiptap/extension-table": "3.31.4", "@tiptap/markdown": "3.31.4", "@tiptap/pm": "3.31.4", "@tiptap/starter-kit": "3.31.4", "js-base64": "3.9.3", "katex": "0.18.2", "yaml": "2.8.3", "zod": "4.4.3" } }],
 
     "@esbuild/aix-ppc64": ["@esbuild/aix-ppc64@0.25.12", "", { "os": "aix", "cpu": "ppc64" }, "sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA=="],
 

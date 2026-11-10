@@ -22,7 +22,7 @@ pub(crate) fn data_dir() -> PathBuf {
     args.windows(2)
         .find(|pair| pair[0] == "--data-dir")
         .map(|pair| PathBuf::from(&pair[1]))
-        .unwrap_or_else(|| PathBuf::from(".edgeever-desktop"))
+        .unwrap_or_else(|| PathBuf::from(".ponder-desktop"))
 }
 
 pub(crate) fn migrations_dir() -> PathBuf {
@@ -57,7 +57,7 @@ fn restrict_file(path: &Path) -> io::Result<()> {
 
 fn apply_migrations(connection: &Connection, migrations: &Path) -> rusqlite::Result<()> {
     connection.execute_batch(
-        "CREATE TABLE IF NOT EXISTS _edgeever_migrations (
+        "CREATE TABLE IF NOT EXISTS _ponder_migrations (
            name TEXT PRIMARY KEY,
            applied_at TEXT NOT NULL
          );",
@@ -76,7 +76,7 @@ fn apply_migrations(connection: &Connection, migrations: &Path) -> rusqlite::Res
             .and_then(|value| value.to_str())
             .unwrap_or_default();
         let already_applied: bool = connection.query_row(
-            "SELECT EXISTS(SELECT 1 FROM _edgeever_migrations WHERE name = ?1)",
+            "SELECT EXISTS(SELECT 1 FROM _ponder_migrations WHERE name = ?1)",
             [name],
             |row| row.get(0),
         )?;
@@ -89,7 +89,7 @@ fn apply_migrations(connection: &Connection, migrations: &Path) -> rusqlite::Res
         let transaction = connection.unchecked_transaction()?;
         transaction.execute_batch(&sql)?;
         transaction.execute(
-            "INSERT INTO _edgeever_migrations (name, applied_at) VALUES (?1, datetime('now'))",
+            "INSERT INTO _ponder_migrations (name, applied_at) VALUES (?1, datetime('now'))",
             [name],
         )?;
         transaction.commit()?;
@@ -99,12 +99,12 @@ fn apply_migrations(connection: &Connection, migrations: &Path) -> rusqlite::Res
 
 fn ensure_sidecar_schema(connection: &Connection) -> rusqlite::Result<()> {
     connection.execute_batch(
-        "CREATE TABLE IF NOT EXISTS _edgeever_sidecar_meta (
+        "CREATE TABLE IF NOT EXISTS _ponder_sidecar_meta (
            key TEXT PRIMARY KEY,
            value TEXT NOT NULL,
            updated_at TEXT NOT NULL
          );
-         CREATE TABLE IF NOT EXISTS _edgeever_sidecar_outbox (
+         CREATE TABLE IF NOT EXISTS _ponder_sidecar_outbox (
            id INTEGER PRIMARY KEY AUTOINCREMENT,
            kind TEXT NOT NULL,
            entity_id TEXT NOT NULL,
@@ -119,34 +119,34 @@ fn ensure_sidecar_schema(connection: &Connection) -> rusqlite::Result<()> {
            created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
            updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
          );
-         CREATE INDEX IF NOT EXISTS idx_sidecar_outbox_status ON _edgeever_sidecar_outbox(status, id);",
+         CREATE INDEX IF NOT EXISTS idx_sidecar_outbox_status ON _ponder_sidecar_outbox(status, id);",
     )?;
 
     let columns = connection
-        .prepare("PRAGMA table_info(_edgeever_sidecar_outbox)")?
+        .prepare("PRAGMA table_info(_ponder_sidecar_outbox)")?
         .query_map([], |row| row.get::<_, String>(1))?
         .collect::<Result<Vec<_>, _>>()?;
     if !columns.iter().any(|name| name == "version") {
         connection.execute(
-            "ALTER TABLE _edgeever_sidecar_outbox ADD COLUMN version INTEGER NOT NULL DEFAULT 1",
+            "ALTER TABLE _ponder_sidecar_outbox ADD COLUMN version INTEGER NOT NULL DEFAULT 1",
             [],
         )?;
     }
     if !columns.iter().any(|name| name == "last_error_code") {
         connection.execute(
-            "ALTER TABLE _edgeever_sidecar_outbox ADD COLUMN last_error_code TEXT",
+            "ALTER TABLE _ponder_sidecar_outbox ADD COLUMN last_error_code TEXT",
             [],
         )?;
     }
     if !columns.iter().any(|name| name == "retryable") {
         connection.execute(
-            "ALTER TABLE _edgeever_sidecar_outbox ADD COLUMN retryable INTEGER NOT NULL DEFAULT 1",
+            "ALTER TABLE _ponder_sidecar_outbox ADD COLUMN retryable INTEGER NOT NULL DEFAULT 1",
             [],
         )?;
     }
     if !columns.iter().any(|name| name == "next_attempt_at") {
         connection.execute(
-            "ALTER TABLE _edgeever_sidecar_outbox ADD COLUMN next_attempt_at TEXT",
+            "ALTER TABLE _ponder_sidecar_outbox ADD COLUMN next_attempt_at TEXT",
             [],
         )?;
     }
@@ -178,7 +178,7 @@ pub(crate) fn backup_database(connection: &Connection, root: &Path) -> rusqlite:
     restrict_directory(&backup_dir)
         .map_err(|error| rusqlite::Error::ToSqlConversionFailure(Box::new(error)))?;
     let backup_path = backup_dir.join(format!(
-        "edgeever-{}.sqlite",
+        "ponder-{}.sqlite",
         SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap_or_default()
@@ -198,7 +198,7 @@ pub(crate) fn backup_database(connection: &Connection, root: &Path) -> rusqlite:
         .filter(|path| {
             path.file_name()
                 .and_then(|name| name.to_str())
-                .map(|name| name.starts_with("edgeever-") && name.ends_with(".sqlite"))
+                .map(|name| name.starts_with("ponder-") && name.ends_with(".sqlite"))
                 .unwrap_or(false)
         })
         .collect();
@@ -230,7 +230,7 @@ pub(crate) fn list_backups(root: &Path) -> rusqlite::Result<Value> {
             .and_then(|value| value.to_str())
             .unwrap_or_default()
             .to_owned();
-        if !name.starts_with("edgeever-") || !name.ends_with(".sqlite") {
+        if !name.starts_with("ponder-") || !name.ends_with(".sqlite") {
             continue;
         }
         let metadata = fs::metadata(&path)
@@ -269,13 +269,13 @@ pub(crate) fn restore_database(
     if backup_path.parent() != Some(backup_dir.as_path())
         || backup_path.extension().and_then(|value| value.to_str()) != Some("sqlite")
     {
-        return Err("Backup path must point to a managed EdgeEver backup".to_owned());
+        return Err("Backup path must point to a managed Ponder backup".to_owned());
     }
 
     // Windows refuses to rotate/delete a backup while a read connection still
     // holds the managed file open. Restore from a temporary copy so retention
     // can safely remove the selected snapshot when it is the oldest one.
-    let source_copy = root.join(".edgeever-restore-source.sqlite");
+    let source_copy = root.join(".ponder-restore-source.sqlite");
     fs::remove_file(&source_copy).ok();
     fs::copy(&backup_path, &source_copy).map_err(|error| error.to_string())?;
     let source = Connection::open(&source_copy).map_err(|error| error.to_string())?;
@@ -325,8 +325,8 @@ pub(crate) fn open_database(root: &Path, migrations: &Path) -> rusqlite::Result<
         .map_err(|error| rusqlite::Error::ToSqlConversionFailure(Box::new(error)))?;
     restrict_directory(root)
         .map_err(|error| rusqlite::Error::ToSqlConversionFailure(Box::new(error)))?;
-    let existed = root.join("edgeever.sqlite").exists();
-    let connection = Connection::open(root.join("edgeever.sqlite"))?;
+    let existed = root.join("ponder.sqlite").exists();
+    let connection = Connection::open(root.join("ponder.sqlite"))?;
     connection.pragma_update(None, "journal_mode", "WAL")?;
     ensure_sidecar_schema(&connection)?;
     if existed {
@@ -334,9 +334,9 @@ pub(crate) fn open_database(root: &Path, migrations: &Path) -> rusqlite::Result<
     }
     apply_migrations(&connection, migrations)?;
     for path in [
-        root.join("edgeever.sqlite"),
-        root.join("edgeever.sqlite-wal"),
-        root.join("edgeever.sqlite-shm"),
+        root.join("ponder.sqlite"),
+        root.join("ponder.sqlite-wal"),
+        root.join("ponder.sqlite-shm"),
     ] {
         restrict_file(&path)
             .map_err(|error| rusqlite::Error::ToSqlConversionFailure(Box::new(error)))?;
@@ -353,7 +353,7 @@ mod tests {
         let connection = Connection::open_in_memory().expect("open test database");
         connection
             .execute_batch(
-                "CREATE TABLE _edgeever_sidecar_outbox (
+                "CREATE TABLE _ponder_sidecar_outbox (
                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                    kind TEXT NOT NULL,
                    entity_id TEXT NOT NULL,
@@ -365,7 +365,7 @@ mod tests {
                    created_at TEXT NOT NULL,
                    updated_at TEXT NOT NULL
                  );
-                 INSERT INTO _edgeever_sidecar_outbox
+                 INSERT INTO _ponder_sidecar_outbox
                    (kind, entity_id, payload_json, status, last_error, created_at, updated_at)
                  VALUES ('memo.update', 'memo_legacy', '{}', 'error', 'Memo not found', '2026-01-01', '2026-01-01');",
             )
@@ -375,7 +375,7 @@ mod tests {
 
         let upgraded: (bool, Option<String>, Option<String>) = connection
             .query_row(
-                "SELECT retryable, last_error_code, next_attempt_at FROM _edgeever_sidecar_outbox WHERE entity_id = 'memo_legacy'",
+                "SELECT retryable, last_error_code, next_attempt_at FROM _ponder_sidecar_outbox WHERE entity_id = 'memo_legacy'",
                 [],
                 |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)),
             )

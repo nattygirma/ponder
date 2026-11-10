@@ -58,7 +58,7 @@ test("ignored claims and mismatched historical scopes do not corrupt task totals
 test("history polling uses primary-key totals and indexed retention cleanup after a real schema upgrade", async () => {
   const { db, insert, assertCounts } = upgradeFixture();
   insert("expired", "task_a", "ws_a", new Date(Date.now() - 31 * 86400000).toISOString());
-  const storage = createSelfHostedStorageAdapter(db, "/private/tmp/edgeever-count-unused");
+  const storage = createSelfHostedStorageAdapter(db, "/private/tmp/ponder-count-unused");
   const queries = []; const prepare = storage.db.prepare.bind(storage.db);
   storage.db.prepare = (sql) => { queries.push(sql); return prepare(sql); };
   const app = new Hono();

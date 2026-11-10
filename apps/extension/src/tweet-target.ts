@@ -3,9 +3,9 @@
 // content scripts are classic scripts, and this file is also injected again
 // after the user grants access.
 (() => {
-  const root = globalThis as typeof globalThis & { __edgeeverTweetTarget?: boolean };
-  if (root.__edgeeverTweetTarget) return;
-  root.__edgeeverTweetTarget = true;
+  const root = globalThis as typeof globalThis & { __ponderTweetTarget?: boolean };
+  if (root.__ponderTweetTarget) return;
+  root.__ponderTweetTarget = true;
 
   document.addEventListener("contextmenu", (event) => {
     const rawTarget = event.target;
@@ -16,9 +16,9 @@
         : null;
     if (!element) return;
     const article = element.closest('article[data-testid="tweet"]');
-    for (const node of document.querySelectorAll("[data-edgeever-tweet-target]")) {
-      node.removeAttribute("data-edgeever-tweet-target");
+    for (const node of document.querySelectorAll("[data-ponder-tweet-target]")) {
+      node.removeAttribute("data-ponder-tweet-target");
     }
-    if (article) article.setAttribute("data-edgeever-tweet-target", "1");
+    if (article) article.setAttribute("data-ponder-tweet-target", "1");
   }, true);
 })();

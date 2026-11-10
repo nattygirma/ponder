@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { noteProseStyleCssVariables } from "@edgeever/shared";
+import { noteProseStyleCssVariables } from "@ponder/shared";
 import { resolveStoredNoteProseStylePreference } from "./note-prose-style-preference.ts";
 
 describe("independent body rhythm preferences", () => {

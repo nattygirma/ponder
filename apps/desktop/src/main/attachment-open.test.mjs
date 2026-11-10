@@ -7,9 +7,9 @@ import { attachmentOpenInput, registerAttachmentOpenIpc } from "./attachment-ope
 
 const directories = [];
 afterEach(async () => { await Promise.all(directories.splice(0).map((path) => rm(path, { recursive: true, force: true }))); });
-const input = { url: "edgeever-resource://resource/res_1", filename: "训练.xlsx" };
+const input = { url: "ponder-resource://resource/res_1", filename: "训练.xlsx" };
 const fixture = async (overrides = {}) => {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-open-test-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-open-test-"));
   directories.push(directory);
   let handler;
   const opened = [];
@@ -39,7 +39,7 @@ test("accepts document/media/archive types and preserves safe extensions", () =>
 });
 
 test("rejects arbitrary paths, network URLs and malformed internal resource addresses", () => {
-  for (const url of ["file:///etc/passwd", "https://example.org/file.xlsx", "edgeever-resource://evil/res_1", "edgeever-resource://user@resource/res_1", "edgeever-resource://resource/res_1?download=a.xlsx", "edgeever-resource://resource/res_1#x", "edgeever-resource://resource/%2fetc", "edgeever-resource://resource/%2e%2e", "edgeever-staged://pending/evil", "edgeever-staged://pending:123", "edgeever-resource://resource/%zz"]) {
+  for (const url of ["file:///etc/passwd", "https://example.org/file.xlsx", "ponder-resource://evil/res_1", "ponder-resource://user@resource/res_1", "ponder-resource://resource/res_1?download=a.xlsx", "ponder-resource://resource/res_1#x", "ponder-resource://resource/%2fetc", "ponder-resource://resource/%2e%2e", "ponder-staged://pending/evil", "ponder-staged://pending:123", "ponder-resource://resource/%zz"]) {
     expect(attachmentOpenInput({ ...input, url })).toBeNull();
   }
 });
@@ -60,8 +60,8 @@ test("streams complete bytes to a private, named copy before asking the OS to op
 
 test("staged attachments use the same path without requiring an HTTP URL", async () => {
   const context = await fixture();
-  expect(await context.open({ url: "edgeever-staged://stage_1", filename: "offline.docx" })).toEqual({ ok: true });
-  expect(context.reads).toEqual(["edgeever-staged://stage_1"]);
+  expect(await context.open({ url: "ponder-staged://stage_1", filename: "offline.docx" })).toEqual({ ok: true });
+  expect(context.reads).toEqual(["ponder-staged://stage_1"]);
   expect(basename(context.opened[0])).toBe("offline.docx");
 });
 

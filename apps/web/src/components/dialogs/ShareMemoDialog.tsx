@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { memoSharePathSegment } from "@edgeever/shared";
+import { memoSharePathSegment } from "@ponder/shared";
 import { ShareExpiryControls } from "./ShareExpiryControls";
 import { SharePasswordControls } from "./SharePasswordControls";
 import { ShareSlugControls } from "./ShareSlugControls";

@@ -47,7 +47,7 @@ test("desktop notebook create announces its durable id after sidecar acknowledgm
   const item = { id: 4, version: 1, kind: "notebook.create", entityId: "nb_local_1", payload: { name: "测试" } };
   globalThis.window = {
     dispatchEvent: (event) => { events.push(event); return true; },
-    edgeeverDesktop: {
+    ponderDesktop: {
       isAvailable: true,
       listStagedResources: async () => [],
       listStagedResourceAliases: async () => [],
@@ -69,7 +69,7 @@ test("desktop notebook create announces its durable id after sidecar acknowledgm
     const result = await syncDesktopData();
     expect(result.failed).toBe(0);
     expect(calls).toContain("sync.outbox.ack");
-    expect(events.find((event) => event.type === "edgeever:notebook-id-remapped")?.detail).toEqual({
+    expect(events.find((event) => event.type === "ponder:notebook-id-remapped")?.detail).toEqual({
       temporaryId: "nb_local_1",
       remoteId: "nb_remote_1",
     });
@@ -96,7 +96,7 @@ test("desktop creates notebooks before notes and rereads remapped queue versions
   ];
   globalThis.window = {
     dispatchEvent: () => true,
-    edgeeverDesktop: {
+    ponderDesktop: {
       isAvailable: true,
       listStagedResources: async () => [],
       listStagedResourceAliases: async () => [],
@@ -155,7 +155,7 @@ test("desktop leaves dependent notes pending when their notebook upload fails", 
   const note = { id: 2, version: 1, kind: "memo.create", entityId: "memo_local_waiting", payload: { notebookId: notebook.entityId } };
   globalThis.window = {
     dispatchEvent: () => true,
-    edgeeverDesktop: {
+    ponderDesktop: {
       isAvailable: true,
       listStagedResources: async () => [],
       listStagedResourceAliases: async () => [],
@@ -189,7 +189,7 @@ test("desktop explicit discard clears a conflict whose cloud note is gone", asyn
   const originalGetMemo = api.getMemo;
   const calls = [];
   globalThis.window = {
-    edgeeverDesktop: {
+    ponderDesktop: {
       isAvailable: true,
       sidecarRequest: async (method, params) => {
         calls.push({ method, params });
@@ -219,20 +219,20 @@ describe("desktop staged resource sync", () => {
       const release = await pauseDesktopSyncForImport();
       const result = await syncDesktopData();
       expect(result.attempted).toBe(0);
-      expect(events).not.toContain("edgeever:sync-queue-changed");
+      expect(events).not.toContain("ponder:sync-queue-changed");
       release();
       release();
-      expect(events.filter((event) => event === "edgeever:sync-queue-changed")).toHaveLength(1);
+      expect(events.filter((event) => event === "ponder:sync-queue-changed")).toHaveLength(1);
     } finally {
       if (originalWindow !== undefined) globalThis.window = originalWindow;
     }
   });
 
   test("rewrites placeholders in memo JSON and markdown", () => {
-    const rewrites = [{ memoId: "memo-1", placeholder: "edgeever-staged://stage-1", url: "/api/v1/resources/resource-1/blob" }];
+    const rewrites = [{ memoId: "memo-1", placeholder: "ponder-staged://stage-1", url: "/api/v1/resources/resource-1/blob" }];
     const value = {
-      contentJson: { type: "doc", content: [{ type: "image", attrs: { src: "edgeever-staged://stage-1" } }] },
-      contentMarkdown: "![photo](edgeever-staged://stage-1)",
+      contentJson: { type: "doc", content: [{ type: "image", attrs: { src: "ponder-staged://stage-1" } }] },
+      contentMarkdown: "![photo](ponder-staged://stage-1)",
     };
 
     expect(rewriteStagedResource(value, rewrites)).toEqual({
@@ -245,9 +245,9 @@ describe("desktop staged resource sync", () => {
     expect(normalizeDesktopMemoPayload({
       contentJson: {
         type: "doc",
-        content: [{ type: "pdfAttachment", attrs: { url: "edgeever-resource://resource/res_pdf" } }],
+        content: [{ type: "pdfAttachment", attrs: { url: "ponder-resource://resource/res_pdf" } }],
       },
-      contentMarkdown: "[Attachment: report.pdf](edgeever-resource://resource/res_pdf)",
+      contentMarkdown: "[Attachment: report.pdf](ponder-resource://resource/res_pdf)",
     })).toMatchObject({
       contentJson: {
         content: [{ attrs: { url: "/api/v1/resources/res_pdf/blob" } }],
@@ -261,26 +261,26 @@ describe("desktop staged resource sync", () => {
 
     expect(isStagedResourceReferenced([], stagedId)).toBe(false);
     expect(isStagedResourceReferenced([
-      { contentJson: { type: "doc", content: [{ type: "image", attrs: { src: `edgeever-staged://${stagedId}` } }] } },
+      { contentJson: { type: "doc", content: [{ type: "image", attrs: { src: `ponder-staged://${stagedId}` } }] } },
     ], stagedId)).toBe(true);
   });
 
   test("does not confuse one staged image id with a longer id that shares its prefix", () => {
     expect(isStagedResourceReferenced([
-      { contentMarkdown: "![photo](edgeever-staged://stage-10)" },
+      { contentMarkdown: "![photo](ponder-staged://stage-10)" },
     ], "stage-1")).toBe(false);
     expect(isStagedResourceReferenced([
-      { contentMarkdown: "![photo](edgeever-staged://stage-1)" },
+      { contentMarkdown: "![photo](ponder-staged://stage-1)" },
     ], "stage-1")).toBe(true);
   });
 
   test("keeps staged bytes while an editor draft or visible image still uses the old URL", () => {
-    const rewrites = [{ memoId: "memo-1", placeholder: "edgeever-staged://stage-1", url: "/api/v1/resources/res-1/blob" }];
+    const rewrites = [{ memoId: "memo-1", placeholder: "ponder-staged://stage-1", url: "/api/v1/resources/res-1/blob" }];
     expect(stagedIdsReferencedByUnsavedContent(rewrites, [
-      { contentJson: { type: "doc", content: [{ type: "image", attrs: { src: "edgeever-staged://stage-1" } }] } },
+      { contentJson: { type: "doc", content: [{ type: "image", attrs: { src: "ponder-staged://stage-1" } }] } },
     ])).toEqual(new Set(["stage-1"]));
-    expect(stagedIdsReferencedByUnsavedContent(rewrites, ["edgeever-staged://stage-1"])).toEqual(new Set(["stage-1"]));
-    expect(stagedIdsReferencedByUnsavedContent(rewrites, ["edgeever-staged://stage-10"])).toEqual(new Set());
+    expect(stagedIdsReferencedByUnsavedContent(rewrites, ["ponder-staged://stage-1"])).toEqual(new Set(["stage-1"]));
+    expect(stagedIdsReferencedByUnsavedContent(rewrites, ["ponder-staged://stage-10"])).toEqual(new Set());
   });
 
   test("retains a temporary id mapping when a later sync phase fails", () => {
@@ -366,14 +366,14 @@ describe("desktop memo sync base", () => {
       current: { revision: 10, contentHash: "hash-a" },
       expected: { expectedRevision: 9, expectedContentHash: "hash-before" },
       payload: { title: "", tags: [], contentMarkdown: "一期验收通过。", contentJson: { type: "doc" } },
-      remote: { title: "无标题笔记", tags: [], contentMarkdown: "一期验收通过。", contentHash: "hash-a", contentJson: { type: "doc" } },
+      remote: { title: "Untitled note", tags: [], contentMarkdown: "一期验收通过。", contentHash: "hash-a", contentJson: { type: "doc" } },
       localRevisions: [],
     })).toBe("ack");
   });
 
   test("rebases a later local draft when a sidecar snapshot already contains the cloud body", () => {
     const remote = {
-      title: "无标题笔记",
+      title: "Untitled note",
       tags: [],
       contentMarkdown: "一期验收通过。",
       contentHash: "hash-a",
@@ -407,7 +407,7 @@ describe("desktop memo sync base", () => {
 
   test("does not treat an older local snapshot or a remote-cached revision as proof", () => {
     const remote = {
-      title: "无标题笔记",
+      title: "Untitled note",
       tags: [],
       contentMarkdown: "别人改过的正文",
       contentHash: "hash-other",
@@ -591,7 +591,7 @@ const runWithDesktopSidecar = async (options, run) => {
   };
   globalThis.window = {
     dispatchEvent: (event) => { state.events.push(event.type); return true; },
-    edgeeverDesktop: {
+    ponderDesktop: {
       isAvailable: true,
       listStagedResources: async () => staged,
       listStagedResourceAliases: async () => aliases,
@@ -686,7 +686,7 @@ describe("desktop outbox replay", () => {
       expect(state.acks.find((ack) => ack.id === 5).remoteMemo).toEqual(merged);
       expect(state.acks.find((ack) => ack.id === 9).remoteTemplate).toEqual({ id: "tpl-cloud" });
       expect(state.applied.filter((change) => change.entityType === "notebook").map((change) => change.entityId)).toEqual(["nb-1", "nb-3"]);
-      expect(state.events).toContain("edgeever:memo-sync-acknowledged");
+      expect(state.events).toContain("ponder:memo-sync-acknowledged");
       expect(state.calls.some((call) => call.method === "sync.cursor.set")).toBe(false);
     });
   });
@@ -782,7 +782,7 @@ describe("desktop memo update replay", () => {
     const updates = [];
     const saved = remote({ revision: 4, contentHash: "cloud-4", contentMarkdown: "Local draft" });
     await runWithDesktopSidecar({
-      queue: [updateItem({ expectedRevision: 3, expectedContentHash: "cloud-3", contentMarkdown: "![a](edgeever-resource://resource/res-1)" })],
+      queue: [updateItem({ expectedRevision: 3, expectedContentHash: "cloud-3", contentMarkdown: "![a](ponder-resource://resource/res-1)" })],
       api: { createMemoEditSession: editSession(3, "cloud-3"), updateMemo: async (memoId, input) => { updates.push([memoId, input]); return { memo: saved }; }, ...quietPull },
     }, async (state) => {
       const result = await syncDesktopData();
@@ -981,7 +981,7 @@ describe("desktop sync failure recovery", () => {
         const result = await syncDesktopData();
         expect(result.failed).toBe(1);
         expect(result.memoIdMappings.get("memo_local_1")).toBe("memo-cloud-1");
-        expect(state.events).toContain("edgeever:memo-id-remapped");
+        expect(state.events).toContain("ponder:memo-id-remapped");
         expect((await getDesktopSyncIssues()).globalIssue).toMatchObject({ phase: "remap_created_resources", errorCode: "network_error" });
       });
     } finally {
@@ -992,7 +992,7 @@ describe("desktop sync failure recovery", () => {
 
 describe("desktop staged resource upload", () => {
   const stagedImage = { id: "stage-1", memoId: "memo-1", name: "shot.png", type: "image/png", size: 3 };
-  const stagedUrl = "edgeever-staged://stage-1";
+  const stagedUrl = "ponder-staged://stage-1";
   const uploadedUrl = "/api/v1/resources/res-1/blob";
 
   test("uploads a saved staged image, rewrites the queued draft and removes the staged copy", async () => {
@@ -1109,11 +1109,11 @@ describe("desktop sync issue actions", () => {
       await discardDesktopSyncIssue(item);
       state.calls.length = 0;
       await runRecover(state, item);
-      expect(state.events.filter((event) => event === "edgeever:sync-queue-changed")).toHaveLength(3);
+      expect(state.events.filter((event) => event === "ponder:sync-queue-changed")).toHaveLength(3);
     });
 
     async function runRecover(state, outboxItem) {
-      window.edgeeverDesktop.sidecarRequest = async (method, params) => {
+      window.ponderDesktop.sidecarRequest = async (method, params) => {
         state.calls.push({ method, params });
         return { memo: { id: "memo-recovered" } };
       };
@@ -1163,14 +1163,14 @@ describe("desktop sync issue actions", () => {
       expect(await discardDesktopMemoConflict("memo-1")).toEqual(cloud);
       expect(state.acks).toEqual([{ id: 1, version: 2, remoteMemo: cloud }]);
       expect(state.calls.filter((call) => call.method === "sync.outbox.discard").map((call) => call.params)).toEqual([{ id: 2 }]);
-      expect(state.events).toEqual(["edgeever:sync-queue-changed"]);
+      expect(state.events).toEqual(["ponder:sync-queue-changed"]);
     });
   });
 });
 
 describe("desktop staged resource cleanup safeguards", () => {
   const stagedImage = { id: "stage-1", memoId: "memo-1", name: "shot.png", type: "image/png", size: 3 };
-  const stagedUrl = "edgeever-staged://stage-1";
+  const stagedUrl = "ponder-staged://stage-1";
   const uploadedUrl = "/api/v1/resources/res-1/blob";
   const savedUpdate = { id: 1, version: 1, kind: "memo.update", entityId: "memo-1", payload: { memoId: "memo-1", expectedRevision: 2, expectedContentHash: "cloud-2", title: "", tags: [], contentMarkdown: `![shot](${stagedUrl})` } };
   const uploadApi = (overrides = {}) => ({

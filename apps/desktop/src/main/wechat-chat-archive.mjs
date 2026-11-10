@@ -338,8 +338,8 @@ const parseLink = (line) => {
 
 const mediaMarkdown = (item) => {
   const label = escapeMarkdownLabel(item.filename);
-  const url = `edgeever-wechat-media://${item.id}`;
-  return isImage(item.filename) ? `![${label}](${url})` : `[附件：${label}](${url})`;
+  const url = `ponder-wechat-media://${item.id}`;
+  return isImage(item.filename) ? `![${label}](${url})` : `[Attachment: ${label}](${url})`;
 };
 
 const QUOTE_SEPARATOR = /^[-—─\s]{5,}$/;
@@ -352,7 +352,7 @@ const renderBody = (lines, mediaByName) => {
     const line = lines[index];
     const trimmed = line.trim();
 
-    // 识别微信引用回复：以「开头，以」结尾，紧随其后是分隔线
+    // A WeChat quoted reply opens and closes with corner brackets, followed by a divider
     if (trimmed.startsWith("「")) {
       let quoteEndIndex = -1;
       for (let cursor = index; cursor < lines.length; cursor += 1) {
@@ -477,9 +477,9 @@ const archiveTitle = (archiveName, messages) => {
   const base = posix.basename(archiveName || "").replace(/\.(?:zip|txt)$/i, "").trim();
   if (!base || base === "聊天记录") {
     const timestamp = titleTimestamp(messages.find((message) => message.time)?.time);
-    if (timestamp) return `聊天记录 · ${timestamp}`;
+    if (timestamp) return `Chat history · ${timestamp}`;
   }
-  return base || "聊天记录";
+  return base || "Chat history";
 };
 
 /**

@@ -1,13 +1,13 @@
-import { createEdgeEverClient } from "@edgeever/client";
-import { resolveInstanceUrlInput, type AuthUser } from "@edgeever/shared";
+import { createPonderClient } from "@ponder/client";
+import { resolveInstanceUrlInput, type AuthUser } from "@ponder/shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { fetch as expoFetch } from "expo/fetch";
 import * as SecureStore from "expo-secure-store";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { MISSING_MOBILE_SESSION_MESSAGE } from "./login-error";
 
-const SESSION_KEY = "edgeever.mobile.session";
-const DEVICE_ID_KEY = "edgeever.mobile.device-id";
+const SESSION_KEY = "ponder.mobile.session";
+const DEVICE_ID_KEY = "ponder.mobile.device-id";
 
 const getOrCreateDeviceId = async () => {
   const existing = await SecureStore.getItemAsync(DEVICE_ID_KEY);
@@ -28,7 +28,7 @@ export type MobileSession = {
 type SessionContextValue = {
   isLoading: boolean;
   session: MobileSession | null;
-  client: ReturnType<typeof createEdgeEverClient> | null;
+  client: ReturnType<typeof createPonderClient> | null;
   signIn: (input: { baseUrl: string; username: string; password: string; locale?: string }) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -67,7 +67,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       return null;
     }
 
-    return createEdgeEverClient({
+    return createPonderClient({
       baseUrl: session.baseUrl,
       token: session.token,
       fetch: expoFetch as typeof fetch,
@@ -83,7 +83,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const signIn = useCallback(async (input: { baseUrl: string; username: string; password: string; locale?: string }) => {
     const baseUrl = normalizeInstanceUrl(resolveInstanceUrlInput(input.baseUrl));
     const deviceId = await getOrCreateDeviceId();
-    const loginClient = createEdgeEverClient({ baseUrl, fetch: expoFetch as typeof fetch });
+    const loginClient = createPonderClient({ baseUrl, fetch: expoFetch as typeof fetch });
     const authSession = await loginClient.login({
       username: input.username,
       password: input.password,

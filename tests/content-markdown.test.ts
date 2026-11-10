@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
-import { docToMarkdown, markdownToDoc } from "@edgeever/shared";
-import { NEW_IMAGE_WIDTH_PERCENT } from "@edgeever/shared/image-display";
+import { docToMarkdown, markdownToDoc } from "@ponder/shared";
+import { NEW_IMAGE_WIDTH_PERCENT } from "@ponder/shared/image-display";
 
 describe("shared Markdown conversion", () => {
   test("parses adjacent headings, lists, quotes, and inline formatting into TipTap nodes", () => {
@@ -8,7 +8,7 @@ describe("shared Markdown conversion", () => {
 * **公司中文全称**：郑州市冰硅网络科技有限公司
 * **公司英文名称**：Example Co., Ltd.
 ## 2. 联系方式 (Domain & Contact)
-* **项目官方网站**：[EdgeEver](https://www.edgeever.org)
+* **项目官方网站**：[Ponder](https://appkeep.io)
 > [!WARNING]
 > 请勿绑定其他账号。`);
 
@@ -32,8 +32,8 @@ describe("shared Markdown conversion", () => {
     const linkText = secondList.content?.[0]?.content?.[0]?.content?.[2];
     expect(linkText).toMatchObject({
       type: "text",
-      text: "EdgeEver",
-      marks: [{ type: "link", attrs: { href: "https://www.edgeever.org" } }],
+      text: "Ponder",
+      marks: [{ type: "link", attrs: { href: "https://appkeep.io" } }],
     });
   });
 
@@ -80,7 +80,7 @@ describe("shared Markdown conversion", () => {
 const answer = 42;
 \`\`\`
 
-![示例](/api/v1/resources/res_1/blob "标题")`;
+![示例](/api/v1/resources/res_1/blob "Title")`;
 
     const doc = markdownToDoc(markdown);
     expect(doc.content.map((node) => node.type)).toEqual(["codeBlock", "image"]);
@@ -91,7 +91,7 @@ const answer = 42;
   test("groups consecutive images into one gallery and keeps a single image alone", () => {
     const markdown = "正文\n\n![一](/a.png)\n\n![二](/b.png)\n\n![三](/c.png)\n\n来源";
     const doc = markdownToDoc(markdown);
-    expect(doc.content.map((node) => node.type)).toEqual(["paragraph", "edgeeverImageGallery", "paragraph"]);
+    expect(doc.content.map((node) => node.type)).toEqual(["paragraph", "ponderImageGallery", "paragraph"]);
     expect(doc.content[1]?.attrs).toEqual({ layout: "auto" });
     expect(doc.content[1]?.content?.map((node) => node.attrs?.src)).toEqual(["/a.png", "/b.png", "/c.png"]);
     expect(docToMarkdown(doc)).toBe(markdown);

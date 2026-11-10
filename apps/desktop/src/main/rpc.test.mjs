@@ -25,6 +25,6 @@ test("sidecar RPC client rejects an incompatible protocol before requests start"
   child.stdout.write(`${JSON.stringify({ event: "ready", protocolVersion: SIDECAR_PROTOCOL_VERSION + 1 })}\n`);
   await assert.rejects(
     client.waitUntilReady(100),
-    /Unsupported EdgeEver sidecar protocol/,
+    /Unsupported Ponder sidecar protocol/,
   );
 });

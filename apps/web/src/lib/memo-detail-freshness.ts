@@ -1,4 +1,4 @@
-import type { MemoDetail } from "@edgeever/shared";
+import type { MemoDetail } from "@ponder/shared";
 import type { SyncQueueStatus } from "@/lib/local-db";
 
 export type MemoDetailFreshnessFields = Pick<MemoDetail, "revision" | "updatedAt">;

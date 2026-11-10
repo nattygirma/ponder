@@ -33,7 +33,7 @@ describe("web sync conflict recovery", () => {
   test("confirmed note deletions clear only their older local conflicts", async () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const old = "2026-01-01T00:00:00.000Z";
     for (const memoId of ["memo-single", "memo-batch", "memo-trash", "memo-unrelated"]) {
       await localDb.syncQueue.put({
@@ -65,7 +65,7 @@ describe("web sync conflict recovery", () => {
   test("failed note deletion preserves the local conflict", async () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     await localDb.syncQueue.put({
       id: getMemoUpdateQueueId("memo-failed"), kind: "memo.update", scope, memoId: "memo-failed",
       status: "conflict", payload: { memoId: "memo-failed" }, attemptCount: 1,
@@ -87,7 +87,7 @@ describe("web sync conflict recovery", () => {
   test("preserves a newer draft written while a memo update is in flight", async () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const createdMemo = await createLocalMemo(scope, { notebookId: "inbox" });
     const remoteMemo = {
       ...createdMemo,
@@ -156,7 +156,7 @@ describe("web sync conflict recovery", () => {
   test("preserves a draft written while a new memo create request is in flight", async () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const localMemo = await createLocalMemo(scope, { notebookId: "inbox" });
     await queueMemoCreate(scope, {
       temporaryId: localMemo.id,
@@ -220,7 +220,7 @@ describe("web sync conflict recovery", () => {
   test("rebases an edit queued before a new memo receives its remote id", async () => {
     const previousOnline = globalThis.navigator?.onLine;
     if (globalThis.navigator) Object.defineProperty(globalThis.navigator, "onLine", { configurable: true, value: true });
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const localMemo = await createLocalMemo(scope, { notebookId: "inbox" });
     await queueMemoCreate(scope, {
       temporaryId: localMemo.id,
@@ -291,7 +291,7 @@ describe("web sync conflict recovery", () => {
   });
 
   test("restores the authoritative remote memo and removes the conflict", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const memo = await createLocalMemo(scope, { notebookId: "inbox", title: "Local draft" });
     const remote = { ...memo, title: "Remote version", revision: 4 };
     const originalGetMemo = api.getMemo;
@@ -318,7 +318,7 @@ describe("web sync conflict recovery", () => {
   });
 
   test("explicitly discards an old conflict when its cloud note is gone", async () => {
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const memo = await createLocalMemo(scope, { notebookId: "inbox", title: "Deleted cloud note" });
     await localDb.syncQueue.put({
       id: getMemoUpdateQueueId(memo.id), kind: "memo.update", scope, memoId: memo.id,
@@ -349,7 +349,7 @@ describe("web sync conflict recovery", () => {
         delete: async (key) => entries.delete(key),
       }),
     };
-    const scope = createLocalDataScope("https://demo.edgeever.org", "user-1");
+    const scope = createLocalDataScope("https://appkeep.io", "user-1");
     const memo = await createLocalMemo(scope, { notebookId: "inbox", title: "With file" });
     const staged = await createLocalResource(scope, memo.id, new File(["offline"], "offline.txt", { type: "text/plain" }));
     const localMemo = await getLocalMemo(scope, memo.id);
@@ -399,7 +399,7 @@ describe("web sync conflict recovery", () => {
 
 test("replays offline appearance edits and explicit resets without dropping fields", async () => {
   const { createLocalNotebook, updateLocalNotebook, getLocalNotebook } = await import("./local-mirror.ts");
-  const scope = createLocalDataScope("https://demo.edgeever.org", "appearance-user");
+  const scope = createLocalDataScope("https://appkeep.io", "appearance-user");
   const notebook = { ...await createLocalNotebook(scope, { name: "Heimnetz" }), id: "nb_appearance" };
   await localDb.notebooks.put({ ...notebook, scope });
   const original = api.updateNotebook;

@@ -4,7 +4,7 @@ import { getAttachmentFilenameFromLabel, resourceLinkToMarkdown } from "./resour
 import { normalizeAttachmentByteSize } from "./attachment-metadata";
 import { decodeString } from "micromark-util-decode-string";
 
-export const PDF_ATTACHMENT_NODE_TYPE = "edgeeverPdfAttachment" as const;
+export const PDF_ATTACHMENT_NODE_TYPE = "ponderPdfAttachment" as const;
 export const PDF_DISPLAY_MODES = ["compact", "inline"] as const;
 export type PdfDisplayMode = (typeof PDF_DISPLAY_MODES)[number];
 
@@ -65,15 +65,15 @@ export const PdfAttachment = Node.create({
   },
 
   parseHTML() {
-    return [{ tag: 'span[data-type="edgeever-pdf-attachment"]' }];
+    return [{ tag: 'span[data-type="ponder-pdf-attachment"]' }];
   },
 
   renderHTML({ HTMLAttributes }) {
     return [
       "span",
       mergeAttributes(HTMLAttributes, {
-        "data-type": "edgeever-pdf-attachment",
-        class: "edgeever-pdf-attachment",
+        "data-type": "ponder-pdf-attachment",
+        class: "ponder-pdf-attachment",
       }),
     ];
   },

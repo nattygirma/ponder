@@ -19,7 +19,7 @@ export const AttachmentTranscriptInline = ({
   return (
     <span
       className="mt-3 flex w-full flex-col gap-3 rounded-xl border border-slate-200 bg-card p-4 shadow-sm"
-      data-edgeever-attachment-transcript
+      data-ponder-attachment-transcript
       contentEditable={false}
     >
       <span className="flex items-center justify-between gap-3">

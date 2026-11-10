@@ -116,7 +116,7 @@ export const matchBlockMathText = (text: string): { latex: string } | null => {
   return { latex };
 };
 
-export const edgeEverInlineMathMarkdownTokenizer = {
+export const ponderInlineMathMarkdownTokenizer = {
   name: INLINE_MATH_NODE_TYPE,
   level: "inline" as const,
   start: (source: string) => source.indexOf("$"),
@@ -150,7 +150,7 @@ export const edgeEverInlineMathMarkdownTokenizer = {
   },
 };
 
-export const edgeEverBlockMathMarkdownTokenizer = {
+export const ponderBlockMathMarkdownTokenizer = {
   name: BLOCK_MATH_NODE_TYPE,
   level: "block" as const,
   start: (source: string) => openBlockSource(source).indexOf("$$"),
@@ -207,7 +207,7 @@ const MarkdownInlineMath = Node.create({
   }),
 
   renderMarkdown: (node) => `$${node.attrs?.latex || ""}$`,
-  markdownTokenizer: edgeEverInlineMathMarkdownTokenizer,
+  markdownTokenizer: ponderInlineMathMarkdownTokenizer,
 });
 
 const MarkdownBlockMath = Node.create({
@@ -239,11 +239,11 @@ const MarkdownBlockMath = Node.create({
   }),
 
   renderMarkdown: (node) => ["$$", node.attrs?.latex || "", "$$"].join("\n"),
-  markdownTokenizer: edgeEverBlockMathMarkdownTokenizer,
+  markdownTokenizer: ponderBlockMathMarkdownTokenizer,
 });
 
 /** Math nodes for Markdown parsing/serialization without the browser-only KaTeX renderer. */
-export const createEdgeEverMarkdownMathematics = () => [
+export const createPonderMarkdownMathematics = () => [
   MarkdownBlockMath.configure(),
   MarkdownInlineMath.configure(),
 ];

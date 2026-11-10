@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import type { MemoDetail } from "@edgeever/shared";
+import type { MemoDetail } from "@ponder/shared";
 import { createOptimisticMemo, memoMatchesListQuery, memoQueriesShareScope } from "./workspace-memo-cache";
 
 const memo: MemoDetail = {

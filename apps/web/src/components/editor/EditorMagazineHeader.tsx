@@ -14,7 +14,7 @@ const cleanHeadingText = (raw: string) =>
     .trim();
 
 const deriveShortAndSubTitle = (raw: string, index: number) => {
-  const cleaned = cleanHeadingText(raw) || raw.trim() || `章节 ${index + 1}`;
+  const cleaned = cleanHeadingText(raw) || raw.trim() || `Section ${index + 1}`;
   const parts = cleaned.split(/[：:，,——·\s]+/).filter(Boolean);
   if (parts.length >= 2 && parts[0].length <= 8) {
     return {
@@ -37,7 +37,7 @@ const deriveShortAndSubTitle = (raw: string, index: number) => {
 const splitCoverTitle = (rawTitle: string) => {
   const trimmed = rawTitle.trim();
   if (!trimmed) {
-    return { primary: "深度实测与结构化指南", highlight: "" };
+    return { primary: "In-depth testing and a structured guide", highlight: "" };
   }
   const colonMatch = trimmed.match(/^([^：:，,——]+)[：:，,——]\s*(.+)$/);
   if (colonMatch) {
@@ -122,12 +122,12 @@ export const EditorMagazineHeader = ({
   const { primary, highlight } = splitCoverTitle(title || "");
   const topTag = tags.length > 0
     ? tags.slice(0, 2).map((tag) => tag.replace(/^#/, "")).join(" · ").toUpperCase()
-    : "实测 · 深度梳理";
+    : "Tested · In depth";
   const dateLabel = formatYearMonth(updatedAt);
   const subtitleText = leadSummary
     || (sections.length > 0
-      ? `${sections.length} 个核心章节，从全局脉络到关键细节完整拆解`
-      : "结构化核心脉络与实战要点梳理");
+      ? `${sections.length} key sections, from the big picture to the important details`
+      : "A structured walkthrough of the key ideas and practical points");
 
   const scrollToSection = (index: number) => {
     if (!editor || editor.isDestroyed) return;
@@ -138,7 +138,7 @@ export const EditorMagazineHeader = ({
 
   return (
     <div
-      data-edgeever-magazine-header="true"
+      data-ponder-magazine-header="true"
       className="mb-6 select-none"
       style={{
         fontFamily: "-apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif",
@@ -254,7 +254,7 @@ export const EditorMagazineHeader = ({
               letterSpacing: "0.5px",
             }}
           >
-            {notebookName?.trim() || "EdgeEver 专栏"}
+            {notebookName?.trim() || "Ponder Column"}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
             {sections.length > 0 ? (
@@ -269,7 +269,7 @@ export const EditorMagazineHeader = ({
                   fontWeight: 600,
                 }}
               >
-                {sections.length} 个章节
+                {sections.length} sections
               </span>
             ) : null}
             {tags.slice(0, 2).map((tag) => (
@@ -312,7 +312,7 @@ export const EditorMagazineHeader = ({
                 fontWeight: 600,
               }}
             >
-              {sections.length} PARTS · 章节导览
+              {sections.length} PARTS · Contents
             </span>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>

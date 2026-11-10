@@ -5,7 +5,7 @@ import {
   PDF_ATTACHMENT_NODE_TYPE,
   getResourceIdFromUrl,
   resourceUrlsReferToSameAttachment,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 const ATTACHMENT_NODE_TYPES = new Set<string>([FILE_ATTACHMENT_NODE_TYPE, PDF_ATTACHMENT_NODE_TYPE]);
 
@@ -136,7 +136,7 @@ export const insertTranscriptAfterAttachment = (
   if (!paragraphs.length) return false;
 
   let range = findAttachmentRange(editor, target);
-  const wrapper = anchorElement?.closest(".edgeever-file-attachment-node");
+  const wrapper = anchorElement?.closest(".ponder-file-attachment-node");
   if (wrapper && editor.view.dom.contains(wrapper)) {
     try {
       const pos = editor.view.posAtDOM(wrapper, 0);

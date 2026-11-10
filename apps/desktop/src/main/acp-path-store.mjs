@@ -7,7 +7,7 @@ export const validateTrustedAcpPath = async (filename, { excludedRoot } = {}) =>
     const root = await realpath(excludedRoot);
     const child = path.relative(root, selected);
     if (!child || (child !== ".." && !child.startsWith(`..${path.sep}`) && !path.isAbsolute(child))) {
-      throw new Error("Choose an ACP executable outside EdgeEver's client data directory");
+      throw new Error("Choose an ACP executable outside Ponder's client data directory");
     }
   }
   const info = await stat(selected);

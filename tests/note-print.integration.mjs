@@ -14,7 +14,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const desktopRequire = createRequire(join(root, "apps/desktop/package.json"));
 
 if (!process.versions.electron) {
-  const directory = await mkdtemp(join(tmpdir(), "edgeever-print-test-"));
+  const directory = await mkdtemp(join(tmpdir(), "ponder-print-test-"));
   try {
     const env = { ...process.env };
     delete env.ELECTRON_RUN_AS_NODE;
@@ -43,7 +43,7 @@ if (!process.versions.electron) {
       await task.destroy();
     }
   } finally {
-    if (process.env.EDGE_EVER_KEEP_PRINT_TEST_OUTPUT) console.log(`Artifacts: ${directory}`);
+    if (process.env.PONDER_KEEP_PRINT_TEST_OUTPUT) console.log(`Artifacts: ${directory}`);
     else await rm(directory, { recursive: true, force: true });
   }
 } else {
@@ -86,7 +86,7 @@ if (!process.versions.electron) {
           else preview.webContents.once("did-finish-load", loaded);
         });
         const payload = {
-          type: "edgeever:note-print", token: "regression", title: "PDF regression", notebook: "", tags: [], updatedAt: "", language: "en",
+          type: "ponder:note-print", token: "regression", title: "PDF regression", notebook: "", tags: [], updatedAt: "", language: "en",
           html: `${html}<p>END-OF-NOTE</p>`,
           labels: { close: "Close", error: "Error", hint: "", preparing: "Preparing", print: "Save", ready: "Ready" },
           appearance: { palette: "native", cssVariables: {}, customCss: "", fontFamily: null, fontId: null, mermaidTheme: "zinc-light" },
@@ -99,7 +99,7 @@ if (!process.versions.electron) {
               if (Date.now() > deadline) return reject(new Error('Preview timeout: ' + document.querySelector('#print-status').textContent));
               return setTimeout(check, 50);
             }
-            const empty = [...document.querySelectorAll('.edgeever-print-content p:empty')];
+            const empty = [...document.querySelectorAll('.ponder-print-content p:empty')];
             resolve({ pages: document.querySelectorAll('.pagedjs_page').length,
               blankHeights: empty.map(p => p.getBoundingClientRect().height),
               lineHeights: empty.map(p => parseFloat(getComputedStyle(p).lineHeight)) });

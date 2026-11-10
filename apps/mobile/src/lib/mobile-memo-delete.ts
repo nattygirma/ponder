@@ -1,9 +1,9 @@
-import type { createEdgeEverClient } from "@edgeever/client";
+import type { createPonderClient } from "@ponder/client";
 import { clearMobileMemoDraft } from "./mobile-drafts";
 import { deleteLocalMemo, resolveLocalMemo, softDeleteLocalMemo, upsertLocalMemo } from "./local-mirror";
 import { cancelMobileMemoQueueItems, listMobileSyncQueueItems } from "./sync-queue";
 
-type MobileClient = ReturnType<typeof createEdgeEverClient>;
+type MobileClient = ReturnType<typeof createPonderClient>;
 
 const isLocalTemporaryId = (memoId: string) => memoId.startsWith("local:");
 
@@ -65,7 +65,7 @@ export const deleteMobileMemos = async ({
   const uniqueRemoteIds = Array.from(new Set(remoteIds));
   if (uniqueRemoteIds.length > 0) {
     if (!client) {
-      throw new Error("当前无法连接实例，请稍后重试");
+      throw new Error("Cannot reach the instance right now. Try again later.");
     }
     const originalMemos = new Map(
       (await Promise.all(uniqueRemoteIds.map(async (memoId) => [memoId, await resolveLocalMemo(dataScope, memoId)] as const)))

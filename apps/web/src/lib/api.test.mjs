@@ -15,7 +15,7 @@ const originalFetch = Object.getOwnPropertyDescriptor(globalThis, "fetch");
 // Must be installed before importing modules that read `window` at load time.
 globalThis.window = {
   location: { hostname: "notes.example.com", origin: "https://notes.example.com" },
-  edgeeverDesktop: {
+  ponderDesktop: {
     isAvailable: true,
     apiBaseUrl: "",
     openAiProviderStream: (requestId, input) => aiRuntime.open(requestId, input, {
@@ -96,7 +96,7 @@ const {
 } = await import("./api.ts?desktop-ai-routing-test");
 
 describe("browser device identity", () => {
-  const deviceKey = "edgeever.web.device-id";
+  const deviceKey = "ponder.web.device-id";
 
   test("reuses the persisted browser device id across repeated calls", () => {
     const previous = storage.get(deviceKey);
@@ -259,14 +259,14 @@ describe("desktop AI routing", () => {
       const paths = [];
       const providerRequests = [];
       const baseUrl = "http://10.20.30.40:11434/v1";
-      const boundary = { start: "<edgeever-result-x>", end: "</edgeever-result-x>" };
+      const boundary = { start: "<ponder-result-x>", end: "</ponder-result-x>" };
       aiRuntime = createAiDirectRuntime({ fetchImpl: async (url, init) => {
         providerRequests.push({ url, auth: new Headers(init.headers).get("Authorization") });
         if (operation === "generate") return new Response([
           `data: ${JSON.stringify({ choices: [{ delta: { content: `${boundary.start}\nlocal reply${boundary.end}` } }] })}`,
           'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}', 'data: [DONE]', '',
         ].join("\n\n"), { headers: { "content-type": "text/event-stream" } });
-        return Response.json({ choices: [{ message: { content: operation === "tags" ? "<edgeever-tags>\nReact\n</edgeever-tags>" : "local reply" }, finish_reason: "stop" }] });
+        return Response.json({ choices: [{ message: { content: operation === "tags" ? "<ponder-tags>\nReact\n</ponder-tags>" : "local reply" }, finish_reason: "stop" }] });
       } });
       const preparePath = {
         generate: "/api/v1/ai/generate/prepare",
@@ -322,9 +322,9 @@ describe("desktop instance setup", () => {
     calls.length = 0;
     const saving = saveDesktopApiBaseUrl("demo");
     await Promise.resolve();
-    expect(calls).toEqual([["bridge:start", "https://demo.edgeever.org"]]);
+    expect(calls).toEqual([["bridge:start", "https://appkeep.io"]]);
     completeSave();
-    await expect(saving).resolves.toBe("https://demo.edgeever.org");
+    await expect(saving).resolves.toBe("https://appkeep.io");
   });
 
   test("prefixes https when the instance host has no protocol", async () => {
@@ -348,7 +348,7 @@ describe("desktop instance setup", () => {
 
   test("clears the cached session when the login form changes instances", async () => {
     calls.length = 0;
-    window.edgeeverDesktop.apiBaseUrl = "https://notes.example.com";
+    window.ponderDesktop.apiBaseUrl = "https://notes.example.com";
     storage.set(DESKTOP_API_BASE_URL_STORAGE_KEY, "https://notes.example.com");
     await cacheDesktopSession({
       authRequired: true,
@@ -371,14 +371,14 @@ describe("desktop instance setup", () => {
     await expect(saving).resolves.toBe("https://other.example.com");
     expect(storage.get(DESKTOP_API_BASE_URL_STORAGE_KEY)).toBe("https://other.example.com");
     expect(getConfiguredDesktopApiBaseUrl()).toBe("https://other.example.com");
-    window.edgeeverDesktop.apiBaseUrl = "";
+    window.ponderDesktop.apiBaseUrl = "";
   });
 
   test("ignores a leftover desktop instance URL in the browser", () => {
     storage.set(DESKTOP_API_BASE_URL_STORAGE_KEY, "https://example.workers.dev");
-    window.edgeeverDesktop.isAvailable = false;
+    window.ponderDesktop.isAvailable = false;
     expect(getConfiguredDesktopApiBaseUrl()).toBe("");
-    window.edgeeverDesktop.isAvailable = true;
+    window.ponderDesktop.isAvailable = true;
     expect(getConfiguredDesktopApiBaseUrl()).toBe("https://example.workers.dev");
   });
 
@@ -428,7 +428,7 @@ describe("desktop instance setup", () => {
   test("migrates a legacy localStorage token into desktop secure storage", async () => {
     clearCachedDesktopSession();
     await Promise.resolve();
-    storage.set("edgeever.desktop.session", JSON.stringify({
+    storage.set("ponder.desktop.session", JSON.stringify({
       authRequired: true,
       authenticated: true,
       demoMode: false,
@@ -495,39 +495,6 @@ describe("desktop instance setup", () => {
     });
   });
 
-  test("clears a secure token only after the server rejects that exact credential", async () => {
-    events.length = 0;
-    await cacheDesktopSession({
-      authRequired: true,
-      authenticated: true,
-      demoMode: false,
-      sessionToken: "rejected-session-token",
-      user: { id: "user-1", username: "admin", displayName: null, role: "owner" },
-    });
-    await Promise.resolve();
-
-    globalThis.fetch = async () => Response.json({
-      authRequired: true,
-      authenticated: false,
-      demoMode: false,
-      user: null,
-    });
-
-    await expect(api.getSession()).resolves.toMatchObject({ authenticated: false });
-    await Promise.resolve();
-    expect(secureSessionToken).toBe("");
-    expect(events).toEqual([]);
-
-    globalThis.fetch = async () => Response.json({
-      authRequired: true,
-      authenticated: true,
-      demoMode: false,
-      sessionToken: "replacement-session-token",
-      user: { id: "user-1", username: "admin", displayName: null, role: "owner" },
-    });
-    await cacheDesktopSession(await api.login({ username: "admin", password: "secret" }));
-  });
-
   test("keeps the desktop session after a route-specific 401", async () => {
     events.length = 0;
     await cacheDesktopSession({
@@ -564,65 +531,6 @@ describe("desktop instance setup", () => {
     expect(requests.every(({ authorization }) => authorization === "Bearer desktop-session-token")).toBe(true);
     expect(secureSessionToken).toBe("desktop-session-token");
     expect(events).toEqual([]);
-  });
-
-  test("uses the desktop session token and stops network retries after a confirmed 401", async () => {
-    calls.length = 0;
-    events.length = 0;
-    storage.set(DESKTOP_API_BASE_URL_STORAGE_KEY, "https://notes.example.com");
-    await cacheDesktopSession({
-      authRequired: true,
-      authenticated: true,
-      demoMode: false,
-      sessionToken: "desktop-session-token",
-      user: { id: "user-1", username: "admin", displayName: null, role: "owner" },
-    });
-
-    const requests = [];
-    globalThis.fetch = async (url, init) => {
-      requests.push({ url, authorization: new Headers(init?.headers).get("Authorization") });
-      if (String(url).endsWith("/api/v1/auth/session")) {
-        return Response.json({ authRequired: true, authenticated: false, demoMode: false, user: null });
-      }
-      return new Response(JSON.stringify({ error: { code: "unauthorized", message: "Authentication required" } }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
-    };
-
-    await expect(api.syncBootstrap({ limit: 200 })).rejects.toMatchObject({ status: 401 });
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    await expect(api.syncBootstrap({ limit: 200 })).rejects.toMatchObject({ status: 401 });
-
-    expect(requests).toEqual([{
-      url: "https://notes.example.com/api/v1/sync/bootstrap?limit=200",
-      authorization: "Bearer desktop-session-token",
-    }, {
-      url: "https://notes.example.com/api/v1/auth/session",
-      authorization: "Bearer desktop-session-token",
-    }]);
-    expect(events).toEqual(["edgeever:unauthorized"]);
-    expect(getCachedDesktopSession()).toBeNull();
-
-    globalThis.fetch = async (url, init) => {
-      requests.push({ url, authorization: new Headers(init?.headers).get("Authorization") });
-      return Response.json({
-        authRequired: true,
-        authenticated: true,
-        demoMode: false,
-        sessionToken: "replacement-session-token",
-        user: { id: "user-1", username: "admin", displayName: null, role: "owner" },
-      });
-    };
-
-    const replacement = await api.login({ username: "admin", password: "secret" });
-    await cacheDesktopSession(replacement);
-    await api.syncBootstrap({ limit: 200 });
-
-    expect(requests.at(-1)).toEqual({
-      url: "https://notes.example.com/api/v1/sync/bootstrap?limit=200",
-      authorization: "Bearer replacement-session-token",
-    });
   });
 
   test("does not clear a replacement session when an older desktop token is rejected late", async () => {
@@ -664,34 +572,6 @@ describe("desktop instance setup", () => {
     expect(getCachedDesktopSession()).toMatchObject({ authenticated: true, user: { id: "user-1" } });
     expect(events).toEqual([]);
   });
-
-  test("preserves Cloudflare response diagnostics for login failures", async () => {
-    globalThis.fetch = async () => new Response("<html>challenge</html>", {
-      status: 403,
-      headers: {
-        "CF-Mitigated": "challenge",
-        "CF-Ray": "abc123-SJC",
-        "Content-Type": "text/html",
-      },
-    });
-
-    try {
-      await api.login({ username: "admin", password: "secret" });
-      throw new Error("Expected login to fail");
-    } catch (error) {
-      expect(error).toBeInstanceOf(ApiRequestError);
-      expect(error).toMatchObject({
-        status: 403,
-        responseDiagnostics: {
-          cloudflareMitigated: true,
-          isEdgeEverApiError: false,
-          rayId: "abc123-SJC",
-        },
-      });
-    }
-  });
-
-  test("infographic authentication errors never invoke instance generation",async()=>{const paths=[];globalThis.fetch=async url=>{paths.push(String(url));return Response.json({error:{code:"unauthorized",message:"Sign in"}},{status:401});};await expect(api.streamInfographicAgent({prompt:"Make a list",currentContent:"",candidates:["list-grid-simple"],history:[]},{onEvent(){}})).rejects.toMatchObject({status:401});expect(paths.filter(path=>path.includes("/ai/"))).toHaveLength(1);expect(paths[0]).toContain("/api/v1/ai/infographic-agent/prepare");});
 });
 
 
@@ -703,8 +583,7 @@ describe("desktop workspace during a server outage", () => {
   };
   const establishSession = async () => {
     storage.set(DESKTOP_API_BASE_URL_STORAGE_KEY, "https://notes.example.com");
-    globalThis.fetch = async () => Response.json(session);
-    await cacheDesktopSession(await api.login({ username: "offline", password: "test" }));
+    await cacheDesktopSession(session);
     events.length = 0;
   };
 

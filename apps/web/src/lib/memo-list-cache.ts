@@ -1,5 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { DEFAULT_MEMO_TITLE, type MemoSummary } from "@edgeever/shared";
+import { DEFAULT_MEMO_TITLE, type MemoSummary } from "@ponder/shared";
 import { isNativeDesktopRuntime } from "./runtime";
 
 export type MemoListQueryData = {
@@ -101,7 +101,7 @@ const sortMemoSummariesForList = (memos: MemoSummary[], queryKey: readonly unkno
     return sorted.sort((left, right) => {
       const leftTitle = left.title?.trim() || left.excerpt || DEFAULT_MEMO_TITLE;
       const rightTitle = right.title?.trim() || right.excerpt || DEFAULT_MEMO_TITLE;
-      const titleCompare = leftTitle.localeCompare(rightTitle, "zh-CN");
+      const titleCompare = leftTitle.localeCompare(rightTitle, "en-US");
       if (titleCompare !== 0) return titleCompare * direction;
       return left.id.localeCompare(right.id);
     });

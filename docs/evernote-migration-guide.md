@@ -1,48 +1,46 @@
-# 印象笔记（Evernote）极简迁移指引
+# Minimal Evernote Migration Guide
 
-[简体中文](evernote-migration-guide.md) | [English](evernote-migration-guide.en-US.md)
-
-我们强烈推荐使用 AI 编程助手（如 Codex、Antigravity、Claude Code、Cursor、WorkBuddy、OpenClaw、Hermes Agent 等）自动执行迁移。该方案已完成内存流式优化与空文本预处理，能安全应对数 GB 级别超大笔记库，完整保留创建/修改时间与嵌套笔记本目录层级。
+We strongly recommend using an AI coding assistant, such as Codex, Antigravity, Claude Code, Cursor, WorkBuddy, OpenClaw, or Hermes Agent, to run the migration automatically. The current migration flow is optimized for streaming large archives and preprocessing empty text, and can handle multi-GB note libraries while preserving created/updated timestamps and nested notebook hierarchy.
 
 ---
 
-### 步骤 1：配置并安装 EdgeEver MCP 服务
+### Step 1: Configure and install the Ponder MCP service
 
-1. 点击网页端左下角的 **设置（Settings）** 图标。
-2. 在 **API & MCP 授权** 卡片生成 Token 后，点击 **复制完整 MCP 配置** 按钮。
-3. 把复制的 JSON 配置直接粘贴发送给你的 AI 编程助手（如 Codex, Antigravity, Claude Code, Cursor, WorkBuddy, OpenClaw, Hermes Agent 等），让它帮你自动在当前的 AI 客户端中安装配置好该 MCP 服务：
+1. Open Ponder and click **Profile / Settings** in the lower-left corner.
+2. In the **API & MCP authorization** card, generate a token and click **Copy full MCP config**.
+3. Paste the copied JSON into your AI coding assistant and ask it to install the MCP service in your current AI client:
 
 ```sh
-你是 AI 编程助手。这是我的 EdgeEver MCP 服务配置 JSON。请帮我把这个 MCP 服务直接配置到我当前使用的 AI 编辑器/客户端（如 Codex, Claude Code, Cursor, WorkBuddy, Cline 等）的 MCP 服务器配置文件中：
+You are an AI coding assistant. This is my Ponder MCP service configuration JSON. Please configure this MCP service directly in the MCP server configuration file for my current AI editor/client, such as Codex, Claude Code, Cursor, WorkBuddy, or Cline:
 
-<在此处粘贴刚才复制 of JSON 配置内容>
+<paste the copied JSON configuration here>
 ```
 
 ---
 
-### 步骤 2：让 AI 助手自动导入和迁移笔记
+### Step 2: Let the AI assistant import and migrate your notes
 
-当 AI 助手配置好 MCP 之后，请复制以下 Prompt 发送给它，让它全自动拉取印象笔记数据并导入：
+After the assistant has configured MCP, send it this prompt:
 
 ```sh
-你是 AI 编程助手。请帮我把本地的印象笔记全量迁移到我当前部署的 EdgeEver 实例中：
-1. 检查并使用 `pipx install evernote-backup` 自动安装备份工具。
-2. 提示我输入印象笔记的用户名和密码并初始化数据库（指定 china 后端），随后同步数据并导出到 `./evernote-export` 目录。
-3. 从 GitHub 下载最新版迁移脚本：`https://raw.githubusercontent.com/tianma-if/edgeever/main/scripts/import-evernote-enex-via-mcp.mjs` 到本地。
-4. 安装脚本所需的本地图片压缩库 `sharp` 和 `fast-xml-parser` 依赖。
-5. 使用先前配置的 URL 和 Token 运行该脚本完成迁移（脚本会自动进行 WebP 图片转换）：
-   - 全量迁移：`bun import-evernote-enex-via-mcp.mjs --input "./evernote-export" --yes`
-   - 指定迁移某些笔记本：追加 `--include "笔记本A,笔记本B"` 参数。
+You are an AI coding assistant. Please migrate my local Evernote data into my deployed Ponder instance:
+1. Check for and install the backup tool with `pipx install evernote-backup`.
+2. Ask me for my Evernote username and password, initialize the database with the China backend if needed, sync the data, and export it to `./evernote-export`.
+3. Download the latest migration script from GitHub: `https://raw.githubusercontent.com/tianma-if/edgeever/main/scripts/import-evernote-enex-via-mcp.mjs`.
+4. Install the local dependencies required by the script: `sharp` and `fast-xml-parser`.
+5. Run the script with the previously configured URL and token to complete the migration. The script performs WebP image conversion automatically:
+   - Full migration: `bun import-evernote-enex-via-mcp.mjs --input "./evernote-export" --yes`
+   - Selected notebooks only: add `--include "NotebookA,NotebookB"`.
 
-请告诉我你需要什么信息（如账号密码），收到后直接并发自动执行上述步骤。
+Tell me what information you need, such as account credentials, then run the steps automatically and in parallel where possible.
 ```
 
-> 💡 **手动模式备用**：如果您不使用 AI 助手，也可以手动前往 GitHub 仓库 [EdgeEver GitHub](https://github.com/tianma-if/edgeever) 下载 \`scripts/import-evernote-enex-via-mcp.mjs\` 脚本并按其头部注释执行。
+> Manual fallback: If you do not use an AI assistant, download `scripts/import-evernote-enex-via-mcp.mjs` from the [Ponder GitHub repository](https://github.com/tianma-if/edgeever) and follow the comments at the top of the script.
 
 ---
 
-### 步骤 3：在网页端验证结果
+### Step 3: Verify the result in the Web app
 
-1. 导入完成后，回到 EdgeEver 网页端刷新页面。
-2. 检查左侧栏，确认印象笔记原有的「笔记本组（堆叠）」层级结构已完美还原。
-3. 打开几篇包含多张图片的笔记，验证其中的图片是否已成功在编辑器中加载并能清晰显示。
+1. After import completes, refresh the Ponder Web app.
+2. Check the left sidebar and confirm the original Evernote notebook stack hierarchy is restored.
+3. Open several notes with images and verify that images load and display clearly in the editor.

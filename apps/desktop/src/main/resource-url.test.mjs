@@ -8,30 +8,30 @@ import {
 } from "./resource-url.mjs";
 
 test("desktop resource URL parsing accepts safe resource and staged IDs", () => {
-  expect(resourceIdFromRequest("edgeever-resource://resource/resource_123")).toBe("resource_123");
-  expect(resourceIdFromRequest("edgeever-staged://stage_123")).toBe("stage_123");
-  expect(resourceIdFromRequest("edgeever-staged://stage%5F123")).toBe("stage_123");
-  expect(resourceIdFromRequest("edgeever-staged://bad/id")).toBe("id");
-  expect(resourceIdFromRequest("edgeever-staged://../../etc/passwd")).toBeNull();
-  expect(resourceIdFromRequest("edgeever-staged://stage_%ZZ")).toBeNull();
+  expect(resourceIdFromRequest("ponder-resource://resource/resource_123")).toBe("resource_123");
+  expect(resourceIdFromRequest("ponder-staged://stage_123")).toBe("stage_123");
+  expect(resourceIdFromRequest("ponder-staged://stage%5F123")).toBe("stage_123");
+  expect(resourceIdFromRequest("ponder-staged://bad/id")).toBe("id");
+  expect(resourceIdFromRequest("ponder-staged://../../etc/passwd")).toBeNull();
+  expect(resourceIdFromRequest("ponder-staged://stage_%ZZ")).toBeNull();
 });
 
 test("desktop resource downloads preserve safe UTF-8 filenames", () => {
   expect(downloadContentDispositionFromRequest(
-    "edgeever-resource://resource/resource_123?download=%E8%B5%84%E6%96%99%E5%8C%85.zip",
+    "ponder-resource://resource/resource_123?download=%E8%B5%84%E6%96%99%E5%8C%85.zip",
   )).toBe(
     "attachment; filename=\"download.zip\"; filename*=UTF-8''%E8%B5%84%E6%96%99%E5%8C%85.zip",
   );
   expect(downloadContentDispositionFromRequest(
-    "edgeever-resource://resource/resource_123?download=reports%2Farchive.zip",
+    "ponder-resource://resource/resource_123?download=reports%2Farchive.zip",
   )).toContain('filename="reports-archive.zip"');
-  expect(downloadContentDispositionFromRequest("edgeever-resource://resource/resource_123"))
+  expect(downloadContentDispositionFromRequest("ponder-resource://resource/resource_123"))
     .toBeNull();
 });
 
 test("desktop staged resource IPC IDs reject path traversal", () => {
   expect(isSafeResourceId("stage_123")).toBe(true);
-  expect(isSafeResourceId("../edgeever.sqlite")).toBe(false);
+  expect(isSafeResourceId("../ponder.sqlite")).toBe(false);
   expect(isSafeResourceId("stage/123")).toBe(false);
   expect(isSafeResourceId("..")).toBe(false);
 });

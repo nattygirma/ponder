@@ -4,7 +4,7 @@ import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { clampNumber } from "./entity-utils.ts";
-import { fetchEdgeEverApp } from "./index.ts";
+import { fetchPonderApp } from "./index.ts";
 import { createSelfHostedStorageAdapter } from "./self-hosted-storage-adapter.ts";
 
 const temporaryDirectories = [];
@@ -15,9 +15,9 @@ afterEach(async () => {
 });
 
 const createEnvironment = async () => {
-  const directory = await mkdtemp(`${tmpdir()}/edgeever-request-errors-`);
+  const directory = await mkdtemp(`${tmpdir()}/ponder-request-errors-`);
   temporaryDirectories.push(directory);
-  const database = new Database(join(directory, "edgeever.sqlite"), { create: true });
+  const database = new Database(join(directory, "ponder.sqlite"), { create: true });
   databases.push(database);
   database.exec("PRAGMA foreign_keys = ON");
   const migrationDirectory = new URL("../../../migrations/", import.meta.url);
@@ -27,13 +27,13 @@ const createEnvironment = async () => {
   database.query("INSERT OR IGNORE INTO workspaces (id, name, is_personal) VALUES ('ws_default', 'Personal', 1)").run();
   return {
     storage: createSelfHostedStorageAdapter(database, join(directory, "resources")),
-    EDGE_EVER_ALLOW_UNAUTHENTICATED: "true",
-    EDGE_EVER_RUNTIME: "self-hosted-bun",
+    PONDER_ALLOW_UNAUTHENTICATED: "true",
+    PONDER_RUNTIME: "self-hosted-bun",
   };
 };
 
-const request = (environment, path, init = {}) => fetchEdgeEverApp(
-  new Request(`http://edgeever.test${path}`, init),
+const request = (environment, path, init = {}) => fetchPonderApp(
+  new Request(`http://ponder.test${path}`, init),
   environment,
   { waitUntil: () => undefined, passThroughOnException: () => undefined },
 );

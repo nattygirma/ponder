@@ -4,7 +4,7 @@ import {
   PUBLIC_SHARE_MARKDOWN_PASSWORD,
   publicShareMarkdown,
 } from "../api/src/share-page.ts";
-import { PUBLIC_PAGE_HEADERS } from "@edgeever/shared/public-page-headers";
+import { PUBLIC_PAGE_HEADERS } from "@ponder/shared/public-page-headers";
 import type { Plugin } from "vite";
 
 export const devShareMarkdownToken = (pathname: string) => {
@@ -56,7 +56,7 @@ export const loadDevShareMarkdown = async (
 };
 
 export const publicShareMarkdownDev = (origin = LOCAL_API_ORIGIN): Plugin => ({
-  name: "edgeever-public-share-markdown",
+  name: "ponder-public-share-markdown",
   apply: "serve",
   configureServer(server) {
     server.middlewares.use(async (request, response, next) => {

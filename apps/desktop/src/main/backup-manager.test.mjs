@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import { BackupManager } from "./backup-manager.mjs";
 
 const fixture = async () => {
-  const root = await mkdtemp(join(tmpdir(), "edgeever-backup-manager-"));
+  const root = await mkdtemp(join(tmpdir(), "ponder-backup-manager-"));
   const workers = [];
   const manager = new BackupManager({
     userData: join(root, "private"), defaultDirectory: join(root, "backups"),
@@ -88,7 +88,7 @@ test("failure and cancellation preserve success and never rotate; credentials st
     await f.manager.run(); await f.manager.cancel();
     expect(f.manager.status().history).toHaveLength(1);
     const state = await readFile(f.manager.statePath(), "utf8");
-    expect(state).not.toContain("密码"); expect(state).not.toContain("session-a");
+    expect(state).not.toContain("Password"); expect(state).not.toContain("session-a");
     expect(f.manager.status().passwordSet).toBe(true);
     const external = join(f.root, "external"); await writeFile(external, "keep");
     const oldest = f.manager.status().history[0]; await rm(join(f.manager.status().actualDirectory, oldest.name));
@@ -408,7 +408,7 @@ test("import failure and successful retry preserve automatic-backup errors and h
       return { error, warning, lastAttemptAt, lastSuccessAt, history };
     };
     const before = backupFields();
-    const archive = join(f.root, "input.edgeever.enc"); await writeFile(archive, "EDGB fixture");
+    const archive = join(f.root, "input.ponder.enc"); await writeFile(archive, "EDGB fixture");
     const file = await f.manager.selectImport(archive);
     await f.manager.prepareImport(file.id, "wrong");
     expect(backupFields()).toEqual(before);
@@ -527,7 +527,7 @@ test('named manual backups preserve formats/settings and never overwrite a colli
     await f.manager.run('once', id, undefined, { name: 'Encrypted.zip', encrypted: true });
     expect(f.workers.at(-1).data.password).toBe('once');
     await finishSnapshot(f);
-    expect(f.manager.status().history.at(-1).name).toBe('Encrypted.edgeever.enc');
+    expect(f.manager.status().history.at(-1).name).toBe('Encrypted.ponder.enc');
     await f.manager.run(undefined, id, undefined, { name: 'Raced', encrypted: false });
     const final = join(f.manager.status().actualDirectory, 'Raced.zip');
     await writeFile(final, 'external file');

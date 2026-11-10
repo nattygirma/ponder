@@ -5,10 +5,10 @@ export const RENDERER_STORAGE_MIGRATION_VERSION = 1;
 export const RENDERER_STORAGE_MIGRATION_MARKER = "renderer-origin-v1-migrated";
 
 const MIGRATED_DATABASE_NAMES = [
-  "edgeever-local",
-  "edgeever-plugin-packages-v1",
+  "ponder-local",
+  "ponder-plugin-packages-v1",
 ];
-const PLUGIN_SECRET_DATABASE_NAME = "edgeever-plugin-secrets-v1";
+const PLUGIN_SECRET_DATABASE_NAME = "ponder-plugin-secrets-v1";
 
 // These functions intentionally contain all helpers in their own bodies. The
 // main process serializes them into an isolated renderer whose only job is to
@@ -26,7 +26,7 @@ export const exportLegacyRendererStorage = async () => {
   const existingNames = new Set((await indexedDB.databases()).map((entry) => entry.name).filter(Boolean));
   const databases = [];
 
-  for (const name of ["edgeever-local", "edgeever-plugin-packages-v1"]) {
+  for (const name of ["ponder-local", "ponder-plugin-packages-v1"]) {
     if (!existingNames.has(name)) continue;
     const database = await requestResult(indexedDB.open(name));
     try {
@@ -59,8 +59,8 @@ export const exportLegacyRendererStorage = async () => {
   }
 
   const pluginSecrets = [];
-  if (existingNames.has("edgeever-plugin-secrets-v1")) {
-    const database = await requestResult(indexedDB.open("edgeever-plugin-secrets-v1"));
+  if (existingNames.has("ponder-plugin-secrets-v1")) {
+    const database = await requestResult(indexedDB.open("ponder-plugin-secrets-v1"));
     try {
       if (database.objectStoreNames.contains("keys") && database.objectStoreNames.contains("secrets")) {
         const transaction = database.transaction(["keys", "secrets"], "readonly");
@@ -149,9 +149,9 @@ export const importRendererStorage = async (snapshot) => {
     }
   }
 
-  await deleteDatabase("edgeever-plugin-secrets-v1");
+  await deleteDatabase("ponder-plugin-secrets-v1");
   if (snapshot.pluginSecrets.length > 0) {
-    const openRequest = indexedDB.open("edgeever-plugin-secrets-v1", 1);
+    const openRequest = indexedDB.open("ponder-plugin-secrets-v1", 1);
     openRequest.addEventListener("upgradeneeded", () => {
       openRequest.result.createObjectStore("keys");
       openRequest.result.createObjectStore("secrets", { keyPath: "id" });

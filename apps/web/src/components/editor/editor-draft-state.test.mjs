@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { markdownToDoc } from "@edgeever/shared";
+import { markdownToDoc } from "@ponder/shared";
 import {
   getWritableEditorMemoFields,
   resolveEditorDraftState,
@@ -87,12 +87,12 @@ describe("editor draft source resolution", () => {
           type: "doc",
           content: [
             {
-              type: "edgeeverImageGallery",
+              type: "ponderImageGallery",
               attrs: { layout: "3" },
               content: [{ type: "image", attrs: { src: null } }],
             },
             {
-              type: "edgeeverImageGallery",
+              type: "ponderImageGallery",
               attrs: { layout: "1" },
               content: [
                 { type: "image", attrs: { src: "/one.png" } },
@@ -217,7 +217,7 @@ describe("editor document hydration", () => {
     const plainDocument = doc("same body");
     const themedDocument = {
       type: "doc",
-      content: [{ type: "edgeeverThemeBlock", attrs: { theme: "paper" }, content: plainDocument.content }],
+      content: [{ type: "ponderThemeBlock", attrs: { theme: "paper" }, content: plainDocument.content }],
     };
 
     expect(shouldReplaceEditorDocument(plainDocument, themedDocument)).toBe(true);

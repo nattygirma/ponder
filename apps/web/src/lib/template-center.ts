@@ -1,5 +1,5 @@
-import type { MemoTemplate } from "@edgeever/shared";
-import { localizeDefaultMemoTemplate } from "@edgeever/shared/memo-template-seeds";
+import type { MemoTemplate } from "@ponder/shared";
+import { localizeDefaultMemoTemplate } from "@ponder/shared/memo-template-seeds";
 
 export type TemplateCard = {
   /** The template as stored; editing starts from it. */

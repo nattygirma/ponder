@@ -92,7 +92,7 @@ const post = async (input, file, filename, { fetchImpl, timeoutMs, lookupImpl })
 
 // ImgBed has no heartbeat, so the test uploads a 1×1 PNG to the configured folder.
 export const testImgBedConnection = async (input, { fetchImpl = fetch, timeoutMs = 15000, lookupImpl = lookup } = {}) => {
-  await post(input, new Blob([TEST_IMAGE], { type: "image/png" }), "edgeever-connection-test.png", { fetchImpl, timeoutMs, lookupImpl });
+  await post(input, new Blob([TEST_IMAGE], { type: "image/png" }), "ponder-connection-test.png", { fetchImpl, timeoutMs, lookupImpl });
   return true;
 };
 

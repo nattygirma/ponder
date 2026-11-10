@@ -1,4 +1,4 @@
-import type { DiagramDocument, DiagramNode } from "@edgeever/shared";
+import type { DiagramDocument, DiagramNode } from "@ponder/shared";
 
 export type MindMapOutlineDraft = {
   text: string;

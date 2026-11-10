@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import type { MemoDetail } from "@edgeever/shared";
+import type { MemoDetail } from "@ponder/shared";
 import { filterLocalMemosByExactTag, memoHasExactTag, summarizeMobileTags } from "./mobile-tags";
 
 const memo = (id: string, tags: string[], updatedAt: string, isDeleted = false) => ({

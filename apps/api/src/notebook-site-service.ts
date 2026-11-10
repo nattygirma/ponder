@@ -1,4 +1,4 @@
-import { readNotebookSiteSettings, type NotebookSiteSettings } from "@edgeever/shared";
+import { readNotebookSiteSettings, type NotebookSiteSettings } from "@ponder/shared";
 import type { DatabaseAdapter } from "./storage-contract";
 
 // Every consumer starts at the live share. Deleted ancestors and inconsistent

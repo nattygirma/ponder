@@ -6,7 +6,7 @@ import type { NodeType } from "@tiptap/pm/model";
 import {
   parseMarkdownImagePaste,
   type MarkdownImageAttributes,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 export const findMarkdownImagePasteMatches = (
   textToMatch: string,

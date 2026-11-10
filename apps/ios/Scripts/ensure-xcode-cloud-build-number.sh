@@ -9,9 +9,9 @@
 #   APP_STORE_CONNECT_API_KEY_P8_BASE64  OR  ~/.appstoreconnect/private_keys/AuthKey_<id>.p8
 #
 # Optional:
-#   APP_STORE_CONNECT_APP_ID   (default: 6792625631 EdgeEver)
-#   EDGE_EVER_IOS_MIN_BUILD   (override floor; else Config/Version.xcconfig)
-#   EDGE_EVER_IOS_APPLY=1     (default) also rewrite Version.xcconfig to recommended next
+#   APP_STORE_CONNECT_APP_ID   (default: 6792625631 Ponder)
+#   PONDER_IOS_MIN_BUILD   (override floor; else Config/Version.xcconfig)
+#   PONDER_IOS_APPLY=1     (default) also rewrite Version.xcconfig to recommended next
 #
 # Usage (from apps/ios):
 #   bash Scripts/ensure-xcode-cloud-build-number.sh
@@ -21,7 +21,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 APP_ID="${APP_STORE_CONNECT_APP_ID:-6792625631}"
 KEY_ID="${APP_STORE_CONNECT_API_KEY_ID:?APP_STORE_CONNECT_API_KEY_ID required}"
 ISSUER="${APP_STORE_CONNECT_API_ISSUER_ID:?APP_STORE_CONNECT_API_ISSUER_ID required}"
-APPLY="${EDGE_EVER_IOS_APPLY:-1}"
+APPLY="${PONDER_IOS_APPLY:-1}"
 
 KEY_DIR="${HOME}/.appstoreconnect/private_keys"
 mkdir -p "$KEY_DIR"
@@ -32,19 +32,19 @@ if [[ ! -f "$KEY_FILE" ]]; then
   chmod 600 "$KEY_FILE"
 fi
 
-FLOOR="${EDGE_EVER_IOS_MIN_BUILD:-}"
+FLOOR="${PONDER_IOS_MIN_BUILD:-}"
 if [[ -z "$FLOOR" && -f "$ROOT/Config/Version.xcconfig" ]]; then
   FLOOR="$(sed -nE 's/^CURRENT_PROJECT_VERSION[[:space:]]*=[[:space:]]*([0-9]+).*/\1/p' "$ROOT/Config/Version.xcconfig" | head -1)"
 fi
 FLOOR="${FLOOR:-1}"
 
-export EDGE_EVER_ASC_KEY_ID="$KEY_ID"
-export EDGE_EVER_ASC_ISSUER="$ISSUER"
-export EDGE_EVER_ASC_KEY_FILE="$KEY_FILE"
-export EDGE_EVER_ASC_APP_ID="$APP_ID"
-export EDGE_EVER_ASC_FLOOR="$FLOOR"
-export EDGE_EVER_ASC_APPLY="$APPLY"
-export EDGE_EVER_IOS_ROOT="$ROOT"
+export PONDER_ASC_KEY_ID="$KEY_ID"
+export PONDER_ASC_ISSUER="$ISSUER"
+export PONDER_ASC_KEY_FILE="$KEY_FILE"
+export PONDER_ASC_APP_ID="$APP_ID"
+export PONDER_ASC_FLOOR="$FLOOR"
+export PONDER_ASC_APPLY="$APPLY"
+export PONDER_IOS_ROOT="$ROOT"
 
 python3 <<'PY'
 import json, os, pathlib, re, sys, time, urllib.request, urllib.error
@@ -63,13 +63,13 @@ def ensure_jwt():
         return jwt
 
 jwt = ensure_jwt()
-key_id = os.environ["EDGE_EVER_ASC_KEY_ID"]
-issuer = os.environ["EDGE_EVER_ASC_ISSUER"]
-key_file = pathlib.Path(os.environ["EDGE_EVER_ASC_KEY_FILE"])
-app_id = os.environ["EDGE_EVER_ASC_APP_ID"]
-floor = int(os.environ["EDGE_EVER_ASC_FLOOR"])
-apply = os.environ.get("EDGE_EVER_ASC_APPLY", "1") == "1"
-ios_root = pathlib.Path(os.environ["EDGE_EVER_IOS_ROOT"])
+key_id = os.environ["PONDER_ASC_KEY_ID"]
+issuer = os.environ["PONDER_ASC_ISSUER"]
+key_file = pathlib.Path(os.environ["PONDER_ASC_KEY_FILE"])
+app_id = os.environ["PONDER_ASC_APP_ID"]
+floor = int(os.environ["PONDER_ASC_FLOOR"])
+apply = os.environ.get("PONDER_ASC_APPLY", "1") == "1"
+ios_root = pathlib.Path(os.environ["PONDER_IOS_ROOT"])
 
 private_key = key_file.read_text()
 now = int(time.time())
@@ -119,7 +119,7 @@ print(f"latest_asc_build={latest}")
 print(f"local_floor={floor}")
 print(f"recommended_next_cloud_build={desired}")
 print(
-    "Set App Store Connect → EdgeEver → Xcode Cloud → Settings → Build Number → "
+    "Set App Store Connect → Ponder → Xcode Cloud → Settings → Build Number → "
     f"next = {desired} (or higher) before Start Build."
 )
 

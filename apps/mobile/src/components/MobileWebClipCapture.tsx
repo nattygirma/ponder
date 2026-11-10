@@ -68,7 +68,7 @@ const CAPTURE_SCRIPT = `
 
       attempts += 1;
       if (attempts >= 50) {
-        post({ status: "failed", message: "页面加载完成，但没有找到可剪藏的正文。" });
+        post({ status: "failed", message: "The page finished loading, but there was no article text to clip." });
         return;
       }
       window.setTimeout(capture, 250);
@@ -91,7 +91,7 @@ export default function MobileWebClipCapture({
     const timeout = setTimeout(() => {
       if (!completedRef.current) {
         completedRef.current = true;
-        onFailed("微信文章加载超时。");
+        onFailed("The WeChat article took too long to load.");
       }
     }, 20_000);
     return () => clearTimeout(timeout);
@@ -116,9 +116,9 @@ export default function MobileWebClipCapture({
         });
         return;
       }
-      fail(message.status === "failed" ? message.message : "没有找到可剪藏的正文。");
+      fail(message.status === "failed" ? message.message : "No article text was found to clip.");
     } catch {
-      fail("无法解析微信文章正文。");
+      fail("Could not read the WeChat article text.");
     }
   };
 
@@ -130,8 +130,8 @@ export default function MobileWebClipCapture({
         injectedJavaScript={CAPTURE_SCRIPT}
         javaScriptEnabled
         mixedContentMode="compatibility"
-        onError={(event) => fail(event.nativeEvent.description || "微信文章加载失败。")}
-        onHttpError={(event) => fail(`微信文章请求失败（HTTP ${event.nativeEvent.statusCode}）。`)}
+        onError={(event) => fail(event.nativeEvent.description || "Could not load the WeChat article.")}
+        onHttpError={(event) => fail(`The WeChat article request failed (HTTP ${event.nativeEvent.statusCode}).`)}
         onMessage={handleMessage}
         originWhitelist={["https://*", "http://*"]}
         setSupportMultipleWindows={false}

@@ -1,7 +1,7 @@
 import { requestPosterRender, readPosterRenderJob, posterRenderJob } from "./poster-render-service";
 import { applyPosterEdits, compilePosterMemo, posterCapabilities } from "./mcp-poster-tools";
 import { resolveObjectStorage } from "./object-storage";
-import { hasPosterDocumentMarker, parsePosterDocument, serializePosterDocument } from "@edgeever/shared";
+import { hasPosterDocumentMarker, parsePosterDocument, serializePosterDocument } from "@ponder/shared";
 import {
   AiPromptTemplateCreateSchema,
   AiPromptTemplateUpdateSchema,
@@ -36,7 +36,7 @@ import {
   type MemoSummary,
   type MemoUpdateInput,
   type TableDocument,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { audit, auditStatement } from "./audit";
 import type { AppContext, AuditActor, AuthContext, Bindings } from "./api-context";
 import { AppError } from "./app-error";
@@ -237,7 +237,7 @@ const parseMcpInput = <T>(schema: McpInputSchema<T>, input: unknown): T => {
 };
 
 const assertMcpMutationAllowed = (environment: Bindings) => {
-  if (isDemoModeEnabled(environment.EDGE_EVER_DEMO_MODE)) {
+  if (isDemoModeEnabled(environment.PONDER_DEMO_MODE)) {
     throw new AppError("forbidden", "Templates and AI instructions cannot be changed in demo mode.", 403);
   }
 };
@@ -496,7 +496,7 @@ export const callMcpTool = async (
       assertScope(auth, "write:memos");
       const notebookId = getRequiredString(args.notebookId, "notebookId");
       const ir = parseDiagramMemoIr(args);
-      const { compileDiagramIr } = await import("@edgeever/shared/diagram-layout");
+      const { compileDiagramIr } = await import("@ponder/shared/diagram-layout");
       // Generated mind maps and flowcharts start with the editor's default
       // theme even when an agent supplies an arbitrary color scheme.
       const document = compileDiagramIr(ir.kind === "mind-map" || ir.kind === "flowchart"

@@ -1,5 +1,5 @@
-import { prepareNoteImageAssets } from "@edgeever/shared/note-image-fonts";
-import { noteImageAssetUrls } from "@edgeever/shared/note-image-assets";
+import { prepareNoteImageAssets } from "@ponder/shared/note-image-fonts";
+import { noteImageAssetUrls } from "@ponder/shared/note-image-assets";
 import "./styles.css";
 import "katex/dist/katex.min.css";
 import { Graph } from "@antv/x6";
@@ -12,7 +12,7 @@ import { NodeSelection } from "@tiptap/pm/state";
 import mermaid from "mermaid";
 import { toCanvas } from "html-to-image";
 import {
-  createEdgeEverDocumentExtensions,
+  createPonderDocumentExtensions,
   applyImageAlignment,
   createNativeUnsupportedContentExtensions,
   DETAILS_EDITOR_CSS,
@@ -31,8 +31,8 @@ import {
   wrapDetailsContentHtml,
   type TiptapDoc,
   type DiagramDocument,
-} from "@edgeever/shared";
-import { clearMobileEditorUndoHistory, type MobileEditorLocale } from "@edgeever/shared/mobile-editor";
+} from "@ponder/shared";
+import { clearMobileEditorUndoHistory, type MobileEditorLocale } from "@ponder/shared/mobile-editor";
 import {
   type NoteImageTheme,
   type NoteImageFontStyle,
@@ -47,11 +47,11 @@ import {
   generateCardCss,
   prepareNoteImageContent,
   planNativeNoteImageRender,
-} from "@edgeever/shared/note-image-card";
-import { createEdgeEverMathematics } from "@edgeever/shared/mathematics";
+} from "@ponder/shared/note-image-card";
+import { createPonderMathematics } from "@ponder/shared/mathematics";
 import { createIosImageGallery } from "./document-nodes";
-import { createImageInsertTransaction, groupUploadedImages, NATIVE_IMAGE_GALLERY_CSS } from "@edgeever/shared/native-image-gallery";
-import { installPhoneImageFillStyle, NEW_IMAGE_WIDTH_PERCENT } from "@edgeever/shared/image-display";
+import { createImageInsertTransaction, groupUploadedImages, NATIVE_IMAGE_GALLERY_CSS } from "@ponder/shared/native-image-gallery";
+import { installPhoneImageFillStyle, NEW_IMAGE_WIDTH_PERCENT } from "@ponder/shared/image-display";
 
 const galleryStyle = document.createElement("style");
 galleryStyle.textContent = NATIVE_IMAGE_GALLERY_CSS;
@@ -96,7 +96,7 @@ type BridgeMessage =
 /** Match shared `getResourceIdFromUrl` — never return bare `blob`. */
 function getResourceIdFromHref(href: string): string | null {
   try {
-    const parsed = new URL(href, "http://edgeever.local");
+    const parsed = new URL(href, "http://ponder.local");
     const match = parsed.pathname.match(/^\/api\/v1\/resources\/([^/]+)(?:\/blob)?\/?$/);
     if (match?.[1]) return decodeURIComponent(match[1]);
   } catch {
@@ -139,7 +139,7 @@ function buildAttachmentTargetJson(href: string, label: string): string | null {
   });
 }
 
-const ATTACHMENT_KIND_CLASS_PREFIX = "edgeever-attachment-kind-";
+const ATTACHMENT_KIND_CLASS_PREFIX = "ponder-attachment-kind-";
 
 function normalizeAttachmentFilename(label: string): string {
   return label.replace(/^\s*(?:附件[：:]|Attachment:)\s*/i, "").trim();
@@ -147,14 +147,14 @@ function normalizeAttachmentFilename(label: string): string {
 
 function decorateAttachmentLinks(root: ParentNode): void {
   root.querySelectorAll<HTMLAnchorElement>(
-    'a.edgeever-attachment-link, a[href*="/api/v1/resources/"]'
+    'a.ponder-attachment-link, a[href*="/api/v1/resources/"]'
   ).forEach((link) => {
     Array.from(link.classList).forEach((className) => {
       if (className.startsWith(ATTACHMENT_KIND_CLASS_PREFIX)) link.classList.remove(className);
     });
     const filename = normalizeAttachmentFilename(link.textContent || "");
     link.classList.add(
-      "edgeever-attachment-link",
+      "ponder-attachment-link",
       `${ATTACHMENT_KIND_CLASS_PREFIX}${resolveAttachmentKind(null, filename)}`,
     );
   });
@@ -193,15 +193,15 @@ type ImageExportRequest = {
 };
 let mode: "viewer" | "editor" = "viewer";
 let locale: MobileEditorLocale = "zh-CN";
-let currentPlaceholder = "开始输入…";
+let currentPlaceholder = "Start typing…";
 let suppressChange = false;
 const resourceResolvers = new Map<string, (dataUrl: string | null) => void>();
 let resourceSeq = 0;
 
 function post(msg: BridgeMessage) {
   try {
-    (window as unknown as { webkit?: { messageHandlers?: { edgeever?: { postMessage: (m: unknown) => void } } } })
-      .webkit?.messageHandlers?.edgeever?.postMessage(msg);
+    (window as unknown as { webkit?: { messageHandlers?: { ponder?: { postMessage: (m: unknown) => void } } } })
+      .webkit?.messageHandlers?.ponder?.postMessage(msg);
   } catch {
     // native host unavailable (browser preview)
   }
@@ -229,7 +229,7 @@ function isProtectedResource(src: string): boolean {
 
 /** file:// editor pages often cannot load remote/protected img srcs; native must rewrite them. */
 function needsNativeHydration(src: string): boolean {
-  if (!src || src.startsWith("data:") || src.startsWith("blob:") || src.startsWith("edgeever-res:")) {
+  if (!src || src.startsWith("data:") || src.startsWith("blob:") || src.startsWith("ponder-res:")) {
     return false;
   }
   // Protected API paths always need auth + rewrite.
@@ -297,7 +297,7 @@ async function renderMermaidBlocks(root: HTMLElement, theme: "light" | "dark") {
       const id = `mmd-${Date.now()}-${i++}`;
       const { svg } = await mermaid.render(id, source);
       const wrap = document.createElement("div");
-      wrap.className = "edgeever-mermaid";
+      wrap.className = "ponder-mermaid";
       wrap.innerHTML = svg;
       const renderedSvg = wrap.querySelector("svg");
       const viewBox = renderedSvg?.viewBox.baseVal;
@@ -340,9 +340,9 @@ function renderViewerDiagram(root: HTMLElement, diagram: DiagramDocument, theme:
   if (!proseMirror) return false;
   const cells = diagramDocumentToX6Cells(diagram, theme);
   const container = document.createElement("div");
-  container.className = "edgeever-x6-diagram";
+  container.className = "ponder-x6-diagram";
   container.setAttribute("role", "img");
-  container.setAttribute("aria-label", diagram.kind === "mind-map" ? "思维导图" : diagram.kind === "architecture" ? "架构图" : "流程图");
+  container.setAttribute("aria-label", diagram.kind === "mind-map" ? "Mind map" : diagram.kind === "architecture" ? "Architecture diagram" : "Flowchart");
   // Keep TipTap's managed DOM intact. Replacing a node inside ProseMirror makes
   // the next setContent call unreliable when SwiftUI reuses this WKWebView.
   proseMirror.hidden = true;
@@ -468,7 +468,7 @@ function bindImageControlTap(el: HTMLElement, action: () => void) {
  * - viewer: tap image → fullscreen preview; ⋯ → resource sheet
  * - editor: tap image → select + show width bar (25/50/75/100%); ⋯ → resource sheet
  */
-function createEdgeEverImageExtension() {
+function createPonderImageExtension() {
   return Image.extend({
     addAttributes() {
       return {
@@ -490,14 +490,14 @@ function createEdgeEverImageExtension() {
       return ({ editor: ed, getPos, node }) => {
         let currentNode = node;
         const wrapper = document.createElement("figure");
-        wrapper.className = "edgeever-image-node is-loading";
+        wrapper.className = "ponder-image-node is-loading";
         wrapper.contentEditable = "false";
         wrapper.setAttribute("role", "img");
 
         const loading = document.createElement("div");
-        loading.className = "edgeever-image-loading";
+        loading.className = "ponder-image-loading";
         const spinner = document.createElement("span");
-        spinner.className = "edgeever-image-upload-spinner";
+        spinner.className = "ponder-image-upload-spinner";
         loading.append(spinner);
 
         const image = document.createElement("img");
@@ -506,18 +506,18 @@ function createEdgeEverImageExtension() {
 
         const actionButton = document.createElement("button");
         actionButton.type = "button";
-        actionButton.className = "edgeever-image-actions";
+        actionButton.className = "ponder-image-actions";
         actionButton.contentEditable = "false";
         actionButton.hidden = true;
-        actionButton.setAttribute("aria-label", "图片操作");
+        actionButton.setAttribute("aria-label", "Image actions");
         actionButton.textContent = "⋯";
 
         const sizeControls = document.createElement("div");
-        sizeControls.className = "edgeever-image-size-controls";
+        sizeControls.className = "ponder-image-size-controls";
         sizeControls.contentEditable = "false";
         sizeControls.hidden = true;
         sizeControls.setAttribute("role", "group");
-        sizeControls.setAttribute("aria-label", "图片宽度");
+        sizeControls.setAttribute("aria-label", "Image width");
 
         const applyWidthAtPos = (width: number) => {
           const pos = getPos();
@@ -544,7 +544,7 @@ function createEdgeEverImageExtension() {
         for (const preset of IMAGE_WIDTH_PRESETS) {
           const btn = document.createElement("button");
           btn.type = "button";
-          btn.className = "edgeever-image-size-button";
+          btn.className = "ponder-image-size-button";
           btn.textContent = preset.label;
           btn.setAttribute("aria-label", preset.label);
           btn.setAttribute("aria-pressed", "false");
@@ -570,8 +570,8 @@ function createEdgeEverImageExtension() {
           if (phase === "failed") {
             loading.replaceChildren();
             const label = document.createElement("span");
-            label.className = "edgeever-image-loading-label";
-            label.textContent = "图片加载失败";
+            label.className = "ponder-image-loading-label";
+            label.textContent = "The image failed to load";
             loading.append(label);
             loading.hidden = false;
           } else if (phase === "loading") {
@@ -581,7 +581,7 @@ function createEdgeEverImageExtension() {
 
         const resourceHrefFromAttrs = (attrs: Record<string, unknown>) => {
           const src = String(attrs.src ?? "");
-          // Prefer protected API path over display data:/edgeever-res:
+          // Prefer protected API path over display data:/ponder-res:
           if (isProtectedResource(src) || getResourceIdFromHref(src)) return src;
           return wrapper.dataset.resourceHref || src;
         };
@@ -626,7 +626,7 @@ function createEdgeEverImageExtension() {
         // Image body: only stopPropagation on pointerdown (keeps scroll working).
         let lastImageActivate = 0;
         const onImageActivate = (event: Event) => {
-          if (event.target instanceof Element && event.target.closest(".edgeever-image-actions")) {
+          if (event.target instanceof Element && event.target.closest(".ponder-image-actions")) {
             return;
           }
           const now = Date.now();
@@ -703,7 +703,7 @@ function createEdgeEverImageExtension() {
             setPhase("failed");
             return;
           }
-          if (src.startsWith("data:") || src.startsWith("edgeever-res:") || src.startsWith("blob:")) {
+          if (src.startsWith("data:") || src.startsWith("ponder-res:") || src.startsWith("blob:")) {
             finish(src);
             return;
           }
@@ -769,10 +769,10 @@ function createEdgeEverImageExtension() {
 
 function buildExtensions(placeholder: string) {
   return [
-    ...createEdgeEverDocumentExtensions({
-      mathematics: createEdgeEverMathematics(),
+    ...createPonderDocumentExtensions({
+      mathematics: createPonderMathematics(),
       starterKit: { codeBlock: false, link: false },
-      image: createEdgeEverImageExtension(),
+      image: createPonderImageExtension(),
       gallery: createIosImageGallery(() => locale),
       pdf: false,
       file: false,
@@ -812,7 +812,7 @@ function resetReaderScroll() {
 
 const editor = new Editor({
   element: editorEl,
-  extensions: buildExtensions("开始书写…"),
+  extensions: buildExtensions("Start writing…"),
   editable: false,
   content: { type: "doc", content: [{ type: "paragraph" }] },
   onUpdate: ({ editor: ed }) => {
@@ -824,7 +824,7 @@ const editor = new Editor({
   onSelectionUpdate: () => refreshToolbarState(),
   editorProps: {
     attributes: {
-      class: "edgeever-prose",
+      class: "ponder-prose",
       spellcheck: "true",
     },
     transformPastedHTML(html) {
@@ -846,7 +846,7 @@ const editor = new Editor({
 editorEl.addEventListener("dblclick", (event) => {
   if (mode !== "viewer") return;
   const target = event.target as HTMLElement | null;
-  if (!target || target.closest("a, button, img, input, textarea, select, .edgeever-image-node")) return;
+  if (!target || target.closest("a, button, img, input, textarea, select, .ponder-image-node")) return;
   event.preventDefault();
   event.stopPropagation();
   post({ type: "doubleTap" });
@@ -866,9 +866,9 @@ function handleResourcePointer(event: Event, kind: "click" | "contextmenu"): boo
 
   // Size / ⋯ controls own their gestures — never intercept from PM handleClick.
   if (
-    target.closest(".edgeever-image-size-controls") ||
-    target.closest(".edgeever-image-actions") ||
-    target.closest(".edgeever-image-size-button")
+    target.closest(".ponder-image-size-controls") ||
+    target.closest(".ponder-image-actions") ||
+    target.closest(".ponder-image-size-button")
   ) {
     return true;
   }
@@ -890,7 +890,7 @@ function handleResourcePointer(event: Event, kind: "click" | "contextmenu"): boo
   const img = target.closest("img");
   if (img instanceof HTMLImageElement) {
     // Custom image nodeView owns image taps (select/preview/⋯).
-    if (img.closest("figure.edgeever-image-node") && kind === "click") {
+    if (img.closest("figure.ponder-image-node") && kind === "click") {
       return false;
     }
 
@@ -973,7 +973,7 @@ function handleResourcePointer(event: Event, kind: "click" | "contextmenu"): boo
   editorEl.addEventListener("touchcancel", clear, { passive: true });
 })();
 
-const LITERAL_DOLLAR_PLACEHOLDER = "\uE000edgeever-dollar\uE001";
+const LITERAL_DOLLAR_PLACEHOLDER = "\uE000ponder-dollar\uE001";
 
 const protectLiteralDollarPairs = (value: unknown): unknown => {
   if (!value || typeof value !== "object") return value;
@@ -1022,7 +1022,7 @@ type ParsedMarkdownNode = {
   [key: string]: unknown;
 };
 
-const AI_INLINE_SENTINEL = "edgeever-inline-sentinel";
+const AI_INLINE_SENTINEL = "ponder-inline-sentinel";
 
 const serializeInlineSelectionMarkdown = (ed: Editor, content: unknown[], fallback: string) => {
   const manager = (ed.storage as { markdown?: { manager?: { serialize?: (doc: unknown) => string } } })
@@ -1197,16 +1197,16 @@ function setToolbarVisible(visible: boolean) {
     btn.textContent = action.label;
     btn.dataset.action = action.id;
     const labels: Record<string, Record<MobileEditorLocale, string>> = {
-      undo: { "zh-CN": "撤销", "en-US": "Undo", ja: "元に戻す", pl: "Cofnij", ru: "Отменить" },
-      redo: { "zh-CN": "重做", "en-US": "Redo", ja: "やり直す", pl: "Ponów", ru: "Повторить" },
-      image: { "zh-CN": "插入图片", "en-US": "Insert image", ja: "画像を挿入", pl: "Wstaw obraz", ru: "Вставить изображение" },
-      bold: { "zh-CN": "粗体", "en-US": "Bold", ja: "太字", pl: "Pogrubienie", ru: "Полужирный" },
-      bullet: { "zh-CN": "项目符号列表", "en-US": "Bullet list", ja: "箇条書き", pl: "Lista punktowana", ru: "Маркированный список" },
-      task: { "zh-CN": "任务清单", "en-US": "Task list", ja: "タスクリスト", pl: "Lista zadań", ru: "Список задач" },
-      indent: { "zh-CN": "增加列表缩进", "en-US": "Increase list indent", ja: "リストのインデントを増やす", pl: "Zwiększ wcięcie listy", ru: "Увеличить отступ списка" },
-      outdent: { "zh-CN": "减少列表缩进", "en-US": "Decrease list indent", ja: "リストのインデントを減らす", pl: "Zmniejsz wcięcie listy", ru: "Уменьшить отступ списка" },
-      quote: { "zh-CN": "引用", "en-US": "Block quote", ja: "引用", pl: "Cytat", ru: "Цитата" },
-      hr: { "zh-CN": "分隔线", "en-US": "Horizontal rule", ja: "区切り線", pl: "Linia pozioma", ru: "Горизонтальная линия" },
+      undo: { "en-US": "Undo", ja: "元に戻す", pl: "Cofnij", ru: "Отменить" },
+      redo: { "en-US": "Redo", ja: "やり直す", pl: "Ponów", ru: "Повторить" },
+      image: { "en-US": "Insert image", ja: "画像を挿入", pl: "Wstaw obraz", ru: "Вставить изображение" },
+      bold: { "en-US": "Bold", ja: "太字", pl: "Pogrubienie", ru: "Полужирный" },
+      bullet: { "en-US": "Bullet list", ja: "箇条書き", pl: "Lista punktowana", ru: "Маркированный список" },
+      task: { "en-US": "Task list", ja: "タスクリスト", pl: "Lista zadań", ru: "Список задач" },
+      indent: { "en-US": "Increase list indent", ja: "リストのインデントを増やす", pl: "Zwiększ wcięcie listy", ru: "Увеличить отступ списка" },
+      outdent: { "en-US": "Decrease list indent", ja: "リストのインデントを減らす", pl: "Zmniejsz wcięcie listy", ru: "Уменьшить отступ списка" },
+      quote: { "en-US": "Block quote", ja: "Quote", pl: "Cytat", ru: "Цитата" },
+      hr: { "en-US": "Horizontal rule", ja: "区切り線", pl: "Linia pozioma", ru: "Горизонтальная линия" },
     };
     btn.setAttribute("aria-label", labels[action.id]?.[locale] ?? action.id);
     btn.addEventListener("click", () => {
@@ -1324,7 +1324,7 @@ async function exportNoteImage(request: ImageExportRequest) {
       new Promise<void>((resolve) => window.setTimeout(resolve, 8_000)),
     ]);
     const exportedImages = Array.from(
-      documentRoot.querySelectorAll<HTMLImageElement>(".edgeever-card-body img"),
+      documentRoot.querySelectorAll<HTMLImageElement>(".ponder-card-body img"),
     );
     const failedImages = exportedImages.filter((image) => !image.complete || image.naturalWidth === 0).length;
     const totalHeight = Math.max(1, Math.ceil(documentRoot.getBoundingClientRect().height));
@@ -1417,7 +1417,7 @@ async function exportNoteImage(request: ImageExportRequest) {
   }
 }
 
-export type EdgeEverEditorAPI = {
+export type PonderEditorAPI = {
   configure: (opts: ConfigureOptions) => void;
   setMarkdown: (md: string) => void;
   setDocumentFromJSON: (json: string) => void;
@@ -1439,7 +1439,7 @@ export type EdgeEverEditorAPI = {
   exportImage: (request: ImageExportRequest) => void;
 };
 
-const api: EdgeEverEditorAPI = {
+const api: PonderEditorAPI = {
   resetReaderScroll,
   exportImage(request) {
     void exportNoteImage(request);
@@ -1698,6 +1698,6 @@ const api: EdgeEverEditorAPI = {
   },
 };
 
-(window as unknown as { EdgeEverEditor: EdgeEverEditorAPI }).EdgeEverEditor = api;
+(window as unknown as { PonderEditor: PonderEditorAPI }).PonderEditor = api;
 setToolbarVisible(false);
 post({ type: "ready", startupMs: Math.round(performance.now() - startedAt) });

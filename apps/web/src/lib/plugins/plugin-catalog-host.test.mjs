@@ -30,7 +30,7 @@ globalThis.document = stubDocument;
 const StubMutationObserver = class { observe() {} disconnect() {} };
 globalThis.MutationObserver = StubMutationObserver;
 
-const { EdgeEverPluginHost } = await import("./plugin-host.ts");
+const { PonderPluginHost } = await import("./plugin-host.ts");
 
 afterAll(() => {
   restoreTestGlobal("window", originalWindow, stubWindow);
@@ -55,7 +55,7 @@ test("enable and uninstall update the workspace catalog", async () => {
   values.clear();
   const upserts = [];
   const removals = [];
-  const host = new EdgeEverPluginHost({
+  const host = new PonderPluginHost({
     scope: "catalog-host",
     packageStorage: { get: async () => null, put: async () => {}, remove: async () => {} },
     secretStorage,
@@ -111,7 +111,7 @@ test("a remote tombstone uninstalls the local extension without writing the cata
   // installManifest stamps catalogUpdatedAt with now; the tombstone must be newer
   // so reconcile uninstalls instead of treating the local install as a later write.
   const tombstoneAt = new Date(Date.now() + 60_000).toISOString();
-  const host = new EdgeEverPluginHost({
+  const host = new PonderPluginHost({
     scope: "catalog-tombstone",
     packageStorage: { get: async () => null, put: async () => {}, remove: async () => {} },
     secretStorage,

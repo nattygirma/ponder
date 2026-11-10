@@ -1,6 +1,6 @@
-import type { TiptapDoc } from "@edgeever/shared";
+import type { TiptapDoc } from "@ponder/shared";
 
-export const STAGED_RESOURCE_URL_PREFIX = "edgeever-staged://";
+export const STAGED_RESOURCE_URL_PREFIX = "ponder-staged://";
 
 export type StagedResourceReference = {
   stagedId: string;
@@ -53,10 +53,10 @@ const addStagedReference = (
 };
 
 const collectFromString = (value: string, references: StagedResourceReference[]) => {
-  for (const match of value.matchAll(/!\[([^\]]*)\]\(edgeever-staged:\/\/([A-Za-z0-9_-]+)\)/g)) {
+  for (const match of value.matchAll(/!\[([^\]]*)\]\(ponder-staged:\/\/([A-Za-z0-9_-]+)\)/g)) {
     addStagedReference(references, match[2], match[1] || null);
   }
-  for (const match of value.matchAll(/edgeever-staged:\/\/([A-Za-z0-9_-]+)/g)) {
+  for (const match of value.matchAll(/ponder-staged:\/\/([A-Za-z0-9_-]+)/g)) {
     addStagedReference(references, match[1], null);
   }
 };

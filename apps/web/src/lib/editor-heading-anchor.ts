@@ -3,7 +3,7 @@ import { TextSelection } from "@tiptap/pm/state";
 import type { EditorView } from "@tiptap/pm/view";
 
 /**
- * In-note Markdown heading links such as `[章节](#章节名)`.
+ * In-note Markdown heading links such as `[Section](#section-name)`.
  * The match is computed at click time from heading text. Ids are not stored.
  */
 

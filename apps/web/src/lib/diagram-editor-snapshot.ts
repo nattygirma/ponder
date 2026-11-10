@@ -1,4 +1,4 @@
-import { DIAGRAM_DEFAULT_THEME, type DiagramDocument } from "@edgeever/shared";
+import { DIAGRAM_DEFAULT_THEME, type DiagramDocument } from "@ponder/shared";
 
 // Ordinary node dimensions are computed by the renderer, including font metrics.
 // Only boundaries have authored dimensions. Display changes must not create edits.

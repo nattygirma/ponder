@@ -56,7 +56,7 @@ export const renderThemedMermaidSvg = (
       });
       const valid = await mermaid.parse(source, { suppressErrors: true });
       if (!valid) throw new Error("Invalid Mermaid diagram");
-      const { svg } = await mermaid.render(`edgeever-mermaid-${++renderSequence}`, source);
+      const { svg } = await mermaid.render(`ponder-mermaid-${++renderSequence}`, source);
       return svg;
     });
     officialQueue = result.catch(() => undefined);

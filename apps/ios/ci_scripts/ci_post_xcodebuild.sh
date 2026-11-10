@@ -11,7 +11,7 @@
 # Docs: docs/ios-xcode-cloud.md
 set -euo pipefail
 
-echo "==> EdgeEver Xcode Cloud post-xcodebuild"
+echo "==> Ponder Xcode Cloud post-xcodebuild"
 echo "CI_XCODEBUILD_EXIT_CODE=${CI_XCODEBUILD_EXIT_CODE:-unset}"
 echo "CI_BUILD_NUMBER=${CI_BUILD_NUMBER:-unset}"
 echo "CI_ARCHIVE_PATH=${CI_ARCHIVE_PATH:-unset}"

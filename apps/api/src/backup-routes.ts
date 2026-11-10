@@ -10,7 +10,7 @@ import {
   type MemoDetail,
   type Resource,
   type TiptapDoc,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import type { Hono } from "hono";
@@ -605,7 +605,7 @@ export const registerBackupRoutes = (
         await dependencies.sha256Bytes(bytes),
         metadata.width,
         metadata.height,
-        JSON.stringify({ source: "edgeever-zip-import" }),
+        JSON.stringify({ source: "ponder-zip-import" }),
         metadata.createdAt,
         now,
       ).run();

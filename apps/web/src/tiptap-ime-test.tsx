@@ -77,7 +77,7 @@ const TiptapImeTestApp = () => {
         inline: false,
       }),
       Placeholder.configure({
-        placeholder: "在这里测试豆包输入法...",
+        placeholder: "Test your input method here...",
       }),
     ],
     content: {
@@ -219,19 +219,19 @@ const TiptapImeTestApp = () => {
     <main className="tiptap-ime-page">
       <header className="tiptap-ime-header">
         <div>
-          <h1>Tiptap IME 测试</h1>
-          <p>主编辑区使用 Tiptap / ProseMirror / contenteditable。</p>
+          <h1>Tiptap IME test</h1>
+          <p>The main editor uses Tiptap / ProseMirror / contenteditable.</p>
         </div>
         <button type="button" onClick={() => void copyDiagnostics()}>
-          {copied ? "已复制" : "复制日志"}
+          {copied ? "Copied" : "Copy log"}
         </button>
       </header>
 
       <section className="tiptap-ime-panel">
         <div className="tiptap-ime-panel-title">
-          <span>Tiptap 编辑区</span>
+          <span>Tiptap editor</span>
           <button type="button" onClick={() => editor?.commands.focus("end")}>
-            聚焦
+            Focus
           </button>
         </div>
         <div className="tiptap-ime-editor-wrap">
@@ -239,20 +239,20 @@ const TiptapImeTestApp = () => {
         </div>
         <div className="tiptap-ime-actions">
           <button type="button" onClick={() => editor?.chain().focus().clearContent().run()}>
-            清空
+            Clear
           </button>
-          <button type="button" onClick={() => editor?.chain().focus().insertContent("测试文字").run()}>
-            插入测试文字
+          <button type="button" onClick={() => editor?.chain().focus().insertContent("Test text").run()}>
+            Insert test text
           </button>
-          <button type="button" onClick={() => editor?.chain().focus().setImage({ src: "https://edgeever.org/favicon.svg", alt: "测试图片" }).run()}>
-            插入图片
+          <button type="button" onClick={() => editor?.chain().focus().setImage({ src: "https://appkeep.io", alt: "Test image" }).run()}>
+            Insert image
           </button>
         </div>
       </section>
 
       <section className="tiptap-ime-panel">
         <div className="tiptap-ime-panel-title">
-          <span>原生 textarea 对照</span>
+          <span>Native textarea comparison</span>
         </div>
         <textarea
           value={plainValue}
@@ -262,7 +262,7 @@ const TiptapImeTestApp = () => {
           enterKeyHint="enter"
           inputMode="text"
           spellCheck
-          placeholder="这里是原生 textarea，对照测试输入法..."
+          placeholder="This is a native textarea, for comparing input method behaviour..."
           onChange={(event) => {
             setPlainValue(event.target.value);
             pushLog("textarea-change");
@@ -272,14 +272,14 @@ const TiptapImeTestApp = () => {
 
       <section className="tiptap-ime-panel tiptap-ime-diagnostics">
         <div className="tiptap-ime-panel-title">
-          <span>诊断</span>
+          <span>Diagnostics</span>
         </div>
         <pre>{JSON.stringify(diagnostics, null, 2)}</pre>
       </section>
 
       <section className="tiptap-ime-panel tiptap-ime-log">
         <div className="tiptap-ime-panel-title">
-          <span>事件日志</span>
+          <span>Event log</span>
         </div>
         <div className="tiptap-ime-log-list">
           {logs.map((entry) => (

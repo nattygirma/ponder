@@ -3,7 +3,7 @@ import { NodeSelection, TextSelection, type Transaction } from "@tiptap/pm/state
 import {
   BLOCK_MATH_NODE_TYPE,
   INLINE_MATH_NODE_TYPE,
-} from "@edgeever/shared/mathematics";
+} from "@ponder/shared/mathematics";
 
 export type MathFormulaKind = "inline" | "block";
 

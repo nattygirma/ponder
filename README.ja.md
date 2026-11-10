@@ -1,6 +1,6 @@
 <div align="center">
   <h1>
-    <img src="assets/brand/edgeever-icon.svg" alt="EdgeEver のロゴ" width="48" align="absmiddle" /> EdgeEver
+    <img src="assets/brand/ponder-icon.svg" alt="Ponder のロゴ" width="48" align="absmiddle" /> Ponder
   </h1>
   <p>
     <b>AI ネイティブ知識ベース、瞬時マルチデバイス同期＆ネイティブ MCP を備えた Evernote / Obsidian 代替ツール。Cloudflare 無料運用または Docker 自前運用</b>
@@ -9,33 +9,33 @@
     <a href="https://github.com/tianma-if/edgeever/stargazers"><img src="https://img.shields.io/github/stars/tianma-if/edgeever?style=social" alt="GitHub Stars" /></a>
     <a href="https://github.com/tianma-if/edgeever/network/members"><img src="https://img.shields.io/github/forks/tianma-if/edgeever?style=social" alt="GitHub Forks" /></a>
     <a href="https://github.com/tianma-if/edgeever"><img src="https://img.shields.io/badge/Git_Clones-40K%2B%20%2F%2014d-brightgreen?style=social&logo=git" alt="Git クローン数" /></a>
-    <a href="https://github.com/tianma-if/edgeever/pkgs/container/edgeever"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Ftianma-if%2Fedgeever%2Fedgeever&query=downloadCount&style=social&logo=docker&label=Docker%20Pulls" alt="Docker Pulls" /></a>
+    <a href="https://github.com/tianma-if/edgeever/pkgs/container/edgeever"><img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2Ftianma-if%2Fedgeever%2Fponder&query=downloadCount&style=social&logo=docker&label=Docker%20Pulls" alt="Docker Pulls" /></a>
     <a href="https://www.producthunt.com/products/edgeever?utm_source=other&utm_medium=social"><img src="https://img.shields.io/badge/Product%20Hunt-ea532a?style=social&logo=product-hunt" alt="Product Hunt" /></a>
-    <a href="https://hellogithub.com/repository/tianma-if/edgeever" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=150fee4403f6433880bda91e9576ac06&claim_uid=TWNAjisURpnhL1l&theme=small" alt="Featured｜HelloGitHub" /></a>
-    <a href="#スポンサーと支援"><img src="https://img.shields.io/badge/Sponsor-EdgeEver-ea4aaa?logo=github-sponsors" alt="スポンサーと支援" /></a>
+    <a href="https://hellogithub.com/repository/6" target="_blank"><img src="https://api.hellogithub.com/v1/widgets/recommend.svg?rid=150fee4403f6433880bda91e9576ac06&claim_uid=TWNAjisURpnhL1l&theme=small" alt="Featured｜HelloGitHub" /></a>
+    <a href="#スポンサーと支援"><img src="https://img.shields.io/badge/Sponsor-Ponder-ea4aaa?logo=github-sponsors" alt="スポンサーと支援" /></a>
   </p>
   <p>
-    <a href="README.zh-CN.md">简体中文</a> | <a href="README.zh-TW.md">繁體中文</a> | <a href="README.md">English</a> | <b>日本語</b> | <a href="README.pl-PL.md">Polski</a>
+    <a href="README.md">English</a> | <b>日本語</b> | <a href="README.pl-PL.md">Polski</a>
   </p>
   <p>
     <a href="https://t.me/+GvKYnL37feUwOTNl"><img src="assets/readme/community/telegram.svg" alt="Telegram" width="16" height="16" align="absmiddle" /> Telegram グループ</a> &nbsp;|&nbsp;
-    <a href="https://demo.edgeever.org">🌐 オンラインデモ</a> &nbsp;|&nbsp;
+    <a href="https://appkeep.io">🌐 オンラインデモ</a> &nbsp;|&nbsp;
     <a href="#全プラットフォームクライアントと拡張機能">📱 クライアントと拡張機能</a> &nbsp;|&nbsp;
     <a href="#features">機能とワークフローマトリクス</a>
   </p>
   <p align="center">
-    <img src="assets/readme/edgeever-hero-v6.png" alt="EdgeEver ワークスペースプレビュー" width="800" />
+    <img src="assets/readme/ponder-hero-v6.png" alt="Ponder ワークスペースプレビュー" width="800" />
   </p>
 </div>
 
-EdgeEver は、オープンソースのノートと知識ベースの作業領域です。クラシックで高効率な三ペインの作業体験（ツリー階層・ノート一覧・エディタ）を継承しつつ、データを自分で持ち、AI Agent と連携できます。
+Ponder は、オープンソースのノートと知識ベースの作業領域です。クラシックで高効率な三ペインの作業体験（ツリー階層・ノート一覧・エディタ）を継承しつつ、データを自分で持ち、AI Agent と連携できます。
 
 > 💡 **サーバーレス、ずっと無料**
-> EdgeEver は Cloudflare の無料枠内で動かせ、サーバーを借りたり保守したりする必要はありません。VPS、NAS、自宅サーバーを使いたい場合は、同じアプリを Docker で導入できます。
+> Ponder は Cloudflare の無料枠内で動かせ、サーバーを借りたり保守したりする必要はありません。VPS、NAS、自宅サーバーを使いたい場合は、同じアプリを Docker で導入できます。
 
-> ⭐ EdgeEver が役に立ったら、Star をお願いします。発見のきっかけになります。
+> ⭐ Ponder が役に立ったら、Star をお願いします。発見のきっかけになります。
 
-## なぜ EdgeEver か
+## なぜ Ponder か
 
 多くの**ノートアプリや個人知識ベース**のユーザーが求めているのは、**信頼でき、開かれていて、速い**個人知識ベースです。よくある代替には、それぞれ代償があります。
 
@@ -45,11 +45,11 @@ EdgeEver は、オープンソースのノートと知識ベースの作業領�
 * **Memos などのタイムライン型**：簡潔ですが、三ペインの整理作業とはレイアウトが違います。
 * **思源ノート（SiYuan）などのブロック型知識ベース**：高機能でオープンソースのセルフホストに対応していますが、徹底した「ブロック（Block）」構造により日常的な気軽なメモや流れるような文章作成には心理的負荷がやや高くなります。また、サーバー費用ゼロの Serverless 運用形態がなく、マルチデバイス同期は公式の有料サブスクリプション、または S3/WebDAV 同期機能を有料でアンロックして自前ストレージを用意する必要があります。
 
-**EdgeEver はその隙間を埋めます。** スタック全体がオープンソースで、**ストレスフリーかつ低遅延なマルチデバイス即時クラウド同期**を提供し、すべてのサービスを完全に無料でセルフホストできます。使い慣れた三ペインを残し、1万件のノートを抱えて常駐しても軽快でなめらか、ネイティブな AI Agent と手軽な導入も備えています。
+**Ponder はその隙間を埋めます。** スタック全体がオープンソースで、**ストレスフリーかつ低遅延なマルチデバイス即時クラウド同期**を提供し、すべてのサービスを完全に無料でセルフホストできます。使い慣れた三ペインを残し、1万件のノートを抱えて常駐しても軽快でなめらか、ネイティブな AI Agent と手軽な導入も備えています。
 
 ## オンラインデモ
 
-- Demo: [https://demo.edgeever.org](https://demo.edgeever.org)
+- Demo: [https://appkeep.io](https://appkeep.io)
 
 公開デモは毎日 3:00（中国標準時）にリセットされ、サンプルノートが戻ります。非公開の内容は置かないでください。
 
@@ -58,11 +58,11 @@ EdgeEver は、オープンソースのノートと知識ベースの作業領�
 ### クライアントのダウンロード
 
 <p>
-  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/macos.svg" alt="macOS 向け EdgeEver をダウンロード" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/windows.svg" alt="Windows 向け EdgeEver をダウンロード" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/macos.svg" alt="macOS 向け Ponder をダウンロード" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/windows.svg" alt="Windows 向け Ponder をダウンロード" width="40" height="40" /></a>&nbsp;&nbsp;
   <a href="https://github.com/tianma-if/edgeever/releases/latest"><img src="assets/readme/platforms/tux.svg" alt="Linux x86_64 AppImage Preview をダウンロード" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://play.google.com/store/apps/details?id=org.edgeever.mobile&hl=ja"><img src="assets/readme/platforms/google-play.svg" alt="Google Play から Android 向け EdgeEver をダウンロード" width="40" height="40" /></a>&nbsp;&nbsp;
-  <a href="https://apps.apple.com/jp/app/edgeever/id6792625631"><img src="assets/readme/platforms/app-store.svg" alt="App Store から iOS 向け EdgeEver をダウンロード" width="40" height="40" /></a>
+  <a href="https://play.google.com/store/apps/details?id=org.edgeever.mobile&hl=ja"><img src="assets/readme/platforms/google-play.svg" alt="Google Play から Android 向け Ponder をダウンロード" width="40" height="40" /></a>&nbsp;&nbsp;
+  <a href="https://apps.apple.com/jp/app/edgeever/id6792625631"><img src="assets/readme/platforms/app-store.svg" alt="App Store から iOS 向け Ponder をダウンロード" width="40" height="40" /></a>
 </p>
 
 > iOS アプリは、中国本土以外の Apple ID が必要です。
@@ -70,9 +70,9 @@ EdgeEver は、オープンソースのノートと知識ベースの作業領�
 ### ブラウザ Web Clipper
 
 <p>
-  <a href="https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/chrome/chrome.svg" alt="Google Chrome 向け EdgeEver Web Clipper を入れる" width="36" height="36" /></a>&nbsp;&nbsp;
-  <a href="https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/edge/edge.svg" alt="Microsoft Edge 向け EdgeEver Web Clipper を入れる" width="36" height="36" /></a>&nbsp;&nbsp;
-  <a href="https://addons.mozilla.org/ja/firefox/addon/edgeever-web-clipper/"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/firefox/firefox.svg" alt="Firefox 向け EdgeEver Web Clipper を入れる" width="36" height="36" /></a>
+  <a href="https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/chrome/chrome.svg" alt="Google Chrome 向け Ponder Web Clipper を入れる" width="36" height="36" /></a>&nbsp;&nbsp;
+  <a href="https://chromewebstore.google.com/detail/edgeever-web-clipper/gjadpfmanienmlofajibkfkkpfdkclgo"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/edge/edge.svg" alt="Microsoft Edge 向け Ponder Web Clipper を入れる" width="36" height="36" /></a>&nbsp;&nbsp;
+  <a href="https://addons.mozilla.org/ja/firefox/addon/edgeever-web-clipper/"><img src="https://raw.githubusercontent.com/alrra/browser-logos/58881b84c4d73adc03c06fa2c275a7abee02d935/src/firefox/firefox.svg" alt="Firefox 向け Ponder Web Clipper を入れる" width="36" height="36" /></a>
 </p>
 
 - Web ページの本文をクリーンな Markdown として抽出、または選択したテキストや画像を直接セルフホストインスタンスに保存。
@@ -103,17 +103,17 @@ Cloudflare のオンライン導入は、次のいずれかです。
 次のプロンプトを AI Agent（Codex、Claude、Cursor、WorkBuddy、Antigravity、OpenClaw、Hermes Agent など）へそのまま送ってください。実行中に GitHub や Cloudflare へのアクセスが求められたら、権限を確認して認可してください。
 
 ```text
-GitHub と Cloudflare のオンライン操作だけで EdgeEver を導入してください:
+GitHub と Cloudflare のオンライン操作だけで Ponder を導入してください:
 1. Fork https://github.com/tianma-if/edgeever。
-2. Cloudflare で D1 `edgeever` と R2 `edgeever-resources` を作成します。
-3. Workers & Pages で「Start with Hello World!」を選び、`edgeever` という名前の Worker を作成します。
+2. Cloudflare で D1 `ponder` と R2 `ponder-resources` を作成します。
+3. Workers & Pages で「Start with Hello World!」を選び、`ponder` という名前の Worker を作成します。
 4. Worker の Settings → Variables and Secrets で、指定されたログインパスワードを
-   実行時 Secret `EDGE_EVER_AUTH_PASSWORD` として追加し、Deploy を選択します
+   実行時 Secret `PONDER_AUTH_PASSWORD` として追加し、Deploy を選択します
    （32 文字以上を推奨）。管理者ユーザー名の既定値は `admin` です。
 5. Secret のデプロイ後、同じ Worker の Settings → Builds → Connect で Fork の
    `main` ブランチに接続します。
 6. Settings → Builds → API token でデプロイ用の Cloudflare API トークンを選択または作成し、対象アカウントの D1 読み取り・編集権限を確認します。
-7. Fork の GitHub リポジトリで Actions → Update deployed EdgeEver を開き、必要に応じて有効化して、
+7. Fork の GitHub リポジトリで Actions → Update deployed Ponder を開き、必要に応じて有効化して、
    `main` ブランチで Run workflow を選択します。Cloudflare で対応するビルドの成功とデプロイの完了を確認してから、`/api/health` と
    `/api/openapi.json` を確認し、管理者ユーザー名とパスワードでログインを検証します。
    以後、このワークフローが安定版と修正を自動で同期します。
@@ -128,13 +128,13 @@ GitHub と Cloudflare のオンライン操作だけで EdgeEver を導入して
 
 以下の 7 手順を、必ず記載の順番どおりにウェブ上で実行してください。
 
-1. **リポジトリを Fork**：GitHub 右上の **Fork** で、EdgeEver を自分のアカウントへ Fork します。
-2. **Cloudflare リソースを作成**：D1 `edgeever` と R2 `edgeever-resources` を作ります。
-3. **Worker を作成**：Cloudflare Workers & Pages で Create application → Start with Hello World! を選び、`edgeever` という名前でデプロイします。これは仮のサービスで、EdgeEver は手順 7 でデプロイします。
-4. **管理者パスワードを設定**：Worker の Settings → Variables and Secrets で Secret 型の `EDGE_EVER_AUTH_PASSWORD` を追加し、Deploy を選択します。値はログインパスワードで、32 文字以上を推奨します。完了後に Fork へ接続します。
+1. **リポジトリを Fork**：GitHub 右上の **Fork** で、Ponder を自分のアカウントへ Fork します。
+2. **Cloudflare リソースを作成**：D1 `ponder` と R2 `ponder-resources` を作ります。
+3. **Worker を作成**：Cloudflare Workers & Pages で Create application → Start with Hello World! を選び、`ponder` という名前でデプロイします。これは仮のサービスで、Ponder は手順 7 でデプロイします。
+4. **管理者パスワードを設定**：Worker の Settings → Variables and Secrets で Secret 型の `PONDER_AUTH_PASSWORD` を追加し、Deploy を選択します。値はログインパスワードで、32 文字以上を推奨します。完了後に Fork へ接続します。
 5. **Fork に接続**：既存 Worker の Settings → Builds → Connect で Fork と本番ブランチ `main` を選びます。
 6. **デプロイ権限を設定**：Settings → Builds → API token でデプロイ用の Cloudflare API トークンを選択または作成し、対象アカウントの D1 読み取り・編集権限を確認します。
-7. **ビルドと確認**：Fork の GitHub リポジトリで Actions → Update deployed EdgeEver を開き、必要に応じて有効化して、 `main` ブランチで Run workflow を選択します。Cloudflare で対応するビルドの成功とデプロイの完了を確認してから、 `/api/health` が `200` を返すこととログインを確認します。以後、このワークフローが安定版と修正を自動で同期します。
+7. **ビルドと確認**：Fork の GitHub リポジトリで Actions → Update deployed Ponder を開き、必要に応じて有効化して、 `main` ブランチで Run workflow を選択します。Cloudflare で対応するビルドの成功とデプロイの完了を確認してから、 `/api/health` が `200` を返すこととログインを確認します。以後、このワークフローが安定版と修正を自動で同期します。
 
 > 📖 手順と設定の詳細は [Online Deployment Guide](docs/deploy-cloudflare-button.md) を見てください。
 
@@ -151,7 +151,7 @@ GitHub と Cloudflare のオンライン操作だけで EdgeEver を導入して
 
 ### 方法 C: VPS または NAS で Docker
 
-Docker は Cloudflare と同じフロントエンド、API、サービス、認証、MCP、migration です。コンテナは SQLite と、ローカルファイルまたは S3 互換の添付保存を使い、`amd64` と `arm64` に対応します。 [Deploy EdgeEver with Docker](docs/deploy-docker.md) と [Self-hosting and Docker architecture](docs/self-hosting-architecture.md) を見てください。
+Docker は Cloudflare と同じフロントエンド、API、サービス、認証、MCP、migration です。コンテナは SQLite と、ローカルファイルまたは S3 互換の添付保存を使い、`amd64` と `arm64` に対応します。 [Deploy Ponder with Docker](docs/deploy-docker.md) と [Self-hosting and Docker architecture](docs/self-hosting-architecture.md) を見てください。
 
 GitHub ホストのインストーラと公式 GHCR イメージを使います。
 
@@ -159,11 +159,11 @@ GitHub ホストのインストーラと公式 GHCR イメージを使います�
 curl -fsSL https://edgeever.org/install.sh | bash
 ```
 
-このコマンドは最新イメージを引き、管理者パスワードを生成し、Docker Compose で EdgeEver を起動します。
+このコマンドは最新イメージを引き、管理者パスワードを生成し、Docker Compose で Ponder を起動します。
 
 手動導入と設定は [Docker deployment guide](docs/deploy-docker.md) を見てください。
 
-インストール後は既定で毎日自動更新されます。手動で更新する場合は、導入先のサーバーで `~/edgeever/update.sh` を実行してください。
+インストール後は既定で毎日自動更新されます。手動で更新する場合は、導入先のサーバーで `~/ponder/update.sh` を実行してください。
 
 ---
 
@@ -171,9 +171,9 @@ curl -fsSL https://edgeever.org/install.sh | bash
 
 ### データのバックアップ、書き出しと移行
 
-日常のバックアップ、インスタンス間のスムーズな移行、既存のノートアプリからの乗り換えなど、EdgeEver は信頼性の高い完全なデータ流通を提供します：
+日常のバックアップ、インスタンス間のスムーズな移行、既存のノートアプリからの乗り換えなど、Ponder は信頼性の高い完全なデータ流通を提供します：
 
-- **EdgeEver ネイティブのバックアップと復元**：アプリ内の **プロフィール** -> **インポートとエクスポート** から、いつでも EdgeEver ZIP アーカイブを書き出し、または取り込めます。解凍後の `notes/` ディレクトリには Markdown ファイルと添付がそのまま保持され、ローカル保管や直接閲覧に利用できます。内部の構造化メタデータにより、異なる EdgeEver インスタンス間でも無劣化で完全復元が可能です。取り込み時は無関係な既存データを残し、同一 ID のノートを自動で上書き更新します。
+- **Ponder ネイティブのバックアップと復元**：アプリ内の **プロフィール** -> **インポートとエクスポート** から、いつでも Ponder ZIP アーカイブを書き出し、または取り込めます。解凍後の `notes/` ディレクトリには Markdown ファイルと添付がそのまま保持され、ローカル保管や直接閲覧に利用できます。内部の構造化メタデータにより、異なる Ponder インスタンス間でも無劣化で完全復元が可能です。取り込み時は無関係な既存データを残し、同一 ID のノートを自動で上書き更新します。
 - **サードパーティ製ノートからのスムーズな移行**：
   - **Evernote からの移行**: [docs/evernote-migration-guide.md](docs/evernote-migration-guide.md)
   - **flomo からの移行**: [docs/flomo-migration-guide.md](docs/flomo-migration-guide.md)
@@ -185,7 +185,7 @@ curl -fsSL https://edgeever.org/install.sh | bash
 **プロフィール** -> **API / MCP** で API トークンを作成し、ワンクリックで Remote MCP 設定をコピーすることで、Claude Code、Cursor、Antigravity、OpenClaw などの AI Agent がアカウント権限の範囲内で知識ベースを安全に管理できます。テキストノート、図のノート（マインドマップ、フローチャート、アーキテクチャ図）、多次元テーブルノート、ネイティブポスターノートの完全な CRUD に対応し、Agent はノートブック階層、タグ、添付ファイル、履歴バージョン、ノートテンプレート、AI 指示の管理も行えます。
 
 > 💡 **着想：**
-> AI を知識の整理役と創作の相棒にしてください。構想をインタラクティブなマインドマップ、フローチャート、アーキテクチャ図、多次元テーブルへ瞬時に落とし込み、Agent に私有の文脈を渡せます。EdgeEver のリッチテキストと美しい体裁と組み合わせることで、AI が手伝った内容は、整った、いつでも配布できる高品質な知識資産になります。
+> AI を知識の整理役と創作の相棒にしてください。構想をインタラクティブなマインドマップ、フローチャート、アーキテクチャ図、多次元テーブルへ瞬時に落とし込み、Agent に私有の文脈を渡せます。Ponder のリッチテキストと美しい体裁と組み合わせることで、AI が手伝った内容は、整った、いつでも配布できる高品質な知識資産になります。
 
 ### 複数アカウントとストレージ管理
 
@@ -201,7 +201,7 @@ curl -fsSL https://edgeever.org/install.sh | bash
 
 ### プラグインとカスタムテーマ
 
-Web とデスクトップは機能プラグインとカスタムテーマに対応し、公式マーケット、GitHub、Manifest URL から手軽に導入でき、作業領域を通じて同期されます。開発者は `@edgeever/plugin-api` で拡張できます。詳細は [plugin development guide](docs/plugin-development.md) と [marketplace submission policy](docs/plugin-marketplace-policy.md) を参照してください。
+Web とデスクトップは機能プラグインとカスタムテーマに対応し、公式マーケット、GitHub、Manifest URL から手軽に導入でき、作業領域を通じて同期されます。開発者は `@ponder/plugin-api` で拡張できます。詳細は [plugin development guide](docs/plugin-development.md) と [marketplace submission policy](docs/plugin-marketplace-policy.md) を参照してください。
 
 ---
 
@@ -214,7 +214,7 @@ bun install
 bun run dev
 ```
 
-ローカル開発は自動ログインします。新しいデータベースの初期アカウントは `owner` / `edgeever-local-dev` です。ログイン画面を試すときはログアウトしてください。
+ローカル開発は自動ログインします。新しいデータベースの初期アカウントは `owner` / `ponder-local-dev` です。ログイン画面を試すときはログアウトしてください。
 
 ### アーキテクチャ設計と技術スタック
 
@@ -258,7 +258,7 @@ wrangler.toml     Cloudflare Workers、Assets、D1、R2 の設定
 
 #### データストレージモデル
 
-EdgeEver はエディタの描画性能、データポータビリティ、および全文検索の高速性を両立するため、ノート本文をデータベース内で同時に 3 つの形で保持します：
+Ponder はエディタの描画性能、データポータビリティ、および全文検索の高速性を両立するため、ノート本文をデータベース内で同時に 3 つの形で保持します：
 
 ```text
 content_json      TipTap/ProseMirror 文書、エディタの正本
@@ -276,7 +276,7 @@ content_text      全文検索、要約生成、索引
 コミュニティからの貢献を歓迎します！貢献の際は以下の約束にご協力ください：
 
 - コードを提出する前に [Contribution Guide](CONTRIBUTING.md) をご一読ください。
-- **本番導入とブランチの分離**：自身の GitHub Fork を EdgeEver のオンライン導入用にも使用している場合、その `main` ブランチはデプロイ専用のクリーンな状態に維持してください。機能開発やプルリクエスト作成は必ず公式の `upstream/main` から作成した別ブランチで行い、デプロイ用 `main` での直接作業や Sync fork は避けてください。
+- **本番導入とブランチの分離**：自身の GitHub Fork を Ponder のオンライン導入用にも使用している場合、その `main` ブランチはデプロイ専用のクリーンな状態に維持してください。機能開発やプルリクエスト作成は必ず公式の `upstream/main` から作成した別ブランチで行い、デプロイ用 `main` での直接作業や Sync fork は避けてください。
 
 ---
 
@@ -286,9 +286,9 @@ content_text      全文検索、要約生成、索引
 
 ### Telegram コミュニティ
 
-EdgeEver コミュニティへようこそ。Vibe Coding や AI を探求する仲間が集まり、最先端の AI 生産性と個人ナレッジベースのベストプラクティスを共有しています。
+Ponder コミュニティへようこそ。Vibe Coding や AI を探求する仲間が集まり、最先端の AI 生産性と個人ナレッジベースのベストプラクティスを共有しています。
 
-👉 [EdgeEver の Telegram グループに参加](https://t.me/+GvKYnL37feUwOTNl)
+👉 [Ponder の Telegram グループに参加](https://t.me/+GvKYnL37feUwOTNl)
 
 ## 関連リンク
 
@@ -296,28 +296,28 @@ EdgeEver コミュニティへようこそ。Vibe Coding や AI を探求する�
 
 ## スポンサーと支援
 
-EdgeEver は無料のオープンソースプロジェクトです。クロスプラットフォームクライアント（macOS、Windows、Linux、iOS、Android）の継続的な開発、実機テスト、コード署名、複数ランタイムのエコシステム維持には、継続的な時間とリソースの投入が必要です。
+Ponder は無料のオープンソースプロジェクトです。クロスプラットフォームクライアント（macOS、Windows、Linux、iOS、Android）の継続的な開発、実機テスト、コード署名、複数ランタイムのエコシステム維持には、継続的な時間とリソースの投入が必要です。
 
-- [EdgeEver を支援する](docs/sponsor.md) — WeChat Pay または Alipay による自发的な寄付
+- [Ponder を支援する](docs/sponsor.md) — WeChat Pay または Alipay による自发的な寄付
 - [スポンサーとパートナー](docs/partners.md) — インフラ、開発ツール、サービス、コミュニティ連携の支援
 
 ## 謝辞
 
-- ノート製品の設計は、[Evernote](https://evernote.com/) や [Notion](https://www.notion.com/) など成熟したノートツールの公開されている製品体験も参考にしています。関連機能は EdgeEver が独自に設計し、実装しています。
-- マインドマップと視覚的な図のノートは、[XMind](https://xmind.com/) と [ProcessOn](https://www.processon.com/) の公開されている製品体験を参考にしています。関連機能は EdgeEver が独自に設計し、実装しています。
-- EdgeEver のポスターデザイン機能は、向阳乔木（joeseesun）の [Qiaomu Design](https://github.com/joeseesun/qiaomu-cover-design) を参考にし、MIT ライセンスに基づいてテンプレートと文字組みエンジンを改変して利用しています。
-- EdgeEver の画像共有カードのテーマデザインと文字組みは、[流光卡片（Firefly Card）](https://fireflycard.shushiai.com/) を参考にしています。デザインから得た着想に感謝します。
-- EdgeEver の WeChat 向けワンクリック組版および特集記事のビジュアルデザインは、[gzh-design-skill](https://github.com/isjiamu/gzh-design-skill)（isjiamu 氏）を参考にしています。記事レイアウトとデザインの着想に感謝します。
+- ノート製品の設計は、[Evernote](https://evernote.com/) や [Notion](https://www.notion.com/) など成熟したノートツールの公開されている製品体験も参考にしています。関連機能は Ponder が独自に設計し、実装しています。
+- マインドマップと視覚的な図のノートは、[XMind](https://xmind.com/) と [ProcessOn](https://www.processon.com/) の公開されている製品体験を参考にしています。関連機能は Ponder が独自に設計し、実装しています。
+- Ponder のポスターデザイン機能は、向阳乔木（joeseesun）の [Qiaomu Design](https://github.com/joeseesun/qiaomu-cover-design) を参考にし、MIT ライセンスに基づいてテンプレートと文字組みエンジンを改変して利用しています。
+- Ponder の画像共有カードのテーマデザインと文字組みは、[流光卡片（Firefly Card）](https://fireflycard.shushiai.com/) を参考にしています。デザインから得た着想に感謝します。
+- Ponder の WeChat 向けワンクリック組版および特集記事のビジュアルデザインは、[gzh-design-skill](https://github.com/isjiamu/gzh-design-skill)（isjiamu 氏）を参考にしています。記事レイアウトとデザインの着想に感謝します。
 
 ## 商標とブランド
 
-EdgeEver の名称、ロゴ、その他のブランド表示は公式プロジェクトを区別します。Fork や改変版は EdgeEver に基づくと述べられますが、公式であるように装ったり、利用者を誤認させたりしてはなりません。オープンソースライセンスは商標権を与えません。ほかの利用は、メンテナの事前の書面による許可が必要です。
+Ponder の名称、ロゴ、その他のブランド表示は公式プロジェクトを区別します。Fork や改変版は Ponder に基づくと述べられますが、公式であるように装ったり、利用者を誤認させたりしてはなりません。オープンソースライセンスは商標権を与えません。ほかの利用は、メンテナの事前の書面による許可が必要です。
 
 ## 免責
 
-EdgeEver は、個人とコミュニティが開発・維持する独立したオープンソースのノートアプリです。Evernote Corporation およびその関係会社と提携、認可、後援、推奨の関係はありません。
+Ponder は、個人とコミュニティが開発・維持する独立したオープンソースのノートアプリです。Evernote Corporation およびその関係会社と提携、認可、後援、推奨の関係はありません。
 
-EdgeEver はセルフホスト型ソフトウェアです。公式デモを除き、メンテナはユーザー内容をホスト、管理、審査しません。インスタンスに保存または表示される内容は、その利用者または運用者の責任であり、メンテナの見解ではありません。
+Ponder はセルフホスト型ソフトウェアです。公式デモを除き、メンテナはユーザー内容をホスト、管理、審査しません。インスタンスに保存または表示される内容は、その利用者または運用者の責任であり、メンテナの見解ではありません。
 
 ## コントリビューター
 

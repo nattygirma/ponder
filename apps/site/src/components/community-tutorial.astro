@@ -1,9 +1,6 @@
 ---
-import { getSiteLocale } from "@/i18n";
 import { Icon } from "astro-icon/components";
 
-const locale = getSiteLocale(Astro.url.pathname);
-const isEnglish = locale !== "zh-CN";
 ---
 
 <aside
@@ -19,39 +16,28 @@ const isEnglish = locale !== "zh-CN";
       <div class="flex items-center gap-2">
         <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100/90 px-3 py-1 text-xs font-bold text-emerald-800 border border-emerald-200/70 shadow-2xs">
           <Icon class="h-3.5 w-3.5 text-emerald-600" name="bx:bx-heart" />
-          {isEnglish ? "Special Thanks & Tutorial" : "特别致谢 & 社区教程"}
+          Special Thanks &amp; Tutorial
         </span>
       </div>
     </div>
 
     <!-- Main Acknowledgments & Thanks text -->
     <div class="text-xs sm:text-sm leading-relaxed text-slate-700 font-sans">
-      {isEnglish ? (
-        <p>
-          Special thanks to independent blogger{" "}
-          <a href="https://www.dujin.org/" target="_blank" rel="noopener noreferrer" class="font-bold text-slate-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/70 px-2 py-0.5 rounded text-xs transition-colors inline-flex items-center gap-1">
-            <span>Dujin (缙哥哥)</span>
-            <Icon class="h-3 w-3 text-emerald-600" name="bx:bx-link-external" />
-          </a>{" "}
-          for providing valuable feedback, constructive suggestions, and sharing a detailed tutorial during EdgeEver's growth!
-        </p>
-      ) : (
-        <p>
-          特别致谢独立博主{" "}
-          <a href="https://www.dujin.org/" target="_blank" rel="noopener noreferrer" class="font-bold text-slate-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/70 px-2 py-0.5 rounded text-xs transition-colors inline-flex items-center gap-1">
-            <span>缙哥哥</span>
-            <Icon class="h-3 w-3 text-emerald-600" name="bx:bx-link-external" />
-          </a>{" "}
-          在项目成长过程中，提出了许多宝贵的改进意见并进行了无私的教程分享。
-        </p>
-      )}
+      <p>
+        Special thanks to independent blogger{" "}
+        <a href="https://www.dujin.org/" target="_blank" rel="noopener noreferrer" class="font-bold text-slate-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/70 px-2 py-0.5 rounded text-xs transition-colors inline-flex items-center gap-1">
+          <span>Dujin</span>
+          <Icon class="h-3 w-3 text-emerald-600" name="bx:bx-link-external" />
+        </a>{" "}
+        for providing valuable feedback, constructive suggestions, and sharing a detailed tutorial during Ponder's growth!
+      </p>
     </div>
 
     <!-- Featured Tutorial Card Link -->
     <div class="mt-1 rounded-xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 group hover:border-emerald-300 transition-colors">
       <div class="min-w-0">
         <div class="text-[10.5px] font-bold text-slate-400 font-mono mb-0.5">
-          {isEnglish ? "RECOMMENDED TUTORIAL" : "推荐阅读教程"}
+          RECOMMENDED TUTORIAL
         </div>
         <a
           id="community-thanks-title"
@@ -60,7 +46,7 @@ const isEnglish = locale !== "zh-CN";
           target="_blank"
           rel="noopener noreferrer"
         >
-          一分钟部署零成本、开源且原生支持 AI Agent 的个人笔记 EdgeEver
+          Deploy Ponder in one minute: a free, open-source personal notes app with native AI Agent support
         </a>
       </div>
 
@@ -70,7 +56,7 @@ const isEnglish = locale !== "zh-CN";
         rel="noopener noreferrer"
         class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-xs active:scale-95 transition-all shrink-0 w-full sm:w-auto justify-center"
       >
-        <span>{isEnglish ? "Read Tutorial" : "阅读教程"}</span>
+        <span>Read Tutorial</span>
         <Icon class="h-3.5 w-3.5" name="bx:bx-right-arrow-alt" />
       </a>
     </div>

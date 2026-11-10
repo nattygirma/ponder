@@ -12,7 +12,7 @@ test("clip metadata uses the system timezone across offsets, year boundaries and
     "America/New_York": ["2023-12-13 00:25:31", "2024-05-16 13:11:58", "2022-06-17 23:47:48", "2023-12-13 02:55:31", "2023-12-13 11:55:31", "2023-12-31 11:15:31", "2024-03-10 01:59:59", "2024-03-10 03:00:00"],
   };
   // Persist child results so this test does not depend on Bun test subprocess stdout capture.
-  const directory = mkdtempSync(join(tmpdir(), "edgeever-clip-time-"));
+  const directory = mkdtempSync(join(tmpdir(), "ponder-clip-time-"));
   try {
     for (const [timezone, result] of Object.entries(expected)) {
       const outputPath = join(directory, "result.json");

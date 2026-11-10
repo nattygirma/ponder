@@ -1,5 +1,5 @@
-import { DEFAULT_MEMO_TITLE, type MemoSummary, type Notebook } from "@edgeever/shared";
-import { resolveSupportedLocale } from "@edgeever/shared/i18n/locales";
+import { DEFAULT_MEMO_TITLE, type MemoSummary, type Notebook } from "@ponder/shared";
+import { resolveSupportedLocale } from "@ponder/shared/i18n/locales";
 import type { MobileLocalePreference } from "../lib/preferences";
 
 export type NotebookOption = {
@@ -18,7 +18,7 @@ export const parseTags = (value: string) =>
   );
 
 const compareNotebooksManual = (left: Notebook, right: Notebook) =>
-  left.sortOrder - right.sortOrder || left.name.localeCompare(right.name, "zh-CN") || left.id.localeCompare(right.id);
+  left.sortOrder - right.sortOrder || left.name.localeCompare(right.name, "en-US") || left.id.localeCompare(right.id);
 
 export const flattenNotebooks = (notebooks: Notebook[]) => {
   const byParent = new Map<string | null, Notebook[]>();
@@ -116,10 +116,10 @@ export const filterCollapsedNotebookOptions = (options: NotebookOption[], collap
 export const getResolvedMobileLocale = (localePreference: MobileLocalePreference) =>
   localePreference === "system"
     ? resolveSupportedLocale(Intl.DateTimeFormat().resolvedOptions().locale)
-    : localePreference;
+    : resolveSupportedLocale(localePreference);
 
 export const isEnglishMobileLocale = (localePreference: MobileLocalePreference) =>
-  getResolvedMobileLocale(localePreference) !== "zh-CN";
+  true;
 
 export const formatDate = (value: string, localePreference: MobileLocalePreference = "system") =>
   new Intl.DateTimeFormat(getResolvedMobileLocale(localePreference), {
@@ -146,7 +146,7 @@ export const formatMemoPreviewDate = (value: string, localePreference: MobileLoc
     if (locale === "pl") return "Wczoraj";
     if (locale === "ru") return "Вчера";
     if (locale === "en-US") return "Yesterday";
-    return "昨天";
+    return "Yesterday";
   }
   return new Intl.DateTimeFormat(locale, { year: "numeric", month: "numeric", day: "numeric" }).format(date);
 };

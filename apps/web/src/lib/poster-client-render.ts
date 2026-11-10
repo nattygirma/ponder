@@ -1,4 +1,4 @@
-import { parsePosterDocument, type PosterDocument } from '@edgeever/shared';
+import { parsePosterDocument, type PosterDocument } from '@ponder/shared';
 import { api, ApiRequestError } from './api';
 
 export async function applyClientPosterTemplate(document: PosterDocument, templateId: string, zh: boolean) {

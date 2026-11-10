@@ -1,8 +1,8 @@
 # Sponsor & Support
 
-EdgeEver is a free and open-source project. Sustaining cross-platform client updates (macOS, Windows, Linux, iOS, Android), continuous device testing, code-signing certificates, and multi-runtime ecosystem maintenance requires ongoing dedication and resources.
+Ponder is a free and open-source project. Sustaining cross-platform client updates (macOS, Windows, Linux, iOS, Android), continuous device testing, code-signing certificates, and multi-runtime ecosystem maintenance requires ongoing dedication and resources.
 
-If EdgeEver brings value to your knowledge management or productivity workflow, we warmly welcome and appreciate your support!
+If Ponder brings value to your knowledge management or productivity workflow, we warmly welcome and appreciate your support!
 
 ---
 

@@ -75,12 +75,12 @@ jobs:
       - name: Import macOS signing identity
         if: runner.os == 'macOS' && inputs.fixture_run == ''
         env:
-          MAC_CERTIFICATE_DER_BASE64: ${{ secrets.EDGEEVER_MAC_CERTIFICATE_DER_BASE64 }}
-          MAC_PRIVATE_KEY_BASE64: ${{ secrets.EDGEEVER_MAC_PRIVATE_KEY_BASE64 }}
+          MAC_CERTIFICATE_DER_BASE64: ${{ secrets.PONDER_MAC_CERTIFICATE_DER_BASE64 }}
+          MAC_PRIVATE_KEY_BASE64: ${{ secrets.PONDER_MAC_PRIVATE_KEY_BASE64 }}
         run: |
           test -n "$MAC_CERTIFICATE_DER_BASE64"
           test -n "$MAC_PRIVATE_KEY_BASE64"
-          keychain_path="$RUNNER_TEMP/edgeever-update-verification.keychain-db"
+          keychain_path="$RUNNER_TEMP/ponder-update-verification.keychain-db"
           keychain_password="$(openssl rand -hex 32)"
           certificate_path="$RUNNER_TEMP/update-signing.cer"
           private_key_path="$RUNNER_TEMP/update-signing.pem"
@@ -105,15 +105,15 @@ jobs:
       - name: Build renderer and sidecar
         if: inputs.fixture_run == ''
         env:
-          EDGE_EVER_DESKTOP_BUILD: '1'
+          PONDER_DESKTOP_BUILD: '1'
         run: |
           bun run build:web
           cargo build --manifest-path crates/desktop-sidecar/Cargo.toml --release
 
-      - name: Build three isolated instrumented EdgeEver installers
+      - name: Build three isolated instrumented Ponder installers
         if: inputs.fixture_run == ''
         env:
-          EDGE_EVER_DESKTOP_ARCH: ${{ matrix.arch }}
+          PONDER_DESKTOP_ARCH: ${{ matrix.arch }}
         run: node scripts/build-native-update-fixtures.mjs
 
       - name: Retain signed test installers for verification reruns
@@ -122,13 +122,13 @@ jobs:
         with:
           name: native-update-installers-${{ matrix.platform }}-${{ matrix.arch }}
           path: |
-            ${{ runner.temp }}/edgeever-update-verification/versions.json
-            ${{ runner.temp }}/edgeever-update-verification/public-key.pem
-            ${{ runner.temp }}/edgeever-update-verification/*/EdgeEver-*.zip
-            ${{ runner.temp }}/edgeever-update-verification/*/EdgeEver-*.exe
-            ${{ runner.temp }}/edgeever-update-verification/*/EdgeEver-*.AppImage
-            ${{ runner.temp }}/edgeever-update-verification/*/latest*
-            ${{ runner.temp }}/edgeever-update-verification/*/payload.sha256
+            ${{ runner.temp }}/ponder-update-verification/versions.json
+            ${{ runner.temp }}/ponder-update-verification/public-key.pem
+            ${{ runner.temp }}/ponder-update-verification/*/Ponder-*.zip
+            ${{ runner.temp }}/ponder-update-verification/*/Ponder-*.exe
+            ${{ runner.temp }}/ponder-update-verification/*/Ponder-*.AppImage
+            ${{ runner.temp }}/ponder-update-verification/*/latest*
+            ${{ runner.temp }}/ponder-update-verification/*/payload.sha256
           retention-days: 7
           compression-level: 0
           if-no-files-found: error
@@ -140,23 +140,23 @@ jobs:
           FIXTURE_RUN: ${{ inputs.fixture_run }}
           ARTIFACT_NAME: native-update-installers-${{ matrix.platform }}-${{ matrix.arch }}
         shell: bash
-        run: gh run download "$FIXTURE_RUN" --repo "$GITHUB_REPOSITORY" --name "$ARTIFACT_NAME" --dir "$RUNNER_TEMP/edgeever-update-verification"
+        run: gh run download "$FIXTURE_RUN" --repo "$GITHUB_REPOSITORY" --name "$ARTIFACT_NAME" --dir "$RUNNER_TEMP/ponder-update-verification"
 
       - name: Exercise real native updates
         timeout-minutes: 10
         if: runner.os != 'Linux'
-        run: node scripts/verify-native-desktop-update.mjs "${{ runner.temp }}/edgeever-update-verification"
+        run: node scripts/verify-native-desktop-update.mjs "${{ runner.temp }}/ponder-update-verification"
 
       - name: Exercise real AppImage updates
         timeout-minutes: 10
         if: runner.os == 'Linux'
-        run: xvfb-run -a node scripts/verify-native-desktop-update.mjs "$RUNNER_TEMP/edgeever-update-verification"
+        run: xvfb-run -a node scripts/verify-native-desktop-update.mjs "$RUNNER_TEMP/ponder-update-verification"
 
       - name: Save installation evidence
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: native-update-evidence-${{ matrix.platform }}-${{ matrix.arch }}
-          path: ${{ runner.temp }}/edgeever-update-verification/evidence
+          path: ${{ runner.temp }}/ponder-update-verification/evidence
           if-no-files-found: warn
           retention-days: 14

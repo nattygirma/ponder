@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-export const EDITOR_SPELLCHECK_STORAGE_KEY = "edgeever.editor.spellcheckEnabled";
+export const EDITOR_SPELLCHECK_STORAGE_KEY = "ponder.editor.spellcheckEnabled";
 
-export const EDITOR_SPELLCHECK_CHANGED_EVENT = "edgeever:editor-spellcheck-changed";
+export const EDITOR_SPELLCHECK_CHANGED_EVENT = "ponder:editor-spellcheck-changed";
 
 // Holds the latest choice when localStorage rejects the write, so the setting
 // stays consistent for the rest of the session instead of reverting on remount.

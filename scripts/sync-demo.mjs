@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 
 const REPOSITORY = "tianma-if/edgeever";
 const WORKFLOW = "deploy-demo.yml";
-const DEFAULT_DEMO_URL = "https://demo.edgeever.org";
+const DEFAULT_DEMO_URL = "https://appkeep.io";
 const DEFAULT_DEMO_USERNAME = "ee-demo";
 const DEFAULT_DEMO_PASSWORD = "demo#dZ6Q29Zjfor%";
 const RUN_DISCOVERY_ATTEMPTS = 30;
@@ -18,9 +18,9 @@ memo. It does not create a tag or Release. The command requires an authenticated
 GitHub CLI.
 
 Optional environment overrides:
-  EDGE_EVER_DEMO_URL
-  EDGE_EVER_DEMO_USERNAME
-  EDGE_EVER_DEMO_PASSWORD`;
+  PONDER_DEMO_URL
+  PONDER_DEMO_USERNAME
+  PONDER_DEMO_PASSWORD`;
 
 export const parseSyncDemoArgs = (args) => {
   let dryRun = false;
@@ -154,9 +154,9 @@ const requestJson = async (url, options = {}) => {
 };
 
 const resetAndVerifyDemo = async () => {
-  const demoUrl = (process.env.EDGE_EVER_DEMO_URL || DEFAULT_DEMO_URL).replace(/\/+$/, "");
-  const username = process.env.EDGE_EVER_DEMO_USERNAME || DEFAULT_DEMO_USERNAME;
-  const password = process.env.EDGE_EVER_DEMO_PASSWORD || DEFAULT_DEMO_PASSWORD;
+  const demoUrl = (process.env.PONDER_DEMO_URL || DEFAULT_DEMO_URL).replace(/\/+$/, "");
+  const username = process.env.PONDER_DEMO_USERNAME || DEFAULT_DEMO_USERNAME;
+  const password = process.env.PONDER_DEMO_PASSWORD || DEFAULT_DEMO_PASSWORD;
 
   const session = await requestJson(`${demoUrl}/api/v1/auth/login`, {
     method: "POST",

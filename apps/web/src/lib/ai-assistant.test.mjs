@@ -13,13 +13,11 @@ describe("AI assistant interaction model", () => {
   test("chooses a useful default from the current scope and locale", () => {
     expect(getDefaultAiAction(true)).toBe("improve-writing");
     expect(getDefaultAiAction(false)).toBe("custom");
-    expect(getDefaultTargetLanguage("zh-CN")).toBe("en");
-    expect(getDefaultTargetLanguage("en-US")).toBe("zh-CN");
-    expect(getDefaultTargetLanguage("zh_TW")).toBe("en");
+    expect(getDefaultTargetLanguage("en-US")).toBe("es");
     expect(getDefaultTargetLanguage("ja")).toBe("ja");
     expect(getDefaultTargetLanguage("pl-PL")).toBe("en");
     expect(getDefaultTargetLanguage("ru")).toBe("en");
-    expect(getDefaultTargetLanguage(undefined)).toBe("zh-CN");
+    expect(getDefaultTargetLanguage(undefined)).toBe("en");
   });
 
   test("sends the visible instruction with the semantic action key", () => {

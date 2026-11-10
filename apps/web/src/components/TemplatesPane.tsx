@@ -24,9 +24,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { WORKSPACE_PAGE_TITLE_CLASSNAME } from "@/lib/workspace-ui";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { createTemplateCards, createTemplateDraft, templateDraftToPayload } from "@/lib/template-center";
-import { listMemoTemplateGallery, type MemoTemplateGalleryEntry } from "@edgeever/shared/memo-template-gallery";
+import { listMemoTemplateGallery, type MemoTemplateGalleryEntry } from "@ponder/shared/memo-template-gallery";
 import { ClipboardCopyNotice } from "@/components/ClipboardCopyNotice";
-import type { MemoTemplate as SavedMemoTemplate } from "@edgeever/shared";
+import type { MemoTemplate as SavedMemoTemplate } from "@ponder/shared";
 import { ExecutionCenterButton } from "@/components/execution/ExecutionCenterButton";
 
 const TemplateIconAction = ({

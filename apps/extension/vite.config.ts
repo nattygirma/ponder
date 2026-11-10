@@ -8,7 +8,7 @@ import tailwindcss from "@tailwindcss/vite";
 import extensionPackage from "./package.json";
 import { buildExtensionManifest, type ExtensionTarget } from "./manifest";
 
-const target: ExtensionTarget = process.env.EDGE_EVER_EXTENSION_TARGET === "firefox"
+const target: ExtensionTarget = process.env.PONDER_EXTENSION_TARGET === "firefox"
   ? "firefox"
   : "chromium";
 const require = createRequire(import.meta.url);
@@ -20,7 +20,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     {
-      name: "edgeever-extension-manifest",
+      name: "ponder-extension-manifest",
       async generateBundle(_options, bundle) {
         this.emitFile({
           type: "asset",

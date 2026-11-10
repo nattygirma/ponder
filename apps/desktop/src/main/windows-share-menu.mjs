@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { desktopDialogCopy } from "./desktop-copy.mjs";
 
-export const WINDOWS_SHARE_MENU_KEY = "HKCU\\Software\\Classes\\*\\shell\\EdgeEver";
+export const WINDOWS_SHARE_MENU_KEY = "HKCU\\Software\\Classes\\*\\shell\\Ponder";
 
 export const windowsShareMenuLabel = (locale) => desktopDialogCopy(locale).shareMenuLabel;
 

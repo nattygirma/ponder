@@ -9,9 +9,9 @@ import { backgroundNodeExecutable } from "../apps/desktop/src/main/background-no
 import { instrumentNativeUpdateMain } from "./native-update-instrumentation.mjs";
 
 const main = readFileSync(new URL("../apps/desktop/src/main/index.mjs", import.meta.url), "utf8");
-test("instruments the actual current EdgeEver entry without changing its update controller", () => {
+test("instruments the actual current Ponder entry without changing its update controller", () => {
   const instrumented = instrumentNativeUpdateMain(main, "/tmp/native-update-config.json");
-  const directory = mkdtempSync(join(tmpdir(), "edgeever-native-update-syntax-"));
+  const directory = mkdtempSync(join(tmpdir(), "ponder-native-update-syntax-"));
   try {
     const path = join(directory, "index.mjs");
     writeFileSync(path, instrumented);
@@ -19,7 +19,7 @@ test("instruments the actual current EdgeEver entry without changing its update 
     expect(result.status, result.stderr).toBe(0);
     expect(instrumented).toContain('createDesktopUpdateController({');
     expect(instrumented).toContain('verifierLog("ready", { version, runningVersion: app.getVersion() })');
-    expect(instrumented).toContain('app.setPath("userData", process.env.EDGE_EVER_UPDATE_VERIFIER_PROFILE)');
+    expect(instrumented).toContain('app.setPath("userData", process.env.PONDER_UPDATE_VERIFIER_PROFILE)');
     expect(instrumented).not.toContain('await confirmMacInstallation()');
     expect(main).not.toContain('native-update-verifier.mjs');
   } finally { rmSync(directory, { recursive: true, force: true }); }
@@ -59,18 +59,18 @@ test("official bridge debugger bootstrap compiles for old/new and Windows paths"
 });
 
 test("macOS fixture bundle discovery honors executableName and rejects ambiguity", () => {
-  const directory = mkdtempSync(join(tmpdir(), "edgeever-bundle-name-"));
+  const directory = mkdtempSync(join(tmpdir(), "ponder-bundle-name-"));
   try {
-    mkdirSync(join(directory, "EdgeEverUpdateVerifier.app"));
+    mkdirSync(join(directory, "PonderUpdateVerifier.app"));
     writeFileSync(join(directory, "not-a-bundle.app"), "not a directory");
-    expect(macAppBundle(directory)).toBe(join(directory, "EdgeEverUpdateVerifier.app"));
+    expect(macAppBundle(directory)).toBe(join(directory, "PonderUpdateVerifier.app"));
     mkdirSync(join(directory, "Another.app"));
     expect(() => macAppBundle(directory)).toThrow("exactly one");
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
 test("macOS fixture identity satisfies the actual product background Helper lookup", () => {
-  const directory = mkdtempSync(join(tmpdir(), "edgeever-helper-invariant-"));
+  const directory = mkdtempSync(join(tmpdir(), "ponder-helper-invariant-"));
   try {
     const contents = join(directory, MAC_UPDATE_FIXTURE_NAME + ".app", "Contents");
     const executable = join(contents, "MacOS", MAC_UPDATE_FIXTURE_NAME);

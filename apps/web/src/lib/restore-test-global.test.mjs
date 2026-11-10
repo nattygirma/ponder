@@ -60,7 +60,7 @@ test("ensureTestWindowDom uses the document view when the leftover window cannot
     createElement: (name) => ({ nodeName: name }),
     getElementsByTagName: () => [{}],
   };
-  globalThis.window = { edgeeverDesktop: { isAvailable: true } };
+  globalThis.window = { ponderDesktop: { isAvailable: true } };
   ensureTestWindowDom();
   expect(globalThis.window).toBe(view);
   if (windowDescriptor) Object.defineProperty(globalThis, "window", windowDescriptor);
@@ -71,12 +71,12 @@ test("ensureTestWindowDom uses the document view when the leftover window cannot
 
 test("ensureTestWindowDom fills event methods on a leftover window", () => {
   const descriptor = Object.getOwnPropertyDescriptor(globalThis, "window");
-  const stub = { edgeeverDesktop: { isAvailable: true } };
+  const stub = { ponderDesktop: { isAvailable: true } };
   globalThis.window = stub;
   ensureTestWindowDom();
   expect(typeof stub.addEventListener).toBe("function");
   expect(typeof stub.getComputedStyle).toBe("function");
-  expect(stub.edgeeverDesktop.isAvailable).toBe(true);
+  expect(stub.ponderDesktop.isAvailable).toBe(true);
   ensureTestWindowDom();
   if (descriptor) Object.defineProperty(globalThis, "window", descriptor);
   else delete globalThis.window;

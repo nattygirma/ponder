@@ -1,4 +1,4 @@
-import type { AiSettings } from "@edgeever/shared";
+import type { AiSettings } from "@ponder/shared";
 
 export type BuiltinAgentModelView = {
   label: string;

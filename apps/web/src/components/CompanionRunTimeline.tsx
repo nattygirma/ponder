@@ -1,5 +1,5 @@
-import type { CompanionTodo, CompanionToolCall, CompanionToolEffect } from "@edgeever/shared";
-import { getMemoDisplayTitle } from "@edgeever/shared";
+import type { CompanionTodo, CompanionToolCall, CompanionToolEffect } from "@ponder/shared";
+import { getMemoDisplayTitle } from "@ponder/shared";
 import { Check, ChevronDown, Circle, FileText, Loader2, RotateCcw, Undo2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

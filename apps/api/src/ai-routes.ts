@@ -20,7 +20,7 @@ import {
   type AiAttachmentInput,
   type AiTargetLanguage,
   type AiTone,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import type { Context, Hono } from "hono";
 import type { AppContext, AppEnv, Bindings } from "./api-context";
@@ -144,7 +144,7 @@ const requireEncryptionKey = (context: AppContext) => {
   if (!key) {
     throw new AppError(
       "ai_encryption_key_missing",
-      "AI credential encryption requires instance authentication or an optional EDGE_EVER_CREDENTIALS_ENCRYPTION_KEY.",
+      "AI credential encryption requires instance authentication or an optional PONDER_CREDENTIALS_ENCRYPTION_KEY.",
       400,
     );
   }

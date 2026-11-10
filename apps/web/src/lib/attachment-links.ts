@@ -1,4 +1,4 @@
 export {
   getAttachmentFilenameFromLabel,
   getResourceIdFromUrl as getAttachmentResourceId,
-} from "@edgeever/shared";
+} from "@ponder/shared";

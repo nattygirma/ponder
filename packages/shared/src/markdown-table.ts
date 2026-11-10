@@ -10,7 +10,7 @@ const cellTokens = (tokens: MarkdownToken[]): MarkdownToken[] => tokens.map((tok
     : token.tokens ? { ...token, tokens: cellTokens(token.tokens) } : token,
 );
 
-export const EdgeEverTableKit = TableKit.extend({
+export const PonderTableKit = TableKit.extend({
   addExtensions() {
     return (this.parent?.() ?? []).map((extension) => {
       if(extension.name !== "table") return extension;

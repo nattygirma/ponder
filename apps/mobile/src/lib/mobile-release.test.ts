@@ -10,9 +10,9 @@ import {
 
 const responseWithTag = (tagName: string, androidVersion = tagName.replace(/^v/, "")) => new Response(JSON.stringify({
   assets: [{
-    browser_download_url: `https://github.com/tianma-if/edgeever/releases/download/${tagName}/edgeever-android-v${androidVersion}-arm64-v8a.apk`,
+    browser_download_url: `https://github.com/tianma-if/edgeever/releases/download/${tagName}/ponder-android-v${androidVersion}-arm64-v8a.apk`,
     digest: `sha256:${"a".repeat(64)}`,
-    name: `edgeever-android-v${androidVersion}-arm64-v8a.apk`,
+    name: `ponder-android-v${androidVersion}-arm64-v8a.apk`,
     size: 48_000_000,
   }],
   tag_name: tagName,
@@ -26,8 +26,8 @@ test("finds a newer formal GitHub release", async () => {
 
   expect(release).toEqual({
     digest: `sha256:${"a".repeat(64)}`,
-    downloadUrl: "https://github.com/tianma-if/edgeever/releases/download/v0.4.15/edgeever-android-v0.4.15-arm64-v8a.apk",
-    fileName: "edgeever-android-v0.4.15-arm64-v8a.apk",
+    downloadUrl: "https://github.com/tianma-if/edgeever/releases/download/v0.4.15/ponder-android-v0.4.15-arm64-v8a.apk",
+    fileName: "ponder-android-v0.4.15-arm64-v8a.apk",
     size: 48_000_000,
     version: "0.4.15",
   });
@@ -42,8 +42,8 @@ test("uses the actual reused Android asset version instead of the overall releas
   expect(await findNewerMobileRelease("1.6.50", async () => responseWithTag("v1.7.0", "1.6.50"))).toBeNull();
   expect(await findNewerMobileRelease("1.6.49", async () => responseWithTag("v1.7.0", "1.6.50"))).toEqual({
     digest: `sha256:${"a".repeat(64)}`,
-    downloadUrl: "https://github.com/tianma-if/edgeever/releases/download/v1.7.0/edgeever-android-v1.6.50-arm64-v8a.apk",
-    fileName: "edgeever-android-v1.6.50-arm64-v8a.apk",
+    downloadUrl: "https://github.com/tianma-if/edgeever/releases/download/v1.7.0/ponder-android-v1.6.50-arm64-v8a.apk",
+    fileName: "ponder-android-v1.6.50-arm64-v8a.apk",
     size: 48_000_000,
     version: "1.6.50",
   });
@@ -62,9 +62,9 @@ test("rejects invalid release responses instead of claiming the app is current",
   })))).rejects.toThrow("exactly one Android APK");
   await expect(findNewerMobileRelease("0.4.14", async () => new Response(JSON.stringify({
     assets: [{
-      browser_download_url: "https://attacker.invalid/edgeever.apk",
+      browser_download_url: "https://attacker.invalid/ponder.apk",
       digest: `sha256:${"a".repeat(64)}`,
-      name: "edgeever-android-v0.4.15-arm64-v8a.apk",
+      name: "ponder-android-v0.4.15-arm64-v8a.apk",
       size: 48_000_000,
     }],
     tag_name: "v0.4.15",

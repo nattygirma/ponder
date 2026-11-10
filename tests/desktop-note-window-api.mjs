@@ -4,7 +4,7 @@
 import { Database } from "bun:sqlite";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { fetchEdgeEverApp } from "../apps/api/src/index.ts";
+import { fetchPonderApp } from "../apps/api/src/index.ts";
 import { createSelfHostedStorageAdapter } from "../apps/api/src/self-hosted-storage-adapter.ts";
 
 const directory = process.argv[2];
@@ -17,11 +17,11 @@ for (const name of (await readdir("migrations")).filter((name) => name.endsWith(
 database.query("INSERT OR IGNORE INTO workspaces(id,name,is_personal) VALUES ('ws_default','Personal',1)").run();
 const environment = {
   storage: createSelfHostedStorageAdapter(database, join(directory, "resources")),
-  EDGE_EVER_ALLOW_UNAUTHENTICATED: "true",
-  EDGE_EVER_RUNTIME: "self-hosted-bun",
+  PONDER_ALLOW_UNAUTHENTICATED: "true",
+  PONDER_RUNTIME: "self-hosted-bun",
 };
 const server = Bun.serve({ hostname: "127.0.0.1", port: 0,
-  fetch: (request) => fetchEdgeEverApp(request, environment, { waitUntil() {}, passThroughOnException() {} }),
+  fetch: (request) => fetchPonderApp(request, environment, { waitUntil() {}, passThroughOnException() {} }),
 });
 
 const stop = () => {

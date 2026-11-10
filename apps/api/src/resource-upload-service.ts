@@ -3,7 +3,7 @@ import {
   JsonBackupResourceMetadataSchema,
   type JsonBackupResource,
   type Resource,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { auditStatement } from "./audit";
 import type { AppContext, AuditActor } from "./api-context";
 import { AppError } from "./app-error";
@@ -379,7 +379,7 @@ const completeRestoredResourceUpload = async (
         metadata.sha256,
         metadata.width,
         metadata.height,
-        JSON.stringify({ source: "edgeever-zip-import" }),
+        JSON.stringify({ source: "ponder-zip-import" }),
         metadata.createdAt,
         now,
       ),

@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { createPosterDocument, parsePosterDocument, serializePosterDocument } from "@edgeever/shared";
+import { createPosterDocument, parsePosterDocument, serializePosterDocument } from "@ponder/shared";
 import { canRestorePosterDraft, classifyPosterUpdate, posterMemoContent, savePosterMemo } from "./poster-save";
 const memo = { id: "memo", title: "Poster", revision: 3, contentHash: "old", tags: ["design"] };
 test("saves source with optimistic revision/hash checks and immutable preview", async () => {
@@ -12,7 +12,7 @@ test("saves source with optimistic revision/hash checks and immutable preview", 
   await savePosterMemo(repository, memo, createPosterDocument("Hello"), "Poster", "session", new Blob(["png"]));
   expect(payload).toMatchObject({ expectedRevision: 3, expectedContentHash: "old", editSessionId: "session", tags: ["design"] });
   expect(parsePosterDocument(payload.contentMarkdown)?.previewResourceId).toBe("res_new");
-  expect(JSON.stringify(payload.contentJson)).not.toContain("edgeever-poster-v1");
+  expect(JSON.stringify(payload.contentJson)).not.toContain("ponder-poster-v1");
 });
 test("failed memo save removes only its uncommitted preview, never the previous revision", async () => {
   const deleted = [];
@@ -37,7 +37,7 @@ test("metadata-only saves reuse the existing preview and persist edited tags", a
 });
 
 test("an uncertain storage failure retains a preview already referenced by source", async () => {
-  const { serializePosterDocument } = await import("@edgeever/shared");
+  const { serializePosterDocument } = await import("@ponder/shared");
   const document = { ...createPosterDocument(), previewResourceId: "res_new" };
   let deleted = false;
   const repository = {

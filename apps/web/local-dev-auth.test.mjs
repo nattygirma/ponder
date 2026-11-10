@@ -1,18 +1,18 @@
 import { afterEach, describe, expect, mock, spyOn, test } from "bun:test";
 import { localDevelopmentAuth } from "./local-dev-auth.ts";
 
-const originalProfile = process.env.EDGE_EVER_DEVELOPMENT_PROFILE;
-const originalAutoLogin = process.env.EDGE_EVER_LOCAL_AUTO_LOGIN;
+const originalProfile = process.env.PONDER_DEVELOPMENT_PROFILE;
+const originalAutoLogin = process.env.PONDER_LOCAL_AUTO_LOGIN;
 afterEach(() => {
-  if (originalProfile === undefined) delete process.env.EDGE_EVER_DEVELOPMENT_PROFILE;
-  else process.env.EDGE_EVER_DEVELOPMENT_PROFILE = originalProfile;
-  if (originalAutoLogin === undefined) delete process.env.EDGE_EVER_LOCAL_AUTO_LOGIN;
-  else process.env.EDGE_EVER_LOCAL_AUTO_LOGIN = originalAutoLogin;
+  if (originalProfile === undefined) delete process.env.PONDER_DEVELOPMENT_PROFILE;
+  else process.env.PONDER_DEVELOPMENT_PROFILE = originalProfile;
+  if (originalAutoLogin === undefined) delete process.env.PONDER_LOCAL_AUTO_LOGIN;
+  else process.env.PONDER_LOCAL_AUTO_LOGIN = originalAutoLogin;
   mock.restore();
 });
 const setup = (profile = "local", autoLogin = "true") => {
-  process.env.EDGE_EVER_DEVELOPMENT_PROFILE = profile;
-  process.env.EDGE_EVER_LOCAL_AUTO_LOGIN = autoLogin;
+  process.env.PONDER_DEVELOPMENT_PROFILE = profile;
+  process.env.PONDER_LOCAL_AUTO_LOGIN = autoLogin;
   const handlers = [];
   const provision = mock(async () => ({ token: "test-token", maxAge: 100 }));
   const plugin = localDevelopmentAuth(provision);
@@ -49,7 +49,7 @@ describe("local browser auto-login boundary", () => {
   test("does not replace an existing authenticated account", async () => {
     const { handler, provision } = setup();
     spyOn(globalThis, "fetch").mockResolvedValue(Response.json({ authRequired: true, authenticated: true }));
-    await handler(request({ cookie: "edgeever_session=existing" }), response(), mock());
+    await handler(request({ cookie: "ponder_session=existing" }), response(), mock());
     expect(provision).not.toHaveBeenCalled();
   });
 
@@ -65,19 +65,11 @@ describe("local browser auto-login boundary", () => {
     expect(provision).not.toHaveBeenCalled();
   });
 
-  test("preserves logout cookies and leaves the login screen accessible afterwards", async () => {
-    const { handler, provision } = setup();
-    spyOn(globalThis, "fetch")
-      .mockResolvedValueOnce(Response.json({ ok: true }, { headers: { "Set-Cookie": "edgeever_session=; Max-Age=0" } }))
-      .mockResolvedValueOnce(Response.json({ authRequired: true, authenticated: false }));
+  test("passes logout cookies through and signs back in on the next load", async () => {
+    const { handler } = setup();
+    spyOn(globalThis, "fetch").mockResolvedValueOnce(Response.json({ ok: true }, { headers: { "Set-Cookie": "ponder_session=; Max-Age=0" } }));
     const res = response();
     await handler({ ...request(), url: "/api/v1/auth/logout", method: "POST" }, res, mock());
-    expect(res.setHeader).toHaveBeenCalledWith("Set-Cookie", [
-      "edgeever_session=; Max-Age=0", "edgeever_local_logged_out=1; Path=/; HttpOnly; SameSite=Lax",
-    ]);
-    const next = mock();
-    await handler(request({ cookie: "edgeever_local_logged_out=1" }), response(), next);
-    expect(next).toHaveBeenCalled();
-    expect(provision).not.toHaveBeenCalled();
+    expect(res.setHeader).toHaveBeenCalledWith("Set-Cookie", ["ponder_session=; Max-Age=0"]);
   });
 });

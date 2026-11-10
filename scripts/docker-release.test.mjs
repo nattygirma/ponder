@@ -11,43 +11,43 @@ const readProjectFile = (path) =>
 
 describe("self-hosted runtime configuration", () => {
   test("uses the portable single-volume defaults", () => {
-    const config = resolveSelfHostedConfig({}, "/opt/edgeever");
-    expect(config.dataDirectory).toBe("/opt/edgeever/.edgeever-data");
+    const config = resolveSelfHostedConfig({}, "/opt/ponder");
+    expect(config.dataDirectory).toBe("/opt/ponder/.ponder-data");
     expect(config.databaseFile).toBe(
-      "/opt/edgeever/.edgeever-data/edgeever.sqlite",
+      "/opt/ponder/.ponder-data/ponder.sqlite",
     );
     expect(config.resourcesDirectory).toBe(
-      "/opt/edgeever/.edgeever-data/resources",
+      "/opt/ponder/.ponder-data/resources",
     );
     expect(config.port).toBe(8787);
     expect(config.storageBackend).toBe("local");
   });
 
   test("loads Docker secrets without retaining the file indirection", async () => {
-    const directory = await mkdtemp(`${tmpdir()}/edgeever-docker-secret-`);
+    const directory = await mkdtemp(`${tmpdir()}/ponder-docker-secret-`);
     const secretPath = resolve(directory, "password");
     try {
       await writeFile(secretPath, "secret-from-file\n");
       const environment = await loadSelfHostedEnvironment({
-        EDGE_EVER_AUTH_PASSWORD_FILE: secretPath,
+        PONDER_AUTH_PASSWORD_FILE: secretPath,
       });
-      expect(environment.EDGE_EVER_AUTH_PASSWORD).toBe("secret-from-file");
-      expect(environment.EDGE_EVER_AUTH_PASSWORD_FILE).toBeUndefined();
+      expect(environment.PONDER_AUTH_PASSWORD).toBe("secret-from-file");
+      expect(environment.PONDER_AUTH_PASSWORD_FILE).toBeUndefined();
     } finally {
       await rm(directory, { recursive: true, force: true });
     }
   });
 
   test("rejects invalid ports and storage backends", () => {
-    expect(() => resolveSelfHostedConfig({ EDGE_EVER_PORT: "0" })).toThrow(
-      "EDGE_EVER_PORT",
+    expect(() => resolveSelfHostedConfig({ PONDER_PORT: "0" })).toThrow(
+      "PONDER_PORT",
     );
     expect(() =>
-      resolveSelfHostedConfig({ EDGE_EVER_STORAGE_BACKEND: "r2" }),
+      resolveSelfHostedConfig({ PONDER_STORAGE_BACKEND: "r2" }),
     ).toThrow("either local or s3");
     expect(() =>
-      resolveSelfHostedConfig({ EDGE_EVER_STORAGE_BACKEND: "s3" }),
-    ).toThrow("EDGE_EVER_S3_BUCKET");
+      resolveSelfHostedConfig({ PONDER_STORAGE_BACKEND: "s3" }),
+    ).toThrow("PONDER_S3_BUCKET");
   });
 });
 
@@ -71,10 +71,10 @@ describe("Docker release contract", () => {
     expect(dockerfile).toContain(
       "COPY release-summary.json release-summary.json",
     );
-    expect(dockerfile).toContain("--filter @edgeever/web");
-    expect(dockerfile).toContain("--filter @edgeever/public-network");
+    expect(dockerfile).toContain("--filter @ponder/web");
+    expect(dockerfile).toContain("--filter @ponder/public-network");
     expect(dockerfile).toContain(
-      "RUN bun install --frozen-lockfile \\\n  --filter edgeever \\\n  --filter @edgeever/api",
+      "RUN bun install --frozen-lockfile \\\n  --filter ponder \\\n  --filter @ponder/api",
     );
     expect(packageMetadata.scripts["build:self-hosted"]).toBe(
       "bun build scripts/self-hosted-server.mjs --target=bun --format=esm --outdir=dist/self-hosted --sourcemap=none",
@@ -82,7 +82,7 @@ describe("Docker release contract", () => {
     expect(dockerfile).toContain("RUN bun run build:web && bun run build:self-hosted");
     expect(dockerfile).toContain("scripts/prepare-poster-thumbnails.mjs scripts/prepare-poster-thumbnails.d.mts scripts/");
     expect(dockerfile).toContain("RUN apk add --no-cache chromium nodejs");
-    expect(dockerfile).toContain("EDGE_EVER_POSTER_CHROME_EXECUTABLE=/usr/bin/chromium");
+    expect(dockerfile).toContain("PONDER_POSTER_CHROME_EXECUTABLE=/usr/bin/chromium");
     expect(dockerfile).toContain("COPY tests/browser/poster-thumbnail-generator.html tests/browser/poster-thumbnail-generator.ts tests/browser/");
     expect(runtimeStage).toContain(
       "COPY --from=build /app/dist/self-hosted/self-hosted-server.js ./scripts/self-hosted-server.js",
@@ -90,7 +90,7 @@ describe("Docker release contract", () => {
     expect(runtimeStage).toContain(
       "ln -s self-hosted-server.js /app/scripts/self-hosted-server.mjs",
     );
-    expect(runtimeStage).toContain('org.opencontainers.image.title="EdgeEver"');
+    expect(runtimeStage).toContain('org.opencontainers.image.title="Ponder"');
     expect(runtimeStage).toContain('org.opencontainers.image.licenses="AGPL-3.0-only"');
     expect(runtimeStage).not.toContain("node_modules");
     expect(runtimeStage).not.toContain("/app/apps/api");
@@ -101,9 +101,9 @@ describe("Docker release contract", () => {
     expect(dockerfile).toContain("USER bun");
     expect(dockerfile).toContain('VOLUME ["/data"]');
     expect(dockerfile).toContain("HEALTHCHECK");
-    expect(dockerfile).toContain("ARG EDGE_EVER_BUILD_ID=unknown");
-    expect(dockerfile).toContain("EDGE_EVER_BUILD_ID=${EDGE_EVER_BUILD_ID}");
-    for (const name of ["EDGE_EVER_BUILD_CREATED_AT", "EDGE_EVER_BUILD_TRIGGER", "EDGE_EVER_BUILD_METHOD"]) {
+    expect(dockerfile).toContain("ARG PONDER_BUILD_ID=unknown");
+    expect(dockerfile).toContain("PONDER_BUILD_ID=${PONDER_BUILD_ID}");
+    for (const name of ["PONDER_BUILD_CREATED_AT", "PONDER_BUILD_TRIGGER", "PONDER_BUILD_METHOD"]) {
       // Empty by default so self-built images report unknown build metadata.
       expect(runtimeStage).toContain(`ARG ${name}=\n`);
       expect(runtimeStage).toContain(`${name}=\${${name}}`);
@@ -112,13 +112,7 @@ describe("Docker release contract", () => {
     expect(readProjectFile("docs/deploy-docker.md")).toContain(
       'Module not found "scripts/self-hosted-server.mjs"',
     );
-    expect(readProjectFile("docs/deploy-docker.zh-CN.md")).toContain(
-      'Module not found "scripts/self-hosted-server.mjs"',
-    );
     expect(readProjectFile("docs/self-hosting-architecture.md")).toContain(
-      "scripts/self-hosted-server.mjs",
-    );
-    expect(readProjectFile("docs/self-hosting-architecture.zh-CN.md")).toContain(
       "scripts/self-hosted-server.mjs",
     );
   });
@@ -126,24 +120,24 @@ describe("Docker release contract", () => {
   test("keeps authentication explicit in Compose", () => {
     const compose = readProjectFile("compose.yaml");
     expect(compose).toContain(
-      'EDGE_EVER_AUTH_PASSWORD: "${EDGE_EVER_AUTH_PASSWORD:?',
+      'PONDER_AUTH_PASSWORD: "${PONDER_AUTH_PASSWORD:?',
     );
     expect(compose).toContain(
-      'EDGE_EVER_CONTAINER_IMAGE: "${EDGE_EVER_IMAGE:-ghcr.io/tianma-if/edgeever}"',
+      'PONDER_CONTAINER_IMAGE: "${PONDER_IMAGE:-ghcr.io/tianma-if/edgeever}"',
     );
-    expect(compose).toContain("edgeever-data:/data");
+    expect(compose).toContain("ponder-data:/data");
     expect(compose).toContain("no-new-privileges:true");
   });
 
   test("keeps both runtime entrypoints on the shared application", () => {
     const application = readProjectFile("apps/api/src/index.ts");
     const selfHosted = readProjectFile("scripts/self-hosted-server.mjs");
-    expect(application).toContain("export const fetchEdgeEverApp");
+    expect(application).toContain("export const fetchPonderApp");
     expect(application).toContain(
       "storage: createCloudflareStorageAdapter(env)",
     );
     expect(selfHosted).toContain(
-      "fetchEdgeEverApp(request, env, executionContext)",
+      "fetchPonderApp(request, env, executionContext)",
     );
     expect(selfHosted).toContain(
       'await import("../apps/api/src/s3-compatible-storage-adapter.ts")',
@@ -157,15 +151,11 @@ describe("Docker release contract", () => {
 
   test("persists credential encryption secrets on the data volume", () => {
     const secrets = readProjectFile("scripts/self-hosted-secrets.mjs");
-    expect(secrets).toContain("edgeever-secrets.json");
-    expect(secrets).not.toContain("edgeever.sqlite");
-    expect(readProjectFile("docs/deploy-docker.md")).toContain("edgeever-secrets.json");
-    expect(readProjectFile("docs/deploy-docker.zh-CN.md")).toContain("edgeever-secrets.json");
+    expect(secrets).toContain("ponder-secrets.json");
+    expect(secrets).not.toContain("ponder.sqlite");
+    expect(readProjectFile("docs/deploy-docker.md")).toContain("ponder-secrets.json");
     expect(readProjectFile("docs/self-hosting-architecture.md")).toContain(
       "NAS/GUI upgrades that drop container environment variables",
-    );
-    expect(readProjectFile("docs/self-hosting-architecture.zh-CN.md")).toContain(
-      "NAS/GUI 升级丢掉容器环境变量",
     );
   });
 
@@ -189,7 +179,7 @@ describe("Docker release contract", () => {
     expect(workflow).toContain("docker logout ghcr.io");
     expect(workflow).toContain("docker buildx imagetools inspect");
     expect(workflow).toContain('docker pull "${GHCR_IMAGE_NAME}:${{ steps.image.outputs.audit_tag }}"');
-    expect(workflow).toContain("container_name=edgeever-published-audit");
+    expect(workflow).toContain("container_name=ponder-published-audit");
     expect(workflow).toContain("test -s /app/scripts/self-hosted-server.js");
     expect(workflow).toContain("test -s /app/scripts/self-hosted-server.mjs");
     expect(workflow).toContain(
@@ -199,11 +189,11 @@ describe("Docker release contract", () => {
     expect(workflow).toContain("test ! -e /app/apps/api");
     expect(workflow).toContain("test ! -e /app/packages");
     expect(workflow).toContain("curl --fail --silent --show-error http://127.0.0.1:8787/");
-    expect(workflow).toContain('docker build \\\n            --build-arg EDGE_EVER_BUILD_ID="${GITHUB_SHA}"');
-    expect(workflow).toContain("EDGE_EVER_BUILD_ID=${{ github.sha }}");
-    expect(workflow).toContain("EDGE_EVER_BUILD_CREATED_AT=${{ steps.image.outputs.created_at }}");
-    expect(workflow).toContain("EDGE_EVER_BUILD_TRIGGER=${{ steps.image.outputs.build_trigger }}");
-    expect(workflow).toContain("EDGE_EVER_BUILD_METHOD=github_actions");
+    expect(workflow).toContain('docker build \\\n            --build-arg PONDER_BUILD_ID="${GITHUB_SHA}"');
+    expect(workflow).toContain("PONDER_BUILD_ID=${{ github.sha }}");
+    expect(workflow).toContain("PONDER_BUILD_CREATED_AT=${{ steps.image.outputs.created_at }}");
+    expect(workflow).toContain("PONDER_BUILD_TRIGGER=${{ steps.image.outputs.build_trigger }}");
+    expect(workflow).toContain("PONDER_BUILD_METHOD=github_actions");
     expect(workflow).toContain("org.opencontainers.image.created=${{ steps.image.outputs.created_at }}");
     // Draft releases are prepared by workflow_dispatch with release_tag; published only audits.
     const resolveTags = workflow.slice(workflow.indexOf("- name: Resolve image tags"), workflow.indexOf("- name: Set up QEMU"));
@@ -211,7 +201,7 @@ describe("Docker release contract", () => {
     expect(releaseBranch).toContain('echo "build_trigger=github_release"');
     expect(resolveTags).toContain('if [[ "${GITHUB_EVENT_NAME}" == "push" ]]; then\n              build_trigger=main_push');
     expect(resolveTags).toContain("build_trigger=manual");
-    expect(workflow).toContain("docker build --tag edgeever:ci-default .");
+    expect(workflow).toContain("docker build --tag ponder:ci-default .");
     expect(workflow).toContain('.buildProvenance == {"trigger": "main_push", "method": "github_actions"}');
     expect(workflow).toContain('.deployment == {"trigger": "manual", "method": "docker"}');
     expect(workflow).toContain('.build == "unknown" and .buildCreatedAt == null and .buildProvenance == {"trigger": "unknown", "method": "unknown"}');
@@ -239,7 +229,7 @@ describe("Docker release contract", () => {
     expect(cnbWorkflow).toContain("bash scripts/publish-tcr-image.sh");
 
     expect(tcrPublisher).toContain(
-      'readonly TCR_IMAGE="${TCR_REGISTRY}/edgeever/edgeever"',
+      'readonly TCR_IMAGE="${TCR_REGISTRY}/ponder/ponder"',
     );
     expect(tcrPublisher).toContain("--platform linux/amd64,linux/arm64");
     expect(tcrPublisher).toContain('primary_tag="sha-${short_sha}"');

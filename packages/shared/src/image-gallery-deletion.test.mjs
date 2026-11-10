@@ -10,7 +10,7 @@ import { docToMarkdown, markdownToDoc } from "./content";
 const schema = getSchema([StarterKit, Image, ImageGallery]);
 const image = (src) => schema.nodes.image.create({ src });
 const paragraph = (text) => schema.nodes.paragraph.create(null, text ? schema.text(text) : null);
-const gallery = (...sources) => schema.nodes.edgeeverImageGallery.create({ layout: "3", fit: "height" }, sources.map(image));
+const gallery = (...sources) => schema.nodes.ponderImageGallery.create({ layout: "3", fit: "height" }, sources.map(image));
 const editor = (nodes) => {
   let state = EditorState.create({ schema, doc: schema.nodes.doc.create(null, nodes), plugins: [history(), createImageGalleryCleanupPlugin()] });
   return {
@@ -87,7 +87,7 @@ describe("live gallery deletion (#707)", () => {
     const pending = `${TRANSIENT_IMAGE_UPLOAD_PREFIX}pending`;
     const e = editor([gallery("/one.jpg", pending)]);
     deleteImage(e, 1);
-    expect(e.state.doc.firstChild.type.name).toBe("edgeeverImageGallery");
+    expect(e.state.doc.firstChild.type.name).toBe("ponderImageGallery");
     expect(e.state.doc.firstChild.firstChild.attrs.src).toBe(pending);
   });
 
@@ -133,7 +133,7 @@ describe("live gallery deletion (#707)", () => {
     const pending = `${TRANSIENT_IMAGE_UPLOAD_PREFIX}pending`;
     const e = editor([gallery("/one.jpg", pending)]);
     deleteImage(e, 1);
-    expect(e.state.doc.firstChild.type.name).toBe("edgeeverImageGallery");
+    expect(e.state.doc.firstChild.type.name).toBe("ponderImageGallery");
     e.dispatch(e.state.tr.setNodeMarkup(1, undefined, { ...e.state.doc.firstChild.firstChild.attrs, src: "/uploaded.jpg" }));
     expect(e.state.doc.firstChild.type.name).toBe("image");
     expect(e.state.doc.firstChild.attrs.src).toBe("/uploaded.jpg");
@@ -142,7 +142,7 @@ describe("live gallery deletion (#707)", () => {
   test("galleries with two or more images are left unchanged", () => {
     const e = editor([gallery("/one.jpg", "/two.jpg", "/three.jpg")]);
     deleteImage(e, 1);
-    expect(e.state.doc.firstChild.type.name).toBe("edgeeverImageGallery");
+    expect(e.state.doc.firstChild.type.name).toBe("ponderImageGallery");
     expect(e.state.doc.firstChild.childCount).toBe(2);
     expect(e.state.doc.firstChild.attrs).toMatchObject({ layout: "3", fit: "height" });
   });
@@ -174,7 +174,7 @@ describe("single-image gallery cleanup (#728)", () => {
   test("three images becoming two retain their gallery settings", () => {
     const e = editor([gallery("A", "B", "C")]);
     deleteImage(e, 2);
-    expect(e.state.doc.firstChild.type.name).toBe("edgeeverImageGallery");
+    expect(e.state.doc.firstChild.type.name).toBe("ponderImageGallery");
     expect(e.state.doc.firstChild.childCount).toBe(2);
     expect(e.state.doc.firstChild.attrs).toMatchObject({ layout: "3", fit: "height" });
   });

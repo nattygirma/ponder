@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronRight, FolderOpen, HardDriveDownload, Loader2, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { DesktopBackupActions, DesktopBackupConfig } from "@edgeever/shared";
+import type { DesktopBackupActions, DesktopBackupConfig } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -17,7 +17,7 @@ import { SETTINGS_CARD_DESCRIPTION_CLASSNAME, SETTINGS_CARD_HEADER_CLASSNAME, SE
 const defaultBackupName = () => {
   const date = new Date();
   const two = (value: number) => String(value).padStart(2, "0");
-  return `EdgeEver-${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}_${two(date.getHours())}${two(date.getMinutes())}${two(date.getSeconds())}`;
+  return `Ponder-${date.getFullYear()}-${two(date.getMonth() + 1)}-${two(date.getDate())}_${two(date.getHours())}${two(date.getMinutes())}${two(date.getSeconds())}`;
 };
 
 export const DesktopScheduledBackupCard = () => {

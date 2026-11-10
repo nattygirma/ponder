@@ -23,7 +23,7 @@ const importContext = (context: AppContext) => {
 /** Opt-in guard for import requests, including ordinary folder/resource writes. */
 export const registerImportContextGuard = (app: Hono<AppEnv>) => {
   app.use("/api/v1/*", async (context, next) => {
-    const expected = context.req.header("x-edgeever-import-context");
+    const expected = context.req.header("x-ponder-import-context");
     if (expected !== undefined && expected !== importContext(context)) {
       return apiError(context, "import_identity_changed", "The import account or workspace changed.", 409);
     }

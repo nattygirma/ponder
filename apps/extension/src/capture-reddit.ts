@@ -2,11 +2,11 @@
 // allows it, then falls back to the selected post's DOM. Never reads comments.
 (() => {
   const root = globalThis as typeof globalThis & {
-    __edgeeverRedditTarget?: boolean;
-    __edgeeverRedditClipPayload?: { requestId?: string; pageUrl?: string };
+    __ponderRedditTarget?: boolean;
+    __ponderRedditClipPayload?: { requestId?: string; pageUrl?: string };
   };
-  const payload = root.__edgeeverRedditClipPayload;
-  delete root.__edgeeverRedditClipPayload;
+  const payload = root.__ponderRedditClipPayload;
+  delete root.__ponderRedditClipPayload;
   if (!payload || typeof payload.requestId !== "string") return;
   const finish = (result: Record<string, unknown>) => {
     void chrome.runtime.sendMessage({ type: "pageRedditRead", requestId: payload.requestId, result });
@@ -23,14 +23,14 @@
     return idFromUrl(node.getAttribute("permalink") || node.querySelector('a[href*="/comments/"]')?.getAttribute("href") || "");
   };
   const clean = (value: string | null | undefined) => (value || "").replace(/\u00a0/g, " ").trim();
-  const selected = document.querySelector("[data-edgeever-reddit-target='1']");
+  const selected = document.querySelector("[data-ponder-reddit-target='1']");
   const currentId = idFromUrl(payload.pageUrl || location.href);
   const post = (selected && (!currentId || postId(selected) === currentId) ? selected : null)
     || [...document.querySelectorAll("shreddit-post, article[data-testid='post-container'], [data-testid='post-container'], .thing.link[data-fullname]")]
     .find((node) => currentId && postId(node) === currentId);
   const id = post ? postId(post) : currentId;
   if (!id || (!post && !currentId)) {
-    finish({ ok: false, reason: root.__edgeeverRedditTarget ? "not-found" : "needs-listener" });
+    finish({ ok: false, reason: root.__ponderRedditTarget ? "not-found" : "needs-listener" });
     return;
   }
   const scope = post || document;

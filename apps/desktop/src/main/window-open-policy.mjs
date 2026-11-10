@@ -5,9 +5,9 @@ import { downloadContentDispositionFromRequest, resourceIdFromRequest } from "./
 export const isResourceDownloadUrl = (targetUrl) => {
   try {
     const target = new URL(targetUrl);
-    return ["edgeever-resource:", "edgeever-staged:"].includes(target.protocol)
+    return ["ponder-resource:", "ponder-staged:"].includes(target.protocol)
       && !target.username && !target.password && !target.port
-      && (target.protocol === "edgeever-resource:"
+      && (target.protocol === "ponder-resource:"
         ? target.hostname === "resource" && target.pathname.length > 1
         : Boolean(target.hostname) && ["", "/"].includes(target.pathname))
       && Boolean(resourceIdFromRequest(targetUrl))
@@ -21,7 +21,7 @@ export const isAllowedAppNavigation = (targetUrl, appUrl) => {
     const expected = new URL(appUrl);
     if (target.username || target.password || target.protocol !== expected.protocol) return false;
     if (target.protocol === "file:") return target.host === expected.host && target.pathname === expected.pathname;
-    return ["http:", "https:", "edgeever-app:"].includes(target.protocol)
+    return ["http:", "https:", "ponder-app:"].includes(target.protocol)
       && target.hostname === expected.hostname && target.port === expected.port;
   } catch { return false; }
 };

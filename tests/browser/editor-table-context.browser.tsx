@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { Editor, EditorContent } from "@tiptap/react";
 import { Node } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
-import { EdgeEverTableKit as TableKit } from "../../packages/shared/src/markdown-table";
+import { PonderTableKit as TableKit } from "../../packages/shared/src/markdown-table";
 import { CellSelection } from "@tiptap/pm/tables";
 import { I18nextProvider } from "react-i18next";
 import i18next from "i18next";
@@ -27,7 +27,7 @@ let ticks = 0;
 setInterval(() => { diagnostics.textContent = `tick=${++ticks} visibility=${document.visibilityState} state=${document.querySelector('[data-table-context-open]')?.getAttribute('data-table-context-open')} menu=${document.querySelector('[role="menu"]')?.getAttribute('data-state')} active=${document.activeElement?.tagName}`; }, 100);
 const fixture = document.getElementById("fixture")!;
 const originalClipboard = Object.getOwnPropertyDescriptor(navigator, "clipboard");
-const originalDesktop = Object.getOwnPropertyDescriptor(window, "edgeeverDesktop");
+const originalDesktop = Object.getOwnPropertyDescriptor(window, "ponderDesktop");
 let editor: Editor;
 let root: Root | undefined;
 let receivedNodeContext = 0;
@@ -70,10 +70,10 @@ const restoreClipboard = () => {
   else delete (navigator as { clipboard?: Clipboard }).clipboard;
 };
 const restoreDesktop = () => {
-  if (originalDesktop) Object.defineProperty(window, "edgeeverDesktop", originalDesktop);
-  else delete window.edgeeverDesktop;
+  if (originalDesktop) Object.defineProperty(window, "ponderDesktop", originalDesktop);
+  else delete window.ponderDesktop;
 };
-const stubNativeRead = (readClipboard: () => Promise<{ html: string; text: string; images: Uint8Array[] }>) => Object.defineProperty(window, "edgeeverDesktop", {
+const stubNativeRead = (readClipboard: () => Promise<{ html: string; text: string; images: Uint8Array[] }>) => Object.defineProperty(window, "ponderDesktop", {
   configurable: true, value: { isAvailable: true, readClipboard },
 });
 const nativePasteEvent = (target: HTMLElement = editor.view.dom) => {

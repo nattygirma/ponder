@@ -1,6 +1,6 @@
 /* modern-mint editor theme (Clean info-focused layout with a beautiful mint green accent) */
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) {
   --editor-theme-bg: #ffffff;
   --editor-theme-text: #4a4a4a;
   --editor-theme-muted: #7a7a7a;
@@ -14,7 +14,7 @@
   --editor-theme-radius: 6px;
 }
 
-:root.dark .edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) {
+:root.dark .ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) {
   --editor-theme-bg: var(--workspace-editor);
   --editor-theme-text: #dcdcdc;
   --editor-theme-muted: #a1a1a1;
@@ -26,27 +26,27 @@
   --editor-theme-code-text: #66e5c7;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror {
   letter-spacing: -0.003em;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror p {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror p {
   color: var(--editor-theme-text);
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h1,
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h2,
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h3,
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h4,
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h5,
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h6 {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h1,
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h2,
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h3,
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h4,
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h5,
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h6 {
   color: var(--editor-theme-heading);
   font-family: var(--editor-theme-font);
   margin: 1.8rem 0 0.8rem;
   line-height: 1.35;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h1 {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h1 {
   font-size: 1.85rem;
   font-weight: 700;
   letter-spacing: -0.020em;
@@ -54,7 +54,7 @@
   padding-bottom: 0;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h2 {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h2 {
   font-size: 1.50rem;
   font-weight: 600;
   color: var(--editor-theme-accent);
@@ -63,7 +63,7 @@
   padding-bottom: 6px;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h3 {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h3 {
   font-size: 1.20rem;
   font-weight: 600;
   letter-spacing: -0.010em;
@@ -71,37 +71,37 @@
   padding-left: 0;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h4 {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h4 {
   font-size: 1.05rem;
   font-weight: 600;
   margin: 1.4rem 0 0.6rem;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h5 {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h5 {
   font-size: 1rem;
   font-weight: 600;
   margin: 1.25rem 0 0.5rem;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h6 {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror h6 {
   font-size: 0.95rem;
   font-weight: 600;
   margin: 1.1rem 0 0.45rem;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror strong {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror strong {
   color: var(--editor-theme-heading);
   font-weight: 700;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror a {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror a {
   color: var(--editor-theme-accent);
   text-decoration: underline;
   text-decoration-color: color-mix(in srgb, var(--editor-theme-accent) 42%, transparent);
   text-underline-offset: 2px;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror blockquote {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror blockquote {
   margin: 1.5rem 0;
   border-left: 4px solid var(--editor-theme-accent);
   border-radius: 4px;
@@ -110,12 +110,12 @@
   padding: 1rem 1.25rem;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror li::marker {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror li::marker {
   color: var(--editor-theme-accent);
   font-weight: 600;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror code {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror code {
   border: 1px solid var(--editor-theme-border);
   border-radius: 4px;
   background: var(--editor-theme-code-bg);
@@ -125,7 +125,7 @@
   padding: 0.15rem 0.35rem;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror pre {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror pre {
   border: 1px solid var(--editor-theme-border);
   border-radius: 6px;
   background: var(--editor-theme-code-bg);
@@ -133,20 +133,20 @@
   padding: 0.85rem 1.1rem;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror hr:not([data-edgeever-merge-divider]) {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror hr:not([data-ponder-merge-divider]) {
   height: 1px;
   border: 0;
   background: var(--editor-theme-border);
   margin: 2.0rem 0;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror th {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror th {
   background: var(--editor-theme-soft);
   color: var(--editor-theme-heading);
   font-weight: 600;
 }
 
-.edgeever-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror .edgeever-theme-block {
+.ponder-editor[data-editor-theme="modern-mint"]:not([data-editor-theme="default"]) .ProseMirror .ponder-theme-block {
   --theme-block-bg: var(--editor-theme-soft);
   --theme-block-border: var(--editor-theme-border);
   border-radius: 6px;

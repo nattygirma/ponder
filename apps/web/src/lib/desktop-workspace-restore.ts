@@ -1,6 +1,6 @@
 import type { MemoView } from "@/lib/app-helpers";
 
-export const DESKTOP_WORKSPACE_RESTORE_STORAGE_KEY = "edgeever.desktop.workspace-restore";
+export const DESKTOP_WORKSPACE_RESTORE_STORAGE_KEY = "ponder.desktop.workspace-restore";
 
 export type DesktopWorkspaceRestoreState = {
   selectedMemoId: string | null;
@@ -47,4 +47,4 @@ export const writeDesktopWorkspaceRestoreState = (
 
 export const shouldRestoreDesktopWorkspace = () =>
   typeof window !== "undefined"
-  && window.edgeeverDesktop?.isAvailable === true;
+  && window.ponderDesktop?.isAvailable === true;

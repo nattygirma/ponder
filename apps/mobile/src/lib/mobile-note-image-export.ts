@@ -1,4 +1,4 @@
-export { planNativeNoteImageRender as planMobileNoteImageRender } from "@edgeever/shared/note-image-card";
+export { planNativeNoteImageRender as planMobileNoteImageRender } from "@ponder/shared/note-image-card";
 
 // Expo's path joiner escapes spaces and percent signs, but leaves brackets raw.
 // Android's java.net.URI rejects those in a path. Escape only brackets here so

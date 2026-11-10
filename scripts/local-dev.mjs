@@ -66,26 +66,26 @@ export const parseEnvironmentFile = (source) => {
 };
 
 export const buildLocalAiSeed = (environment) => {
-  const apiKey = environment.EDGE_EVER_LOCAL_AI_API_KEY?.trim();
+  const apiKey = environment.PONDER_LOCAL_AI_API_KEY?.trim();
   if (!apiKey) return null;
 
-  const provider = environment.EDGE_EVER_LOCAL_AI_PROVIDER?.trim() || "openai-compatible";
-  const baseUrl = environment.EDGE_EVER_LOCAL_AI_BASE_URL?.trim();
-  const modelId = environment.EDGE_EVER_LOCAL_AI_MODEL_ID?.trim();
+  const provider = environment.PONDER_LOCAL_AI_PROVIDER?.trim() || "openai-compatible";
+  const baseUrl = environment.PONDER_LOCAL_AI_BASE_URL?.trim();
+  const modelId = environment.PONDER_LOCAL_AI_MODEL_ID?.trim();
   if (!AI_PROVIDERS.has(provider)) {
-    throw new Error(`Unsupported EDGE_EVER_LOCAL_AI_PROVIDER: ${provider}`);
+    throw new Error(`Unsupported PONDER_LOCAL_AI_PROVIDER: ${provider}`);
   }
   if (!baseUrl || !modelId) {
-    throw new Error("Local AI bootstrap requires EDGE_EVER_LOCAL_AI_BASE_URL and EDGE_EVER_LOCAL_AI_MODEL_ID.");
+    throw new Error("Local AI bootstrap requires PONDER_LOCAL_AI_BASE_URL and PONDER_LOCAL_AI_MODEL_ID.");
   }
   const parsedBaseUrl = new URL(baseUrl);
   if (!new Set(["http:", "https:"]).has(parsedBaseUrl.protocol)) {
-    throw new Error("EDGE_EVER_LOCAL_AI_BASE_URL must use HTTP(S).");
+    throw new Error("PONDER_LOCAL_AI_BASE_URL must use HTTP(S).");
   }
 
   return {
     provider,
-    displayName: environment.EDGE_EVER_LOCAL_AI_DISPLAY_NAME?.trim() || provider,
+    displayName: environment.PONDER_LOCAL_AI_DISPLAY_NAME?.trim() || provider,
     baseUrl: baseUrl.replace(/\/+$/, ""),
     apiKey,
     isEnabled: true,
@@ -156,7 +156,7 @@ const runLocalMigrations = (profile) => {
     ],
     {
       cwd: resolve("."),
-      env: { ...process.env, EDGE_EVER_INSTANCE: "" },
+      env: { ...process.env, PONDER_INSTANCE: "" },
       stdio: "inherit",
     },
   );
@@ -179,8 +179,8 @@ const runProfileApi = (profile) => {
       cwd: resolve("."),
       env: {
         ...process.env,
-        EDGE_EVER_INSTANCE: "",
-        EDGE_EVER_LOCAL_DEMO_SEED: String(profile.demoSeed),
+        PONDER_INSTANCE: "",
+        PONDER_LOCAL_DEMO_SEED: String(profile.demoSeed),
       },
       stdio: "inherit",
     },
@@ -193,7 +193,7 @@ const runProfileWeb = (profile) => {
     cwd: resolve("."),
     env: {
       ...process.env,
-      EDGE_EVER_DEVELOPMENT_PROFILE: profile.name,
+      PONDER_DEVELOPMENT_PROFILE: profile.name,
     },
     stdio: "inherit",
   });
@@ -296,7 +296,7 @@ export const buildReadyBanner = (profile, ai = null) => {
     `[local-dev] ${profile.label} ready`,
     `[local-dev] Web:  ${LOCAL_DEV_WEB_URL}`,
     `[local-dev] API:  ${LOCAL_DEV_API_URL}`,
-    ...(profile.name === "local" ? ["[local-dev] Auth: real local owner session; browser auto-login (EDGE_EVER_LOCAL_AUTO_LOGIN=false to disable)"] : []),
+    ...(profile.name === "local" ? ["[local-dev] Auth: real local owner session; browser auto-login (PONDER_LOCAL_AUTO_LOGIN=false to disable)"] : []),
     `[local-dev] Data: ${resolve(profile.statePath)} (${profile.demoSeed ? "resettable demo data" : "persistent development data"})`,
     ...(aiLabel ? [`[local-dev] AI:   ${aiLabel}`] : []),
     "",
@@ -354,7 +354,7 @@ const doctor = async () => {
   } catch {}
 
   console.log([
-    "EdgeEver local development doctor",
+    "Ponder local development doctor",
     `- Wrangler: ${wranglerVersion ? `v${wranglerVersion}` : "missing (run bun install)"}`,
     `- Web: ${LOCAL_DEV_WEB_URL}`,
     `- API: ${LOCAL_DEV_API_URL} (${health})`,

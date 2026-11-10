@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { useMutation } from "@tanstack/react-query";
-import type { AiTranscriptionProvider, AiTranscriptionSettings, AiTranscriptionStandard } from "@edgeever/shared";
+import type { AiTranscriptionProvider, AiTranscriptionSettings, AiTranscriptionStandard } from "@ponder/shared";
 import { CheckCircle2, Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { aiErrorMessage, trimAiText } from "@/components/settings/ai-provider-options";

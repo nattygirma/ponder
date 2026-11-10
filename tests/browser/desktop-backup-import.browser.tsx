@@ -5,12 +5,12 @@ import { createRoot } from "react-dom/client";
 import { I18nextProvider } from "react-i18next";
 import i18next from "i18next";
 import type { DesktopBackupStatus } from "../../packages/shared/src/backup";
-import { zhCN } from "../../packages/shared/src/i18n/zh-CN";
+import { enUS } from "../../packages/shared/src/i18n/en-US";
 import { DesktopScheduledBackupCard } from "../../apps/web/src/components/settings/DesktopScheduledBackupCard";
 import "../../apps/web/src/styles/globals.css";
 
 const i18n = i18next.createInstance();
-await i18n.init({ lng: "zh-CN", resources: { "zh-CN": { translation: zhCN } }, interpolation: { escapeValue: false }, initAsync: false });
+await i18n.init({ lng: "en-US", resources: { "en-US": { translation: enUS } }, interpolation: { escapeValue: false }, initAsync: false });
 const status: DesktopBackupStatus = {
   config: { enabled: false, interval: "weekly", retention: 1, directory: "/test/Backups", encrypted: false },
   backupSetId: "fixture-backup-set", actualDirectory: "/test/Backups/fixture-backup-set", blocked: false,
@@ -18,7 +18,7 @@ const status: DesktopBackupStatus = {
   lastCheck: { at: "2026-10-26T03:00:00.000Z", result: "unchanged" }, lastRestoreAt: null, nextDueAt: null, pendingPublication: null, target: { baseUrl: "http://test-instance", accountId: "test-account" },
   task: null, error: null, warning: null, importError: null, importWarning: null, history: [
     { name: "周报归档.zip", directory: "/test/Backups", completedAt: "2026-10-24T03:00:00.000Z", size: 2301024, encrypted: false },
-    { name: "EdgeEver-2026-10-25_110000.edgeever.enc", directory: "/test/Backups", completedAt: "2026-10-25T03:00:00.000Z", size: 4910204, encrypted: true },
+    { name: "Ponder-2026-10-25_110000.ponder.enc", directory: "/test/Backups", completedAt: "2026-10-25T03:00:00.000Z", size: 4910204, encrypted: true },
   ],
 };
 const params = new URLSearchParams(location.search);
@@ -35,7 +35,7 @@ let runError = params.has("run-error");
 let deleteError = false;
 const saveError = new URLSearchParams(location.search).has("save-error");
 let finish: (() => void) | undefined;
-Object.defineProperty(window, "edgeeverDesktop", {
+Object.defineProperty(window, "ponderDesktop", {
   configurable: true,
   value: {
     async backup(action: string, input?: unknown) {
@@ -48,7 +48,7 @@ Object.defineProperty(window, "edgeeverDesktop", {
           return structuredClone(status);
         }
         const option = value!.options!; const at = new Date().toISOString();
-        status.history.push({ name: option.name.replace(/(?:\.edgeever\.enc|\.zip)$/i, "") + (option.encrypted ? ".edgeever.enc" : ".zip"), directory: status.config.directory, completedAt: at, size: 149755, encrypted: option.encrypted });
+        status.history.push({ name: option.name.replace(/(?:\.ponder\.enc|\.zip)$/i, "") + (option.encrypted ? ".ponder.enc" : ".zip"), directory: status.config.directory, completedAt: at, size: 149755, encrypted: option.encrypted });
         status.lastSuccessAt = at; status.lastCheck = { at, result: "success" }; emit();
       }
       if (action === "save" && saveError) throw Object.assign(new Error("Denied"), { code: "backup_directory_unavailable" });
@@ -62,7 +62,7 @@ Object.defineProperty(window, "edgeeverDesktop", {
         const entry = status.history.find((entry) => entry.name === value?.name)!; encrypted = entry.encrypted;
         return { id: `selection:${entry.name}`, name: entry.name, encrypted };
       }
-      if (action === "choose-import") return { id: "fixture-selection", name: encrypted ? "fixture.edgeever.enc" : "fixture.zip", encrypted };
+      if (action === "choose-import") return { id: "fixture-selection", name: encrypted ? "fixture.ponder.enc" : "fixture.zip", encrypted };
       if (action === "prepare-import") {
         if (holdHandshake) await new Promise<void>((resolve) => { finish = resolve; });
         status.importError = null;
@@ -91,7 +91,7 @@ Object.assign(window, {
     fail: (code = "backup_decrypt_failed") => { status.importError = { code }; status.task = null; emit(); },
     failHttp: () => { status.importError = { code: "object_storage_unavailable", message: "Object storage initialization unavailable", status: 503 }; status.task = null; emit(); },
     ready: () => {
-      status.task = { kind: "import", phase: "ready", completed: 1, total: 1, manifest: { format: "edgeever-zip", formatVersion: 2, schemaVersion: 73, edgeeverVersion: "test", buildId: "test", exportedAt: "2026-10-25T03:00:00.000Z", includesTrash: false, counts: { memos: 1, notebooks: 1, resources: 1, revisions: 1, prompts: 0 } } };
+      status.task = { kind: "import", phase: "ready", completed: 1, total: 1, manifest: { format: "ponder-zip", formatVersion: 2, schemaVersion: 73, ponderVersion: "test", buildId: "test", exportedAt: "2026-10-25T03:00:00.000Z", includesTrash: false, counts: { memos: 1, notebooks: 1, resources: 1, revisions: 1, prompts: 0 } } };
       emit();
     },
     done: () => { status.lastRestoreAt = new Date().toISOString(); status.task = null; emit(); },

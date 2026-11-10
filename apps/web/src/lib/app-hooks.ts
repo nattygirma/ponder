@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const APP_BACK_HISTORY_MARKER = "__edgeever_app_back__";
+const APP_BACK_HISTORY_MARKER = "__ponder_app_back__";
 
 export const isTextEntryTarget = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -60,7 +60,7 @@ export const useBrowserBackLayer = (active: boolean, onBack: () => void) => {
 
   if (!idRef.current) {
     browserBackLayerCounter += 1;
-    idRef.current = `edgeever-back-layer-${browserBackLayerCounter}`;
+    idRef.current = `ponder-back-layer-${browserBackLayerCounter}`;
   }
 
   useEffect(() => {

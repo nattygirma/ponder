@@ -16,7 +16,7 @@ for (const path of [evidence, installed, profile]) mkdirSync(path, { recursive: 
 // Acknowledge only the isolated installation's first-run confirmation.
 writeFileSync(join(profile, "installation-confirmed"), new Date().toISOString());
 const candidateName = readdirSync(candidate).find((name) => process.platform === "darwin" ? name.endsWith(".zip") : name.endsWith(".exe"));
-const version = /EdgeEver-(\d+\.\d+\.\d+)-/.exec(candidateName)?.[1];
+const version = /Ponder-(\d+\.\d+\.\d+)-/.exec(candidateName)?.[1];
 if (!version) throw new Error("Candidate installer version missing");
 const digest = (path) => createHash("sha256").update(readFileSync(path)).digest("hex");
 const wait = (ms) => new Promise((yes) => setTimeout(yes, ms));
@@ -32,8 +32,8 @@ if (process.platform === "darwin") {
     const result = spawnSync("ditto", ["-x", "-k", archive, destination], { encoding: "utf8" });
     if (result.status !== 0) throw new Error(result.stderr);
   }
-  executable = join(installed, "EdgeEver.app/Contents/MacOS/EdgeEver");
-  expectedAsar = join(root, "expected/EdgeEver.app/Contents/Resources/app.asar");
+  executable = join(installed, "Ponder.app/Contents/MacOS/Ponder");
+  expectedAsar = join(root, "expected/Ponder.app/Contents/Resources/app.asar");
   const path = join(candidate, candidateName);
   const checksum = createHash("sha512").update(readFileSync(path)).digest("base64");
   writeFileSync(join(candidate, "latest-mac.yml"), `version: ${version}\nfiles:\n  - url: ${candidateName}\n    sha512: ${checksum}\n    size: ${statSync(path).size}\npath: ${candidateName}\nsha512: ${checksum}\n`);
@@ -42,11 +42,11 @@ if (process.platform === "darwin") {
   console.log("Installing published Windows predecessor into the isolated directory");
   const result = spawnSync(join(previous, oldExe), ["/S", `/D=${installed}`], {
     stdio: "ignore", timeout: 120_000, windowsHide: true,
-    env: { ...process.env, EDGE_EVER_DISABLE_AUTO_UPDATE: "1" },
+    env: { ...process.env, PONDER_DISABLE_AUTO_UPDATE: "1" },
   });
   if (result.status !== 0) throw new Error(`Old release NSIS installation failed: ${result.status}`);
-  executable = join(installed, "EdgeEver.exe");
-  spawnSync("powershell", ["-NoProfile", "-Command", `Get-CimInstance Win32_Process -Filter "Name='EdgeEver.exe'" | Where-Object { $_.ExecutablePath -eq $env:BRIDGE_INSTALLED_EXE } | ForEach-Object { taskkill /PID $_.ProcessId /T /F | Out-Null }`], {
+  executable = join(installed, "Ponder.exe");
+  spawnSync("powershell", ["-NoProfile", "-Command", `Get-CimInstance Win32_Process -Filter "Name='Ponder.exe'" | Where-Object { $_.ExecutablePath -eq $env:BRIDGE_INSTALLED_EXE } | ForEach-Object { taskkill /PID $_.ProcessId /T /F | Out-Null }`], {
     stdio: "ignore", env: { ...process.env, BRIDGE_INSTALLED_EXE: executable }, timeout: 30_000,
   });
   console.log("Published Windows predecessor installed");
@@ -70,7 +70,7 @@ const children = [];
 const launch = async (update) => {
   let endpoint;
   const child = spawn(executable, ["--inspect=127.0.0.1:0", `--user-data-dir=${profile}`], {
-    env: { ...process.env, EDGE_EVER_DISABLE_AUTO_UPDATE: update ? "0" : "1" }, stdio: ["ignore", "pipe", "pipe"],
+    env: { ...process.env, PONDER_DISABLE_AUTO_UPDATE: update ? "0" : "1" }, stdio: ["ignore", "pipe", "pipe"],
   });
   children.push(child);
   for (const stream of [child.stdout, child.stderr]) stream.on("data", (chunk) => {
@@ -133,7 +133,7 @@ const launch = async (update) => {
       autoUpdater.quitAndInstall = (silent) => { autoUpdater.autoRunAppAfterInstall = false; return install(silent, false); };
       dialog.showMessageBox = async (...args) => {
         const options = args.at(-1);
-        return {response: options.buttons?.some(button => /restart|重启/i.test(button)) ? 0 : 1, checkboxChecked:false};
+        return {response: options.buttons?.some(button => /restart/i.test(button)) ? 0 : 1, checkboxChecked:false};
       };
     }
     };

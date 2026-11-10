@@ -50,7 +50,7 @@ test("a lazy facade may share its implementation with another lazy entry without
 
 test("keeps model runtimes and SDKs out of the entire Cloudflare Worker build", () => {
   // Keep esbuild's service isolated from Bun's test process, as in the CLI build.
-  const directory = mkdtempSync(resolve(tmpdir(), "edgeever-worker-graph-"));
+  const directory = mkdtempSync(resolve(tmpdir(), "ponder-worker-graph-"));
   const metadataPath = resolve(directory, "metadata.json");
   let build;
   try {
@@ -64,8 +64,8 @@ test("keeps model runtimes and SDKs out of the entire Cloudflare Worker build", 
       encoding: "utf8",
       env: {
         ...process.env,
-        EDGE_EVER_DEPLOYMENT_TRIGGER: "github_release",
-        EDGE_EVER_DEPLOYMENT_METHOD: "github_actions",
+        PONDER_DEPLOYMENT_TRIGGER: "github_release",
+        PONDER_DEPLOYMENT_METHOD: "github_actions",
       },
     });
     expect(result.error).toBeUndefined();

@@ -14,7 +14,7 @@ import {
   type SyncBootstrapResponse,
   type SyncChangesResponse,
   type TiptapDoc,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 import { api, ApiRequestError } from "@/lib/api";
 import { isDesktopResourceRuntime, mapMarkdownResourceUrls, mapTiptapResourceUrls, toApiResourceUrl } from "@/lib/desktop-resources";
 import { readEmergencyDraft } from "@/lib/emergency-draft";
@@ -63,15 +63,15 @@ const valueReferencesStagedResource = (value: unknown, placeholder: string): boo
 };
 
 export const isStagedResourceReferenced = (payloads: unknown[], stagedId: string) => {
-  const placeholder = `edgeever-staged://${stagedId}`;
+  const placeholder = `ponder-staged://${stagedId}`;
   return payloads.some((payload) => valueReferencesStagedResource(payload, placeholder));
 };
 
 const stagedIdsReferencedByLocalMemos = async (rewrites: StagedResourceRewrite[]) => {
   const referenced = new Set<string>();
   for (const rewrite of rewrites) {
-    const stagedId = rewrite.placeholder.startsWith("edgeever-staged://")
-      ? rewrite.placeholder.slice("edgeever-staged://".length)
+    const stagedId = rewrite.placeholder.startsWith("ponder-staged://")
+      ? rewrite.placeholder.slice("ponder-staged://".length)
       : rewrite.placeholder;
     try {
       const local = await request("memo.get", { memoId: rewrite.memoId, includeDeleted: true });
@@ -89,8 +89,8 @@ export const stagedIdsReferencedByUnsavedContent = (
   rewrites: StagedResourceRewrite[],
   values: unknown[],
 ) => new Set(rewrites
-  .filter((rewrite) => isStagedResourceReferenced(values, rewrite.placeholder.slice("edgeever-staged://".length)))
-  .map((rewrite) => rewrite.placeholder.slice("edgeever-staged://".length)));
+  .filter((rewrite) => isStagedResourceReferenced(values, rewrite.placeholder.slice("ponder-staged://".length)))
+  .map((rewrite) => rewrite.placeholder.slice("ponder-staged://".length)));
 
 const stagedIdsReferencedByRenderer = async (rewrites: StagedResourceRewrite[]) => {
   if (rewrites.length === 0) return new Set<string>();
@@ -116,7 +116,7 @@ const stagedIdsReferencedByRenderer = async (rewrites: StagedResourceRewrite[]) 
   } catch {
     // If drafts cannot be inspected, keep the bytes until a later sync can
     // prove that no editor can save the old staged URL again.
-    return new Set(rewrites.map((rewrite) => rewrite.placeholder.slice("edgeever-staged://".length)));
+    return new Set(rewrites.map((rewrite) => rewrite.placeholder.slice("ponder-staged://".length)));
   }
 };
 
@@ -124,12 +124,12 @@ const remapStagedResourceMemoIds = async (memoIdMappings: ReadonlyMap<string, st
   if (memoIdMappings.size === 0) return;
   // Keep sync compatible with a renderer hot-reload or an older native shell
   // that does not expose the new remapping IPC yet.
-  await window.edgeeverDesktop?.remapStagedResourceMemoIds?.([...memoIdMappings]);
+  await window.ponderDesktop?.remapStagedResourceMemoIds?.([...memoIdMappings]);
 };
 
 const syncStagedResources = async (memoIdMappings: Map<string, string>) => {
   if (!isDesktopResourceRuntime() || (typeof navigator !== "undefined" && !navigator.onLine)) return { attempted: 0, synced: 0, failed: 0, rewrites: [] as StagedResourceRewrite[], cleanupRewrites: [] as StagedResourceRewrite[], stagedIds: [] as string[] };
-  const bridge = window.edgeeverDesktop!;
+  const bridge = window.ponderDesktop!;
   const [staged, aliases] = await Promise.all([
     bridge.listStagedResources(),
     bridge.listStagedResourceAliases?.() ?? Promise.resolve([]),
@@ -141,7 +141,7 @@ const syncStagedResources = async (memoIdMappings: Map<string, string>) => {
   let failed = 0;
   const rewrites: StagedResourceRewrite[] = aliases.map((item) => ({
     memoId: item.memoId,
-    placeholder: `edgeever-staged://${item.id}`,
+    placeholder: `ponder-staged://${item.id}`,
     url: `/api/v1/resources/${encodeURIComponent(item.resourceId)}/blob`,
   }));
   const cleanupRewrites: StagedResourceRewrite[] = [];
@@ -149,14 +149,14 @@ const syncStagedResources = async (memoIdMappings: Map<string, string>) => {
   for (const item of staged) {
     const existingAlias = aliasesById.get(item.id);
     if (existingAlias) {
-      cleanupRewrites.push(rewrites.find((rewrite) => rewrite.placeholder === `edgeever-staged://${item.id}`)!);
+      cleanupRewrites.push(rewrites.find((rewrite) => rewrite.placeholder === `ponder-staged://${item.id}`)!);
       stagedIds.push(item.id);
       continue;
     }
     // An image can finish staging before the editor's debounced local save
     // has queued the memo update that references it. Uploading and deleting
     // the staged file in that gap leaves the memo with an unrecoverable
-    // edgeever-staged:// URL. Keep it durable until an outbox payload proves
+    // ponder-staged:// URL. Keep it durable until an outbox payload proves
     // that the note content containing the placeholder has been saved.
     if (!isStagedResourceReferenced(pendingPayloads, item.id)) continue;
     try {
@@ -166,13 +166,13 @@ const syncStagedResources = async (memoIdMappings: Map<string, string>) => {
         mimeType: item.type,
         byteSize: item.size,
         readPart: async (start, end) => new Blob([
-          await window.edgeeverDesktop!.readStagedResourcePart(item.id, start, end - start),
+          await window.ponderDesktop!.readStagedResourcePart(item.id, start, end - start),
         ], { type: item.type }),
       });
-      await window.edgeeverDesktop!.sidecarRequest("resource.cache", { resource: uploaded.resource });
+      await window.ponderDesktop!.sidecarRequest("resource.cache", { resource: uploaded.resource });
       if (!bridge.recordStagedResourceAlias) throw new Error("Staged resource alias bridge is unavailable");
       await bridge.recordStagedResourceAlias(item.id, uploaded.resource.url);
-      const rewrite = { memoId, placeholder: `edgeever-staged://${item.id}`, url: uploaded.resource.url };
+      const rewrite = { memoId, placeholder: `ponder-staged://${item.id}`, url: uploaded.resource.url };
       rewrites.push(rewrite);
       cleanupRewrites.push(rewrite);
       stagedIds.push(item.id);
@@ -194,7 +194,7 @@ const syncStagedResources = async (memoIdMappings: Map<string, string>) => {
 const removeSyncedStagedResources = async (stagedIds: string[]) => {
   for (const id of stagedIds) {
     try {
-      await window.edgeeverDesktop!.removeStagedResource(id);
+      await window.ponderDesktop!.removeStagedResource(id);
     } catch {
       // The uploaded resource and the local memo are already durable; a later
       // pass can remove this harmless orphan from the staging directory.
@@ -263,8 +263,8 @@ const patchCreatedMemoResources = async (rewrites: StagedResourceRewrite[]) => {
 };
 
 const request = async <M extends keyof DesktopRpcResponses>(method: M, params: DesktopRpcParams[M]) => {
-  const bridge = window.edgeeverDesktop;
-  if (!bridge?.isAvailable) throw new Error("EdgeEver desktop bridge is unavailable");
+  const bridge = window.ponderDesktop;
+  if (!bridge?.isAvailable) throw new Error("Ponder desktop bridge is unavailable");
   return bridge.sidecarRequest<DesktopRpcResponses[M]>(method, params);
 };
 
@@ -840,7 +840,7 @@ export const syncDesktopData = () => {
         if (stillReferenced.size > 0) {
           try {
             await patchCreatedMemoResources(stagedResources.cleanupRewrites.filter((rewrite) => {
-              const stagedId = rewrite.placeholder.slice("edgeever-staged://".length);
+              const stagedId = rewrite.placeholder.slice("ponder-staged://".length);
               return stillReferenced.has(stagedId);
             }));
           } catch {
@@ -929,17 +929,17 @@ export const getDesktopSyncIssues = async () => {
 
 export const retryDesktopSyncIssue = async (item: DesktopOutboxItem) => {
   await request("sync.outbox.retry", { id: item.id, version: item.version });
-  window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+  window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
 };
 
 export const discardDesktopSyncIssue = async (item: DesktopOutboxItem) => {
   await request("sync.outbox.discard", { id: item.id, version: item.version });
-  window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+  window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
 };
 
 export const recoverDesktopMemoUpdate = async (item: DesktopOutboxItem, notebookId: string) => {
   const result = await request("sync.outbox.recoverMemoUpdate", { id: item.id, version: item.version, notebookId });
-  window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+  window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
   return result.memo;
 };
 
@@ -1030,7 +1030,7 @@ export const discardDesktopMemoConflict = async (memoId: string) => {
   }
 
   if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("edgeever:sync-queue-changed"));
+    window.dispatchEvent(new CustomEvent("ponder:sync-queue-changed"));
   }
   return remote.memo;
 };

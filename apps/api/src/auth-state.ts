@@ -5,18 +5,18 @@ export const isUnauthenticatedAccessEnabled = (value: string | undefined) =>
 
 export const resolveInstanceAuthMode = ({
   allowUnauthenticated,
-  hasBootstrapCredential,
+  platformSignIn,
   hasEnabledUser,
 }: {
   allowUnauthenticated: boolean;
-  hasBootstrapCredential: boolean;
+  platformSignIn: boolean;
   hasEnabledUser: boolean;
 }): InstanceAuthMode => {
   if (allowUnauthenticated) {
     return "disabled";
   }
 
-  if (hasBootstrapCredential || hasEnabledUser) {
+  if (platformSignIn || hasEnabledUser) {
     return "required";
   }
 

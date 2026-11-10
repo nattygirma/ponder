@@ -1,6 +1,6 @@
-EdgeEver Fangsong is a subset of Zhuque Fangsong (technical preview) v0.212.
+Ponder Fangsong is a subset of Zhuque Fangsong (technical preview) v0.212.
 Source: https://github.com/TrionesType/zhuque/releases/tag/v0.212
-The family name in this build is EdgeEver Fangsong. Upstream license text follows.
+The family name in this build is Ponder Fangsong. Upstream license text follows.
 
 Copyright (c) 2023, Zhejiang JadeFoci Techonology Co. LTD 
 (https://www.jadefoci.com/)

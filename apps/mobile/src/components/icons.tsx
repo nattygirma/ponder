@@ -18,7 +18,7 @@ const createIcon = (name: FeatherName) => {
     const { resolvedTheme } = useMobileTheme();
     return <Feather name={name} {...props} color={resolveMobileThemeColor(color as string | undefined, resolvedTheme)} />;
   };
-  Icon.displayName = `EdgeEverIcon(${name})`;
+  Icon.displayName = `PonderIcon(${name})`;
   return Icon;
 };
 

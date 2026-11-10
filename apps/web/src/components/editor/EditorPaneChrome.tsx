@@ -121,7 +121,7 @@ export const ResourceActionMenu = ({
   <TooltipProvider delayDuration={0} skipDelayDuration={0}>
     <div
       ref={actionsElement ? undefined : refs.setFloating}
-      data-edgeever-resource-menu
+      data-ponder-resource-menu
       role="toolbar"
       aria-label={labels.download}
       className={actionsElement

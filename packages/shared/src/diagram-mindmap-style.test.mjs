@@ -92,7 +92,7 @@ describe("mind map presentation", () => {
       { x: 200, y: 0, width: 120, height: 46 },
       { x: 0, y: 0, width: 96, height: 36 },
     )).toEqual({ source: "left", target: "right" });
-    expect(MIND_MAP_CONNECTOR_NAME).toBe("edgeever-mindmap");
+    expect(MIND_MAP_CONNECTOR_NAME).toBe("ponder-mindmap");
   });
 
   test("underlines nested topics and keeps first-level topics boxed", () => {

@@ -66,7 +66,7 @@ const convertBulletItemMarkedAsTask: InputRule["handler"] = ({ state, range, mat
   tr.setSelection(TextSelection.create(tr.doc, tr.mapping.slice(mapFrom).map(caret)));
 };
 
-export const createEdgeEverTaskItem = () => TaskItem.extend({
+export const createPonderTaskItem = () => TaskItem.extend({
   addInputRules() {
     return [
       new InputRule({

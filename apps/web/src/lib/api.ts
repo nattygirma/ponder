@@ -1,10 +1,10 @@
 import {
   ApiRequestError,
-  createEdgeEverClient,
-  type EdgeEverClientRequestContext,
-} from "@edgeever/client";
-import type { AuthSession } from "@edgeever/shared";
-import { normalizeInstanceUrl } from "@edgeever/shared/public-demo";
+  createPonderClient,
+  type PonderClientRequestContext,
+} from "@ponder/client";
+import type { AuthSession } from "@ponder/shared";
+import { normalizeInstanceUrl } from "@ponder/shared/public-demo";
 import { createClientUuid } from "./client-id";
 
 export { ApiRequestError };
@@ -18,15 +18,15 @@ export type {
   MemoShareResponse,
   SyncBootstrapResponse,
   SyncChangesResponse,
-} from "@edgeever/client";
+} from "@ponder/client";
 
-const WEB_DEVICE_ID_STORAGE_KEY = "edgeever.web.device-id";
-export const DESKTOP_API_BASE_URL_STORAGE_KEY = "edgeever.desktop.api-base-url";
-const DESKTOP_SESSION_STORAGE_KEY = "edgeever.desktop.session";
+const WEB_DEVICE_ID_STORAGE_KEY = "ponder.web.device-id";
+export const DESKTOP_API_BASE_URL_STORAGE_KEY = "ponder.desktop.api-base-url";
+const DESKTOP_SESSION_STORAGE_KEY = "ponder.desktop.session";
 let desktopSessionToken: string | null | undefined;
 
 export const getCachedDesktopSession = (): AuthSession | null => {
-  if (typeof window === "undefined" || !window.edgeeverDesktop?.isAvailable) return null;
+  if (typeof window === "undefined" || !window.ponderDesktop?.isAvailable) return null;
   try {
     const value = window.localStorage.getItem(DESKTOP_SESSION_STORAGE_KEY);
     if (!value) return null;
@@ -38,10 +38,10 @@ export const getCachedDesktopSession = (): AuthSession | null => {
 };
 
 const getDesktopSessionToken = () => {
-  if (typeof window === "undefined" || !window.edgeeverDesktop?.isAvailable) return undefined;
+  if (typeof window === "undefined" || !window.ponderDesktop?.isAvailable) return undefined;
   if (desktopSessionToken) return desktopSessionToken;
 
-  const storedToken = window.edgeeverDesktop.getSessionToken().trim();
+  const storedToken = window.ponderDesktop.getSessionToken().trim();
   const legacyToken = getCachedDesktopSession()?.sessionToken?.trim() ?? "";
   // A legacy token remains only when secure persistence has not completed,
   // so it must win over a possibly stale encrypted file from an earlier login.
@@ -52,7 +52,7 @@ const getDesktopSessionToken = () => {
 const setDesktopSessionToken = async (value: string) => {
   desktopSessionToken = value;
   try {
-    await window.edgeeverDesktop?.setSessionToken(value);
+    await window.ponderDesktop?.setSessionToken(value);
     return true;
   } catch {
     return false;
@@ -61,11 +61,11 @@ const setDesktopSessionToken = async (value: string) => {
 
 const clearDesktopSessionToken = () => {
   desktopSessionToken = null;
-  void window.edgeeverDesktop?.clearSessionToken().catch(() => {});
+  void window.ponderDesktop?.clearSessionToken().catch(() => {});
 };
 
 export const cacheDesktopSession = async (session: AuthSession) => {
-  if (typeof window === "undefined" || !window.edgeeverDesktop?.isAvailable) return;
+  if (typeof window === "undefined" || !window.ponderDesktop?.isAvailable) return;
   try {
     const cached = getCachedDesktopSession();
     const candidateToken = session.authenticated
@@ -92,7 +92,7 @@ export const cacheDesktopSession = async (session: AuthSession) => {
 };
 
 export const clearCachedDesktopSession = () => {
-  if (typeof window === "undefined" || !window.edgeeverDesktop?.isAvailable) return;
+  if (typeof window === "undefined" || !window.ponderDesktop?.isAvailable) return;
   try {
     window.localStorage.removeItem(DESKTOP_SESSION_STORAGE_KEY);
   } catch {
@@ -102,14 +102,14 @@ export const clearCachedDesktopSession = () => {
 };
 
 export const getConfiguredDesktopApiBaseUrl = () => {
-  if (typeof window === "undefined" || !window.edgeeverDesktop?.isAvailable) return "";
+  if (typeof window === "undefined" || !window.ponderDesktop?.isAvailable) return "";
 
   try {
     const savedUrl = (window.localStorage.getItem(DESKTOP_API_BASE_URL_STORAGE_KEY) ?? "").trim();
     if (savedUrl) return savedUrl.replace(/\/$/, "");
   } catch {}
 
-  const bridgeUrl = (window.edgeeverDesktop.apiBaseUrl ?? "").trim();
+  const bridgeUrl = (window.ponderDesktop.apiBaseUrl ?? "").trim();
   return bridgeUrl.replace(/\/$/, "");
 };
 
@@ -135,7 +135,7 @@ export const saveDesktopApiBaseUrl = async (value: string) => {
   if (getConfiguredDesktopApiBaseUrl() !== normalized) {
     clearCachedDesktopSession();
   }
-  await window.edgeeverDesktop?.setApiBaseUrl(normalized);
+  await window.ponderDesktop?.setApiBaseUrl(normalized);
   window.localStorage.setItem(DESKTOP_API_BASE_URL_STORAGE_KEY, normalized);
   return normalized;
 };
@@ -160,7 +160,7 @@ let unauthorizedConfirmPromise: Promise<boolean> | null = null;
 let unauthorizedConfirmContext: string | null = null;
 
 const isDesktopPublicRequest = (path: string) =>
-  path === "/api/release" || path === "/api/v1/auth/login" || path === "/api/v1/auth/session";
+  path === "/api/release" || path === "/api/v1/auth/session";
 
 const isAuthSession = (value: unknown): value is AuthSession => {
   if (!value || typeof value !== "object") return false;
@@ -182,7 +182,7 @@ const confirmSessionLost = async (): Promise<boolean> => {
   const promise = (async () => {
     try {
       const headers = new Headers();
-      const isDesktop = Boolean(window.edgeeverDesktop?.isAvailable);
+      const isDesktop = Boolean(window.ponderDesktop?.isAvailable);
       const sessionToken = isDesktop ? getDesktopSessionToken() : undefined;
       if (sessionToken) headers.set("Authorization", `Bearer ${sessionToken}`);
       const baseUrl = getConfiguredDesktopApiBaseUrl();
@@ -221,7 +221,7 @@ const notifyUnauthorized = async (isDesktop: boolean, rejectedDesktopSessionToke
       || getDesktopSessionToken() !== rejectedDesktopSessionToken) return;
     clearCachedDesktopSession();
     desktopSessionRejected = true;
-    window.dispatchEvent(new CustomEvent("edgeever:unauthorized"));
+    window.dispatchEvent(new CustomEvent("ponder:unauthorized"));
     return;
   }
 
@@ -232,22 +232,22 @@ const notifyUnauthorized = async (isDesktop: boolean, rejectedDesktopSessionToke
     clearCachedDesktopSession();
     desktopSessionRejected = true;
   }
-  window.dispatchEvent(new CustomEvent("edgeever:unauthorized"));
+  window.dispatchEvent(new CustomEvent("ponder:unauthorized"));
 };
 
-const beforeRequest = ({ path }: EdgeEverClientRequestContext) => {
-  const isDesktop = Boolean(typeof window !== "undefined" && window.edgeeverDesktop?.isAvailable);
+const beforeRequest = ({ path }: PonderClientRequestContext) => {
+  const isDesktop = Boolean(typeof window !== "undefined" && window.ponderDesktop?.isAvailable);
   if (isDesktop && desktopSessionRejected && !isDesktopPublicRequest(path)) {
     throw new ApiRequestError("Authentication required", 401, "unauthorized");
   }
 };
 
-const handleUnauthorized = ({ path, token }: EdgeEverClientRequestContext) => {
-  if (path === "/api/v1/auth/login" || path.startsWith("/api/public/") || typeof window === "undefined") return;
+const handleUnauthorized = ({ path, token }: PonderClientRequestContext) => {
+  if (path.startsWith("/api/public/") || typeof window === "undefined") return;
   // getSession handles its own response. A failed probe is not evidence of
   // rejection and must not launch a second probe that can race a new login.
   if (path === "/api/v1/auth/session") return;
-  const isDesktop = Boolean(window.edgeeverDesktop?.isAvailable);
+  const isDesktop = Boolean(window.ponderDesktop?.isAvailable);
   void notifyUnauthorized(isDesktop, token);
 };
 
@@ -258,7 +258,7 @@ const toUint8Array = (bytes: ArrayBuffer | Uint8Array | undefined) => {
 
 const desktopProviderFetch: typeof fetch = async (input, init) => {
   init?.signal?.throwIfAborted();
-  const bridge = window.edgeeverDesktop;
+  const bridge = window.ponderDesktop;
   if (!bridge?.openAiProviderStream || !bridge.onAiProviderStreamChunk) {
     throw new TypeError("Desktop AI transport is unavailable.");
   }
@@ -342,19 +342,18 @@ const desktopProviderFetch: typeof fetch = async (input, init) => {
 };
 
 const desktopAiDirectEnabled = Boolean(
-  (typeof __EDGEEVER_DESKTOP_BUILD__ !== "undefined" && __EDGEEVER_DESKTOP_BUILD__)
-  || (typeof window !== "undefined" && window.edgeeverDesktop?.openAiProviderStream),
+  (typeof __PONDER_DESKTOP_BUILD__ !== "undefined" && __PONDER_DESKTOP_BUILD__)
+  || (typeof window !== "undefined" && window.ponderDesktop?.openAiProviderStream),
 );
 
 /** Native clients connect directly; Web can relay initial network/CORS failures. */
 export const directProviderFetch: typeof fetch = (input, init) =>
   client.fetchAiProvider(input, init);
 
-const client = createEdgeEverClient({
+const client = createPonderClient({
   baseUrl: getConfiguredDesktopApiBaseUrl,
   token: getDesktopSessionToken,
   beforeRequest,
-  shouldAttachToken: (path) => path !== "/api/v1/auth/login",
   onUnauthorized: handleUnauthorized,
   directAiGeneration: desktopAiDirectEnabled,
   allowAiServerFallback: !desktopAiDirectEnabled,
@@ -374,7 +373,7 @@ export const api = {
       if (error instanceof ApiRequestError && error.status === 401
         && getConfiguredDesktopApiBaseUrl() === baseUrl && getDesktopSessionToken() === token) {
         if (typeof window !== "undefined") {
-          if (window.edgeeverDesktop?.isAvailable) {
+          if (window.ponderDesktop?.isAvailable) {
             clearCachedDesktopSession();
             desktopSessionRejected = true;
           }
@@ -388,7 +387,7 @@ export const api = {
     }
     if (
       typeof window !== "undefined"
-      && window.edgeeverDesktop?.isAvailable
+      && window.ponderDesktop?.isAvailable
       && !session.authenticated
       && getDesktopSessionToken()
     ) {
@@ -398,11 +397,6 @@ export const api = {
     return session;
   },
 
-  login: async (payload: { username: string; password: string; locale?: string }) => {
-    const session = await client.login({ ...payload, deviceId: getOrCreateClientDeviceId() });
-    desktopSessionRejected = false;
-    return session;
-  },
 };
 
 /** Freeze destination/authentication for this foreground import, not other callers. */
@@ -410,7 +404,7 @@ export const createNoteImportClient = (signal: AbortSignal, accountId: string | 
   const baseUrl = getConfiguredDesktopApiBaseUrl();
   const token = getDesktopSessionToken();
   let importContext: string | undefined;
-  return createEdgeEverClient({
+  return createPonderClient({
     baseUrl,
     token,
     fetch: async (url, init) => {
@@ -418,7 +412,7 @@ export const createNoteImportClient = (signal: AbortSignal, accountId: string | 
         throw new DOMException("importIdentityChanged", "AbortError");
       }
       const headers = new Headers(init?.headers);
-      if (importContext) headers.set("x-edgeever-import-context", importContext);
+      if (importContext) headers.set("x-ponder-import-context", importContext);
       const response = await fetch(url, { ...init, headers, signal: init?.method === "DELETE" ? undefined : signal });
       if (String(url).split("?")[0].endsWith("/api/v1/imports/capabilities") && response.ok) {
         const capability = await response.clone().json() as { importContext?: string; accountId?: string | null };

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
 import { Database } from "bun:sqlite";
 import { globSync, readFileSync } from "node:fs";
-import { WELCOME_MEMO_REPAIRED_CONTENT_HASH, WELCOME_MEMO_SEED_CONTENT_HASH } from "@edgeever/shared/default-workspace-seeds";
+import { WELCOME_MEMO_SEED_CONTENT_HASH } from "@ponder/shared/default-workspace-seeds";
 import { createSelfHostedStorageAdapter } from "./self-hosted-storage-adapter.ts";
 import { updateMemoRecord } from "./memo-service.ts";
 import {
@@ -23,7 +23,7 @@ const migrate = (sqlite, filter = () => true) => {
 const openDatabase = () => {
   const sqlite = new Database(":memory:");
   opened.push(sqlite);
-  return { sqlite, db: createSelfHostedStorageAdapter(sqlite, "/tmp/edgeever-seed-localization-unused").db };
+  return { sqlite, db: createSelfHostedStorageAdapter(sqlite, "/tmp/ponder-seed-localization-unused").db };
 };
 
 const freshInstallation = () => {
@@ -76,11 +76,11 @@ const searchMatches = (sqlite, query) => sqlite
   .map((row) => row.memo_id);
 
 const CHINESE_NOTEBOOKS = {
-  inbox: "等待分类",
-  "work-projects": "工作项目",
-  "learning-resources": "学习资料",
-  "creative-ideas": "灵感创作",
-  "personal-life": "生活个人",
+  inbox: "Inbox",
+  "work-projects": "Work Projects",
+  "learning-resources": "Learning Resources",
+  "creative-ideas": "Creative Ideas",
+  "personal-life": "Personal Life",
 };
 
 describe("fresh installation", () => {
@@ -108,20 +108,20 @@ describe("fresh installation", () => {
       "personal-life": "Życie prywatne",
     });
     const note = welcome(sqlite);
-    expect(note.title).toBe("Witaj w EdgeEver");
-    expect(note.search_title).toBe("Witaj w EdgeEver");
+    expect(note.title).toBe("Witaj w Ponder");
+    expect(note.search_title).toBe("Witaj w Ponder");
     expect(note.excerpt).toStartWith("To Twoja pierwsza notatka");
-    expect(note.content_markdown).toStartWith("## Witaj w EdgeEver\n\nTo Twoja pierwsza notatka");
+    expect(note.content_markdown).toStartWith("## Witaj w Ponder\n\nTo Twoja pierwsza notatka");
     expect(note.search_text).toBe(note.content_text);
     expect(JSON.parse(note.content_json).content[0]).toEqual({
       type: "heading",
       attrs: { level: 2 },
-      content: [{ type: "text", text: "Witaj w EdgeEver" }],
+      content: [{ type: "text", text: "Witaj w Ponder" }],
     });
     expect(note.content_hash).not.toBe(WELCOME_MEMO_SEED_CONTENT_HASH);
-    expect(note.revision).toBe(2);
+    expect(note.revision).toBe(3);
     expect(searchMatches(sqlite, "Witaj")).toEqual(["memo_welcome"]);
-    expect(templateNames(sqlite, DEFAULT_WORKSPACE_ID)).not.toContain("灵感速记");
+    expect(templateNames(sqlite, DEFAULT_WORKSPACE_ID)).not.toContain("Quick Spark");
     expect(searchMatches(sqlite, "Skrzynka")).toEqual([]);
     expect(templateNames(sqlite, DEFAULT_WORKSPACE_ID)).toContain("Szybka notatka");
     expect(pendingWorkspaces(sqlite)).toEqual([]);
@@ -136,7 +136,7 @@ describe("fresh installation", () => {
     await ensureUserWorkspace(db, "usr_owner", "admin", "ja");
 
     expect(afterFirst.notebooks.inbox).toBe("Inbox");
-    expect(afterFirst.note.title).toBe("Welcome to EdgeEver");
+    expect(afterFirst.note.title).toBe("Welcome to Ponder");
     expect({ notebooks: notebookNames(sqlite), note: welcome(sqlite) }).toEqual(afterFirst);
   });
 
@@ -158,7 +158,7 @@ describe("fresh installation", () => {
     await ensureUserWorkspace(db, "usr_owner", "admin", "ja");
 
     expect(notebookNames(sqlite).inbox).toBe("受信トレイ");
-    expect(welcome(sqlite).title).toBe("EdgeEver へようこそ");
+    expect(welcome(sqlite).title).toBe("Ponder へようこそ");
     expect(templateNames(sqlite, DEFAULT_WORKSPACE_ID)).toContain("ひらめきメモ");
     expect(pendingWorkspaces(sqlite)).toEqual([]);
   });
@@ -177,7 +177,7 @@ describe("fresh installation", () => {
 
     expect(notebookNames(sqlite)).toMatchObject({ inbox: "Inbox", "work-projects": "My projects" });
     expect(welcome(sqlite)).toEqual(before);
-    expect(templateNames(sqlite, DEFAULT_WORKSPACE_ID)).toEqual(expect.arrayContaining(["会议纪要", "Quick Spark"]));
+    expect(templateNames(sqlite, DEFAULT_WORKSPACE_ID)).toEqual(expect.arrayContaining(["Meeting Minutes", "Quick Spark"]));
     expect(pendingWorkspaces(sqlite)).toEqual([]);
   });
 
@@ -240,7 +240,7 @@ describe("fresh installation", () => {
     );
     expect(edited.error).toBeUndefined();
     const before = welcome(sqlite);
-    expect(before.content_hash).toBe(WELCOME_MEMO_REPAIRED_CONTENT_HASH);
+    expect(before.content_hash).toBe(WELCOME_MEMO_SEED_CONTENT_HASH);
     expect(pendingWorkspaces(sqlite)).toEqual([DEFAULT_WORKSPACE_ID]);
 
     await ensureUserWorkspace(db, "usr_owner", "admin", "en-US");
@@ -258,17 +258,17 @@ describe("fresh installation", () => {
     await ensureUserWorkspace(db, "usr_owner", "admin", "fr-FR,fr;q=0.9");
 
     expect(notebookNames(sqlite).inbox).toBe("Inbox");
-    expect(welcome(sqlite).title).toBe("Welcome to EdgeEver");
+    expect(welcome(sqlite).title).toBe("Welcome to Ponder");
   });
 
-  test("keeps the Chinese seed when the client sends no language", async () => {
+  test("keeps the English seed when the client sends no language", async () => {
     const { sqlite, db } = freshInstallation();
     addUser(sqlite, "usr_owner", "admin");
 
     await ensureUserWorkspace(db, "usr_owner", "admin", undefined);
 
     expect(notebookNames(sqlite)).toEqual(CHINESE_NOTEBOOKS);
-    expect(welcome(sqlite).title).toBe("欢迎来到 EdgeEver");
+    expect(welcome(sqlite).title).toBe("Welcome to Ponder");
     expect(pendingWorkspaces(sqlite)).toEqual([]);
   });
 });
@@ -301,7 +301,7 @@ describe("existing installation", () => {
     await ensureUserWorkspace(db, "usr_owner", "admin", "pl");
 
     expect(notebookNames(sqlite)).toEqual(CHINESE_NOTEBOOKS);
-    expect(welcome(sqlite).title).toBe("欢迎来到 EdgeEver");
+    expect(welcome(sqlite).title).toBe("Welcome to Ponder");
   });
 
   test("treats an installation that already has users as existing data", () => {

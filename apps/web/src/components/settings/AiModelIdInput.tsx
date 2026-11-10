@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { AiDiscoveredModel } from "@edgeever/shared";
+import type { AiDiscoveredModel } from "@ponder/shared";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Command, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";

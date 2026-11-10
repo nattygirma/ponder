@@ -5,15 +5,15 @@ import { WebPluginSecretStore, decryptPluginSecret, encryptPluginSecret } from "
 describe("plugin secret encryption", () => {
   test("round-trips a secret with an authenticated AES-GCM payload", async () => {
     const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
-    const encrypted = await encryptPluginSecret(key, "edgeever-secret");
+    const encrypted = await encryptPluginSecret(key, "ponder-secret");
 
-    expect(new TextDecoder().decode(encrypted.ciphertext)).not.toContain("edgeever-secret");
-    await expect(decryptPluginSecret(key, encrypted)).resolves.toBe("edgeever-secret");
+    expect(new TextDecoder().decode(encrypted.ciphertext)).not.toContain("ponder-secret");
+    await expect(decryptPluginSecret(key, encrypted)).resolves.toBe("ponder-secret");
   });
 
   test("rejects a modified ciphertext", async () => {
     const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
-    const encrypted = await encryptPluginSecret(key, "edgeever-secret");
+    const encrypted = await encryptPluginSecret(key, "ponder-secret");
     const modified = encrypted.ciphertext.slice(0);
     new Uint8Array(modified)[0] ^= 1;
 
@@ -33,13 +33,13 @@ describe("plugin secret encryption", () => {
   test("rejects decryption with a different key", async () => {
     const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
     const otherKey = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
-    const encrypted = await encryptPluginSecret(key, "edgeever-secret");
+    const encrypted = await encryptPluginSecret(key, "ponder-secret");
 
     await expect(decryptPluginSecret(otherKey, encrypted)).rejects.toThrow();
   });
 });
 
-const DATABASE_NAME = "edgeever-plugin-secrets-v1";
+const DATABASE_NAME = "ponder-plugin-secrets-v1";
 
 const requestDone = (request) => new Promise((resolve, reject) => {
   request.onsuccess = () => resolve(request.result);

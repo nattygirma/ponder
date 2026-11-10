@@ -1,4 +1,4 @@
-import { getMappedNoteProperties, splitMarkdownFrontMatter } from "@edgeever/shared";
+import { getMappedNoteProperties, splitMarkdownFrontMatter } from "@ponder/shared";
 
 const MARKDOWN_FILE_EXTENSION_PATTERN = /\.(?:md|markdown)$/i;
 const MAX_MEMO_TITLE_LENGTH = 160;

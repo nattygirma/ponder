@@ -3,8 +3,8 @@ import { getSchema } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 import { DOMSerializer } from "@tiptap/pm/model";
 import { parseHTML } from "linkedom";
-import { createEdgeEverDocumentExtensions } from "./document-extensions.ts";
-import { createEdgeEverMarkdownMathematics } from "./mathematics-markdown.ts";
+import { createPonderDocumentExtensions } from "./document-extensions.ts";
+import { createPonderMarkdownMathematics } from "./mathematics-markdown.ts";
 import { docToMarkdown, markdownToDoc, docToText } from "./content.ts";
 import { alignedImageToHtml, applyImageAlignment, IMAGE_ALIGNMENTS, imageAlignmentMargins } from "./image-alignment.ts";
 
@@ -27,7 +27,7 @@ describe("individual image alignment", () => {
   test("legacy Markdown images keep their existing serialization and grouping", () => {
     const markdown = "![First](/one.png)\n\n![Second](/two.png)";
     const doc = markdownToDoc(markdown);
-    expect(doc.content[0].type).toBe("edgeeverImageGallery");
+    expect(doc.content[0].type).toBe("ponderImageGallery");
     expect(docToMarkdown(doc)).toBe(markdown);
     expect(docToMarkdown({ type: "doc", content: [image(null)] })).not.toContain("<img");
   });
@@ -49,7 +49,7 @@ describe("individual image alignment", () => {
   });
 
   test("custom image schemas retain alignment and old images default to null", () => {
-    const schema = getSchema(createEdgeEverDocumentExtensions({ image: Image, mathematics: createEdgeEverMarkdownMathematics() }));
+    const schema = getSchema(createPonderDocumentExtensions({ image: Image, mathematics: createPonderMarkdownMathematics() }));
     expect(schema.nodeFromJSON(image("right")).attrs.alignment).toBe("right");
     expect(schema.nodeFromJSON({ type: "image", attrs: { src: "/old.png" } }).attrs.alignment).toBeNull();
   });
@@ -68,7 +68,7 @@ describe("individual image alignment", () => {
   });
 
   test("plain image readers render the percentage width and alignment together", () => {
-    const schema = getSchema(createEdgeEverDocumentExtensions({ image: Image, mathematics: createEdgeEverMarkdownMathematics() }));
+    const schema = getSchema(createPonderDocumentExtensions({ image: Image, mathematics: createPonderMarkdownMathematics() }));
     const { document } = parseHTML("<html></html>");
     const element = DOMSerializer.fromSchema(schema).serializeNode(schema.nodeFromJSON(image("center")), { document });
     expect(element.getAttribute("data-image-align")).toBe("center");

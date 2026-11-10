@@ -1,4 +1,4 @@
-import { parseInfographicDocument, type InfographicDocument, type MemoDetail } from "@edgeever/shared";
+import { parseInfographicDocument, type InfographicDocument, type MemoDetail } from "@ponder/shared";
 import { shouldAcceptRemoteMemoDetail } from "./memo-detail-freshness";
 
 export const infographicEditorSnapshot = (title: string, document: InfographicDocument, tags: string[]) =>

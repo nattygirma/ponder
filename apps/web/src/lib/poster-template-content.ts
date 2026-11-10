@@ -1,4 +1,4 @@
-import { PosterDocumentSchema, resizePosterDocument, type PosterDocument } from "@edgeever/shared";
+import { PosterDocumentSchema, resizePosterDocument, type PosterDocument } from "@ponder/shared";
 import { ensureReadable, readableOn } from "./poster-design/vendor/qiaomu/quality";
 
 const sectionId = /^(?:section-\d+-(?:card|accent|number|heading|body)|card-\d+-(?:bg|card|accent|number|title|heading|body))$/;

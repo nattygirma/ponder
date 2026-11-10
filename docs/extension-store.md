@@ -12,7 +12,7 @@ left empty. A new GitHub Release for the main app is not required.
 
 Edge users install the Chrome Web Store item
 `gjadpfmanienmlofajibkfkkpfdkclgo`. One Chrome submission covers that item.
-Firefox is a separate submission for `edgeever-web-clipper`. The workflow does
+Firefox is a separate submission for `ponder-web-clipper`. The workflow does
 not publish to Microsoft Edge Add-ons.
 
 The workflow builds the packages, uploads them, and submits them for review.
@@ -87,8 +87,8 @@ https://addons.mozilla.org/developers/addon/api/key/:
 
 These two optional secrets are added to the Firefox reviewer note:
 
-- `EDGE_EVER_REVIEW_INSTANCE_URL`
-- `EDGE_EVER_REVIEW_API_TOKEN`
+- `PONDER_REVIEW_INSTANCE_URL`
+- `PONDER_REVIEW_API_TOKEN`
 
 Chrome's upload API has no release-notes field. The Chrome listing text and
 privacy disclosure stay as they were last saved in the dashboard. Change those

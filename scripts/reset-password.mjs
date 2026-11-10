@@ -5,10 +5,10 @@ import { join, resolve } from "node:path";
 import { createPasswordHash } from "./password-hash.mjs";
 
 const usage = `Usage:
-  EDGE_EVER_PASSWORD='<new-password>' bun run auth:reset-password -- --remote --username <username>
-  EDGE_EVER_PASSWORD='<new-password>' bun run auth:reset-password -- --local --username <username>
+  PONDER_PASSWORD='<new-password>' bun run auth:reset-password -- --remote --username <username>
+  PONDER_PASSWORD='<new-password>' bun run auth:reset-password -- --local --username <username>
 
-For a scoped instance, also set EDGE_EVER_INSTANCE, for example EDGE_EVER_INSTANCE=demo.`;
+For a scoped instance, also set PONDER_INSTANCE, for example PONDER_INSTANCE=demo.`;
 
 export const parseResetPasswordArgs = (args) => {
   let target;
@@ -100,9 +100,9 @@ const main = () => {
     process.exit(1);
   }
 
-  const password = process.env.EDGE_EVER_PASSWORD;
+  const password = process.env.PONDER_PASSWORD;
   if (!password || password.length < 8 || password.length > 512) {
-    console.error("EDGE_EVER_PASSWORD must contain 8-512 characters.");
+    console.error("PONDER_PASSWORD must contain 8-512 characters.");
     console.error(usage);
     process.exit(1);
   }
@@ -122,7 +122,7 @@ const main = () => {
     throw new Error(`Enabled user not found: ${options.username}`);
   }
 
-  const temporaryDirectory = mkdtempSync(join(tmpdir(), "edgeever-password-reset-"));
+  const temporaryDirectory = mkdtempSync(join(tmpdir(), "ponder-password-reset-"));
   const sqlPath = join(temporaryDirectory, "reset-password.sql");
 
   try {

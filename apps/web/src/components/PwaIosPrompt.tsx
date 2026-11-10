@@ -35,10 +35,10 @@ export const PwaIosPrompt = () => {
 
           <div className="min-w-0 flex-1">
             <h3 className="text-sm font-bold text-slate-900 leading-snug">
-              {t("pwa.iosPrompt.title") || "将 EdgeEver 安装到主屏幕"}
+              {t("pwa.iosPrompt.title") || "Add Ponder to your home screen"}
             </h3>
             <p className="mt-1 text-xs text-slate-500 leading-normal">
-              {t("pwa.iosPrompt.subtitle") || "享受全屏独立窗口，体验如原生 App 般丝滑的笔记与知识库工作区。"}
+              {t("pwa.iosPrompt.subtitle") || "Get a full-screen window and a notes workspace that feels like a native app."}
             </p>
             
             <div className="mt-3.5 flex flex-col gap-2 rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600">
@@ -51,7 +51,7 @@ export const PwaIosPrompt = () => {
                   </svg>
                 </span>
                 <span>
-                  1. {t("pwa.iosPrompt.step1") || "点击 Safari 浏览器底部的分享按钮"}
+                  1. {t("pwa.iosPrompt.step1") || "Tap the Share button at the bottom of Safari"}
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -63,7 +63,7 @@ export const PwaIosPrompt = () => {
                   </svg>
                 </span>
                 <span>
-                  2. {t("pwa.iosPrompt.step2") || "在菜单中找到并选择「添加到主屏幕」"}
+                  2. {t("pwa.iosPrompt.step2") || "Choose \"Add to Home Screen\" from the menu"}
                 </span>
               </div>
             </div>
@@ -72,7 +72,7 @@ export const PwaIosPrompt = () => {
               onClick={dismissIOSPrompt}
               className="mt-3.5 w-full rounded-lg bg-emerald-500 py-2 text-center text-xs font-semibold text-white shadow-sm shadow-emerald-500/10 transition-all hover:bg-emerald-600 active:scale-[0.98]"
             >
-              {t("pwa.iosPrompt.dismiss") || "我知道了"}
+              {t("pwa.iosPrompt.dismiss") || "Got it"}
             </button>
           </div>
         </div>

@@ -5,10 +5,10 @@ import { createNoteImage, generateCardCss, buildNoteImageCardMarkup } from '../.
 import { prepareNoteBodyHtmlForExport } from '../../../apps/web/src/lib/note-html-export';
 import { planWebNoteImageRender } from '../../../apps/web/src/lib/note-image-rendering';
 import { copyImageBlobToClipboard } from '../../../apps/web/src/lib/clipboard';
-import { prepareNoteImageAssets } from '@edgeever/shared/note-image-fonts';
-import { noteImageAssetUrls } from '@edgeever/shared/note-image-assets';
-import { NOTE_IMAGE_THEME_OPTIONS, NOTE_IMAGE_CARD_WIDTH_PIXELS } from '@edgeever/shared/note-image-card';
-import { prepareNoteImageContent } from '@edgeever/shared/note-image-card';
+import { prepareNoteImageAssets } from '@ponder/shared/note-image-fonts';
+import { noteImageAssetUrls } from '@ponder/shared/note-image-assets';
+import { NOTE_IMAGE_THEME_OPTIONS, NOTE_IMAGE_CARD_WIDTH_PIXELS } from '@ponder/shared/note-image-card';
+import { prepareNoteImageContent } from '@ponder/shared/note-image-card';
 import { complexBodyHtml, complexDocument } from './note-image-content';
 import '../../../apps/web/src/i18n';
 import '../../../apps/web/src/styles/globals.css';
@@ -37,11 +37,11 @@ const renderCase = async (theme: typeof NOTE_IMAGE_THEME_OPTIONS[number], cardWi
   document.body.append(host);
   try {
     // Trigger layout before awaiting fonts; shadow-root font faces are lazy.
-    root.querySelector<HTMLElement>('.edgeever-image-wrapper')!.getBoundingClientRect();
+    root.querySelector<HTMLElement>('.ponder-image-wrapper')!.getBoundingClientRect();
     await document.fonts.ready;
     await Promise.all([...root.querySelectorAll<HTMLImageElement>("img")].map(image => image.decode()));
-    const wrapper = root.querySelector<HTMLElement>('.edgeever-image-wrapper')!;
-    const logo = root.querySelector<SVGSVGElement>('.edgeever-brand-logo')!;
+    const wrapper = root.querySelector<HTMLElement>('.ponder-image-wrapper')!;
+    const logo = root.querySelector<SVGSVGElement>('.ponder-brand-logo')!;
     const wrapperBox = wrapper.getBoundingClientRect();
     const logoBox = logo.getBoundingClientRect();
     let opacity = 1;
@@ -51,9 +51,9 @@ const renderCase = async (theme: typeof NOTE_IMAGE_THEME_OPTIONS[number], cardWi
       opacity *= Number(css.opacity);
       effects ||= css.filter !== 'none';
     }
-    const body = root.querySelector<HTMLElement>('.edgeever-card-body')!;
+    const body = root.querySelector<HTMLElement>('.ponder-card-body')!;
     const bodyBox = body.getBoundingClientRect();
-    const title = root.querySelector<HTMLElement>('.edgeever-card-title')!;
+    const title = root.querySelector<HTMLElement>('.ponder-card-title')!;
     const titleSize = parseFloat(getComputedStyle(title).fontSize);
     const bodySize = parseFloat(getComputedStyle(body).fontSize);
     const headingSizes = [...body.querySelectorAll('h1,h2,h3,h4,h5,h6')].map(heading => parseFloat(getComputedStyle(heading).fontSize));
@@ -64,7 +64,7 @@ const renderCase = async (theme: typeof NOTE_IMAGE_THEME_OPTIONS[number], cardWi
       return box.width > 0 && (box.right > bodyBox.right + 1 || box.left < bodyBox.left - 1);
     }).map(element => element.tagName);
     const integrity = length === 'complex' ? {
-      stackedValues: body.querySelectorAll('.edgeever-table-value').length,
+      stackedValues: body.querySelectorAll('.ponder-table-value').length,
       mergedCells: body.querySelectorAll('[colspan="2"]').length,
       complete: ['END_TABLE', 'END_CODE', 'END_LIST', 'END_QUOTE', 'END_CONTENT'].every(marker => body.textContent?.includes(marker)),
       imageRatios: [...body.querySelectorAll('img')].map(img => {

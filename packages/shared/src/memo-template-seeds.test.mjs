@@ -7,15 +7,14 @@ import {
 } from "./memo-template-seeds.ts";
 
 describe("memo template seeds", () => {
-  test("provides five unique editable starter templates in Chinese, English, Japanese, and Polish", () => {
+  test("provides five unique editable starter templates in English, Japanese, and Polish", () => {
     expect(DEFAULT_MEMO_TEMPLATE_SEEDS).toHaveLength(5);
     expect(new Set(DEFAULT_MEMO_TEMPLATE_SEEDS.map((seed) => seed.key)).size).toBe(5);
-    expect(localizeMemoTemplateSeed(DEFAULT_MEMO_TEMPLATE_SEEDS[0], "zh-CN").title).toBe("灵感速记");
     expect(localizeMemoTemplateSeed(DEFAULT_MEMO_TEMPLATE_SEEDS[0], "en-GB").title).toBe("Quick Spark");
     expect(localizeMemoTemplateSeed(DEFAULT_MEMO_TEMPLATE_SEEDS[0], "ja-JP").title).toBe("ひらめきメモ");
     expect(localizeMemoTemplateSeed(DEFAULT_MEMO_TEMPLATE_SEEDS[0], "pl-PL").title).toBe("Szybka notatka");
     expect(localizeMemoTemplateSeed(DEFAULT_MEMO_TEMPLATE_SEEDS[0], "ko-KR").title).toBe("Quick Spark");
-    expect(localizeMemoTemplateSeed(DEFAULT_MEMO_TEMPLATE_SEEDS[0], null).title).toBe("灵感速记");
+    expect(localizeMemoTemplateSeed(DEFAULT_MEMO_TEMPLATE_SEEDS[0], null).title).toBe("Quick Spark");
   });
 
   test("uses workspace-scoped deterministic ids", () => {
@@ -38,13 +37,13 @@ describe("memo template seeds", () => {
     };
 
     test("shows an unedited default template in the viewer's language, whatever language it was stored in", () => {
-      expect(localizeDefaultMemoTemplate(stored("zh-CN"), "pl-PL")).toEqual(stored("pl"));
+      expect(localizeDefaultMemoTemplate(stored("en-US"), "pl-PL")).toEqual(stored("pl"));
       expect(localizeDefaultMemoTemplate(stored("pl"), "ja")).toEqual(stored("ja"));
       expect(localizeDefaultMemoTemplate(stored("ja"), "fr-FR")).toEqual(stored("en-US"));
     });
 
     test("keeps templates the user edited or created as they are", () => {
-      const renamed = stored("zh-CN", { name: "My spark" });
+      const renamed = stored("ja", { name: "My spark" });
       const rewritten = stored("en-US", { contentMarkdown: "## Mine" });
       const custom = { ...stored("en-US"), id: "template_abc" };
 
@@ -54,15 +53,15 @@ describe("memo template seeds", () => {
     });
 
     test("keeps a default template whose tags were changed", () => {
-      const retagged = stored("zh-CN", { tags: ["template", "quick-note", "mine"] });
-      const reordered = stored("zh-CN", { tags: ["quick-note", "template"] });
+      const retagged = stored("ja", { tags: ["template", "quick-note", "mine"] });
+      const reordered = stored("ja", { tags: ["quick-note", "template"] });
 
       expect(localizeDefaultMemoTemplate(retagged, "pl")).toBe(retagged);
       expect(localizeDefaultMemoTemplate(reordered, "pl")).toBe(reordered);
     });
 
     test("does not mix fields from different translations", () => {
-      const mixed = stored("zh-CN", { description: quickNote.translations["en-US"].description });
+      const mixed = stored("ja", { description: quickNote.translations["en-US"].description });
 
       expect(localizeDefaultMemoTemplate(mixed, "pl")).toBe(mixed);
     });

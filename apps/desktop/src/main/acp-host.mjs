@@ -24,7 +24,7 @@ const ADAPTERS = {
   grokBuild: { id: "grokBuild", label: "Grok Build" },
   deepseekHarness: { id: "deepseekHarness", label: "DeepSeek Harness" },
   piAgent: { id: "piAgent", label: "pi agent" },
-  workbuddyCn: { id: "workbuddyCn", label: "WorkBuddy 中国版" },
+  workbuddyCn: { id: "workbuddyCn", label: "WorkBuddy China" },
   workbuddyIntl: { id: "workbuddyIntl", label: "WorkBuddy International" },
   codebuddy: { id: "codebuddy", label: "CodeBuddy" },
 };
@@ -37,7 +37,7 @@ const WARM_IDLE_MS = 10 * 60_000;
 const WARM_CANCEL_GRACE_MS = 5_000;
 const HISTORY_TEXT_LIMIT = 16_000;
 const SESSION_KEY_PATTERN = /^[A-Za-z0-9_-]{1,80}$/;
-const WORKSPACE_MARKER = `${path.sep}edgeever-acp-`;
+const WORKSPACE_MARKER = `${path.sep}ponder-acp-`;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
 const liveChildren = new Set();
@@ -432,7 +432,7 @@ function mapAttachment(attachment, capabilities) {
       block: {
         type: "resource",
         resource: {
-          uri: `edgeever-attachment:${attachmentToken(attachment.filename)}`,
+          uri: `ponder-attachment:${attachmentToken(attachment.filename)}`,
           blob: dataBase64,
           mimeType: "application/pdf",
         },
@@ -447,7 +447,7 @@ function assertPromptBlocksSafe(blocks) {
     if (!block || block.type === "resource_link") throw new Error("invalid_prompt");
     if (block.type === "resource") {
       const uri = block.resource?.uri ?? "";
-      if (!uri.startsWith("edgeever-attachment:") || /[/\\]/.test(uri) || uri.includes("..")) {
+      if (!uri.startsWith("ponder-attachment:") || /[/\\]/.test(uri) || uri.includes("..")) {
         throw new Error("invalid_prompt");
       }
     }
@@ -533,7 +533,7 @@ export function acpInitializeParams(version = clientVersion()) {
       fs: { readTextFile: false, writeTextFile: false },
       terminal: false,
     },
-    clientInfo: { name: "edgeever", version },
+    clientInfo: { name: "ponder", version },
   };
 }
 
@@ -767,7 +767,7 @@ const acpNdJsonStream = (child) => {
 export async function createAcpWorkspace(mkdtempImpl = mkdtemp, root = tmpdir()) {
   const resolvedRoot = path.resolve(root);
   if (resolvedRoot === path.resolve(homedir())) throw new Error("invalid_workspace");
-  const directory = await mkdtempImpl(path.join(resolvedRoot, "edgeever-acp-"));
+  const directory = await mkdtempImpl(path.join(resolvedRoot, "ponder-acp-"));
   if (path.resolve(directory) === path.resolve(homedir())) throw new Error("invalid_workspace");
   return directory;
 }
@@ -801,7 +801,7 @@ export function automaticAcpPermissionResponse(params) {
   return { outcome: option ? { outcome: "selected", optionId: option.optionId } : { outcome: "cancelled" } };
 }
 
-const createEdgeEverAcpClient = (requestId, emit, allowPermissions, onAuthStatus, onAuthUrl) => ({
+const createPonderAcpClient = (requestId, emit, allowPermissions, onAuthStatus, onAuthUrl) => ({
   extNotification(method, params) {
     if (method === "_auth/status_update") onAuthStatus?.(params?.authStatus);
     // Only an active CodeBuddy sign-in passes a handler; other sessions ignore it.
@@ -908,15 +908,15 @@ export function createAcpHostRuntime(options = {}) {
   const updateFailures = new Map();
   const installingIds = new Set();
   const latestStatus = new Map();
-  const mcpScriptPath = options.mcpScriptPath ?? fileURLToPath(new URL("../../../../scripts/edgeever-mcp-stdio.mjs", import.meta.url));
+  const mcpScriptPath = options.mcpScriptPath ?? fileURLToPath(new URL("../../../../scripts/ponder-mcp-stdio.mjs", import.meta.url));
   const mcpServerFor = (bridge) => ({
-    name: "edgeever-current-workspace",
+    name: "ponder-current-workspace",
     command: options.mcpExecutablePath ?? process.execPath,
     args: [mcpScriptPath],
     env: [
       { name: "ELECTRON_RUN_AS_NODE", value: "1" },
-      { name: "EDGEEVER_URL", value: bridge.url },
-      { name: "EDGEEVER_TOKEN", value: bridge.secret },
+      { name: "PONDER_URL", value: bridge.url },
+      { name: "PONDER_TOKEN", value: bridge.secret },
     ],
   });
 
@@ -995,7 +995,7 @@ export function createAcpHostRuntime(options = {}) {
       });
       child.stderr?.on("end", () => { recordStderr(stderrBuffer); stderrBuffer = ""; });
       const stream = acpNdJsonStream(child);
-      const connection = new ClientSideConnection(() => createEdgeEverAcpClient(liveRequestId, notifyConnection, allowPermissions, onAuthStatus, authMethodId ? onAuthUrl : null), stream);
+      const connection = new ClientSideConnection(() => createPonderAcpClient(liveRequestId, notifyConnection, allowPermissions, onAuthStatus, authMethodId ? onAuthUrl : null), stream);
       void connection.closed?.catch(() => {});
       const initialized = await connection.initialize(acpInitializeParams(version));
       authMethods = publicAuthMethods(initialized);
@@ -1568,7 +1568,7 @@ export function createAcpHostRuntime(options = {}) {
         if (mcpBridge && !resumeConversation) {
           content.blocks.splice(input.adapterId === "codex" ? 1 : 0, 0, {
             type: "text",
-            text: "For EdgeEver note operations in this conversation, use only the session-provided MCP server named edgeever-current-workspace. It is connected to the account currently signed in to EdgeEver. Ignore any EdgeEver MCP server from your persistent configuration, which may target a different instance or account. For a request to generate a poster or 海报笔记, first call get_poster_capabilities and read templates and browserDesignTemplates. Select by zhUse/enUse, the requested style and target platform (fit). Respect a named template. Use a basic templates ID for create_poster_memo.template. Full browserDesignTemplates IDs go only in request_poster_render.templateId, even when IDs overlap. For a new poster, apply the chosen full design during initial rendering if appropriate; an existing poster requires an explicit template-change request. With sections, basic styles share grid/list layout and differ mainly in palette. Then use create_poster_memo with concise copy; it produces the actual editable poster type. Never manually encode poster source, inspect local files to discover the format, or substitute poster-style Markdown. If the tool is unavailable or fails, report that clearly. To query posters, use search_memos or list_memos with poster=true rather than searching the title for 海报. For detailed design, read get_poster_capabilities for valid fields, fonts, platform sizes and operations. Read and edit a poster with get_poster then update_poster. apply_template replaces the layout and must be requested. get_poster_preview and export_poster provide saved previews and editable source, not fresh rendering. Request new PNG rendering or a full browser template with request_poster_render and expectedRevision; an online desktop/Web client handles it. Query get_poster_render_job no faster than every 5 seconds; only completed means rendered, then get_poster_preview. Pending means waiting for a client; report that honestly. Delete exact queried IDs with trash_memos; restore them with restore_memos. When you create a note, include a clickable Markdown link to it in your final answer: [note title](#memo=exact_memo_id_from_tool_result). Do not show the note ID as plain text or use an https://edgeever.ai/memo/ URL; that URL opens an external website instead of the current workspace.",
+            text: "For Ponder note operations in this conversation, use only the session-provided MCP server named ponder-current-workspace. It is connected to the account currently signed in to Ponder. Ignore any Ponder MCP server from your persistent configuration, which may target a different instance or account. For a request to generate a poster or 海报笔记, first call get_poster_capabilities and read templates and browserDesignTemplates. Select by zhUse/enUse, the requested style and target platform (fit). Respect a named template. Use a basic templates ID for create_poster_memo.template. Full browserDesignTemplates IDs go only in request_poster_render.templateId, even when IDs overlap. For a new poster, apply the chosen full design during initial rendering if appropriate; an existing poster requires an explicit template-change request. With sections, basic styles share grid/list layout and differ mainly in palette. Then use create_poster_memo with concise copy; it produces the actual editable poster type. Never manually encode poster source, inspect local files to discover the format, or substitute poster-style Markdown. If the tool is unavailable or fails, report that clearly. To query posters, use search_memos or list_memos with poster=true rather than searching the title for 海报. For detailed design, read get_poster_capabilities for valid fields, fonts, platform sizes and operations. Read and edit a poster with get_poster then update_poster. apply_template replaces the layout and must be requested. get_poster_preview and export_poster provide saved previews and editable source, not fresh rendering. Request new PNG rendering or a full browser template with request_poster_render and expectedRevision; an online desktop/Web client handles it. Query get_poster_render_job no faster than every 5 seconds; only completed means rendered, then get_poster_preview. Pending means waiting for a client; report that honestly. Delete exact queried IDs with trash_memos; restore them with restore_memos. When you create a note, include a clickable Markdown link to it in your final answer: [note title](#memo=exact_memo_id_from_tool_result). Do not show the note ID as plain text or use an https://ponder.invalid/memo/ URL; that URL opens an external website instead of the current workspace.",
           });
         }
       } catch (error) {

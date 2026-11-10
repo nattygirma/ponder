@@ -27,7 +27,7 @@ describe("created note links", () => {
   test("does not duplicate a created note linked through a legacy absolute URL", () => {
     const id = "memo_328cb20d4b4040edb3ecb24638abc2d5";
     const tool = { ...created, effects: [{ kind: "created", memoId: id, title: "流程图" }] };
-    expect(missingCreatedNoteLinks(`[流程图](https://edgeever.ai/memo/${id})`, [tool])).toEqual([]);
+    expect(missingCreatedNoteLinks(`[流程图](https://ponder.invalid/memo/${id})`, [tool])).toEqual([]);
   });
 
   test("ignores failed tools and links each successful creation once", () => {

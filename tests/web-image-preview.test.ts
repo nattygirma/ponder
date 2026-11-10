@@ -7,7 +7,6 @@ const imageNodeSource = readSource("../apps/web/src/components/editor/ResizableI
 const imageViewerSource = readSource("../apps/web/src/components/editor/ImageViewer.tsx");
 const editorSource = readSource("../apps/web/src/components/EditorPane.tsx");
 const englishSource = readSource("../packages/shared/src/i18n/en-US.ts");
-const chineseSource = readSource("../packages/shared/src/i18n/zh-CN.ts");
 
 describe("web note image preview", () => {
   test("opens the same preview flow from double-click and an accessible button", () => {
@@ -25,8 +24,8 @@ describe("web note image preview", () => {
     expect(imageViewerSource).toContain('toolbar={{ buttons: ["zoom", "close"] }}');
   });
 
-  test("keeps viewer controls bilingual", () => {
-    for (const source of [englishSource, chineseSource]) {
+  test("keeps viewer control copy in the catalog", () => {
+    for (const source of [englishSource]) {
       expect(source).toContain("previewImage:");
       expect(source).toContain("imageZoomIn:");
       expect(source).toContain("closeImagePreview:");

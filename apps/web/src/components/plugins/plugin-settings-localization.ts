@@ -1,4 +1,4 @@
-import type { PluginSettingField } from "@edgeever/plugin-api";
+import type { PluginSettingField } from "@ponder/plugin-api";
 
 export const localizePluginSettingField = (field: PluginSettingField, locale: string | undefined): PluginSettingField => {
   if (!locale || !field.locales) return field;

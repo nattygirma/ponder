@@ -12,7 +12,7 @@ export default defineConfig({
   },
   use: {
     baseURL: "http://127.0.0.1:5173",
-    locale: "zh-CN",
+    locale: "en-US",
     storageState: E2E_STORAGE_STATE_PATH,
     screenshot: "only-on-failure",
     trace: "retain-on-failure",

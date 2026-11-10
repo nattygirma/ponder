@@ -1,12 +1,12 @@
 {
   "extensionName": {
-    "message": "EdgeEver Web Clipper"
+    "message": "Ponder Web Clipper"
   },
   "extensionDescription": {
-    "message": "Zapisuj strony, wybrany tekst, obrazy i wpisy Hacker News w swojej instancji EdgeEver."
+    "message": "Zapisuj strony, wybrany tekst, obrazy i wpisy Hacker News w swojej instancji Ponder."
   },
   "actionTitle": {
-    "message": "Zapisz w EdgeEver"
+    "message": "Zapisz w Ponder"
   },
   "webClipper": {
     "message": "Web Clipper"
@@ -26,14 +26,14 @@
   "completePluginConfiguration": {
     "message": "Dokończ konfigurację rozszerzenia"
   },
-  "savedToEdgeEver": {
-    "message": "Zapisano w EdgeEver."
+  "savedToPonder": {
+    "message": "Zapisano w Ponder."
   },
   "saveFailed": {
     "message": "Nie udało się zapisać."
   },
   "optionsTitle": {
-    "message": "Ustawienia EdgeEver Web Clipper"
+    "message": "Ustawienia Ponder Web Clipper"
   },
   "diagnosticsTitle": {
     "message": "Informacje i diagnostyka"
@@ -90,10 +90,10 @@
     "message": "Nieznane"
   },
   "instanceAddress": {
-    "message": "Adres URL instancji EdgeEver"
+    "message": "Adres URL instancji Ponder"
   },
   "tokenPlaceholder": {
-    "message": "Utwórz go w ustawieniach EdgeEver"
+    "message": "Utwórz go w ustawieniach Ponder"
   },
   "defaultNotebook": {
     "message": "Domyślny notatnik"
@@ -108,7 +108,7 @@
     "message": "Zapisz ustawienia"
   },
   "projectAndSource": {
-    "message": "Projekt i kod źródłowy w GitHub"
+    "message": "AppKeep"
   },
   "reportIssue": {
     "message": "Zgłoś problem"
@@ -140,13 +140,13 @@
     "message": "Nie udało się zapisać ustawień."
   },
   "missingSettingsDetails": {
-    "message": "Najpierw wpisz adres URL instancji EdgeEver i token API w ustawieniach rozszerzenia."
+    "message": "Najpierw wpisz adres URL instancji Ponder i token API w ustawieniach rozszerzenia."
   },
   "instancePermissionRequired": {
-    "message": "Zezwól rozszerzeniu na dostęp do Twojej instancji EdgeEver."
+    "message": "Zezwól rozszerzeniu na dostęp do Twojej instancji Ponder."
   },
   "requestFailed": {
-    "message": "Żądanie do EdgeEver nie powiodło się ($STATUS$).",
+    "message": "Żądanie do Ponder nie powiodło się ($STATUS$).",
     "placeholders": {
       "status": {
         "content": "$1"
@@ -166,7 +166,7 @@
     "message": "Słowo kluczowe"
   },
   "noAvailableNotebooks": {
-    "message": "Brak dostępnych notatników w EdgeEver."
+    "message": "Brak dostępnych notatników w Ponder."
   },
   "currentPageNotFound": {
     "message": "Nie znaleziono bieżącej strony."
@@ -189,10 +189,10 @@
     "message": "Brak dodatkowych szczegółów"
   },
   "instanceNetworkFailed": {
-    "message": "Nie udało się połączyć z instancją EdgeEver. Sprawdź adres URL instancji, połączenie sieciowe i ustawienia CORS."
+    "message": "Nie udało się połączyć z instancją Ponder. Sprawdź adres URL instancji, połączenie sieciowe i ustawienia CORS."
   },
   "saveFailedWithReason": {
-    "message": "Nie udało się zapisać w EdgeEver: $DETAIL$",
+    "message": "Nie udało się zapisać w Ponder: $DETAIL$",
     "placeholders": {
       "detail": {
         "content": "$1"
@@ -202,11 +202,11 @@
   "emptyPageContent": {
     "message": "(Na tej stronie nie znaleziono treści do odczytania)"
   },
-  "saveSelectionToEdgeEver": {
-    "message": "Zapisz zaznaczenie w EdgeEver"
+  "saveSelectionToPonder": {
+    "message": "Zapisz zaznaczenie w Ponder"
   },
   "selectionSaveHint": {
-    "message": "Zaznacz tekst na stronie, kliknij prawym przyciskiem i wybierz „Zapisz zaznaczenie w EdgeEver”. Zostanie zapisany jako nowa notatka w domyślnym notatniku wybranym poniżej."
+    "message": "Zaznacz tekst na stronie, kliknij prawym przyciskiem i wybierz „Zapisz zaznaczenie w Ponder”. Zostanie zapisany jako nowa notatka w domyślnym notatniku wybranym poniżej."
   },
   "savingSelection": {
     "message": "Zapisywanie zaznaczenia…"
@@ -220,11 +220,11 @@
   "selectionNoteFallbackTitle": {
     "message": "Zaznaczenie"
   },
-  "saveImageToEdgeEver": {
-    "message": "Zapisz obraz w EdgeEver"
+  "saveImageToPonder": {
+    "message": "Zapisz obraz w Ponder"
   },
   "imageSaveHint": {
-    "message": "Kliknij prawym przyciskiem obraz na stronie i wybierz „Zapisz obraz w EdgeEver”. Zostanie zapisany jako nowa notatka w domyślnym notatniku wybranym poniżej."
+    "message": "Kliknij prawym przyciskiem obraz na stronie i wybierz „Zapisz obraz w Ponder”. Zostanie zapisany jako nowa notatka w domyślnym notatniku wybranym poniżej."
   },
   "savingImage": {
     "message": "Zapisywanie obrazu…"
@@ -242,7 +242,7 @@
     "message": "Tego formatu obrazu nie można jeszcze zapisać w notatce. Obsługiwane formaty: PNG, JPEG, GIF, WebP i AVIF."
   },
   "imagePermissionIntro": {
-    "message": "Ta strona nie może odczytać pliku obrazu. Gdy zezwolisz na dostęp do witryny, która go udostępnia, EdgeEver zapisze go jako nową notatkę w domyślnym notatniku Web Clippera. Odczytywany jest tylko wybrany obraz."
+    "message": "Ta strona nie może odczytać pliku obrazu. Gdy zezwolisz na dostęp do witryny, która go udostępnia, Ponder zapisze go jako nową notatkę w domyślnym notatniku Web Clippera. Odczytywany jest tylko wybrany obraz."
   },
   "imagePermissionHost": {
     "message": "Witryna: $HOST$",
@@ -265,7 +265,7 @@
     "message": "Nie zezwolono na dostęp do witryny, więc obraz nie został zapisany."
   },
   "imageResourceScopeRequired": {
-    "message": "Ten token API nie może zapisywać załączników. Utwórz token z pełnym dostępem w ustawieniach EdgeEver."
+    "message": "Ten token API nie może zapisywać załączników. Utwórz token z pełnym dostępem w ustawieniach Ponder."
   },
   "imageNoteFallbackTitle": {
     "message": "Obraz"
@@ -274,16 +274,16 @@
     "message": "Obraz"
   },
   "imageSaveWindowTitle": {
-    "message": "Zapisz obraz w EdgeEver"
+    "message": "Zapisz obraz w Ponder"
   },
   "imageSaveExpired": {
     "message": "Ten zapis wygasł. Kliknij obraz prawym przyciskiem i spróbuj ponownie."
   },
-  "saveTweetToEdgeEver": {
-    "message": "Zapisz post w EdgeEver"
+  "saveTweetToPonder": {
+    "message": "Zapisz post w Ponder"
   },
   "tweetSaveHint": {
-    "message": "W serwisie X kliknij post prawym przyciskiem i wybierz „Zapisz post w EdgeEver”. Tekst posta, także ten ukryty pod „Pokaż więcej”, oraz zdjęcia trafią do jednej nowej notatki w tym samym domyślnym notatniku."
+    "message": "W serwisie X kliknij post prawym przyciskiem i wybierz „Zapisz post w Ponder”. Tekst posta, także ten ukryty pod „Pokaż więcej”, oraz zdjęcia trafią do jednej nowej notatki w tym samym domyślnym notatniku."
   },
   "savingTweet": {
     "message": "Zapisywanie posta…"
@@ -316,16 +316,16 @@
     "message": "Post"
   },
   "tweetSaveWindowTitle": {
-    "message": "Zapisz post w EdgeEver"
+    "message": "Zapisz post w Ponder"
   },
   "tweetTimeLabel": {
     "message": "Czas"
   },
-  "saveGithubRepoToEdgeEver": {
-    "message": "Zapisz informacje o repozytorium w EdgeEver"
+  "saveGithubRepoToPonder": {
+    "message": "Zapisz informacje o repozytorium w Ponder"
   },
   "githubRepoSaveHint": {
-    "message": "Na stronie repozytorium GitHub lub w drzewie kodu kliknij prawym przyciskiem tło strony, opis lub tekst README i wybierz „Zapisz informacje o repozytorium w EdgeEver”. Adres i opis zostaną zapisane jako nowa notatka w domyślnym notatniku wybranym powyżej. Strony zgłoszeń, dyskusji i pojedynczych plików nie są zapisywane."
+    "message": "Na stronie repozytorium GitHub lub w drzewie kodu kliknij prawym przyciskiem tło strony, opis lub tekst README i wybierz „Zapisz informacje o repozytorium w Ponder”. Adres i opis zostaną zapisane jako nowa notatka w domyślnym notatniku wybranym powyżej. Strony zgłoszeń, dyskusji i pojedynczych plików nie są zapisywane."
   },
   "savingGithubRepo": {
     "message": "Zapisywanie repozytorium…"
@@ -351,11 +351,11 @@
   "githubRepoTopicsLabel": {
     "message": "Tematy"
   },
-  "saveXhsToEdgeEver": {
-    "message": "Zapisz notatkę w EdgeEver"
+  "saveXhsToPonder": {
+    "message": "Zapisz notatkę w Ponder"
   },
   "xhsSaveHint": {
-    "message": "W serwisie Xiaohongshu kliknij prawym przyciskiem tekst notatki i wybierz „Zapisz notatkę w EdgeEver”. Tytuł, tekst i zdjęcia trafią do jednej nowej notatki. Komentarze są pomijane. Kliknięcie prawym przyciskiem zdjęcia nadal zapisuje tylko ten obraz."
+    "message": "W serwisie Xiaohongshu kliknij prawym przyciskiem tekst notatki i wybierz „Zapisz notatkę w Ponder”. Tytuł, tekst i zdjęcia trafią do jednej nowej notatki. Komentarze są pomijane. Kliknięcie prawym przyciskiem zdjęcia nadal zapisuje tylko ten obraz."
   },
   "savingXhs": {
     "message": "Zapisywanie notatki…"
@@ -391,13 +391,13 @@
     "message": "Notatka z Xiaohongshu"
   },
   "xhsSaveWindowTitle": {
-    "message": "Zapisz notatkę w EdgeEver"
+    "message": "Zapisz notatkę w Ponder"
   },
   "xhsLocationLabel": {
     "message": "Lokalizacja"
   },
-  "saveZhihuToEdgeEver": {
-    "message": "Zapisz odpowiedź lub artykuł w EdgeEver"
+  "saveZhihuToPonder": {
+    "message": "Zapisz odpowiedź lub artykuł w Ponder"
   },
   "zhihuQuestionLabel": {
     "message": "Pytanie"
@@ -415,7 +415,7 @@
     "message": "Treść"
   },
   "zhihuSaveHint": {
-    "message": "W serwisie Zhihu kliknij prawym przyciskiem tekst odpowiedzi lub artykułu i wybierz „Zapisz odpowiedź lub artykuł w EdgeEver”. Tytuł, autor, tekst i zdjęcia trafią do jednej nowej notatki. Komentarze są pomijane. Kliknięcie prawym przyciskiem zdjęcia nadal zapisuje tylko ten obraz."
+    "message": "W serwisie Zhihu kliknij prawym przyciskiem tekst odpowiedzi lub artykułu i wybierz „Zapisz odpowiedź lub artykuł w Ponder”. Tytuł, autor, tekst i zdjęcia trafią do jednej nowej notatki. Komentarze są pomijane. Kliknięcie prawym przyciskiem zdjęcia nadal zapisuje tylko ten obraz."
   },
   "savingZhihu": {
     "message": "Zapisywanie odpowiedzi lub artykułu z Zhihu…"
@@ -451,10 +451,10 @@
     "message": "Odpowiedź lub artykuł z Zhihu"
   },
   "zhihuSaveWindowTitle": {
-    "message": "Zapisz odpowiedź lub artykuł w EdgeEver"
+    "message": "Zapisz odpowiedź lub artykuł w Ponder"
   },
-  "saveRedditToEdgeEver": {
-    "message": "Zapisz post z Reddita w EdgeEver"
+  "saveRedditToPonder": {
+    "message": "Zapisz post z Reddita w Ponder"
   },
   "savingReddit": {
     "message": "Zapisywanie posta z Reddita…"
@@ -477,8 +477,8 @@
   "redditLinkLabel": {
     "message": "Strona z linku"
   },
-  "saveVideoNoteToEdgeEver": {
-    "message": "Zapisz notatkę z wideo w EdgeEver"
+  "saveVideoNoteToPonder": {
+    "message": "Zapisz notatkę z wideo w Ponder"
   },
   "savingVideoNote": {
     "message": "Zapisywanie notatki z wideo…"
@@ -552,17 +552,17 @@
   "videoNoteFallbackTitle": {
     "message": "Notatka z wideo"
   },
-  "saveHackerNewsToEdgeEver": {
-    "message": "Zapisz wpis Hacker News w EdgeEver"
+  "saveHackerNewsToPonder": {
+    "message": "Zapisz wpis Hacker News w Ponder"
   },
-  "saveV2exToEdgeEver": {
-    "message": "Zapisz temat V2EX w EdgeEver"
+  "saveV2exToPonder": {
+    "message": "Zapisz temat V2EX w Ponder"
   },
-  "saveXiaoyuzhouToEdgeEver": {
-    "message": "Zapisz odcinek Xiaoyuzhou w EdgeEver"
+  "saveXiaoyuzhouToPonder": {
+    "message": "Zapisz odcinek Xiaoyuzhou w Ponder"
   },
   "savingPlatformClip": {
-    "message": "Zapisywanie strony w EdgeEver…"
+    "message": "Zapisywanie strony w Ponder…"
   },
   "platformNotDetail": {
     "message": "Otwórz stronę konkretnego wpisu, tematu lub odcinka i spróbuj ponownie."
@@ -580,7 +580,7 @@
     "message": "Tekst zapisano. Część obrazów nadal korzysta z linków zewnętrznych."
   },
   "platformSavedWithImages": {
-    "message": "Zapisano w EdgeEver wraz ze wszystkimi obrazami."
+    "message": "Zapisano w Ponder wraz ze wszystkimi obrazami."
   },
   "platformNoShowNotes": {
     "message": "Ten odcinek nie ma Show Notes."
@@ -606,20 +606,20 @@
   "platformPodcastLabel": {
     "message": "Podcast"
   },
-  "saveFacebookToEdgeEver": {
-    "message": "Zapisz post Facebooka w EdgeEver"
+  "saveFacebookToPonder": {
+    "message": "Zapisz post Facebooka w Ponder"
   },
-  "saveInstagramToEdgeEver": {
-    "message": "Zapisz post Instagrama w EdgeEver"
+  "saveInstagramToPonder": {
+    "message": "Zapisz post Instagrama w Ponder"
   },
-  "saveLinkedinToEdgeEver": {
-    "message": "Zapisz post LinkedIn w EdgeEver"
+  "saveLinkedinToPonder": {
+    "message": "Zapisz post LinkedIn w Ponder"
   },
-  "saveThreadsToEdgeEver": {
-    "message": "Zapisz post Threads w EdgeEver"
+  "saveThreadsToPonder": {
+    "message": "Zapisz post Threads w Ponder"
   },
-  "saveBlueskyToEdgeEver": {
-    "message": "Zapisz post Bluesky w EdgeEver"
+  "saveBlueskyToPonder": {
+    "message": "Zapisz post Bluesky w Ponder"
   },
   "socialSelectPost": {
     "message": "Otwórz stronę posta lub kliknij wybrany post ponownie prawym przyciskiem, aby go zapisać."
@@ -645,8 +645,8 @@
   "platformXiaoyuzhou": {
     "message": "Xiaoyuzhou"
   },
-  "saveSubstackNoteToEdgeEver": {
-    "message": "Zapisz notatkę Substack w EdgeEver"
+  "saveSubstackNoteToPonder": {
+    "message": "Zapisz notatkę Substack w Ponder"
   },
   "adaptedPlatformsTitle": {
     "message": "Platformy z dedykowaną obsługą"
@@ -708,11 +708,11 @@
   "clipNotifications": {
     "message": "Powiadomienia o zapisywaniu"
   },
-  "saveBossToEdgeEver": {
-    "message": "Zapisz ofertę BOSS Zhipin w EdgeEver"
+  "saveBossToPonder": {
+    "message": "Zapisz ofertę BOSS Zhipin w Ponder"
   },
-  "saveXueqiuToEdgeEver": {
-    "message": "Zapisz wpis Xueqiu w EdgeEver"
+  "saveXueqiuToPonder": {
+    "message": "Zapisz wpis Xueqiu w Ponder"
   },
   "platformBoss": {
     "message": "BOSS Zhipin"
@@ -729,32 +729,32 @@
   "platformWechat": {
     "message": "WeChat"
   },
-  "saveWechatToEdgeEver": {
-    "message": "Zapisz WeChat w EdgeEver"
+  "saveWechatToPonder": {
+    "message": "Zapisz WeChat w Ponder"
   },
   "platformJike": {
     "message": "Jike"
   },
-  "saveJikeToEdgeEver": {
-    "message": "Zapisz Jike w EdgeEver"
+  "saveJikeToPonder": {
+    "message": "Zapisz Jike w Ponder"
   },
   "platformSspai": {
     "message": "SSPAI"
   },
-  "saveSspaiToEdgeEver": {
-    "message": "Zapisz SSPAI w EdgeEver"
+  "saveSspaiToPonder": {
+    "message": "Zapisz SSPAI w Ponder"
   },
   "platformJuejin": {
     "message": "Juejin"
   },
-  "saveJuejinToEdgeEver": {
-    "message": "Zapisz Juejin w EdgeEver"
+  "saveJuejinToPonder": {
+    "message": "Zapisz Juejin w Ponder"
   },
   "platformDouban": {
     "message": "Douban"
   },
-  "saveDoubanToEdgeEver": {
-    "message": "Zapisz Douban w EdgeEver"
+  "saveDoubanToPonder": {
+    "message": "Zapisz Douban w Ponder"
   },
   "platformOfficialAccountLabel": {
     "message": "Konto oficjalne"
@@ -763,7 +763,7 @@
     "message": "Lista źródłowa"
   },
   "doubanSelectComment": {
-    "message": "Kliknij krótką opinię prawym przyciskiem i wybierz „Zapisz Douban w EdgeEver” lub zapisz zaznaczony tekst."
+    "message": "Kliknij krótką opinię prawym przyciskiem i wybierz „Zapisz Douban w Ponder” lub zapisz zaznaczony tekst."
   },
   "pageCaptureRestricted": {
     "message": "Ograniczona treść"
@@ -813,7 +813,7 @@
     "message": "Wybierz ponownie"
   },
   "regionSave": {
-    "message": "Zapisz w EdgeEver"
+    "message": "Zapisz w Ponder"
   },
   "regionCancel": {
     "message": "Anuluj"

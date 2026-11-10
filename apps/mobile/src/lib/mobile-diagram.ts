@@ -15,7 +15,7 @@ import {
   tableFallbackMarkdown,
   type TiptapDoc,
   type DiagramKind,
-} from "@edgeever/shared";
+} from "@ponder/shared";
 
 export const getMobileVisualDiagramKind = (contentMarkdown: string): DiagramKind | null =>
   parseDiagramDocument(contentMarkdown)?.kind ?? null;

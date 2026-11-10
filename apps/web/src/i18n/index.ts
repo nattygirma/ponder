@@ -10,7 +10,7 @@ import {
   type AppLocalePreference,
   type SupportedLocale,
 } from "./locales";
-import { zhCN } from "./resources/zh-CN";
+import { enUS } from "./resources/en-US";
 
 export {
   defaultLocale,
@@ -22,18 +22,15 @@ export {
 } from "./locales";
 
 export const resources = {
-  "zh-CN": { translation: zhCN },
+  "en-US": { translation: enUS },
 } as const;
 
 type OptionalLocale = Exclude<SupportedLocale, keyof typeof resources>;
 
 const isOptionalLocale = (locale: SupportedLocale): locale is OptionalLocale =>
-  locale === "en-US" || locale === "ja" || locale === "pl" || locale === "ru";
+  locale === "ja" || locale === "pl" || locale === "ru";
 
 const loadOptionalCatalog = async (locale: OptionalLocale) => {
-  if (locale === "en-US") {
-    return (await import("./resources/en-US")).enUS;
-  }
   if (locale === "ja") {
     return (await import("./resources/ja")).ja;
   }
@@ -48,9 +45,6 @@ const ensureLocaleCatalog = async (locale: SupportedLocale) => {
     return;
   }
 
-  if (locale !== "en-US") {
-    await ensureLocaleCatalog("en-US");
-  }
   i18n.addResourceBundle(locale, "translation", await loadOptionalCatalog(locale), true, true);
 };
 

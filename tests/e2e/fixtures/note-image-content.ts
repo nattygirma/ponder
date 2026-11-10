@@ -4,10 +4,10 @@ export const landscape = svg(1600, 320, 'Landscape / full frame');
 export const portrait = svg(320, 1200, 'Portrait');
 export const longCode = `const endpoint = "https://example.com/${'very-long-path-'.repeat(24)}";\n\tconst result = { message: "保留缩进与全部代码内容", ready: true };\nconsole.log(result); // END_CODE`;
 const headings = ['项目', '说明', '负责人', '进度', '更新时间', '备注'];
-const values = ['图文导出', '完整保留每个字段，不挤成逐字竖排', 'EdgeEver', '验证中', '2026-10-18', 'END_TABLE'];
+const values = ['图文导出', '完整保留每个字段，不挤成逐字竖排', 'Ponder', '验证中', '2026-10-18', 'END_TABLE'];
 const escape = (text: string) => text.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 export const complexBodyHtml = `<h2>图文与画廊</h2><figure><img src="${landscape}" style="width:1600px;height:100px;object-fit:cover"><figcaption>横图上下色条均应完整可见</figcaption></figure>
-<div data-edgeever-image-gallery="true"><div class="edgeever-image-node" style="height:120px;overflow:hidden"><img src="${portrait}" style="height:100%;object-fit:cover"></div><div class="edgeever-image-node"><img src="${landscape}"></div></div>
+<div data-ponder-image-gallery="true"><div class="ponder-image-node" style="height:120px;overflow:hidden"><img src="${portrait}" style="height:100%;object-fit:cover"></div><div class="ponder-image-node"><img src="${landscape}"></div></div>
 <h2>六列表格</h2><div class="tableWrapper" style="width:1800px;overflow:auto"><table style="min-width:1800px"><colgroup>${headings.map(() => '<col style="width:300px">').join('')}</colgroup><tbody><tr>${headings.map(h => `<th colwidth="300">${h}</th>`).join('')}</tr>${[1, 2].map(n => `<tr>${values.map((v, i) => `<td style="min-width:300px">${escape(v)}${i === 0 ? n : ''}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
 <h2>合并单元格</h2><table><tbody><tr><th colspan="2">保留合并关系</th><th>状态</th></tr><tr><td>左</td><td>右</td><td>END_MERGED</td></tr></tbody></table>
 <h2>长代码</h2><pre><code><span style="white-space:pre">${escape(longCode)}</span></code></pre>
@@ -20,7 +20,7 @@ const heading = (value: string) => ({ type: 'heading', attrs: { level: 2 }, cont
 export const complexDocument = { type: 'doc', content: [
   heading('图文与画廊'),
   { type: 'image', attrs: { src: landscape, alt: '横图上下色条均应完整可见', width: '100%' } },
-  { type: 'edgeeverImageGallery', attrs: { layout: '2' }, content: [portrait, landscape].map(src => ({ type: 'image', attrs: { src, width: '100%' } })) },
+  { type: 'ponderImageGallery', attrs: { layout: '2' }, content: [portrait, landscape].map(src => ({ type: 'image', attrs: { src, width: '100%' } })) },
   heading('六列表格'),
   { type: 'table', content: [{ type: 'tableRow', content: headings.map(label => ({ type: 'tableHeader', attrs: { colwidth: [300] }, content: [p(label)] })) },
     ...[1, 2].map(n => ({ type: 'tableRow', content: values.map((value, i) => ({ type: 'tableCell', attrs: { colwidth: [300] }, content: [p(value + (i === 0 ? n : ''))] })) }))] },

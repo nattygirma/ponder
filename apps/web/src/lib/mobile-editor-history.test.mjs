@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { Editor } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
-import { clearMobileEditorUndoHistory } from "@edgeever/shared/mobile-editor";
+import { clearMobileEditorUndoHistory } from "@ponder/shared/mobile-editor";
 
 const createEditor = () => {
   const editor = new Editor({

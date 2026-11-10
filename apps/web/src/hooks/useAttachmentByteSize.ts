@@ -1,4 +1,4 @@
-import { normalizeAttachmentByteSize } from "@edgeever/shared";
+import { normalizeAttachmentByteSize } from "@ponder/shared";
 import { useEffect, useState } from "react";
 import { fetchAttachmentByteSize } from "@/lib/attachment-byte-size";
 

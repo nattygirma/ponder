@@ -15,7 +15,7 @@ export const readMobileResourcePart = (
     handle.offset = start;
     const bytes = handle.readBytes(end - start);
     if (bytes.byteLength !== end - start) {
-      throw new Error("附件读取不完整，请重新选择文件");
+      throw new Error("The attachment could not be read completely. Choose the file again.");
     }
     return bytes;
   } finally {

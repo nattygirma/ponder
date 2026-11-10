@@ -4,7 +4,7 @@ import { globSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { Hono } from "hono";
-import { parseTableDocument, serializeTableDocument } from "@edgeever/shared";
+import { parseTableDocument, serializeTableDocument } from "@ponder/shared";
 import { AppError } from "./app-error.ts";
 import { apiError } from "./http-errors.ts";
 import { createMemoRecord, getMemoDetail } from "./memo-service.ts";
@@ -66,7 +66,7 @@ const installation = () => {
   for (const file of globSync("migrations/*.sql").sort()) sqlite.exec(readFileSync(file, "utf8"));
   sqlite.query("INSERT INTO workspaces (id, name, is_personal) VALUES (?, 'Other', 1)").run(OTHER_WORKSPACE_ID);
   sqlite.query("INSERT INTO notebooks (id, workspace_id, name, slug) VALUES ('nb_other', ?, 'Other', 'other')").run(OTHER_WORKSPACE_ID);
-  const resourcesDirectory = mkdtempSync(join(tmpdir(), "edgeever-table-form-"));
+  const resourcesDirectory = mkdtempSync(join(tmpdir(), "ponder-table-form-"));
   cleanups.push(() => {
     sqlite.close();
     rmSync(resourcesDirectory, { recursive: true, force: true });

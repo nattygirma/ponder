@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import type { PluginPanelChrome, PluginPanelCloseDecision, PluginPanelOpenOptions } from "@edgeever/plugin-api";
+import type { PluginPanelChrome, PluginPanelCloseDecision, PluginPanelOpenOptions } from "@ponder/plugin-api";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AppConfirmDialog } from "@/components/dialogs/ConfirmDialogs";
 import { PluginPanelEmpty, PluginPanelHeaderActions, PluginPanelToolbar } from "@/components/plugins/PluginPanelChrome";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import type { EdgeEverPluginHost, RegisteredPluginPanel } from "@/lib/plugins/plugin-host";
+import type { PonderPluginHost, RegisteredPluginPanel } from "@/lib/plugins/plugin-host";
 import { cn } from "@/lib/utils";
 
 export const PluginPanelDialog = ({ host, panel, options, onClose }: {
-  host: EdgeEverPluginHost;
+  host: PonderPluginHost;
   panel: RegisteredPluginPanel | null;
   options?: PluginPanelOpenOptions;
   onClose: () => void;

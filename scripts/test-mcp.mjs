@@ -84,7 +84,7 @@ sqlite.run(
 // Simulate a token created before migration 0007 began retaining token plaintext.
 // Upgraded rows have a valid hash and their original granular scopes, while
 // token_value remains NULL and therefore cannot be copied again from the UI.
-const legacyToken = "edgeever_mcp_test_token";
+const legacyToken = "ponder_mcp_test_token";
 const legacyTokenHash = new Bun.CryptoHasher("sha256").update(legacyToken).digest("hex");
 const legacyScopes = [
   "read:notebooks",
@@ -118,7 +118,7 @@ const executionContext = { waitUntil: () => undefined, passThroughOnException: (
 
 const fetchMcp = (payload, options = {}) =>
   worker.fetch(
-    new Request("https://edgeever.test/mcp", {
+    new Request("https://ponder.test/mcp", {
       method: options.method ?? "POST",
       headers: {
         ...(options.auth === false ? {} : { Authorization: `Bearer ${legacyToken}` }),
@@ -141,7 +141,7 @@ const modernRpc = (id, method, params = {}) => ({
     ...params,
     _meta: {
       "io.modelcontextprotocol/protocolVersion": "2026-07-28",
-      "io.modelcontextprotocol/clientInfo": { name: "edgeever-integration-test", version: "1.0.0" },
+      "io.modelcontextprotocol/clientInfo": { name: "ponder-integration-test", version: "1.0.0" },
       "io.modelcontextprotocol/clientCapabilities": {},
     },
   },
@@ -173,7 +173,7 @@ response = await fetchMcp(rpc(2, "initialize", {
 assert.equal(response.status, 200);
 let body = await response.json();
 assert.equal(body.result.protocolVersion, "2025-11-25");
-assert.equal(body.result.serverInfo.name, "edgeever");
+assert.equal(body.result.serverInfo.name, "ponder");
 assert.notEqual(body.result.serverInfo.version, "0.1.0");
 
 response = await fetchModernMcp(modernRpc(201, "server/discover"));
@@ -183,7 +183,7 @@ assert.equal(body.result.resultType, "complete");
 assert.deepEqual(body.result.supportedVersions, ["2026-07-28"]);
 assert.equal(body.result.capabilities.tools.listChanged, false);
 assert.equal(body.result.cacheScope, "public");
-assert.equal(body.result._meta["io.modelcontextprotocol/serverInfo"].name, "edgeever");
+assert.equal(body.result._meta["io.modelcontextprotocol/serverInfo"].name, "ponder");
 assert.equal(body.result.serverInfo, undefined);
 
 response = await fetchModernMcp(modernRpc(202, "tools/call", {
@@ -194,7 +194,7 @@ assert.equal(response.status, 200);
 body = await response.json();
 assert.equal(body.result.resultType, "complete");
 assert.equal(body.result.structuredContent.user.username, "zack42");
-assert.equal(body.result._meta["io.modelcontextprotocol/serverInfo"].name, "edgeever");
+assert.equal(body.result._meta["io.modelcontextprotocol/serverInfo"].name, "ponder");
 
 response = await fetchMcp(rpc(3, "tools/list"));
 body = await response.json();

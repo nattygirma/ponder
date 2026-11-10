@@ -21,15 +21,15 @@ COPY patches patches
 
 FROM manifests AS dependencies
 RUN bun install --frozen-lockfile \
-  --filter edgeever \
-  --filter @edgeever/api \
-  --filter @edgeever/public-network \
-  --filter @edgeever/web
+  --filter ponder \
+  --filter @ponder/api \
+  --filter @ponder/public-network \
+  --filter @ponder/web
 
 FROM dependencies AS build
 # Only stale template previews need the build browser; it stays out of runtime.
 RUN apk add --no-cache chromium nodejs
-ENV EDGE_EVER_POSTER_CHROME_EXECUTABLE=/usr/bin/chromium
+ENV PONDER_POSTER_CHROME_EXECUTABLE=/usr/bin/chromium
 COPY apps/api apps/api
 COPY apps/web apps/web
 COPY packages packages
@@ -42,23 +42,23 @@ RUN bun run build:web && bun run build:self-hosted
 
 FROM oven/bun:1.3.14-alpine AS runtime
 WORKDIR /app
-ARG EDGE_EVER_BUILD_ID=unknown
+ARG PONDER_BUILD_ID=unknown
 # Image build metadata for System information. Self-built images leave these
 # empty, which the instance reports as unknown. They describe how the image was
-# produced, not how it was deployed; set EDGE_EVER_DEPLOYMENT_* at runtime for that.
-ARG EDGE_EVER_BUILD_CREATED_AT=
-ARG EDGE_EVER_BUILD_TRIGGER=
-ARG EDGE_EVER_BUILD_METHOD=
+# produced, not how it was deployed; set PONDER_DEPLOYMENT_* at runtime for that.
+ARG PONDER_BUILD_CREATED_AT=
+ARG PONDER_BUILD_TRIGGER=
+ARG PONDER_BUILD_METHOD=
 ENV NODE_ENV=production \
-    EDGE_EVER_BUILD_ID=${EDGE_EVER_BUILD_ID} \
-    EDGE_EVER_BUILD_CREATED_AT=${EDGE_EVER_BUILD_CREATED_AT} \
-    EDGE_EVER_BUILD_TRIGGER=${EDGE_EVER_BUILD_TRIGGER} \
-    EDGE_EVER_BUILD_METHOD=${EDGE_EVER_BUILD_METHOD} \
-    EDGE_EVER_DATA_DIR=/data \
-    EDGE_EVER_WEB_DIR=/app/apps/web/dist \
+    PONDER_BUILD_ID=${PONDER_BUILD_ID} \
+    PONDER_BUILD_CREATED_AT=${PONDER_BUILD_CREATED_AT} \
+    PONDER_BUILD_TRIGGER=${PONDER_BUILD_TRIGGER} \
+    PONDER_BUILD_METHOD=${PONDER_BUILD_METHOD} \
+    PONDER_DATA_DIR=/data \
+    PONDER_WEB_DIR=/app/apps/web/dist \
     PORT=8787
 
-LABEL org.opencontainers.image.title="EdgeEver" \
+LABEL org.opencontainers.image.title="Ponder" \
       org.opencontainers.image.description="Self-hosted notes and knowledge management" \
       org.opencontainers.image.licenses="AGPL-3.0-only"
 

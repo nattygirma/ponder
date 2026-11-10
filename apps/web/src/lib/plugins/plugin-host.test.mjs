@@ -10,7 +10,7 @@ const styles = new Map();
 const eventListeners = new Map();
 
 const stubWindow = {
-  location: { href: "https://edgeever.example/settings" },
+  location: { href: "https://ponder.example/settings" },
   localStorage: {
     getItem: (key) => values.get(key) ?? null,
     setItem: (key, value) => values.set(key, String(value)),
@@ -32,7 +32,7 @@ const stubDocument = {
       removeProperty: (key) => styles.delete(key),
     },
     removeAttribute: (name) => {
-      if (name === "data-edgeever-extension-theme") delete globalThis.document.documentElement.dataset.edgeeverExtensionTheme;
+      if (name === "data-ponder-extension-theme") delete globalThis.document.documentElement.dataset.ponderExtensionTheme;
     },
   },
 };
@@ -44,7 +44,7 @@ const StubMutationObserver = class {
 };
 globalThis.MutationObserver = StubMutationObserver;
 
-const { EdgeEverPluginHost, applyPluginMarkdownEdits } = await import("./plugin-host.ts");
+const { PonderPluginHost, applyPluginMarkdownEdits } = await import("./plugin-host.ts");
 const { sha256Hex } = await import("./github-plugin-distribution.ts");
 const { withRepositoryMutationEvents } = await import("../repository-events.ts");
 const { results: capabilityResults } = await import('./plugin-capabilities.fixture.mjs');
@@ -69,9 +69,9 @@ beforeEach(() => {
   globalThis.document.documentElement.dataset = {};
 });
 
-describe("EdgeEverPluginHost", () => {
+describe("PonderPluginHost", () => {
   test("rejects custom settings panels for API v2 plugins", async () => {
-    const host = new EdgeEverPluginHost({ repository, scope: "settings-policy" });
+    const host = new PonderPluginHost({ repository, scope: "settings-policy" });
     const id = "org.edgeever.settings-policy";
     host.installManifest({
       type: "plugin",
@@ -96,7 +96,7 @@ describe("EdgeEverPluginHost", () => {
     const calls = [];
     const directCalls = [];
     globalThis.window.fetch = async (...input) => { directCalls.push(input); return new Response('direct'); };
-    const host = new EdgeEverPluginHost({ repository, scope: 'test',
+    const host = new PonderPluginHost({ repository, scope: 'test',
       aiAdapter: { status: async () => ({ configured: true }), generate: async input => { calls.push(input); return { text: 'HELLO' }; } },
       publicNetworkAdapter: { fetchPublic: async input => { calls.push(input); return { url: input.url, status: 429, statusText: 'Too Many Requests', headers: {}, body: new TextEncoder().encode('limited').buffer }; } },
     });
@@ -133,7 +133,7 @@ describe("EdgeEverPluginHost", () => {
       list: async () => [],
       remove: async () => undefined,
     };
-    const host = new EdgeEverPluginHost({ repository, scope: "test", scheduleAdapter });
+    const host = new PonderPluginHost({ repository, scope: "test", scheduleAdapter });
     host.installManifest({
       type: "plugin",
       id: "org.edgeever.schedule-test",
@@ -159,7 +159,7 @@ describe("EdgeEverPluginHost", () => {
   });
 
   test("applies a validated code-free theme", async () => {
-    const host = new EdgeEverPluginHost({ repository, scope: "test" });
+    const host = new PonderPluginHost({ repository, scope: "test" });
     host.installManifest({
       type: "theme",
       id: "org.edgeever.test-theme",
@@ -175,9 +175,9 @@ describe("EdgeEverPluginHost", () => {
 
     await host.setEnabled("org.edgeever.test-theme", true);
 
-    expect(styles.get("--edgeever-theme-background")).toBe("#010203");
-    expect(styles.get("--edgeever-theme-accent")).toBe("#16a06e");
-    expect(globalThis.document.documentElement.dataset.edgeeverExtensionTheme).toBe("org.edgeever.test-theme");
+    expect(styles.get("--ponder-theme-background")).toBe("#010203");
+    expect(styles.get("--ponder-theme-accent")).toBe("#16a06e");
+    expect(globalThis.document.documentElement.dataset.ponderExtensionTheme).toBe("org.edgeever.test-theme");
     await host.dispose();
   });
 
@@ -197,7 +197,7 @@ describe("EdgeEverPluginHost", () => {
       put: async () => undefined,
       remove: async () => undefined,
     };
-    const host = new EdgeEverPluginHost({ repository, scope: "test", onNotice: (message) => notices.push(message), secretStorage, packageStorage });
+    const host = new PonderPluginHost({ repository, scope: "test", onNotice: (message) => notices.push(message), secretStorage, packageStorage });
     let replacement = null;
     host.setEditorAdapter({
       getSelection: () => ({ noteId: "note-1", from: 1, to: 6, empty: false, text: "hello", contentMarkdown: "hello" }),
@@ -239,7 +239,7 @@ describe("EdgeEverPluginHost", () => {
     await host.runCommand("org.edgeever.test-plugin", "write-secret");
     expect(secrets.get("test:org.edgeever.test-plugin:token")).toBe("secret-value");
     await host.runCommand("org.edgeever.test-plugin", "write-storage");
-    expect(values.get("edgeever.plugin-data.v1:test:org.edgeever.test-plugin:preference")).toBe('"stored-value"');
+    expect(values.get("ponder.plugin-data.v1:test:org.edgeever.test-plugin:preference")).toBe('"stored-value"');
     await expect(host.getSettingValue("org.edgeever.test-plugin", "endpoint")).resolves.toBe("https://default.example");
     await host.setSettingValue("org.edgeever.test-plugin", "endpoint", "https://custom.example");
     await host.setSettingValue("org.edgeever.test-plugin", "token", "configured-token");
@@ -259,8 +259,8 @@ describe("EdgeEverPluginHost", () => {
     await host.uninstall("org.edgeever.test-plugin");
     expect(secrets.has("test:org.edgeever.test-plugin:token")).toBe(false);
     expect(secrets.has("test:org.edgeever.test-plugin:setting:token")).toBe(false);
-    expect(values.has("edgeever.plugin-data.v1:test:org.edgeever.test-plugin:preference")).toBe(false);
-    expect(values.has("edgeever.plugin-settings.v1:test:org.edgeever.test-plugin:endpoint")).toBe(false);
+    expect(values.has("ponder.plugin-data.v1:test:org.edgeever.test-plugin:preference")).toBe(false);
+    expect(values.has("ponder.plugin-settings.v1:test:org.edgeever.test-plugin:endpoint")).toBe(false);
     await host.dispose();
   });
 
@@ -298,14 +298,14 @@ describe("EdgeEverPluginHost", () => {
       remove: async () => undefined,
       clearNamespace: async () => undefined,
     };
-    const host = new EdgeEverPluginHost({ repository, scope: "test", packageStorage, secretStorage });
+    const host = new PonderPluginHost({ repository, scope: "test", packageStorage, secretStorage });
     const entry = {
       id: manifest.id,
       name: manifest.name,
       description: "Verified test plugin",
-      author: "EdgeEver",
+      author: "Ponder",
       category: "Testing",
-      repositoryUrl: "https://github.com/edgeever/marketplace-test",
+      repositoryUrl: "https://github.com/ponder/marketplace-test",
       distribution: { type: "manifest", manifestUrl: "https://plugins.example/manifest.json" },
       verification: {
         version: manifest.version,
@@ -334,7 +334,7 @@ describe("EdgeEverPluginHost", () => {
         else for (const key of Array.from(packages.keys())) if (key.startsWith(`${id}:`)) packages.delete(key);
       },
     };
-    const host = new EdgeEverPluginHost({ repository, scope: "test", packageStorage });
+    const host = new PonderPluginHost({ repository, scope: "test", packageStorage });
     host.installManifest({
       type: "plugin",
       id: pluginId,
@@ -386,7 +386,7 @@ describe("EdgeEverPluginHost", () => {
       ...confirmedManifest,
       light: { "color.background": "#000000" },
     });
-    const host = new EdgeEverPluginHost({ repository, scope: "test" });
+    const host = new PonderPluginHost({ repository, scope: "test" });
 
     await expect(host.installFromManifestUrl(
       "https://plugins.example/manifest.json",
@@ -412,7 +412,7 @@ describe("EdgeEverPluginHost", () => {
       height: null,
       createdAt: "2026-09-01T00:00:00.000Z",
       updatedAt: "2026-09-01T00:00:00.000Z",
-      url: "https://edgeever.example/resource-1",
+      url: "https://ponder.example/resource-1",
     };
     const note = {
       id: "note-1",
@@ -478,7 +478,7 @@ describe("EdgeEverPluginHost", () => {
       useTemplate: async () => ({ memo: { ...note, id: "templated-note", contentMarkdown: template.contentMarkdown } }),
     };
     const packageStorage = { get: async () => null, put: async () => undefined, remove: async () => undefined };
-    const host = new EdgeEverPluginHost({ repository: repositoryWithCapabilities, scope: "capabilities", packageStorage });
+    const host = new PonderPluginHost({ repository: repositoryWithCapabilities, scope: "capabilities", packageStorage });
     const opened = [];
     const openedPanels = [];
     const insertedEmbeds = [];
@@ -510,7 +510,7 @@ describe("EdgeEverPluginHost", () => {
     await host.setEnabled("org.edgeever.capabilities", true);
     await host.runCommand("org.edgeever.capabilities", "exercise-capabilities");
 
-    expect(globalThis.edgeeverPluginCapabilityResult).toMatchObject({
+    expect(globalThis.ponderPluginCapabilityResult).toMatchObject({
       notebook: { id: "notebook-created", name: "Created by plugin" },
       moved: 1,
       pinned: 1,
@@ -582,7 +582,7 @@ describe("EdgeEverPluginHost", () => {
     });
     await expect(host.runCommand("org.edgeever.capabilities", "exercise-capabilities"))
       .rejects.toMatchObject({ code: "NOTE_CONFLICT" });
-    delete globalThis.edgeeverPluginCapabilityResult;
+    delete globalThis.ponderPluginCapabilityResult;
     await host.dispose();
   });
 
@@ -654,7 +654,7 @@ describe("EdgeEverPluginHost", () => {
       updateResource: async () => ({ resource: updatedResource }),
     }, "event-workspace");
     const packageStorage = { get: async () => null, put: async () => undefined, remove: async () => undefined };
-    const host = new EdgeEverPluginHost({ repository: repositoryWithEvents, scope: "event-workspace", packageStorage });
+    const host = new PonderPluginHost({ repository: repositoryWithEvents, scope: "event-workspace", packageStorage });
     host.installManifest({
       type: "plugin",
       id: "org.edgeever.events",
@@ -691,31 +691,31 @@ describe("EdgeEverPluginHost", () => {
     await repositoryWithEvents.createTemplate({ name: "Event template" });
     await repositoryWithEvents.updateResource("resource-events", new File(["scene"], "drawing.excalidraw"), "old-hash");
 
-    expect(globalThis.edgeeverPluginObservedNote).toMatchObject({
+    expect(globalThis.ponderPluginObservedNote).toMatchObject({
       id: "note-events",
       contentMarkdown: "Updated",
     });
-    expect(globalThis.edgeeverPluginObservedTemplate).toMatchObject({
+    expect(globalThis.ponderPluginObservedTemplate).toMatchObject({
       id: "template-events",
       contentMarkdown: "Template",
     });
-    expect(globalThis.edgeeverPluginObservedResource).toMatchObject({
+    expect(globalThis.ponderPluginObservedResource).toMatchObject({
       id: "resource-events",
       contentHash: "resource-event-hash",
     });
-    expect(globalThis.edgeeverPluginObservedSettings).toEqual([
+    expect(globalThis.ponderPluginObservedSettings).toEqual([
       { pluginId: "org.edgeever.events", key: "mode" },
       { pluginId: "org.edgeever.events", key: "mode" },
     ]);
-    delete globalThis.edgeeverPluginObservedNote;
-    delete globalThis.edgeeverPluginObservedTemplate;
-    delete globalThis.edgeeverPluginObservedResource;
-    delete globalThis.edgeeverPluginObservedSettings;
+    delete globalThis.ponderPluginObservedNote;
+    delete globalThis.ponderPluginObservedTemplate;
+    delete globalThis.ponderPluginObservedResource;
+    delete globalThis.ponderPluginObservedSettings;
     await host.dispose();
   });
 });
 
-const structured = await import("@edgeever/shared");
+const structured = await import("@ponder/shared");
 describe("structured plugin note APIs", () => {
   const setup = (contentMarkdown, contentJson = structured.markdownToDoc(contentMarkdown)) => {
     let memo = { id: "note-1", notebookId: "book", title: "Original", excerpt: "", tags: ["keep"], isPinned: false,
@@ -723,7 +723,7 @@ describe("structured plugin note APIs", () => {
     const saves = [];
     const resources = [];
     let onResourceRead = () => {};
-    const host = new EdgeEverPluginHost({ scope: "structured", repository: {
+    const host = new PonderPluginHost({ scope: "structured", repository: {
       getMemo: async () => ({ memo: structuredClone(memo) }),
       listResources: async () => { onResourceRead(); return { resources }; },
       updateMemo: async (current, input) => {
@@ -941,7 +941,7 @@ describe("structured plugin note APIs", () => {
 
   test("protects poster and infographic markers, including malformed payloads", async () => {
     for (const kind of ["poster", "infographic", "diagram", "table"]) {
-      const f = setup(`Body\n<!-- edgeever-${kind}-v1:invalid -->`);
+      const f = setup(`Body\n<!-- ponder-${kind}-v1:invalid -->`);
       await expect(f.context.notes.update("note-1", { contentMarkdown: "oops" })).rejects.toMatchObject({ code: "STRUCTURED_NOTE_REQUIRED" });
       expect(f.saves).toHaveLength(0);
     }

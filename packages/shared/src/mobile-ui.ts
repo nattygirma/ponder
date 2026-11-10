@@ -45,7 +45,7 @@ export const getMobileNotebookSearchVisibleIds = (
   notebooks: ReadonlyArray<MobileNotebookSearchItem>,
   searchText: string
 ): Set<string> => {
-  const query = searchText.trim().toLocaleLowerCase("zh-CN");
+  const query = searchText.trim().toLocaleLowerCase("en-US");
   const notebookById = new Map(notebooks.map((notebook) => [notebook.id, notebook]));
 
   if (!query) {
@@ -75,7 +75,7 @@ export const getMobileNotebookSearchVisibleIds = (
   };
 
   for (const notebook of notebooks) {
-    if (!notebook.name.toLocaleLowerCase("zh-CN").includes(query)) {
+    if (!notebook.name.toLocaleLowerCase("en-US").includes(query)) {
       continue;
     }
 

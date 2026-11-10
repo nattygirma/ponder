@@ -1,1 +1,1 @@
-export { ru } from "@edgeever/shared/i18n/ru";
+export { ru } from "@ponder/shared/i18n/ru";

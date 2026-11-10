@@ -4,8 +4,8 @@ export const instrumentNativeUpdateMain = (originalMain, runtimeConfigPath) => {
     return source.replace(from, to);
   };
   let instrumented = `import { verifierLog, verifierWindowsMetadata, attachVerifier } from "./native-update-verifier.mjs";\n${originalMain}`;
-  instrumented = replace(instrumented, 'if (requestedUserDataDirectory) app.setPath("userData", requestedUserDataDirectory);', 'app.setPath("userData", process.env.EDGE_EVER_UPDATE_VERIFIER_PROFILE);');
-  instrumented = replace(instrumented, '  desktopUpdateController = createDesktopUpdateController({', `  autoUpdater.setFeedURL({ provider: "generic", url: process.env.EDGE_EVER_UPDATE_VERIFIER_FEED + "/feed" });\n  autoUpdater.disableDifferentialDownload = true;\n  desktopUpdateController = createDesktopUpdateController({`);
+  instrumented = replace(instrumented, 'if (requestedUserDataDirectory) app.setPath("userData", requestedUserDataDirectory);', 'app.setPath("userData", process.env.PONDER_UPDATE_VERIFIER_PROFILE);');
+  instrumented = replace(instrumented, '  desktopUpdateController = createDesktopUpdateController({', `  autoUpdater.setFeedURL({ provider: "generic", url: process.env.PONDER_UPDATE_VERIFIER_FEED + "/feed" });\n  autoUpdater.disableDifferentialDownload = true;\n  desktopUpdateController = createDesktopUpdateController({`);
   instrumented = replace(instrumented, 'fetchWindowsMetadata: (options) => fetchTrustedWindowsUpdate({ ...options, fetchImpl: net.fetch }),', 'fetchWindowsMetadata: verifierWindowsMetadata,');
   instrumented = replace(instrumented, '    onDownloaded: (version) => {', '    onDownloaded: (version) => {\n      verifierLog("ready", { version, runningVersion: app.getVersion() });\n      return;');
   instrumented = replace(instrumented, '  void checkForDesktopUpdate("startup", { force: true });', '  attachVerifier({ app, updater: autoUpdater, controller: desktopUpdateController });\n  void checkForDesktopUpdate("startup", { force: true });');
