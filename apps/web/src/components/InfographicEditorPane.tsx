@@ -1,6 +1,6 @@
 import { AI_ASSISTANT_LAUNCHER_POSITION } from "@/lib/ai-assistant-launcher";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronLeft, Download, FileCode2, FileImage, LayoutTemplate, LoaderCircle, Pencil, Sparkles } from "lucide-react";
+import { Check, ChevronLeft, Download, FileCode2, FileImage, LayoutTemplate, LoaderCircle, Pencil } from "lucide-react";
 import * as m from "motion/react-m";
 import { useTranslation } from "react-i18next";
 import { INFOGRAPHIC_AGENT_SOURCE_MAX_LENGTH, markdownToDoc, infographicFallbackMarkdown, parseInfographicDocument, serializeInfographicDocument, type InfographicConversationTurn, type InfographicDocument, type MemoDetail, type MemoEditSession, type Notebook } from "@ponder/shared";
@@ -35,6 +35,7 @@ import { advanceInfographicSyncBase, classifyInfographicUpdate, infographicEdito
 import { MEMO_ID_REMAPPED_EVENT, MEMO_SYNC_ACKNOWLEDGED_EVENT } from "@/lib/sync-events";
 import type { PonderRepository } from "@/lib/repository";
 import { cn, parseTagsText } from "@/lib/utils";
+import { AiFaceIcon } from "./AiFaceIcon";
 
 type Props = {
   memo: MemoDetail;
@@ -904,7 +905,7 @@ function InfographicEditorSession({
           aria-label={t("aiAssistant.open")}
           onClick={() => setAiSidebarOpen(true)}
         >
-          <Sparkles className="size-5" strokeWidth={1.75} />
+          <AiFaceIcon className="size-5" strokeWidth={1.75} />
         </Button>
       </IconTooltip>
     ) : null}

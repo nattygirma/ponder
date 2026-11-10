@@ -1,11 +1,12 @@
 import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { CalendarDays, Home, MessageCircle, MessageCirclePlus, NotebookPen, Settings2, Video } from "lucide-react";
+import { CalendarDays, Home, MessageCircle, NotebookPen, Settings2, Video } from "lucide-react";
 import { api } from "@/lib/api";
 import { chatThreadsFromTurns } from "@/lib/local-agent-threads";
 import { cn } from "@/lib/utils";
 import { type CalendarEventView } from "./Calendar";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 /** Notion's sidebar tabs: Home (pages), Chat (AI chats) and Meetings (calendar and notes). */
 export const SIDEBAR_TABS = ["home", "chat", "meetings"] as const;
@@ -124,7 +125,7 @@ export const ChatTabPanel = ({ phone, onNewChat, onOpenChat }: { phone: boolean;
   const threads = chatThreadsFromTurns(turns.data ?? []).slice(0, 30);
   return (
     <div role="tabpanel" id="sidebar-panel-chat" aria-labelledby="sidebar-tab-chat" className="space-y-px" data-sidebar-panel="chat">
-      <Row phone={phone} icon={<MessageCirclePlus className={phone ? "h-5 w-5" : "h-4 w-4"} aria-hidden="true" />} label={t("pages.sidebar.newChat")} onClick={onNewChat} data="new-chat" />
+      <Row phone={phone} icon={<AiFaceIcon className={phone ? "h-5 w-5" : "h-4 w-4"} aria-hidden="true" />} label={t("pages.sidebar.newChat")} onClick={onNewChat} data="new-chat" />
       <div className={phone ? "pt-3" : "pt-2"}>
         <Heading phone={phone}>{t("pages.sidebarTabs.recentChats")}</Heading>
         {turns.isPending ? <Note phone={phone}>{t("pages.sidebarTabs.loading")}</Note> : null}

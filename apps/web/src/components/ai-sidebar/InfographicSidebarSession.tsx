@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { ArrowUp, Sparkles, Undo2 } from "lucide-react";
+import { ArrowUp, Undo2 } from "lucide-react";
 import { useState, type MouseEvent } from "react";
 import type { InfographicConversationTurn } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { infographicTurnSessionId, resolveInfographicSessionId } from "@/lib/infographic-sessions";
 import { SidebarAgentModeStatus } from "./SidebarAgentModeStatus";
 import { memoIdFromSidebarLinkEvent, rewriteSidebarNoteLinks, sidebarNoteLinkAllowedTags, sidebarNoteLinkComponents } from "./sidebar-note-links";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 const threadClassName = cn(
   "gap-3 p-3 text-[13px] leading-[1.6]",
@@ -143,7 +144,7 @@ export function InfographicSidebarSession({
         <ConversationContent className={threadClassName} onClick={openLinkedNote}>
           {!visibleTurns.length && !session.activeTurn ? (
             <ConversationEmptyState
-              icon={<Sparkles className="h-6 w-6" />}
+              icon={<AiFaceIcon className="h-6 w-6" />}
               title={t(session.hasGraphic ? "infographic.refine" : "infographic.describe")}
               description={t(session.hasGraphic ? "infographic.refinePrompt" : "infographic.prompt")}
             />

@@ -23,7 +23,6 @@ import {
   Save,
   ScanLine,
   Shapes,
-  Sparkles,
   Type,
   Undo2,
 } from "lucide-react";
@@ -107,6 +106,7 @@ import { AiSidebar, readAiSidebarOpen, writeAiSidebarOpen } from "./ai-sidebar/A
 import { AiSidebarErrorBoundary } from "./ai-sidebar/AiSidebarErrorBoundary";
 import { getNotebookMoveOptions } from "@/lib/app-helpers";
 import { parseTagsText } from "@/lib/utils";
+import { AiFaceIcon } from "./AiFaceIcon";
 
 const artwork = (document: PosterDocument) =>
   JSON.stringify({ ...document, previewResourceId: undefined });
@@ -2175,7 +2175,7 @@ export default function PosterEditorPane({
       {!readOnly && !aiAssistantOpen && <IconTooltip side="left" label={t("aiAssistant.open")}>
         <Button variant="outline" size="icon" data-ai-assistant-launcher="" aria-label={t("aiAssistant.open")}
           className={`${AI_ASSISTANT_LAUNCHER_POSITION} absolute z-30 size-11 rounded-full border-slate-200 bg-card text-slate-950 shadow-[0_8px_24px_rgba(15,23,42,0.14)]`}
-          onClick={() => setAiSidebarOpen(true)}><Sparkles className="size-5" strokeWidth={1.75} /></Button>
+          onClick={() => setAiSidebarOpen(true)}><AiFaceIcon className="size-5" strokeWidth={1.75} /></Button>
       </IconTooltip>}
     </div>
     <AiSidebarErrorBoundary open={aiAssistantOpen} onOpenChange={setAiSidebarOpen}>

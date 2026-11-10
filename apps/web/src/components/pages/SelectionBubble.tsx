@@ -1,11 +1,12 @@
 import { useState, type ReactNode } from "react";
 import { TextSelection } from "@tiptap/pm/state";
 import type { Editor } from "@tiptap/react";
-import { Bold, ChevronRight, Code, Italic, Baseline, Link2, MessageSquare, Radical, RemoveFormatting, Sparkles, Strikethrough, Underline } from "lucide-react";
+import { Bold, ChevronRight, Code, Italic, Baseline, Link2, MessageSquare, Radical, RemoveFormatting, Strikethrough, Underline } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { PAGE_COLORS, type PageColor } from "@ponder/shared/page-color";
 import { TURN_INTO_TARGETS, turnInto, useTurnIntoLabels, type TurnIntoTarget } from "./BlockHandle";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 /** Stable so the bubble doesn't dispatch an options update on every editor transaction. */
 export const SELECTION_BUBBLE_OPTIONS = { placement: "bottom-start" as const, offset: 6 };
@@ -137,7 +138,7 @@ export const SelectionBubble = ({ editor, showAi, onAsk, onExplain, onTranslate,
           <MenuRow onClick={onExplain}>{t("pages.skills.explain")}</MenuRow>
           <MenuRow onClick={() => onSkill("reformat")}>{t("pages.skills.reformat")}</MenuRow>
           <MenuRow onClick={onTranslate}>{t("pages.skills.translate")}</MenuRow>
-          <MenuRow icon={<Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />} onClick={onAsk}>{t("pages.bubble.askAi")}</MenuRow>
+          <MenuRow icon={<AiFaceIcon className="h-4 w-4 shrink-0" aria-hidden="true" />} onClick={onAsk}>{t("pages.bubble.askAi")}</MenuRow>
         </>
       ) : null}
 

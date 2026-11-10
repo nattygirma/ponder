@@ -353,6 +353,7 @@ import {
   syncStatusToSaveState,
   type MobilePlainTextElement,
 } from "./editor/editor-pane-helpers";
+import { AiFaceIcon } from "./AiFaceIcon";
 
 // Module-level so the menu isn't reconfigured on each render, which would repaint the editor and loop.
 /** Page text width, the same measure Notion uses. */
@@ -4598,7 +4599,7 @@ const RichEditorPane = ({
                   {trackedPageId ? <PageAnalyticsMenuItem onOpen={() => setAnalyticsOpen(true)} /> : null}
                   {effectiveReadOnly ? null : (
                     <DropdownMenuItem className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700" onClick={() => openAiAssistantRef.current()}>
-                      <Sparkles className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                      <AiFaceIcon className="h-4 w-4 text-slate-500" aria-hidden="true" />
                       {t("pages.topBar.useWithAi")}
                     </DropdownMenuItem>
                   )}
@@ -5335,7 +5336,7 @@ const RichEditorPane = ({
             aria-label={t("aiAssistant.open")}
             onClick={openAiAssistant}
           >
-            <Sparkles className="size-5" strokeWidth={1.75} />
+            <AiFaceIcon className="size-5" strokeWidth={1.75} />
           </Button>
         </IconTooltip>
       ) : null}

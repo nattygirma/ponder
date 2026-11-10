@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 export const AiPromptsCard = ({ onOpenLibrary }: { onOpenLibrary: () => void }) => {
   const { t, i18n } = useTranslation();
@@ -26,7 +27,7 @@ export const AiPromptsCard = ({ onOpenLibrary }: { onOpenLibrary: () => void }) 
             <button className="flex w-full min-w-0 items-start justify-between gap-3 text-left" type="button">
               <span className="min-w-0">
                 <CardTitle className="flex items-center gap-2 text-sm">
-                  <Sparkles className="h-4 w-4 text-slate-900" />
+                  <AiFaceIcon className="h-4 w-4 text-slate-900" />
                   {t("aiPrompts.settingsTitle")}
                 </CardTitle>
                 <CardDescription className="mt-1 text-xs text-slate-500">{t("aiPrompts.settingsDescription")}</CardDescription>

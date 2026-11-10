@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, ChevronDown, Plus, Search, Sparkles } from "lucide-react";
+import { Check, ChevronDown, Plus, Search } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { ChatThreadSummary } from "@/lib/local-agent-threads";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 const THREAD_RECENCY_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -83,7 +84,7 @@ export function AiSidebarThreadMenu({
           data-ai-thread-menu=""
           aria-label={`${title} · ${t("aiAssistant.sidebar.history")}`}
         >
-          <Sparkles className="size-3.5 shrink-0 text-slate-500" aria-hidden="true" />
+          <AiFaceIcon className="size-3.5 shrink-0 text-slate-500" aria-hidden="true" />
           <span className="min-w-0 truncate">{sidebarThreadLabel(title)}</span>
           <ChevronDown className="size-3.5 shrink-0 text-slate-400" aria-hidden="true" />
         </button>

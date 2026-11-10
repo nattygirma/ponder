@@ -12,7 +12,6 @@ import {
   LayoutList,
   Library,
   CalendarDays,
-  MessageCirclePlus,
   SlidersHorizontal,
   MoreHorizontal,
   Paperclip,
@@ -42,6 +41,7 @@ import { ConnectCalendarDialog, eventTimeLabel, useCalendar } from "./Calendar";
 import { usePages } from "./PagesProvider";
 import { ChatTabPanel, MeetingsTabPanel, SidebarTabStrip, useSidebarTab, type SidebarTab } from "./SidebarTabs";
 import { isPageDrag, PAGE_DRAG_MIME, PageTreeBranch, PageTreeTouchContext } from "./PageTree";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 const ROW_CLASS = "flex h-[30px] w-full min-w-0 items-center gap-2 rounded-md px-2 text-left text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70";
 const ICON_BUTTON_CLASS = "flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-950 disabled:opacity-50";
@@ -353,7 +353,7 @@ export const PagesSidebar = ({
 
       {tab === "home" ? <nav className="shrink-0 space-y-px px-2 pb-2" aria-label={t("notebookPane.entries")}>
         <SidebarRow icon={<SquarePen className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.newPage")} onClick={newPage} />
-        {isVisible("newChat") ? <SidebarRow icon={<MessageCirclePlus className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.newChat")} onClick={onNewChat} /> : null}
+        {isVisible("newChat") ? <SidebarRow icon={<AiFaceIcon className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.newChat")} onClick={onNewChat} /> : null}
         {isVisible("library") ? <SidebarRow icon={<Library className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.library")} active={libraryActive} onClick={onOpenLibrary} /> : null}
         {isVisible("connections") ? <SidebarRow icon={<LayoutGrid className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.connections")} active={connectionsActive} onClick={onOpenConnections} /> : null}
         {isVisible("externalAgents") ? <SidebarRow icon={<Bot className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.externalAgents")} onClick={onOpenExternalAgents} /> : null}

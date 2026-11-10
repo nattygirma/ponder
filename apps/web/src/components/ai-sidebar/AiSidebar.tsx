@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ClipboardEvent,
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
 import { useTranslation } from "react-i18next";
-import { ArrowUp, Download, FileText, Loader2, PanelRightClose, Plus, Sparkles, X } from "lucide-react";
+import { ArrowUp, Download, FileText, Loader2, PanelRightClose, Plus, X } from "lucide-react";
 import type { CompanionAction, CompanionAnswer, CompanionEvent, CompanionFailureDiagnostics, CompanionTurn, CompanionTurnInput } from "@ponder/shared";
 import { buildRevisionDiffRows, companionFailureDiagnostics, createMemoLinkHref } from "@ponder/shared";
 import { Button } from "@/components/ui/button";
@@ -85,6 +85,7 @@ import { AiAgentSelector } from "./AiAgentSelector";
 import { AiSidebarThreadMenu } from "./AiSidebarThreadMenu";
 import { InfographicSidebarSession, type InfographicSidebarController } from "./InfographicSidebarSession";
 import { memoIdFromSidebarLinkEvent } from "./sidebar-note-links";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 const SIDEBAR_DEFAULT_WIDTH = 380;
 const sidebarThreadClassName = cn(
@@ -1561,7 +1562,7 @@ function AiSidebarSession({
           {loading && visibleCompanion ? <p role="status" className="text-sm text-slate-500">{t("common.loading")}</p> : null}
           {!loading && !visibleTurns.length ? (
             <ConversationEmptyState
-              icon={<Sparkles className="h-6 w-6" />}
+              icon={<AiFaceIcon className="h-6 w-6" />}
               title={t("aiAssistant.sidebar.emptyTitle")}
             />
           ) : null}

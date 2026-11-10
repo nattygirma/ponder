@@ -2,7 +2,7 @@ import { AI_ASSISTANT_LAUNCHER_POSITION } from "@/lib/ai-assistant-launcher";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, useReactTable, type ColumnDef } from "@tanstack/react-table";
-import { Check, ChevronLeft, Copy, Download, Form, Paperclip, Plus, RefreshCw, Sparkles, Table2, Trash2, X } from "lucide-react";
+import { Check, ChevronLeft, Copy, Download, Form, Paperclip, Plus, RefreshCw, Table2, Trash2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   addTableField,
@@ -62,6 +62,7 @@ import { isLocalMemoId } from "@/lib/local-mirror";
 import { isBrowserOffline } from "@/lib/network-status";
 import type { PonderRepository } from "@/lib/repository";
 import type { MemoEditSession } from "@ponder/shared";
+import { AiFaceIcon } from "./AiFaceIcon";
 
 type TableEditorPaneProps = {
   memo: MemoDetail;
@@ -740,7 +741,7 @@ export const TableEditorPane = ({
           if (dirty) saveRef.current();
         }}
       >
-        <Sparkles className="size-5" strokeWidth={1.75} />
+        <AiFaceIcon className="size-5" strokeWidth={1.75} />
       </Button>
     </IconTooltip>
   ) : null;

@@ -13,7 +13,6 @@ import {
   Pencil,
   Plus,
   RotateCcw,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -41,6 +40,7 @@ import { api, ApiRequestError } from "@/lib/api";
 import { WORKSPACE_PAGE_TITLE_CLASSNAME } from "@/lib/workspace-ui";
 import { formatDateTime } from "@/lib/utils";
 import { ExecutionCenterButton } from "@/components/execution/ExecutionCenterButton";
+import { AiFaceIcon } from "./AiFaceIcon";
 
 const emptyForm = () => ({
   name: "",
@@ -183,7 +183,7 @@ export const AiPromptsPane = ({ onClose, onOpenExecutionCenter }: { onClose: () 
           </TooltipProvider>
           <div className="min-w-0">
             <h1 className={`flex items-center gap-2 text-slate-900 ${WORKSPACE_PAGE_TITLE_CLASSNAME}`}>
-              <Sparkles className="h-4 w-4 text-slate-900" />
+              <AiFaceIcon className="h-4 w-4 text-slate-900" />
               {t("aiPrompts.title")}
             </h1>
             <p className="mt-0.5 text-xs text-slate-500">{t("aiPrompts.description")}</p>

@@ -196,6 +196,7 @@ import { statusSettleMotion } from "@/lib/motion";
 import { MEMO_ID_REMAPPED_EVENT, MEMO_SYNC_ACKNOWLEDGED_EVENT } from "@/lib/sync-events";
 import type { PonderRepository } from "@/lib/repository";
 import { cn, parseTagsText } from "@/lib/utils";
+import { AiFaceIcon } from "./AiFaceIcon";
 
 Graph.registerConnector(MIND_MAP_CONNECTOR_NAME, mindMapConnector, true);
 
@@ -4034,7 +4035,7 @@ export const DiagramEditorPane = ({
                 if (editorDirty) saveRef.current();
               }}
             >
-              <Sparkles className="size-5" strokeWidth={1.75} />
+              <AiFaceIcon className="size-5" strokeWidth={1.75} />
             </Button>
           </IconTooltip>
         ) : null}

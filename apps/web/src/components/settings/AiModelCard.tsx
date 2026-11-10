@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { AiProvider } from "@ponder/shared";
-import { ChevronDown, Loader2, Plus, Sparkles, TriangleAlert } from "lucide-react";
+import { ChevronDown, Loader2, Plus, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AiProviderCard } from "@/components/settings/AiProviderCard";
 import {
@@ -31,6 +31,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 export const AiModelCard = () => {
   const { i18n, t } = useTranslation();
@@ -121,7 +122,7 @@ export const AiModelCard = () => {
             <button className="flex w-full min-w-0 items-start justify-between gap-3 text-left" type="button">
               <span className="min-w-0">
                 <CardTitle className={SETTINGS_CARD_TITLE_CLASSNAME}>
-                  <Sparkles className={SETTINGS_CARD_ICON_CLASSNAME} />
+                  <AiFaceIcon className={SETTINGS_CARD_ICON_CLASSNAME} />
                   {t("aiModel.title")}
                 </CardTitle>
               </span>

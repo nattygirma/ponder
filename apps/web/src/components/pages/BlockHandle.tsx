@@ -24,6 +24,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AiFaceIcon } from "../AiFaceIcon";
 
 export type TurnIntoTarget = "paragraph" | "h1" | "h2" | "h3" | "bullet" | "ordered" | "task" | "quote" | "code" | "callout" | "toggle";
 
@@ -415,7 +416,7 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
           ) : null}
           {onAskAi ? (
             <DropdownMenuItem onSelect={() => menu && onAskAi(menu.target.pos, menu.target.node)}>
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
+              <AiFaceIcon className="h-4 w-4" aria-hidden="true" />
               {t("pages.blockAskAi")}
             </DropdownMenuItem>
           ) : null}

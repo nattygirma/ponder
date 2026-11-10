@@ -12,7 +12,6 @@ import {
   Share2,
   Shield,
   SlidersHorizontal,
-  Sparkles,
   User,
   Users,
   Wrench,
@@ -50,6 +49,7 @@ import type { AuthUser } from "@ponder/shared";
 import { contentEnterMotion } from "@/lib/motion";
 import { useDeployedUpdateNotice } from "@/hooks/useDeployedUpdateNotice";
 import { ExecutionCenterButton } from "@/components/execution/ExecutionCenterButton";
+import { AiFaceIcon } from "./AiFaceIcon";
 
 const subscribeViewport = (callback: () => void) => {
   const media = window.matchMedia("(min-width: 1024px)");
@@ -146,7 +146,7 @@ export const SettingsPane = ({
     {
       key: "ai",
       label: t("settings.tabs.ai"),
-      icon: Sparkles,
+      icon: AiFaceIcon,
     },
     {
       key: "mcp",
@@ -420,7 +420,7 @@ export const SettingsPane = ({
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
-                      <Sparkles className="h-4 w-4 text-slate-700" />
+                      <AiFaceIcon className="h-4 w-4 text-slate-700" />
                     </div>
                     <span className="text-xs font-normal leading-5 text-slate-800">{t("nav.prompts")}</span>
                   </div>
