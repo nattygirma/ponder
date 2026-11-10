@@ -17,11 +17,11 @@ import { SHARE_DIALOG_PRIMARY_BUTTON_CLASS_NAME, SHARE_DIALOG_WIDTH_CLASS_NAME }
 import { Input } from "@/components/ui/input";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { NotebookSiteSettings } from "../NotebookSiteSettings";
-import { api, getConfiguredDesktopApiBaseUrl } from "@/lib/api";
+import { api, getConfiguredDesktopApiBaseUrl, getPublicBaseUrl } from "@/lib/api";
 import { copyTextToClipboard } from "@/lib/clipboard";
 
 export const getPublicNotebookShareUrl = (token: string, slug?: string | null) =>
-  `${(getConfiguredDesktopApiBaseUrl() || window.location.origin).replace(/\/$/, "")}${slug ? `/s/${encodeURIComponent(slug)}` : `/share/notebook/${encodeURIComponent(token)}`}`;
+  `${getPublicBaseUrl().replace(/\/$/, "")}${slug ? `/s/${encodeURIComponent(slug)}` : `/share/notebook/${encodeURIComponent(token)}`}`;
 
 export const ShareNotebookDialog = ({
   notebookId,

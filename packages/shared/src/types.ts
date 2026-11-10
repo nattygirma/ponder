@@ -358,6 +358,8 @@ export type AuthSession = {
   user: AuthUser | null;
   sessionToken?: string;
   platformSignIn?: { loginUrl: string; logoutUrl: string };
+  /** Set when hosted on AppKeep: the address public links must use, which can differ from the address in the browser. */
+  publicUrl?: string;
 };
 
 export type LoginDeviceSession = {

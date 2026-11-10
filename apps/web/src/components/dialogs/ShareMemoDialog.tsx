@@ -13,13 +13,12 @@ import { SharePasswordControls } from "./SharePasswordControls";
 import { ShareSlugControls } from "./ShareSlugControls";
 import { ShareQrCode } from "./ShareQrCode";
 import { SHARE_DIALOG_PRIMARY_BUTTON_CLASS_NAME, SHARE_DIALOG_WIDTH_CLASS_NAME } from "./share-dialog-layout";
-import { api, ApiRequestError, getConfiguredDesktopApiBaseUrl } from "@/lib/api";
+import { api, ApiRequestError, getPublicBaseUrl } from "@/lib/api";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { MemoNotebookSites } from "../MemoNotebookSites";
 
 export const getPublicShareUrl = (token: string) => {
-  const baseUrl = getConfiguredDesktopApiBaseUrl() || (typeof window !== "undefined" ? window.location.origin : "");
-  return `${baseUrl.replace(/\/$/, "")}/share/${encodeURIComponent(token)}`;
+  return `${getPublicBaseUrl().replace(/\/$/, "")}/share/${encodeURIComponent(token)}`;
 };
 
 export const memoShareQueryKey = (memoId: string) => ["memo-share", memoId] as const;

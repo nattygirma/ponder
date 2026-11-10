@@ -60,6 +60,7 @@ export const registerAuthRoutes = (
       authenticated: Boolean(auth && auth.kind === "user"),
       demoMode: dependencies.isDemoEnvironment(context.env),
       ...(isAppKeepHosted(context.env) ? { platformSignIn: APPKEEP_SIGN_IN } : {}),
+      ...(isAppKeepHosted(context.env) && context.env.ALTSTACK_APP_URL ? { publicUrl: context.env.ALTSTACK_APP_URL.replace(/\/$/, "") } : {}),
       user: auth?.kind === "user" ? {
         id: auth.actorId,
         username: auth.username,

@@ -34,6 +34,7 @@ export type Bindings = {
   deploymentVersionCreatedAt?: string;
   PONDER_AUTH_PASSWORD?: string;
   PONDER_APPKEEP?: string;
+  ALTSTACK_APP_URL?: string;
   PONDER_AUTH_PASSWORD_HASH?: string;
   PONDER_AUTH_PASSWORD_FALLBACK?: string;
   PONDER_SESSION_TTL_DAYS?: string;

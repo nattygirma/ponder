@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next";
+import { getPublicBaseUrl } from "@/lib/api";
 export { copyTextToClipboard } from "@/lib/clipboard";
 
 export const ALL_TOKEN_SCOPES = [
@@ -92,7 +93,7 @@ export const getMcpRemoteServerUrl = () => {
     return "/mcp";
   }
 
-  return `${window.location.origin}/mcp`;
+  return `${getPublicBaseUrl()}/mcp`;
 };
 
 export const getPonderBaseUrl = () => {
@@ -100,7 +101,7 @@ export const getPonderBaseUrl = () => {
     return "https://your-domain.example";
   }
 
-  return window.location.origin;
+  return getPublicBaseUrl();
 };
 
 export const buildMcpRemoteConfig = (token: string) =>

@@ -113,6 +113,14 @@ export const getConfiguredDesktopApiBaseUrl = () => {
   return bridgeUrl.replace(/\/$/, "");
 };
 
+// AppKeep serves an app at one address for everyone and routes each account to its own copy, so the
+// browser's address isn't one a logged-out visitor can open. The server tells us the address to share.
+let platformPublicUrl = "";
+
+/** Base URL for links other people open: share pages, forms, the MCP endpoint. */
+export const getPublicBaseUrl = () =>
+  getConfiguredDesktopApiBaseUrl() || platformPublicUrl || (typeof window !== "undefined" ? window.location.origin : "");
+
 export class DesktopInstanceUrlError extends Error {
   constructor() {
     super("Desktop instance URL must use http or https");
@@ -382,6 +390,7 @@ export const api = {
       throw error;
     }
     if (!isAuthSession(session)) throw new SyntaxError("Invalid authentication session response");
+    if (!baseUrl) platformPublicUrl = typeof session.publicUrl === "string" && /^https?:\/\//.test(session.publicUrl) ? session.publicUrl : "";
     if (getConfiguredDesktopApiBaseUrl() !== baseUrl || getDesktopSessionToken() !== token) {
       throw new Error("Authentication context changed while checking the session");
     }

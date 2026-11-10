@@ -7,14 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { api, getConfiguredDesktopApiBaseUrl } from "@/lib/api";
+import { api, getPublicBaseUrl } from "@/lib/api";
 import { copyTextToClipboard } from "@/lib/clipboard";
 
 const TEXT_SAVE_MS = 400;
 
 const formUrl = (token: string) => {
-  const baseUrl = getConfiguredDesktopApiBaseUrl() || window.location.origin;
-  return `${baseUrl.replace(/\/$/, "")}/form/${encodeURIComponent(token)}`;
+  return `${getPublicBaseUrl().replace(/\/$/, "")}/form/${encodeURIComponent(token)}`;
 };
 
 const passwordKey = (memoId: string) => `ponder.tableFormPassword.${memoId}`;

@@ -50,6 +50,16 @@ describe("auth route contracts", () => {
     });
   });
 
+  test("tells the client which address public links use on AppKeep", async () => {
+    const app = createApp();
+    const hosted = { ...environment, PONDER_APPKEEP: "true", ALTSTACK_APP_URL: "https://ponder-abc123.appkeep.app/" };
+    const body = await (await app.request("/api/v1/auth/session", {}, hosted)).json();
+    expect(body.publicUrl).toBe("https://ponder-abc123.appkeep.app");
+
+    const selfHosted = await (await app.request("/api/v1/auth/session", {}, { ...environment, ALTSTACK_APP_URL: "https://x.example" })).json();
+    expect(selfHosted.publicUrl).toBeUndefined();
+  });
+
   test("reports an anonymous required-auth session without touching storage", async () => {
     const app = createApp();
     const response = await app.request("/api/v1/auth/session", {}, environment);
