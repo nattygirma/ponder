@@ -112,6 +112,7 @@ export const keepPagesFor = (pages: JsonBackupPages, memoIds: Set<string>): Json
     databases,
     views: pages.views.filter((view) => databaseIds.has(view.databaseId)),
     comments: pages.comments.filter((comment) => memoIds.has(comment.memoId)),
+    templates: (pages.templates ?? []).filter((template) => databaseIds.has(template.databaseId)),
   };
 };
 
@@ -490,6 +491,7 @@ export const parsePonderZip = async (
     pages.pages.some((page) => !memoIds.has(page.memoId) || (page.parentId !== null && !memoIds.has(page.parentId)) || (page.databaseId !== null && !databaseIds.has(page.databaseId)))
     || pages.databases.some((database) => !memoIds.has(database.pageMemoId))
     || pages.views.some((view) => !databaseIds.has(view.databaseId))
+    || pages.templates.some((template) => !databaseIds.has(template.databaseId))
     || pages.comments.some((comment) => !memoIds.has(comment.memoId))
   ) {
     throw new PonderZipImportError("invalidData");
@@ -562,11 +564,11 @@ export const restorePonderZip = async (
   }
 
   // Every note exists now, so the tree, databases and comments can point at them.
-  // Databases first, then views, pages and comments, each in requests of at most 500.
+  // Databases first, then views, templates, pages and comments, each in requests of at most 500.
   const pages = backup.pages ?? EMPTY_JSON_BACKUP_PAGES;
   if (target.restorePages) {
-    for (const key of ["databases", "views", "pages", "comments"] as const) {
-      const list = pages[key];
+    for (const key of ["databases", "views", "templates", "pages", "comments"] as const) {
+      const list = pages[key] ?? [];
       for (let index = 0; index < list.length; index += 500) {
         await target.restorePages({ [key]: list.slice(index, index + 500) });
       }

@@ -25,6 +25,7 @@ const CREATABLE_TYPES = DATABASE_PROPERTY_TYPES.filter((type) => type !== "title
 
 const propertyDefaults = (type: DatabasePropertyType): Partial<DatabaseProperty> => {
   if (type === "select" || type === "multi_select") return { options: [] };
+  if (type === "unique_id") return { uniqueId: { prefix: "" } };
   if (type === "status") {
     return {
       options: [
@@ -269,6 +270,23 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
               <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
               <SelectContent>{["number", "percent", "dollar", "euro", "pound", "yen"].map((format) => <SelectItem key={format} value={format}>{t(`pages.db.formats.${format}`)}</SelectItem>)}</SelectContent>
             </Select>
+          </label>
+        ) : null}
+        {property.type === "unique_id" ? (
+          <label className="block text-xs text-slate-500">
+            {t("pages.db.idPrefix")}
+            <Input
+              className="h-8 font-mono"
+              maxLength={12}
+              defaultValue={property.uniqueId?.prefix ?? ""}
+              placeholder="TASK"
+              onBlur={(event) => {
+                const prefix = event.target.value.trim().replace(/[^A-Za-z0-9_-]/g, "");
+                if (prefix !== (property.uniqueId?.prefix ?? "")) patch({ uniqueId: { prefix } });
+              }}
+              onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }}
+            />
+            <span className="mt-1 block">{t("pages.db.idPrefixHelp")}</span>
           </label>
         ) : null}
         {property.type === "relation" ? <RelationEditor db={db} property={property} /> : null}

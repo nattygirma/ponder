@@ -18,7 +18,7 @@ export type NotionColumn = {
 };
 export type NotionRow = { title: string; cells: string[]; pageKey: string | null };
 export type NotionPage = { kind: "page"; key: string; id: string | null; title: string; parentKey: string | null; dir: string; markdown: string; rowOf: string | null };
-export type NotionDatabase = { kind: "database"; key: string; id: string | null; title: string; parentKey: string | null; columns: NotionColumn[]; rows: NotionRow[] };
+export type NotionDatabase = { kind: "database"; key: string; id: string | null; title: string; parentKey: string | null; dir: string; columns: NotionColumn[]; rows: NotionRow[] };
 export type NotionPlan = {
   /** Parents always come before their children. */
   entries: (NotionPage | NotionDatabase)[];
@@ -247,12 +247,15 @@ export const buildNotionPlan = (archive: Uint8Array): NotionPlan => {
     const kept = records.slice(0, DATABASE_ROW_LIMIT);
     const names = header.map((name, index) => name.trim() || `Column ${index + 1}`);
     const unique = names.map((name, index) => (names.indexOf(name) === index ? name : `${name} ${index + 1}`));
-    const columns = unique.map((name, index) => {
+    const columns = unique.map((name, index): NotionColumn => {
       if (index === 0) return { name, type: "title" as const, options: [], relationTo: null };
+      const cells = kept.map((record) => (record[index] ?? "").trim()).filter(Boolean);
+      // A Files & media column lists the files' paths, which sit in the export beside the table.
+      if (cells.length > 0 && cells.every((cell) => filePaths(dirName(path), cell, assets))) return { name, type: "files", options: [], relationTo: null };
       return inferColumn(name, kept.map((record) => record[index] ?? ""));
     });
     databases.push({
-      kind: "database", key: stem, id, title, parentKey: parentOf(stem), columns,
+      kind: "database", key: stem, id, title, parentKey: parentOf(stem), dir: dirName(path), columns,
       rows: kept.map((record) => ({ title: record[0]?.trim() || "Untitled", cells: unique.map((_, index) => record[index] ?? ""), pageKey: null })),
     });
     databaseColumns.set(stem, new Set(unique));
@@ -309,6 +312,35 @@ const safeDecode = (value: string) => {
   } catch {
     return value;
   }
+};
+
+/** The export's files a Files & media cell names, or null when any of them isn't in the export. */
+const filePaths = (dir: string, raw: string, assets: Map<string, Uint8Array>) => {
+  const paths = raw.split(/,\s+/).map((part) => part.trim()).filter(Boolean).map((part) => resolvePath(dir, part));
+  return paths.length > 0 && paths.every((item) => assets.has(item)) ? paths : null;
+};
+
+/** The paths of the files in a row's Files & media cell, to upload to the row. */
+export const notionCellFiles = (database: NotionDatabase, raw: string, assets: Map<string, Uint8Array>) => filePaths(database.dir, raw, assets) ?? [];
+
+const RELATION_PAIRS = {
+  subItems: [/^parent(?: item)?$/i, /^sub-?items?$/i],
+  dependencies: [/^blocked by$/i, /^blocking$/i],
+} as const;
+
+/**
+ * Notion exports sub-items as "Parent item" and "Sub-item" columns, and dependencies as "Blocked by" and
+ * "Blocking", each pair relating the table to itself. Returns the column indexes of each pair it finds.
+ */
+export const notionRelationPairs = (database: NotionDatabase) => {
+  const find = (pattern: RegExp) => database.columns.findIndex((column) => (
+    column.type === "relation" && column.relationTo === database.key && pattern.test(column.name.trim())
+  ));
+  const pair = ([first, second]: readonly [RegExp, RegExp]) => {
+    const [a, b] = [find(first), find(second)];
+    return a > 0 && b > 0 && a !== b ? ([a, b] as const) : null;
+  };
+  return { subItems: pair(RELATION_PAIRS.subItems), dependencies: pair(RELATION_PAIRS.dependencies) };
 };
 
 const resolvePath = (dir: string, target: string) => {
@@ -421,7 +453,8 @@ export const notionCellValue = (column: NotionColumn, raw: string, optionIds: Ma
     case "select":
     case "status": return optionIds.get(value) ?? null;
     case "multi_select": return splitList(value).flatMap((part) => optionIds.get(part) ?? []);
-    case "relation": return null;
+    case "relation":
+    case "files": return null;
     default: return value;
   }
 };

@@ -1,14 +1,18 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, X } from "lucide-react";
+import { Check, Paperclip, Plus, X } from "lucide-react";
 import {
   DATABASE_OPTION_COLORS,
   type DatabaseDateValue,
+  type DatabaseFileValue,
   type DatabaseOption,
   type DatabaseProperty,
   type DatabasePropertyValue,
   type DatabaseRow,
+  type WorkspaceMember,
 } from "@ponder/shared";
+import { useWorkspaceMembers } from "@/components/comments/PageComments";
+import { api } from "@/lib/api";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,7 +20,8 @@ import { usePages } from "@/components/pages/PagesProvider";
 import { cn } from "@/lib/utils";
 import type { DatabaseHandle } from "./useDatabase";
 
-const COMPUTED_TYPES = new Set(["rollup", "formula", "created_time", "last_edited_time"]);
+const COMPUTED_TYPES = new Set(["rollup", "formula", "created_time", "last_edited_time", "unique_id"]);
+const MAX_FILES = 100;
 
 export const OptionChip = ({ option, onRemove }: { option: { name: string; color: string }; onRemove?: () => void }) => (
   <span className="ponder-db-chip" data-color={option.color}>
@@ -29,9 +34,137 @@ export const OptionChip = ({ option, onRemove }: { option: { name: string; color
   </span>
 );
 
-const selectedIds = (value: DatabasePropertyValue | undefined) => {
-  if (Array.isArray(value)) return value;
+const selectedIds = (value: DatabasePropertyValue | undefined): string[] => {
+  if (Array.isArray(value)) return value.filter((item): item is string => typeof item === "string");
   return typeof value === "string" && value ? [value] : [];
+};
+
+const memberName = (member: WorkspaceMember) => member.displayName || member.username;
+
+/** Workspace members by user id. */
+export const usePeople = () => {
+  const members = useWorkspaceMembers();
+  return useMemo(() => new Map((members.data ?? []).map((member) => [member.id, member])), [members.data]);
+};
+
+const PersonChip = ({ name }: { name: string }) => (
+  <span className="inline-flex min-w-0 items-center gap-1">
+    <span aria-hidden="true" className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-slate-200 text-[10px] font-medium text-slate-600">
+      {name.slice(0, 1).toUpperCase()}
+    </span>
+    <span className="truncate">{name}</span>
+  </span>
+);
+
+const PeopleChips = ({ ids }: { ids: string[] }) => {
+  const { t } = useTranslation();
+  const people = usePeople();
+  return (
+    <span className="flex min-h-5 min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+      {ids.map((id) => {
+        const member = people.get(id);
+        return <PersonChip key={id} name={member ? memberName(member) : t("pages.db.formerMember")} />;
+      })}
+    </span>
+  );
+};
+
+const PersonPicker = ({ property, value, onChange, readOnly }: {
+  property: DatabaseProperty;
+  value: DatabasePropertyValue | undefined;
+  onChange: (next: DatabasePropertyValue) => void;
+  readOnly?: boolean;
+}) => {
+  const { t } = useTranslation();
+  const members = useWorkspaceMembers(!readOnly);
+  const [query, setQuery] = useState("");
+  const ids = selectedIds(value);
+  const search = query.trim().toLowerCase();
+  const matches = (members.data ?? []).filter((member) => (
+    memberName(member).toLowerCase().includes(search) || (member.email ?? "").toLowerCase().includes(search)
+  ));
+  const chips = <PeopleChips ids={ids} />;
+  if (readOnly) return chips;
+  return (
+    <Popover>
+      <PopoverTrigger asChild><button type="button" className="block w-full min-w-0 text-left" aria-label={property.name}>{chips}</button></PopoverTrigger>
+      <PopoverContent onClick={(event) => event.stopPropagation()}>
+        <Input autoFocus value={query} placeholder={t("pages.db.searchPeople")} onChange={(event) => setQuery(event.target.value)} />
+        <div className="mt-1 max-h-60 overflow-y-auto">
+          {matches.map((member) => (
+            <button key={member.id} type="button" className="flex w-full items-center justify-between gap-2 rounded px-1.5 py-1 text-left hover:bg-slate-100" onClick={() => onChange(ids.includes(member.id) ? ids.filter((id) => id !== member.id) : [...ids, member.id])}>
+              <PersonChip name={memberName(member)} />
+              {ids.includes(member.id) ? <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> : null}
+            </button>
+          ))}
+          {members.data && matches.length === 0 ? <p className="px-1.5 py-1 text-xs text-slate-500">{t("pages.db.noPeople")}</p> : null}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+const asFiles = (value: DatabasePropertyValue | undefined): DatabaseFileValue[] =>
+  (Array.isArray(value) ? value.filter((item): item is DatabaseFileValue => typeof item === "object" && item !== null && "id" in item) : []);
+
+const fileUrl = (file: DatabaseFileValue) => `/api/v1/resources/${encodeURIComponent(file.id)}/blob`;
+
+/** Files & media: uploads become attachments of the row's own page, so they follow it to trash, backups and exports. */
+const FilesCell = ({ row, property, value, onChange, readOnly }: {
+  row: DatabaseRow;
+  property: DatabaseProperty;
+  value: DatabasePropertyValue | undefined;
+  onChange: (next: DatabasePropertyValue) => void;
+  readOnly?: boolean;
+}) => {
+  const { t } = useTranslation();
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState<string | null>(null);
+  const files = asFiles(value);
+
+  const upload = async (list: FileList) => {
+    setBusy(true);
+    setFailed(null);
+    const added: DatabaseFileValue[] = [];
+    for (const file of Array.from(list).slice(0, MAX_FILES - files.length)) {
+      try {
+        const { resource } = await api.uploadMemoResource(row.id, file);
+        added.push({ id: resource.id, name: resource.filename || file.name, mimeType: resource.mimeType, size: resource.byteSize });
+      } catch {
+        setFailed(file.name);
+      }
+    }
+    setBusy(false);
+    if (added.length > 0) onChange([...files, ...added]);
+  };
+
+  return (
+    <span className="flex min-h-5 min-w-0 flex-wrap items-center gap-1" onClick={(event) => event.stopPropagation()}>
+      {files.map((file) => (
+        <span key={file.id} className="inline-flex max-w-full items-center gap-1 rounded bg-slate-100 px-1.5 py-0.5 text-xs">
+          {file.mimeType?.startsWith("image/")
+            ? <img src={fileUrl(file)} alt="" className="h-4 w-4 rounded-sm object-cover" />
+            : <Paperclip className="h-3 w-3 shrink-0 text-slate-500" aria-hidden="true" />}
+          <a href={fileUrl(file)} target="_blank" rel="noreferrer" className="truncate hover:underline">{file.name}</a>
+          {readOnly ? null : (
+            <button type="button" className="opacity-60 hover:opacity-100" aria-label={t("pages.db.removeFile", { name: file.name })} onClick={() => onChange(files.filter((item) => item.id !== file.id))}>
+              <X className="h-3 w-3" aria-hidden="true" />
+            </button>
+          )}
+        </span>
+      ))}
+      {readOnly || files.length >= MAX_FILES ? null : (
+        <>
+          <button type="button" disabled={busy} className="inline-flex items-center gap-0.5 rounded px-1 text-xs text-slate-400 hover:bg-slate-100 hover:text-slate-700" aria-label={`${t("pages.db.addFile")}: ${property.name}`} onClick={() => input.current?.click()}>
+            <Plus className="h-3 w-3" aria-hidden="true" />{busy ? t("pages.db.uploading") : files.length === 0 ? t("pages.db.addFile") : null}
+          </button>
+          <input ref={input} type="file" multiple hidden onChange={(event) => { if (event.target.files?.length) void upload(event.target.files); event.target.value = ""; }} />
+        </>
+      )}
+      {failed ? <span role="alert" className="text-xs text-red-600">{t("pages.db.uploadFailed", { name: failed })}</span> : null}
+    </span>
+  );
 };
 
 const nextOptionColor = (count: number) => DATABASE_OPTION_COLORS[(count + 1) % DATABASE_OPTION_COLORS.length];
@@ -248,16 +381,22 @@ export const RowTitle = ({ db, row, children }: { db: DatabaseHandle; row: Datab
   );
 };
 
-export const DatabaseCell = ({ db, row, property, readOnly }: {
+export const DatabaseCell = ({ db, row, property, readOnly, onChange }: {
   db: DatabaseHandle;
   row: DatabaseRow;
   property: DatabaseProperty;
   readOnly?: boolean;
+  /** Takes the new value instead of saving it to the row, as the template editor does. */
+  onChange?: (next: DatabasePropertyValue) => void;
 }) => {
   const computed = db.cells.get(row.id)?.[property.id];
   const raw = row.properties[property.id];
-  const commit = (next: DatabasePropertyValue) => void db.updateRow(row.id, { properties: { [property.id]: next } });
+  const commit = onChange ?? ((next: DatabasePropertyValue) => void db.updateRow(row.id, { properties: { [property.id]: next } }));
 
+  if (property.type === "created_by" || property.type === "last_edited_by") {
+    const id = property.type === "created_by" ? row.createdBy : row.updatedBy;
+    return <PeopleChips ids={id ? [id] : []} />;
+  }
   if (COMPUTED_TYPES.has(property.type)) {
     return (
       <span className={cn("block truncate", computed?.error && "text-red-600")} role={computed?.error ? "alert" : undefined}>
@@ -278,6 +417,10 @@ export const DatabaseCell = ({ db, row, property, readOnly }: {
       return <Checkbox checked={raw === true} disabled={readOnly} aria-label={property.name} onCheckedChange={(checked) => commit(checked === true)} onClick={(event) => event.stopPropagation()} />;
     case "relation":
       return <RelationPicker db={db} property={property} value={raw} onChange={commit} readOnly={readOnly} />;
+    case "person":
+      return <PersonPicker property={property} value={raw} onChange={commit} readOnly={readOnly} />;
+    case "files":
+      return <FilesCell row={row} property={property} value={raw} onChange={commit} readOnly={readOnly} />;
     case "number":
       return (
         <InlineText

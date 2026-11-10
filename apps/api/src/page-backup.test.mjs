@@ -9,7 +9,7 @@ import { AppError } from "./app-error.ts";
 import { registerBackupRoutes } from "./backup-routes.ts";
 import { restoreJsonMemos, restoreJsonNotebooks } from "./backup-service.ts";
 import { createMemoComment } from "./comment-service.ts";
-import { createDatabase, createDatabaseRow, createDatabaseView, getDatabase } from "./database-service.ts";
+import { createDatabase, createDatabaseRow, createDatabaseTemplate, createDatabaseView, getDatabase } from "./database-service.ts";
 import { sha256Bytes } from "./hash-utils.ts";
 import { apiError } from "./http-errors.ts";
 import { createMemoRecord, getMemoDetail, mapMemoDetail } from "./memo-service.ts";
@@ -78,9 +78,10 @@ const buildWorkspace = async (source) => {
     title: "Write the plan", properties: status ? { [status.id]: status.options[1].id } : {},
   }, actor, "Admin");
   const view = await createDatabaseView(db, WORKSPACE_ID, database.id, { name: "Board", type: "board", config: status ? { groupByPropertyId: status.id } : {} });
+  const template = await createDatabaseTemplate(db, WORKSPACE_ID, database.id, { name: "Bug", icon: "🐞", content: "## Steps", isDefault: true });
   const { comment } = await createMemoComment(db, WORKSPACE_ID, child.id, { body: "Looks good", quote: "back to projects" }, auth);
   await createMemoComment(db, WORKSPACE_ID, child.id, { body: "Agreed", threadId: comment.threadId }, auth);
-  return { parent, child, database, row, view, status };
+  return { parent, child, database, row, view, status, template };
 };
 
 const exportAll = async (source) => {
@@ -108,7 +109,7 @@ const exportAll = async (source) => {
 
 // The target is a fresh installation: drop what migrations seeded so IDs don't collide.
 const emptyWorkspace = (target) => {
-  target.sqlite.exec("DELETE FROM memo_comments; DELETE FROM database_views; DELETE FROM databases; DELETE FROM memo_links; DELETE FROM memo_revisions; DELETE FROM memo_contents; DELETE FROM memos;");
+  target.sqlite.exec("DELETE FROM memo_comments; DELETE FROM database_templates; DELETE FROM database_views; DELETE FROM databases; DELETE FROM memo_links; DELETE FROM memo_revisions; DELETE FROM memo_contents; DELETE FROM memos;");
 };
 
 const restoreAll = async (target, backup) => {
@@ -119,7 +120,7 @@ const restoreAll = async (target, backup) => {
     const response = await target.postJson("/api/v1/restores/json/memos", { memos: backup.memos.slice(index, index + 10) });
     expect(response.status).toBe(200);
   }
-  for (const key of ["databases", "views", "pages", "comments"]) {
+  for (const key of ["databases", "views", "templates", "pages", "comments"]) {
     const response = await target.postJson("/api/v1/restores/json/pages", { [key]: backup.pages[key] });
     expect(response.status).toBe(200);
   }
@@ -146,11 +147,17 @@ describe("page backup", () => {
     expect(byId(restored.databases, "id")).toEqual(byId(backup.pages.databases, "id"));
     expect(byId(restored.views, "id")).toEqual(byId(backup.pages.views, "id"));
     expect(byId(restored.comments, "id")).toEqual(byId(backup.pages.comments, "id"));
+    expect(byId(restored.templates, "id")).toEqual(byId(backup.pages.templates, "id"));
+    expect(restored.templates[0]).toMatchObject({ name: "Bug", icon: "🐞", content: "## Steps", isDefault: true });
 
     const parent = byId(restored.pages)[made.parent.id];
     expect(parent).toMatchObject({ icon: "📁", cover: "https://example.test/cover.png", style: { font: "serif", wide: true }, position: 5000 });
     const row = byId(restored.pages)[made.row.id];
     expect(row.databaseId).toBe(made.database.id);
+    expect(row.rowNumber).toBe(1);
+    // New rows count on from the restored ones instead of reusing their numbers.
+    const next = await createDatabaseRow(target.storage.db, WORKSPACE_ID, made.database.id, { title: "After restore" }, actor, "Admin");
+    expect(next.number).toBe(2);
     if (made.status) expect(row.properties[made.status.id]).toBe(made.status.options[1].id);
 
     // The database opens with its schema and views, and the page link is a backlink again.
@@ -208,10 +215,11 @@ describe("page backup", () => {
       databases: [{ id: "db_gone", pageMemoId: "gone", schema: {}, createdAt: "x", updatedAt: "x" }],
       views: [{ id: "v", databaseId: "db_gone", name: "Table", type: "table", config: {}, position: 0, createdAt: "x", updatedAt: "x" }],
       comments: [{ id: "c", memoId: "gone", threadId: "c", quote: null, quoteOccurrence: 0, body: "hi", mentions: [], authorId: null, authorName: "A", resolvedAt: null, createdAt: "x", updatedAt: "x" }],
+      templates: [{ id: "t", databaseId: "db_gone", name: "T", icon: null, title: "", properties: {}, content: "", isDefault: false, position: 0, createdAt: "x", updatedAt: "x" }],
     }, new Set(["a"]));
     expect(kept).toEqual({
       pages: [{ memoId: "a", parentId: null, position: 0, icon: null, cover: null, style: null, databaseId: null, properties: {} }],
-      databases: [], views: [], comments: [],
+      databases: [], views: [], comments: [], templates: [],
     });
   });
 });

@@ -20,8 +20,12 @@ export const DATABASE_PROPERTY_TYPES = [
   "relation",
   "rollup",
   "formula",
+  "files",
   "created_time",
+  "created_by",
   "last_edited_time",
+  "last_edited_by",
+  "unique_id",
 ] as const;
 export type DatabasePropertyType = (typeof DATABASE_PROPERTY_TYPES)[number];
 
@@ -68,17 +72,40 @@ export const DatabasePropertySchema = z.object({
     function: z.enum(ROLLUP_FUNCTIONS),
   }).optional(),
   formula: z.object({ expression: z.string().max(4000) }).optional(),
+  /** ID properties: an optional prefix shown before each row's number, like "TASK-12". */
+  uniqueId: z.object({ prefix: z.string().trim().max(12).regex(/^[A-Za-z0-9_-]*$/) }).optional(),
 });
 export type DatabaseProperty = z.infer<typeof DatabasePropertySchema>;
 
+/** Property types whose values are worked out, never stored or edited. */
+export const COMPUTED_PROPERTY_TYPES: ReadonlySet<DatabasePropertyType> = new Set([
+  "title", "rollup", "formula", "created_time", "created_by", "last_edited_time", "last_edited_by", "unique_id",
+]);
+
+const relationPairSchema = <A extends string, B extends string>(first: A, second: B) =>
+  z.object({ [first]: z.string().min(1).max(64), [second]: z.string().min(1).max(64) } as Record<A | B, z.ZodString>);
+
 export const DatabaseSchemaSchema = z.object({
   properties: z.array(DatabasePropertySchema).min(1).max(DATABASE_PROPERTY_LIMIT),
+  /** Sub-items: rows nest under the row named in the parent relation. Both relations point at this database. */
+  subItems: relationPairSchema("parentPropertyId", "childPropertyId").optional(),
+  /** Dependencies: "Blocked by" and "Blocking", drawn as arrows on the timeline. Both point at this database. */
+  dependencies: relationPairSchema("blockedByPropertyId", "blockingPropertyId").optional(),
 }).superRefine((schema, context) => {
   if (schema.properties.filter((property) => property.type === "title").length !== 1) {
     context.addIssue({ code: "custom", message: "A database needs exactly one title property." });
   }
   if (new Set(schema.properties.map((property) => property.id)).size !== schema.properties.length) {
     context.addIssue({ code: "custom", message: "Property ids must be unique." });
+  }
+  const isRelation = (id: string) => schema.properties.some((property) => property.id === id && property.type === "relation");
+  const pairs: [string, Record<string, string> | undefined][] = [["Sub-items", schema.subItems], ["Dependencies", schema.dependencies]];
+  for (const [label, pair] of pairs) {
+    if (!pair) continue;
+    const ids = Object.values(pair);
+    if (ids[0] === ids[1] || !ids.every(isRelation)) {
+      context.addIssue({ code: "custom", message: `${label} need two different relation properties.` });
+    }
   }
 });
 export type DatabaseSchema = z.infer<typeof DatabaseSchemaSchema>;
@@ -127,10 +154,14 @@ export type DatabaseDetail = {
   icon: string | null;
   schema: DatabaseSchema;
   views: DatabaseView[];
+  templates: DatabaseTemplate[];
   updatedAt: string;
 };
 
 export type DatabaseDateValue = { start: string; end?: string | null };
+
+/** A file in a "Files & media" property: an attachment of the row's page. */
+export type DatabaseFileValue = { id: string; name: string; mimeType?: string | null; size?: number | null };
 
 /** Stored values, keyed by property id. Computed properties are never stored. */
 export type DatabasePropertyValue =
@@ -138,8 +169,33 @@ export type DatabasePropertyValue =
   | number
   | boolean
   | string[]
+  | DatabaseFileValue[]
   | DatabaseDateValue
   | null;
+
+/**
+ * Drops sub-item and dependency settings whose relations were deleted or changed type,
+ * so editing properties never leaves a schema the server rejects.
+ */
+export const withValidRelationPairs = (schema: DatabaseSchema): DatabaseSchema => {
+  const isRelation = (id: string) => schema.properties.some((property) => property.id === id && property.type === "relation");
+  const keep = <T extends Record<string, string>>(pair: T | undefined) =>
+    pair && Object.values(pair).every(isRelation) ? pair : undefined;
+  const { subItems, dependencies, ...rest } = schema;
+  const nextSubItems = keep(subItems);
+  const nextDependencies = keep(dependencies);
+  return {
+    ...rest,
+    ...(nextSubItems ? { subItems: nextSubItems } : {}),
+    ...(nextDependencies ? { dependencies: nextDependencies } : {}),
+  };
+};
+
+/** Who made or last changed something, from the "user:<id>" label Ponder records on each write. */
+export const userIdFromActorLabel = (label: string | null | undefined): string | null => {
+  const match = /^user:(.+)$/.exec(label ?? "");
+  return match ? match[1]! : null;
+};
 
 export type DatabaseRow = {
   id: string;
@@ -149,6 +205,11 @@ export type DatabaseRow = {
   excerpt: string;
   properties: Record<string, DatabasePropertyValue>;
   position: number;
+  /** The row's number in its database, for ID properties. Null only for rows made before numbering. */
+  number: number | null;
+  /** User ids, when a person (not an API token or import) made or last changed the row. */
+  createdBy: string | null;
+  updatedBy: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -164,11 +225,19 @@ export const DatabaseUpdateSchema = z.object({
   title: z.string().trim().max(160).optional(),
 }).refine((input) => input.schema !== undefined || input.title !== undefined, { message: "Nothing to update" });
 
+const fileValueSchema = z.object({
+  id: z.string().min(1).max(64),
+  name: z.string().trim().min(1).max(255),
+  mimeType: z.string().max(255).nullable().optional(),
+  size: z.number().int().nonnegative().nullable().optional(),
+});
+
 export const DatabaseRowValueSchema = z.union([
   z.string().max(20000),
   z.number(),
   z.boolean(),
   z.array(z.string().max(120)).max(1000),
+  z.array(fileValueSchema).max(100),
   z.object({ start: z.string().max(40), end: z.string().max(40).nullable().optional() }),
   z.null(),
 ]);
@@ -176,6 +245,8 @@ export const DatabaseRowValueSchema = z.union([
 export const DatabaseRowCreateSchema = z.object({
   title: z.string().trim().max(160).optional(),
   properties: z.record(z.string(), DatabaseRowValueSchema).optional(),
+  /** Start the row from this template; title and properties given here win over the template's. */
+  templateId: z.string().min(1).max(64).optional(),
 });
 
 export const DatabaseRowUpdateSchema = z.object({
@@ -214,3 +285,31 @@ export const createDefaultDatabaseSchema = (createId: () => string): DatabaseSch
     { id: createId(), name: "Tags", type: "multi_select", options: [] },
   ],
 });
+
+/** A starting point for new rows: Notion's database templates. */
+export type DatabaseTemplate = {
+  id: string;
+  databaseId: string;
+  name: string;
+  icon: string | null;
+  title: string;
+  properties: Record<string, DatabasePropertyValue>;
+  content: string;
+  isDefault: boolean;
+  position: number;
+};
+
+export const DATABASE_TEMPLATE_LIMIT = 50;
+
+const templateFields = {
+  name: z.string().trim().min(1).max(120),
+  icon: z.string().trim().max(32).nullable(),
+  title: z.string().trim().max(160),
+  properties: z.record(z.string(), DatabaseRowValueSchema),
+  /** The page body, as Markdown. */
+  content: z.string().max(200_000),
+  isDefault: z.boolean(),
+};
+
+export const DatabaseTemplateCreateSchema = z.object(templateFields).partial().extend({ name: templateFields.name });
+export const DatabaseTemplateUpdateSchema = z.object(templateFields).partial().extend({ position: z.number().optional() });

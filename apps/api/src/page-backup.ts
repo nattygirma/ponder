@@ -4,6 +4,7 @@ import {
   DATABASE_VIEW_TYPES,
   type JsonBackupComment,
   type JsonBackupDatabase,
+  type JsonBackupDatabaseTemplate,
   type JsonBackupDatabaseView,
   type JsonBackupPageNode,
   type JsonBackupPages,
@@ -58,9 +59,14 @@ type PageBackupRow = {
   page_style: string | null;
   database_id: string | null;
   properties_json: string | null;
+  row_number: number | null;
 };
 
 type DatabaseBackupRow = { id: string; page_memo_id: string; schema_json: string; created_at: string; updated_at: string };
+type TemplateBackupRow = {
+  id: string; database_id: string; name: string; icon: string | null; title: string; properties_json: string;
+  content_markdown: string; is_default: number; position: number; created_at: string; updated_at: string;
+};
 type ViewBackupRow = { id: string; database_id: string; name: string; type: string; config_json: string; position: number; created_at: string; updated_at: string };
 type CommentBackupRow = {
   id: string; memo_id: string; thread_id: string; quote: string | null; quote_occurrence: number; body: string;
@@ -69,9 +75,9 @@ type CommentBackupRow = {
 
 /** Everything a backup needs beyond the notes themselves, for the notes not in Trash. */
 export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): Promise<JsonBackupPages> => {
-  const [pages, databases, views, comments] = await Promise.all([
+  const [pages, databases, views, comments, templates] = await Promise.all([
     db.prepare(
-      `SELECT id, parent_memo_id, page_position, page_icon, page_cover, page_style, database_id, properties_json
+      `SELECT id, parent_memo_id, page_position, page_icon, page_cover, page_style, database_id, properties_json, row_number
        FROM memos WHERE workspace_id = ? AND is_deleted = 0 ORDER BY id ASC`,
     ).bind(workspaceId).all<PageBackupRow>(),
     db.prepare(
@@ -92,6 +98,14 @@ export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): 
        FROM memo_comments c INNER JOIN memos m ON m.id = c.memo_id
        WHERE c.workspace_id = ? AND m.is_deleted = 0 ORDER BY c.created_at ASC, c.id ASC`,
     ).bind(workspaceId).all<CommentBackupRow>(),
+    db.prepare(
+      `SELECT t.id, t.database_id, t.name, t.icon, t.title, t.properties_json, t.content_markdown, t.is_default, t.position,
+              t.created_at, t.updated_at
+       FROM database_templates t
+       INNER JOIN databases d ON d.id = t.database_id
+       INNER JOIN memos m ON m.id = d.page_memo_id
+       WHERE t.workspace_id = ? AND m.is_deleted = 0 ORDER BY t.database_id ASC, t.position ASC, t.id ASC`,
+    ).bind(workspaceId).all<TemplateBackupRow>(),
   ]);
   const live = new Set(pages.results.map((row) => row.id));
   return {
@@ -105,6 +119,7 @@ export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): 
       style: parseObject(row.page_style),
       databaseId: row.database_id,
       properties: parseObject(row.properties_json) ?? {},
+      rowNumber: row.row_number,
     })),
     databases: databases.results.map((row): JsonBackupDatabase => ({
       id: row.id,
@@ -137,6 +152,19 @@ export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): 
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     })),
+    templates: templates.results.map((row): JsonBackupDatabaseTemplate => ({
+      id: row.id,
+      databaseId: row.database_id,
+      name: row.name,
+      icon: row.icon,
+      title: row.title,
+      properties: parseObject(row.properties_json) ?? {},
+      content: row.content_markdown,
+      isDefault: row.is_default === 1,
+      position: Number(row.position ?? 0),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    })),
   };
 };
 
@@ -158,7 +186,7 @@ const existingIds = async (db: DatabaseAdapter, table: "memos" | "databases", wo
 /** A restore never overwrites another workspace's rows. */
 const assertNotInOtherWorkspace = async (
   db: DatabaseAdapter,
-  table: "databases" | "database_views" | "memo_comments",
+  table: "databases" | "database_views" | "database_templates" | "memo_comments",
   workspaceId: string,
   ids: string[],
 ) => {
@@ -181,6 +209,7 @@ const runBatches = async (db: DatabaseAdapter, statements: PreparedStatementAdap
  */
 export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string, input: JsonBackupPages) => {
   const { pages, databases, views, comments } = input;
+  const templates = input.templates ?? [];
   const memoIds = [
     ...pages.flatMap((page) => [page.memoId, ...(page.parentId ? [page.parentId] : [])]),
     ...databases.map((database) => database.pageMemoId),
@@ -198,9 +227,10 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
   }
   await assertNotInOtherWorkspace(db, "databases", workspaceId, databases.map((item) => item.id));
   await assertNotInOtherWorkspace(db, "database_views", workspaceId, views.map((item) => item.id));
+  await assertNotInOtherWorkspace(db, "database_templates", workspaceId, templates.map((item) => item.id));
   await assertNotInOtherWorkspace(db, "memo_comments", workspaceId, comments.map((item) => item.id));
 
-  const databaseIds = [...views.map((view) => view.databaseId), ...pages.flatMap((page) => (page.databaseId ? [page.databaseId] : []))];
+  const databaseIds = [...views.map((view) => view.databaseId), ...templates.map((template) => template.databaseId), ...pages.flatMap((page) => (page.databaseId ? [page.databaseId] : []))];
   const knownDatabases = await existingIds(db, "databases", workspaceId, databaseIds);
   for (const database of databases) knownDatabases.add(database.id);
   if (databaseIds.some((id) => !knownDatabases.has(id))) throw invalid("Backup page data points at a database that isn't in it.");
@@ -236,10 +266,23 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
        WHERE database_views.workspace_id = excluded.workspace_id`,
     ).bind(view.id, view.databaseId, workspaceId, view.name, view.type, JSON.stringify(config.success ? config.data : {}), view.position, view.createdAt, view.updatedAt));
   }
+  for (const template of templates) {
+    statements.push(db.prepare(
+      `INSERT INTO database_templates (id, database_id, workspace_id, name, icon, title, properties_json, content_markdown, is_default, position, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET name = excluded.name, icon = excluded.icon, title = excluded.title,
+         properties_json = excluded.properties_json, content_markdown = excluded.content_markdown,
+         is_default = excluded.is_default, position = excluded.position, updated_at = excluded.updated_at
+       WHERE database_templates.workspace_id = excluded.workspace_id AND database_templates.database_id = excluded.database_id`,
+    ).bind(
+      template.id, template.databaseId, workspaceId, template.name, template.icon, template.title, JSON.stringify(template.properties),
+      template.content, template.isDefault ? 1 : 0, template.position, template.createdAt, template.updatedAt,
+    ));
+  }
   for (const page of pages) {
     statements.push(db.prepare(
       `UPDATE memos SET parent_memo_id = ?, page_position = ?, page_icon = ?, page_cover = ?, page_style = ?,
-         database_id = ?, properties_json = ?
+         database_id = ?, properties_json = ?, row_number = COALESCE(?, row_number)
        WHERE workspace_id = ? AND id = ?`,
     ).bind(
       page.parentId,
@@ -249,6 +292,7 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
       page.style ? JSON.stringify(page.style) : null,
       page.databaseId,
       JSON.stringify(page.properties),
+      page.rowNumber ?? null,
       workspaceId,
       page.memoId,
     ));
@@ -265,6 +309,16 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
     ));
   }
   await runBatches(db, statements);
+
+  // A restored row keeps its number, so new rows must count on from the highest one.
+  const rowDatabases = [...new Set(pages.flatMap((page) => (page.databaseId ? [page.databaseId] : [])))];
+  for (const chunk of chunks(rowDatabases, ID_CHUNK)) {
+    await db.prepare(
+      `UPDATE databases SET next_row_number = MAX(next_row_number,
+         COALESCE((SELECT MAX(row_number) FROM memos WHERE memos.database_id = databases.id), 0) + 1)
+       WHERE workspace_id = ? AND id IN (${chunk.map(() => "?").join(", ")})`,
+    ).bind(workspaceId, ...chunk).run();
+  }
 
   // Restored notes don't index their page links; do it now so backlinks come back too.
   const pageIds = pages.map((page) => page.memoId);

@@ -304,7 +304,10 @@ const toStoredValues = (schema: DatabaseSchema, input: Record<string, unknown>) 
     switch (property.type) {
       case "title": title = text; break;
       case "rollup": case "formula": case "created_time": case "last_edited_time":
+      case "created_by": case "last_edited_by": case "unique_id":
         throw new AppError("invalid_params", `"${property.name}" is computed and can't be set.`, 400);
+      case "files":
+        throw new AppError("invalid_params", `"${property.name}" holds uploaded files, which can only be added in Ponder.`, 400);
       case "number": {
         const number = value === null || value === "" ? null : Number(value);
         if (number !== null && !Number.isFinite(number)) throw new AppError("invalid_params", `"${property.name}" needs a number.`, 400);
@@ -368,7 +371,12 @@ const loadRows = async (c: AppContext, auth: AuthContext, database: DatabaseDeta
       // A related database that's gone leaves its relation values unresolved.
     }
   }
-  return { rows, cells: computeRowValues({ schema: database.schema, rows, relatedRows: related }) };
+  // Person values read as names, as they do in Ponder.
+  const usesPeople = database.schema.properties.some((property) => ["person", "created_by", "last_edited_by"].includes(property.type));
+  const people = usesPeople
+    ? new Map((await listWorkspaceMembers(c.env.storage.db, auth.workspaceId)).map((member) => [member.id, member.displayName || member.username]))
+    : undefined;
+  return { rows, cells: computeRowValues({ schema: database.schema, rows, relatedRows: related, people }) };
 };
 
 const rowOut = (c: AppContext, database: DatabaseDetail, row: DatabaseRow, cells: ReturnType<typeof computeRowValues>) => ({

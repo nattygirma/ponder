@@ -2,6 +2,8 @@ import {
   DatabaseCreateSchema,
   DatabaseRowCreateSchema,
   DatabaseRowUpdateSchema,
+  DatabaseTemplateCreateSchema,
+  DatabaseTemplateUpdateSchema,
   DatabaseUpdateSchema,
   DatabaseViewCreateSchema,
   DatabaseViewUpdateSchema,
@@ -13,13 +15,16 @@ import { AppError } from "./app-error";
 import {
   createDatabase,
   createDatabaseRow,
+  createDatabaseTemplate,
   createDatabaseView,
+  deleteDatabaseTemplate,
   deleteDatabaseView,
   getDatabase,
   getRowContext,
   listDatabaseRows,
   updateDatabaseRow,
   updateDatabase,
+  updateDatabaseTemplate,
   updateDatabaseView,
 } from "./database-service";
 import { apiError } from "./http-errors";
@@ -91,6 +96,22 @@ export const registerDatabaseRoutes = (app: Hono<AppEnv>) => {
   app.delete("/api/v1/databases/:id/views/:viewId", (c) =>
     guarded(c, "write:memos", async () => {
       await deleteDatabaseView(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.param("viewId"));
+      return c.json({ ok: true });
+    }));
+
+  app.post("/api/v1/databases/:id/templates", zValidator("json", DatabaseTemplateCreateSchema), (c) =>
+    guarded(c, "write:memos", async () =>
+      c.json({ template: await createDatabaseTemplate(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.valid("json")) }, 201)));
+
+  app.patch("/api/v1/databases/:id/templates/:templateId", zValidator("json", DatabaseTemplateUpdateSchema), (c) =>
+    guarded(c, "write:memos", async () =>
+      c.json({
+        template: await updateDatabaseTemplate(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.param("templateId"), c.req.valid("json")),
+      })));
+
+  app.delete("/api/v1/databases/:id/templates/:templateId", (c) =>
+    guarded(c, "write:memos", async () => {
+      await deleteDatabaseTemplate(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.param("templateId"));
       return c.json({ ok: true });
     }));
 

@@ -172,12 +172,28 @@ export const JsonBackupPageNodeSchema = z.object({
   /** The database this page is a row of. */
   databaseId: IdSchema.nullable(),
   properties: JsonRecordSchema,
+  /** The row's number for ID properties. Missing from backups made before rows had numbers. */
+  rowNumber: z.number().int().positive().nullable().optional(),
 });
 
 export const JsonBackupDatabaseSchema = z.object({
   id: IdSchema,
   pageMemoId: IdSchema,
   schema: JsonRecordSchema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+});
+
+export const JsonBackupDatabaseTemplateSchema = z.object({
+  id: IdSchema,
+  databaseId: IdSchema,
+  name: z.string().min(1).max(120),
+  icon: z.string().max(32).nullable(),
+  title: z.string().max(160),
+  properties: JsonRecordSchema,
+  content: z.string().max(200_000),
+  isDefault: z.boolean(),
+  position: z.number().finite(),
   createdAt: z.string().min(1),
   updatedAt: z.string().min(1),
 });
@@ -213,22 +229,26 @@ export const JsonBackupPagesSchema = z.object({
   databases: z.array(JsonBackupDatabaseSchema),
   views: z.array(JsonBackupDatabaseViewSchema),
   comments: z.array(JsonBackupCommentSchema),
+  /** Missing from backups made before databases had templates. */
+  templates: z.array(JsonBackupDatabaseTemplateSchema).default([]),
 });
 
+export type JsonBackupDatabaseTemplate = z.infer<typeof JsonBackupDatabaseTemplateSchema>;
 export type JsonBackupPageNode = z.infer<typeof JsonBackupPageNodeSchema>;
 export type JsonBackupDatabase = z.infer<typeof JsonBackupDatabaseSchema>;
 export type JsonBackupDatabaseView = z.infer<typeof JsonBackupDatabaseViewSchema>;
 export type JsonBackupComment = z.infer<typeof JsonBackupCommentSchema>;
 export type JsonBackupPages = z.infer<typeof JsonBackupPagesSchema>;
 
-export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [] };
+export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [], templates: [] };
 
-/** One restore request: any mix of the four lists, sent in order databases, views, pages, comments. */
+/** One restore request: any mix of the lists, sent in order databases, views, templates, pages, comments. */
 export const RestoreJsonPagesSchema = z.object({
   pages: z.array(JsonBackupPageNodeSchema).max(500).default([]),
   databases: z.array(JsonBackupDatabaseSchema).max(500).default([]),
   views: z.array(JsonBackupDatabaseViewSchema).max(500).default([]),
   comments: z.array(JsonBackupCommentSchema).max(500).default([]),
+  templates: z.array(JsonBackupDatabaseTemplateSchema).max(500).default([]),
 });
 
 export const JsonBackupAiPromptSchema = z.object({

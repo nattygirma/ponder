@@ -47,6 +47,7 @@ import type {
   DatabasePropertyValue,
   DatabaseRow,
   DatabaseSchema,
+  DatabaseTemplate,
   DatabaseView,
   DatabaseViewConfig,
   DatabaseViewType,
@@ -101,6 +102,9 @@ import type {
   PluginPublicFetchRequest,
   PluginPublicFetchResponse,
 } from "@ponder/shared";
+
+
+type DatabaseTemplateInput = Partial<Pick<DatabaseTemplate, "name" | "icon" | "title" | "properties" | "content" | "isDefault" | "position">>;
 
 export const MAX_SINGLE_REQUEST_UPLOAD_BYTES = 5 * 1024 * 1024;
 
@@ -1211,7 +1215,7 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
       return request<{ rows: DatabaseRow[]; nextCursor: string | null }>(`/api/v1/databases/${encodeURIComponent(id)}/rows${query ? `?${query}` : ""}`);
     },
 
-    createDatabaseRow: (id: string, payload: { title?: string; properties?: Record<string, DatabasePropertyValue> }) =>
+    createDatabaseRow: (id: string, payload: { title?: string; properties?: Record<string, DatabasePropertyValue>; templateId?: string }) =>
       request<{ row: DatabaseRow }>(`/api/v1/databases/${encodeURIComponent(id)}/rows`, { method: "POST", body: JSON.stringify(payload) }),
 
     updateDatabaseRow: (id: string, rowId: string, payload: { title?: string; properties?: Record<string, DatabasePropertyValue>; beforeId?: string | null; afterId?: string | null }) =>
@@ -1225,6 +1229,15 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
 
     deleteDatabaseView: (id: string, viewId: string) =>
       request<{ ok: true }>(`/api/v1/databases/${encodeURIComponent(id)}/views/${encodeURIComponent(viewId)}`, { method: "DELETE" }),
+
+    createDatabaseTemplate: (id: string, payload: DatabaseTemplateInput & { name: string }) =>
+      request<{ template: DatabaseTemplate }>(`/api/v1/databases/${encodeURIComponent(id)}/templates`, { method: "POST", body: JSON.stringify(payload) }),
+
+    updateDatabaseTemplate: (id: string, templateId: string, payload: DatabaseTemplateInput) =>
+      request<{ template: DatabaseTemplate }>(`/api/v1/databases/${encodeURIComponent(id)}/templates/${encodeURIComponent(templateId)}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    deleteDatabaseTemplate: (id: string, templateId: string) =>
+      request<{ ok: true }>(`/api/v1/databases/${encodeURIComponent(id)}/templates/${encodeURIComponent(templateId)}`, { method: "DELETE" }),
 
     getDatabaseRowContext: (memoId: string) =>
       request<{ context: { database: DatabaseDetail; row: DatabaseRow } | null }>(`/api/v1/memos/${encodeURIComponent(memoId)}/database-row`),

@@ -10,9 +10,12 @@ import {
   type DatabaseSchema,
   type DatabaseView,
   type DatabaseViewConfig,
+  type DatabaseTemplate,
   type DatabaseViewType,
+  withValidRelationPairs,
 } from "@ponder/shared";
 import { api } from "@/lib/api";
+import { useWorkspaceMembers } from "@/components/comments/PageComments";
 
 export const databaseKey = (id: string) => ["database", id] as const;
 export const databaseRowsKey = (id: string) => ["database-rows", id] as const;
@@ -45,8 +48,11 @@ export type DatabaseHandle = {
   error: string | null;
   clearError: () => void;
   rename: (title: string) => Promise<void>;
-  updateSchema: (schema: DatabaseSchema) => Promise<void>;
-  addRow: (input?: { title?: string; properties?: Record<string, DatabasePropertyValue> }) => Promise<DatabaseRow | null>;
+  /** Changes the schema. Fields left out (sub-items, dependencies) keep their current value. */
+  updateSchema: (schema: Partial<DatabaseSchema>) => Promise<void>;
+  addRow: (input?: { title?: string; properties?: Record<string, DatabasePropertyValue>; templateId?: string }) => Promise<DatabaseRow | null>;
+  saveTemplate: (templateId: string | null, input: TemplateInput) => Promise<DatabaseTemplate | null>;
+  deleteTemplate: (templateId: string) => Promise<void>;
   updateRow: (rowId: string, input: { title?: string; properties?: Record<string, DatabasePropertyValue> }) => Promise<void>;
   moveRow: (rowId: string, anchor: { beforeId?: string; afterId?: string }) => Promise<void>;
   deleteRow: (rowId: string) => Promise<void>;
@@ -54,6 +60,8 @@ export type DatabaseHandle = {
   updateView: (viewId: string, input: { name?: string; type?: DatabaseViewType; config?: DatabaseViewConfig }) => Promise<void>;
   deleteView: (viewId: string) => Promise<void>;
 };
+
+export type TemplateInput = Partial<Pick<DatabaseTemplate, "name" | "icon" | "title" | "properties" | "content" | "isDefault">>;
 
 const errorText = (error: unknown) => (error instanceof Error && error.message ? error.message : "Something went wrong.");
 
@@ -98,13 +106,22 @@ export const useDatabase = (databaseId: string) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [databaseId, detail.data, relatedIds, relatedStamp, rowsQuery.data]);
 
+  const usesPeople = (detail.data?.schema.properties ?? []).some((property) => (
+    property.type === "person" || property.type === "created_by" || property.type === "last_edited_by"
+  ));
+  const members = useWorkspaceMembers(usesPeople);
+  const people = useMemo(
+    () => new Map((members.data ?? []).map((member) => [member.id, member.displayName || member.username])),
+    [members.data],
+  );
+
   const cells = useMemo(() => {
     if (!detail.data || !rowsQuery.data) return new Map<string, Record<string, ComputedCell>>();
     const relatedRows = Object.fromEntries(
       [...related].map(([id, entry]) => [id, { schema: entry.database.schema, rows: entry.rows }]),
     );
-    return computeRowValues({ schema: detail.data.schema, rows: rowsQuery.data, relatedRows, now: new Date() });
-  }, [detail.data, related, rowsQuery.data]);
+    return computeRowValues({ schema: detail.data.schema, rows: rowsQuery.data, relatedRows, now: new Date(), people });
+  }, [detail.data, people, related, rowsQuery.data]);
 
   const patchRows = useCallback((update: (rows: DatabaseRow[]) => DatabaseRow[]) => {
     queryClient.setQueryData<DatabaseRow[]>(databaseRowsKey(databaseId), (current) => (current ? update(current) : current));
@@ -145,7 +162,8 @@ export const useDatabase = (databaseId: string) => {
         await attempt(() => api.updateDatabase(databaseId, { title }));
         void queryClient.invalidateQueries({ queryKey: ["page-tree"] });
       },
-      updateSchema: async (schema) => {
+      updateSchema: async (patch) => {
+        const schema = withValidRelationPairs({ ...detail.data!.schema, ...patch });
         patchDetail((database) => ({ ...database, schema }));
         await attempt(async () => {
           await api.updateDatabase(databaseId, { schema });
@@ -156,6 +174,12 @@ export const useDatabase = (databaseId: string) => {
       addRow: async (input) => attempt(async () => {
         const { row } = await api.createDatabaseRow(databaseId, input ?? {});
         patchRows((rows) => [...rows, row]);
+        // A template or a sub-item can fill a two-way relation, which changes the rows on its other side too.
+        const values = { ...detail.data?.templates.find((template) => template.id === input?.templateId)?.properties, ...input?.properties };
+        const syncedRelation = detail.data?.schema.properties.some((property) => (
+          property.type === "relation" && property.relation?.syncedPropertyId && property.id in values
+        ));
+        if (syncedRelation) await queryClient.invalidateQueries({ queryKey: ["database-rows"] });
         return row;
       }),
       updateRow: async (rowId, input) => {
@@ -208,6 +232,22 @@ export const useDatabase = (databaseId: string) => {
           views: database.views.map((view) => (view.id === viewId ? { ...view, ...input } : view)),
         }));
         await attempt(() => api.updateDatabaseView(databaseId, viewId, input));
+      },
+      saveTemplate: async (templateId, input) => attempt(async () => {
+        const { template } = templateId
+          ? await api.updateDatabaseTemplate(databaseId, templateId, input)
+          : await api.createDatabaseTemplate(databaseId, { ...input, name: input.name ?? "" });
+        patchDetail((database) => {
+          const others = database.templates
+            .filter((item) => item.id !== template.id)
+            .map((item) => (template.isDefault ? { ...item, isDefault: false } : item));
+          return { ...database, templates: [...others, template].sort((left, right) => left.position - right.position) };
+        });
+        return template;
+      }),
+      deleteTemplate: async (templateId) => {
+        patchDetail((database) => ({ ...database, templates: database.templates.filter((item) => item.id !== templateId) }));
+        await attempt(() => api.deleteDatabaseTemplate(databaseId, templateId));
       },
       deleteView: async (viewId) => {
         patchDetail((database) => ({ ...database, views: database.views.filter((view) => view.id !== viewId) }));

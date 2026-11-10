@@ -7,15 +7,19 @@ import {
   markdownToDoc,
   notionAssetRefs,
   NotionImportError,
+  notionCellFiles,
   notionCellValue,
   notionFileExtension,
   notionNormalizeTitle,
+  notionRelationPairs,
   notionRelationTitles,
   notionStatusGroup,
   renderNotionBody,
+  type DatabaseFileValue,
   type DatabaseOption,
   type DatabaseProperty,
   type DatabasePropertyValue,
+  type DatabaseSchema,
   type NotionDatabase,
   type NotionPage,
   type NotionPlan,
@@ -73,8 +77,11 @@ const createDatabase = async (entry: NotionDatabase, parent: { notebookId?: stri
       ...(column.options.length > 0 ? { options } : {}),
     } as DatabaseProperty;
   });
-  return { database, properties, optionIds, titleId: titleProperty.id };
+  // followers: the second column of each synced pair, which fills itself in from the first.
+  return { database, properties, optionIds, titleId: titleProperty.id, followers: new Set<number>() };
 };
+
+type Prepared = Awaited<ReturnType<typeof createDatabase>>;
 
 const runImport = async (plan: NotionPlan, notebookName: string, onProgress: (progress: Progress) => void, issue: (title: string) => string): Promise<Report> => {
   const notebook = await api.createNotebook({ name: notebookName });
@@ -87,11 +94,32 @@ const runImport = async (plan: NotionPlan, notebookName: string, onProgress: (pr
   const step = () => { done += 1; onProgress({ done, total }); };
 
   const targets: NotionTargets = { byKey: new Map(), byNotionId: new Map(), assetUrls: new Map() };
-  const prepared = new Map<string, Awaited<ReturnType<typeof createDatabase>>>();
+  const prepared = new Map<string, Prepared>();
   const rowIds = new Map<string, string>();
   const created = new Set<string>();
   let pages = 0;
   let databases = 0;
+
+  // A Files & media cell's files are uploaded to the row, and reused if its page shows them too.
+  const uploadRowFiles = async (entry: NotionDatabase, made: Prepared, cells: string[], rowId: string) => {
+    const properties: Record<string, DatabasePropertyValue> = {};
+    for (const [index, property] of made.properties.entries()) {
+      if (property.type !== "files") continue;
+      const files: DatabaseFileValue[] = [];
+      for (const path of notionCellFiles(entry, cells[index] ?? "", plan.assets).slice(0, 100)) {
+        try {
+          const file = fileFor(path, plan.assets.get(path)!);
+          const { resource } = await api.uploadMemoResource(rowId, file);
+          targets.assetUrls.set(path, resource.url);
+          files.push({ id: resource.id, name: resource.filename || file.name, mimeType: resource.mimeType, size: resource.byteSize });
+        } catch {
+          issues.push(issue(path.slice(path.lastIndexOf("/") + 1)));
+        }
+      }
+      if (files.length > 0) properties[property.id] = files;
+    }
+    if (Object.keys(properties).length > 0) await api.updateDatabaseRow(made.database.id, rowId, { properties });
+  };
 
   const parentFor = (parentKey: string | null) => {
     const parent = parentKey ? targets.byKey.get(parentKey) : null;
@@ -124,14 +152,27 @@ const runImport = async (plan: NotionPlan, notebookName: string, onProgress: (pr
   // Relations can point at any table, so the schema goes in once they all exist.
   for (const entry of databaseEntries) {
     const made = prepared.get(entry.key)!;
+    // Sub-items and dependencies are two relations to the table itself, each kept in step with the other.
+    const pairs = notionRelationPairs(entry);
+    const partner = new Map<number, number>();
+    for (const pair of [pairs.subItems, pairs.dependencies]) {
+      if (!pair) continue;
+      partner.set(pair[0], pair[1]);
+      partner.set(pair[1], pair[0]);
+    }
     const properties = made.properties.map((property, index) => {
       const column = entry.columns[index]!;
       if (column.type !== "relation") return property;
       const target = column.relationTo ? prepared.get(column.relationTo) : undefined;
-      return target ? { ...property, relation: { databaseId: target.database.id, syncedPropertyId: null } } : { ...property, type: "text" as const };
+      const synced = partner.has(index) ? made.properties[partner.get(index)!]!.id : null;
+      return target ? { ...property, relation: { databaseId: target.database.id, syncedPropertyId: synced } } : { ...property, type: "text" as const };
     });
     made.properties = properties;
-    await api.updateDatabase(made.database.id, { schema: { properties } });
+    const schema: DatabaseSchema = { properties };
+    if (pairs.subItems) schema.subItems = { parentPropertyId: properties[pairs.subItems[0]]!.id, childPropertyId: properties[pairs.subItems[1]]!.id };
+    if (pairs.dependencies) schema.dependencies = { blockedByPropertyId: properties[pairs.dependencies[0]]!.id, blockingPropertyId: properties[pairs.dependencies[1]]!.id };
+    made.followers = new Set([pairs.subItems?.[1], pairs.dependencies?.[1]].filter((index): index is number => index !== undefined));
+    await api.updateDatabase(made.database.id, { schema });
     const groupable = properties.find((property) => property.type === "status") ?? properties.find((property) => property.type === "select");
     if (groupable) await api.createDatabaseView(made.database.id, { name: "Board", type: "board", config: { groupByPropertyId: groupable.id } }).catch(() => undefined);
     const dated = properties.find((property) => property.type === "date");
@@ -153,6 +194,7 @@ const runImport = async (plan: NotionPlan, notebookName: string, onProgress: (pr
           if (value !== null && !(Array.isArray(value) && value.length === 0)) values[property.id] = value;
         });
         const created_ = await api.createDatabaseRow(made.database.id, { title: row.title.slice(0, 160), properties: values });
+        await uploadRowFiles(entry, made, row.cells, created_.row.id);
         titles.set(notionNormalizeTitle(row.title), created_.row.id);
         rowIds.set(`${entry.key}\u0000${notionNormalizeTitle(row.title)}`, created_.row.id);
         if (row.pageKey) {
@@ -180,7 +222,10 @@ const runImport = async (plan: NotionPlan, notebookName: string, onProgress: (pr
 
   for (const entry of databaseEntries) {
     const made = prepared.get(entry.key)!;
-    const relationColumns = entry.columns.flatMap((column, index) => (made.properties[index]!.type === "relation" && column.relationTo ? [{ column, index }] : []));
+    // One side of a synced pair is enough: the other fills itself in.
+    const relationColumns = entry.columns.flatMap((column, index) => (
+      made.properties[index]!.type === "relation" && column.relationTo && !made.followers.has(index) ? [{ column, index }] : []
+    ));
     if (relationColumns.length === 0) continue;
     for (const row of entry.rows) {
       const rowId = titleIndex.get(entry.key)!.get(notionNormalizeTitle(row.title));

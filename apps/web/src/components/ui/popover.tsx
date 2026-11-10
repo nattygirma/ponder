@@ -11,11 +11,18 @@ const PopoverTrigger = PopoverPrimitive.Trigger
 
 const PopoverAnchor = PopoverPrimitive.Anchor
 
+/**
+ * Where popovers open. Inside a modal dialog, set it to the dialog's content: the dialog and the
+ * popover come from different Radix versions, so a popover portaled to <body> would sit behind the
+ * dialog's click and focus trap.
+ */
+const PopoverContainer = React.createContext<HTMLElement | null>(null)
+
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof PopoverPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof PopoverPrimitive.Content>
 >(({ className, align = "start", sideOffset = 4, ...props }, ref) => (
-  <PopoverPrimitive.Portal>
+  <PopoverPrimitive.Portal container={React.useContext(PopoverContainer) ?? undefined}>
     <PopoverPrimitive.Content
       ref={ref}
       align={align}
@@ -30,4 +37,4 @@ const PopoverContent = React.forwardRef<
 ))
 PopoverContent.displayName = PopoverPrimitive.Content.displayName
 
-export { Popover, PopoverAnchor, PopoverContent, PopoverTrigger }
+export { Popover, PopoverAnchor, PopoverContainer, PopoverContent, PopoverTrigger }

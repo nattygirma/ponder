@@ -901,7 +901,7 @@ const isEmptyForType = (value: FormulaValue, type: DatabaseProperty["type"]) =>
   isBlank(value) || (value === false && type !== "checkbox");
 
 const storedStrings = (stored: DatabasePropertyValue | undefined): string[] => {
-  if (Array.isArray(stored)) return stored;
+  if (Array.isArray(stored)) return stored.filter((item): item is string => typeof item === "string");
   return typeof stored === "string" && stored !== "" ? [stored] : [];
 };
 
@@ -928,6 +928,12 @@ const dateCell = (stored: DatabasePropertyValue | undefined): ComputedCell => {
 };
 
 const timestampCell = (stored: string) => valueCell(parseStoredDate(stored));
+
+const storedFileNames = (stored: DatabasePropertyValue | undefined): string[] =>
+  (Array.isArray(stored) ? stored.flatMap((item) => (item && typeof item === "object" && "name" in item ? [item.name] : [])) : []);
+
+/** "TASK-12", or just "12" without a prefix. */
+export const formatRowId = (number: number, prefix?: string) => (prefix ? `${prefix}-${number}` : String(number));
 
 const applyRollup = (
   rollup: NonNullable<DatabaseProperty["rollup"]>["function"],
@@ -988,8 +994,11 @@ export const computeRowValues = (input: {
   rows: DatabaseRow[];
   relatedRows: DatabaseRelatedRows;
   now?: Date;
+  /** Names of workspace members by user id, so person values filter, sort and group by name. */
+  people?: ReadonlyMap<string, string>;
 }): ComputedRowValues => {
   const now = input.now ?? new Date();
+  const personName = (id: string) => input.people?.get(id) ?? id;
   const primary = createDataset(input.schema, input.rows);
   const relatedDatasets = new Map<string, Dataset>();
   const parsedFormulas = new Map<string, FormulaAst | FormulaError>();
@@ -1075,7 +1084,17 @@ export const computeRowValues = (input: {
       case "checkbox":
         return valueCell(stored === true);
       case "person":
-        return valueCell(storedStrings(stored));
+        return valueCell(storedStrings(stored).map(personName));
+      case "files":
+        return valueCell(storedFileNames(stored));
+      case "created_by":
+        return valueCell(row.createdBy ? personName(row.createdBy) : null);
+      case "last_edited_by":
+        return valueCell(row.updatedBy ? personName(row.updatedBy) : null);
+      case "unique_id":
+        return row.number === null || row.number === undefined
+          ? emptyCell()
+          : { value: row.number, display: formatRowId(row.number, property.uniqueId?.prefix) };
       case "relation": {
         const related = relatedRowsOf(datasetFor(property.relation?.databaseId), stored);
         return valueCell(related.map((relatedRow) => relatedRow.title ?? ""));
@@ -1290,4 +1309,45 @@ export const groupRows = (input: {
     group.rows.push(row);
   }
   return [...groups.values()];
+};
+
+export type NestedRow = { row: DatabaseRow; depth: number; childCount: number };
+
+/**
+ * Sub-items: puts each row under the first parent it names that is also shown, keeping the given order.
+ * A row whose parent is filtered out shows at the top level. Rows that are each other's parents
+ * (a loop) are broken up rather than lost: every row appears exactly once.
+ */
+export const nestRows = (input: {
+  rows: DatabaseRow[];
+  parentPropertyId: string;
+  /** Rows whose sub-items are shown. Rows not in it keep their sub-items hidden. */
+  expanded: ReadonlySet<string>;
+}): NestedRow[] => {
+  const { rows, parentPropertyId, expanded } = input;
+  const shown = new Set(rows.map((row) => row.id));
+  const parentOf = new Map<string, string>();
+  for (const row of rows) {
+    const parent = storedStrings(row.properties[parentPropertyId]).find((id) => id !== row.id && shown.has(id));
+    if (parent) parentOf.set(row.id, parent);
+  }
+  const children = new Map<string, DatabaseRow[]>();
+  for (const row of rows) {
+    const parent = parentOf.get(row.id);
+    if (parent) children.set(parent, [...(children.get(parent) ?? []), row]);
+  }
+
+  const out: NestedRow[] = [];
+  const placed = new Set<string>();
+  const visit = (row: DatabaseRow, depth: number, visible: boolean) => {
+    if (placed.has(row.id)) return;
+    placed.add(row.id);
+    const kids = (children.get(row.id) ?? []).filter((child) => !placed.has(child.id));
+    if (visible) out.push({ row, depth, childCount: kids.length });
+    for (const child of kids) visit(child, depth + 1, visible && expanded.has(row.id));
+  };
+  for (const row of rows) if (!parentOf.has(row.id)) visit(row, 0, true);
+  // Whatever is left sits in a loop of parents: start each loop at its first row.
+  for (const row of rows) if (!placed.has(row.id)) visit(row, 0, true);
+  return out;
 };

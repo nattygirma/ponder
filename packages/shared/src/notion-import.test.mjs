@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { strToU8, zipSync } from "fflate";
-import { buildNotionPlan, NotionImportError, parseCsv, parseNotionDate, renderNotionBody, notionAssetRefs, notionFileExtension } from "./notion-import";
+import { buildNotionPlan, NotionImportError, parseCsv, parseNotionDate, renderNotionBody, notionAssetRefs, notionCellFiles, notionCellValue, notionFileExtension, notionRelationPairs } from "./notion-import";
 
 const A = "a".repeat(32), B = "b".repeat(32), C = "c".repeat(32), D = "d".repeat(32), E = "e".repeat(32), F = "f".repeat(32);
 const inner = zipSync({
@@ -147,6 +147,33 @@ describe("notion export plan", () => {
       [`Notes/Inside ${C}.md`]: strToU8("# Inside\n"),
     }));
     expect(shared.entries.find((item) => item.title === "Inside").parentKey).toBe(null);
+  });
+
+  test("a Files & media column keeps its files, and stays text when they aren't in the export", () => {
+    const files = buildNotionPlan(zipSync({
+      [`Board ${A}.csv`]: strToU8(`Name,Files & media,Notes\nOne,"Board%20${A}/One/plan.pdf, Board%20${A}/One/photo.png",x.pdf\nTwo,,y.pdf\n`),
+      [`Board ${A}/One/plan.pdf`]: strToU8("%PDF-1.7"),
+      [`Board ${A}/One/photo.png`]: new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+    }));
+    const board = files.entries.find((item) => item.title === "Board");
+    expect(board.columns[1].type).toBe("files");
+    // File names that aren't in the export are only text.
+    expect(board.columns[2].type).not.toBe("files");
+    expect(notionCellFiles(board, board.rows[0].cells[1], files.assets)).toEqual([`Board ${A}/One/plan.pdf`, `Board ${A}/One/photo.png`]);
+    expect(notionCellFiles(board, "", files.assets)).toEqual([]);
+    // The files are uploaded to the row, not written as a value.
+    expect(notionCellValue(board.columns[1], board.rows[0].cells[1], new Map())).toBe(null);
+  });
+
+  test("sub-item and dependency columns become synced pairs on the table itself", () => {
+    const tasks = buildNotionPlan(zipSync({
+      [`Tasks ${A}.csv`]: strToU8("Name,Parent item,Sub-item,Blocked by,Blocking,Owner\nLaunch,,\"Write post, Ship\",,,Ann\nWrite post,Launch,,,Ship,Bo\nShip,Launch,,Write post,,Ann\n"),
+    })).entries.find((item) => item.title === "Tasks");
+    expect(tasks.columns.slice(1, 5).map((column) => [column.type, column.relationTo])).toEqual(Array(4).fill(["relation", tasks.key]));
+    expect(notionRelationPairs(tasks)).toEqual({ subItems: [1, 2], dependencies: [3, 4] });
+    // A relation to another table is never taken for sub-items.
+    const other = { ...tasks, columns: tasks.columns.map((column) => ({ ...column, relationTo: column.relationTo && "elsewhere" })) };
+    expect(notionRelationPairs(other)).toEqual({ subItems: null, dependencies: null });
   });
 
   test("rejects other files clearly", () => {

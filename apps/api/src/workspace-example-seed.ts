@@ -273,7 +273,7 @@ export const ensureWorkspaceExampleSeed = async (env: Bindings, workspaceId: str
     id: string,
     title: string,
     markdown: string,
-    placement: { parentId: string | null; position: number; icon: string | null; databaseId: string | null; properties: string },
+    placement: { parentId: string | null; position: number; icon: string | null; databaseId: string | null; properties: string; rowNumber: number | null },
   ) => {
     const contentJson = markdownToDoc(markdown);
     const contentText = docToText(contentJson);
@@ -290,11 +290,11 @@ export const ensureWorkspaceExampleSeed = async (env: Bindings, workspaceId: str
           `INSERT OR IGNORE INTO memos (
              id, workspace_id, notebook_id, title, excerpt, tags_json, is_pinned, is_archived, is_deleted,
              created_by, updated_by, created_at, updated_at, deleted_at,
-             parent_memo_id, page_position, page_icon, database_id, properties_json
-           ) VALUES (?, ?, ?, ?, ?, '[]', 0, 0, 0, 'system', 'system', ?, ?, NULL, ?, ?, ?, ?, ?)`,
+             parent_memo_id, page_position, page_icon, database_id, properties_json, row_number
+           ) VALUES (?, ?, ?, ?, ?, '[]', 0, 0, 0, 'system', 'system', ?, ?, NULL, ?, ?, ?, ?, ?, ?)`,
         ).bind(
           id, workspaceId, inbox.id, title, createExcerpt(contentText), now, now,
-          placement.parentId, placement.position, placement.icon, placement.databaseId, placement.properties,
+          placement.parentId, placement.position, placement.icon, placement.databaseId, placement.properties, placement.rowNumber,
         ),
       isWelcome
         ? db.prepare(
@@ -324,6 +324,7 @@ export const ensureWorkspaceExampleSeed = async (env: Bindings, workspaceId: str
       icon: page.icon,
       databaseId: null,
       properties: "{}",
+      rowNumber: null,
     });
     for (const target of linked) {
       statements.push(db.prepare(
@@ -334,9 +335,9 @@ export const ensureWorkspaceExampleSeed = async (env: Bindings, workspaceId: str
     if (!page.database) continue;
     const databaseId = `${workspaceId}_db_${page.key}`;
     statements.push(db.prepare(
-      `INSERT OR IGNORE INTO databases (id, workspace_id, page_memo_id, schema_json, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-    ).bind(databaseId, workspaceId, id, JSON.stringify(page.database.schema), now, now));
+      `INSERT OR IGNORE INTO databases (id, workspace_id, page_memo_id, schema_json, next_row_number, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    ).bind(databaseId, workspaceId, id, JSON.stringify(page.database.schema), page.database.rows.length + 1, now, now));
     page.database.views.forEach((view, viewIndex) => {
       statements.push(db.prepare(
         `INSERT OR IGNORE INTO database_views (id, database_id, workspace_id, name, type, config_json, position, created_at, updated_at)
@@ -353,6 +354,7 @@ export const ensureWorkspaceExampleSeed = async (env: Bindings, workspaceId: str
         icon: null,
         databaseId,
         properties: JSON.stringify(row.properties),
+        rowNumber: rowIndex + 1,
       });
     }
   }

@@ -1,6 +1,9 @@
 import {
+  COMPUTED_PROPERTY_TYPES,
   createDefaultDatabaseSchema,
   DATABASE_ROW_LIMIT,
+  DATABASE_TEMPLATE_LIMIT,
+  DatabaseRowValueSchema,
   DatabaseSchemaSchema,
   DatabaseViewConfigSchema,
   DEFAULT_MEMO_TITLE,
@@ -9,9 +12,11 @@ import {
   type DatabasePropertyValue,
   type DatabaseRow,
   type DatabaseSchema,
+  type DatabaseTemplate,
   type DatabaseView,
   type DatabaseViewConfig,
   type DatabaseViewType,
+  userIdFromActorLabel,
 } from "@ponder/shared";
 import type { AuditActor } from "./api-context";
 import { AppError } from "./app-error";
@@ -51,9 +56,26 @@ type RowRecord = {
   excerpt: string;
   properties_json: string;
   page_position: number;
+  row_number: number | null;
+  created_by: string | null;
+  updated_by: string | null;
   created_at: string;
   updated_at: string;
 };
+
+type TemplateRecord = {
+  id: string;
+  database_id: string;
+  name: string;
+  icon: string | null;
+  title: string;
+  properties_json: string;
+  content_markdown: string;
+  is_default: number;
+  position: number;
+};
+
+const ROW_COLUMNS = "id, title, page_icon, page_cover, excerpt, properties_json, page_position, row_number, created_by, updated_by, created_at, updated_at";
 
 const visibleTitle = (title: string | null) => (title === DEFAULT_MEMO_TITLE ? null : title);
 
@@ -86,8 +108,23 @@ const mapRow = (row: RowRecord): DatabaseRow => ({
   excerpt: row.excerpt,
   properties: parseProperties(row.properties_json),
   position: row.page_position,
+  number: row.row_number,
+  createdBy: userIdFromActorLabel(row.created_by),
+  updatedBy: userIdFromActorLabel(row.updated_by),
   createdAt: row.created_at,
   updatedAt: row.updated_at,
+});
+
+const mapTemplate = (row: TemplateRecord): DatabaseTemplate => ({
+  id: row.id,
+  databaseId: row.database_id,
+  name: row.name,
+  icon: row.icon,
+  title: row.title,
+  properties: parseProperties(row.properties_json),
+  content: row.content_markdown,
+  isDefault: row.is_default === 1,
+  position: row.position,
 });
 
 const loadDatabaseRecord = async (db: DatabaseAdapter, workspaceId: string, id: string) => {
@@ -110,16 +147,29 @@ const parseSchema = (json: string): DatabaseSchema => {
   return parsed.data;
 };
 
-export const getDatabase = async (db: DatabaseAdapter, workspaceId: string, id: string): Promise<DatabaseDetail> => {
-  const record = await loadDatabaseRecord(db, workspaceId, id);
-  const views = await db
+const listTemplates = (db: DatabaseAdapter, workspaceId: string, databaseId: string) =>
+  db
     .prepare(
-      `SELECT id, database_id, name, type, config_json, position
-       FROM database_views WHERE database_id = ? AND workspace_id = ?
+      `SELECT id, database_id, name, icon, title, properties_json, content_markdown, is_default, position
+       FROM database_templates WHERE workspace_id = ? AND database_id = ?
        ORDER BY position ASC, created_at ASC`
     )
-    .bind(id, workspaceId)
-    .all<ViewRecord>();
+    .bind(workspaceId, databaseId)
+    .all<TemplateRecord>();
+
+export const getDatabase = async (db: DatabaseAdapter, workspaceId: string, id: string): Promise<DatabaseDetail> => {
+  const record = await loadDatabaseRecord(db, workspaceId, id);
+  const [views, templates] = await Promise.all([
+    db
+      .prepare(
+        `SELECT id, database_id, name, type, config_json, position
+         FROM database_views WHERE database_id = ? AND workspace_id = ?
+         ORDER BY position ASC, created_at ASC`
+      )
+      .bind(id, workspaceId)
+      .all<ViewRecord>(),
+    listTemplates(db, workspaceId, id),
+  ]);
   return {
     id: record.id,
     pageMemoId: record.page_memo_id,
@@ -128,6 +178,7 @@ export const getDatabase = async (db: DatabaseAdapter, workspaceId: string, id: 
     icon: record.page_icon,
     schema: parseSchema(record.schema_json),
     views: views.results.map(mapView),
+    templates: templates.results.map(mapTemplate),
     updatedAt: record.updated_at,
   };
 };
@@ -166,6 +217,17 @@ export const createDatabase = async (
   return getDatabase(db, workspaceId, id);
 };
 
+/** Sub-items and dependencies relate a database's rows to each other, so both of their relations must point back at it. */
+const assertSelfRelations = (databaseId: string, schema: DatabaseSchema) => {
+  const pairs = [schema.subItems, schema.dependencies].flatMap((pair) => (pair ? Object.values(pair) : []));
+  for (const propertyId of pairs) {
+    const property = schema.properties.find((item) => item.id === propertyId);
+    if (property?.relation?.databaseId !== databaseId) {
+      throw new AppError("invalid_schema", "Sub-items and dependencies must relate this database to itself.", 400);
+    }
+  }
+};
+
 const assertRelationTargets = async (db: DatabaseAdapter, workspaceId: string, schema: DatabaseSchema) => {
   const targets = new Set(
     schema.properties.flatMap((property) => (property.type === "relation" && property.relation ? [property.relation.databaseId] : [])),
@@ -189,6 +251,7 @@ export const updateDatabase = async (
     if (result.error) throw new AppError(result.error, result.message, result.status ?? 400);
   }
   if (input.schema) {
+    assertSelfRelations(id, input.schema);
     await assertRelationTargets(db, workspaceId, input.schema);
     await db
       .prepare(`UPDATE databases SET schema_json = ?, updated_at = ? WHERE workspace_id = ? AND id = ?`)
@@ -209,7 +272,7 @@ export const listDatabaseRows = async (
   const hasCursor = options.afterPosition !== undefined && options.afterId !== undefined;
   const result = await db
     .prepare(
-      `SELECT id, title, page_icon, page_cover, excerpt, properties_json, page_position, created_at, updated_at
+      `SELECT ${ROW_COLUMNS}
        FROM memos
        WHERE workspace_id = ? AND database_id = ? AND is_deleted = 0
          ${hasCursor ? "AND (page_position > ? OR (page_position = ? AND id > ?))" : ""}
@@ -233,7 +296,7 @@ export const listDatabaseRows = async (
 const getRowRecord = async (db: DatabaseAdapter, workspaceId: string, databaseId: string, rowId: string) => {
   const row = await db
     .prepare(
-      `SELECT id, title, page_icon, page_cover, excerpt, properties_json, page_position, created_at, updated_at
+      `SELECT ${ROW_COLUMNS}
        FROM memos WHERE workspace_id = ? AND database_id = ? AND id = ? AND is_deleted = 0`
     )
     .bind(workspaceId, databaseId, rowId)
@@ -245,7 +308,7 @@ const getRowRecord = async (db: DatabaseAdapter, workspaceId: string, databaseId
 const storedProperties = (schema: DatabaseSchema) =>
   new Map(
     schema.properties
-      .filter((property) => !["title", "rollup", "formula", "created_time", "last_edited_time"].includes(property.type))
+      .filter((property) => !COMPUTED_PROPERTY_TYPES.has(property.type))
       .map((property) => [property.id, property]),
   );
 
@@ -312,11 +375,32 @@ const nextRowPosition = async (db: DatabaseAdapter, workspaceId: string, databas
   return (row?.position ?? 0) + POSITION_GAP;
 };
 
+/** Takes the database's next row number. Numbers are never handed out twice, even if the row isn't made. */
+const takeRowNumber = async (db: DatabaseAdapter, workspaceId: string, databaseId: string) => {
+  const taken = await db
+    .prepare(`UPDATE databases SET next_row_number = next_row_number + 1 WHERE workspace_id = ? AND id = ? RETURNING next_row_number - 1 AS number`)
+    .bind(workspaceId, databaseId)
+    .first<{ number: number }>();
+  return taken?.number ?? null;
+};
+
+const getTemplateRecord = async (db: DatabaseAdapter, workspaceId: string, databaseId: string, templateId: string) => {
+  const template = await db
+    .prepare(
+      `SELECT id, database_id, name, icon, title, properties_json, content_markdown, is_default, position
+       FROM database_templates WHERE workspace_id = ? AND database_id = ? AND id = ?`
+    )
+    .bind(workspaceId, databaseId, templateId)
+    .first<TemplateRecord>();
+  if (!template) throw new AppError("not_found", "Template not found", 404);
+  return mapTemplate(template);
+};
+
 export const createDatabaseRow = async (
   db: DatabaseAdapter,
   workspaceId: string,
   databaseId: string,
-  input: { title?: string; properties?: Record<string, DatabasePropertyValue> },
+  input: { title?: string; properties?: Record<string, DatabasePropertyValue>; templateId?: string },
   actor: AuditActor,
   actorLabel: string,
 ): Promise<DatabaseRow> => {
@@ -329,21 +413,34 @@ export const createDatabaseRow = async (
     throw new AppError("database_full", `A database can hold at most ${DATABASE_ROW_LIMIT} rows.`, 409);
   }
   const schema = parseSchema(record.schema_json);
-  const values = sanitizeValues(schema, input.properties);
+  const template = input.templateId ? await getTemplateRecord(db, workspaceId, databaseId, input.templateId) : null;
+  const values = sanitizeValues(schema, { ...template?.properties, ...input.properties });
   const created = await createMemoRecord(
     db,
     workspaceId,
-    { notebookId: record.notebook_id, title: input.title, contentMarkdown: "", tags: [] },
+    {
+      notebookId: record.notebook_id,
+      title: input.title ?? (template?.title || undefined),
+      contentMarkdown: template?.content ?? "",
+      tags: [],
+    },
     actor,
     actorLabel,
   );
-  const position = await nextRowPosition(db, workspaceId, databaseId);
+  const [position, number] = await Promise.all([
+    nextRowPosition(db, workspaceId, databaseId),
+    takeRowNumber(db, workspaceId, databaseId),
+  ]);
   const syncStatements = await syncRelationStatements(db, workspaceId, created.id, schema, {}, values);
   await db.batch([
     db
       // The database page is the row's parent, so deleting or restoring the database carries its rows along.
-      .prepare(`UPDATE memos SET database_id = ?, parent_memo_id = ?, properties_json = ?, page_position = ? WHERE workspace_id = ? AND id = ?`)
-      .bind(databaseId, record.page_memo_id, JSON.stringify(values), position, workspaceId, created.id),
+      .prepare(
+        `UPDATE memos SET database_id = ?, parent_memo_id = ?, properties_json = ?, page_position = ?, row_number = ?,
+           page_icon = COALESCE(?, page_icon)
+         WHERE workspace_id = ? AND id = ?`
+      )
+      .bind(databaseId, record.page_memo_id, JSON.stringify(values), position, number, template?.icon ?? null, workspaceId, created.id),
     ...syncStatements,
   ]);
   return mapRow(await getRowRecord(db, workspaceId, databaseId, created.id));
@@ -484,4 +581,100 @@ export const getRowContext = async (db: DatabaseAdapter, workspaceId: string, me
     getRowRecord(db, workspaceId, row.database_id, memoId),
   ]);
   return { database, row: mapRow(record) };
+};
+
+const normalizeTemplateValues = (schema: DatabaseSchema, values: Record<string, DatabasePropertyValue> | undefined) =>
+  Object.fromEntries(
+    Object.entries(sanitizeValues(schema, values)).filter(([, value]) => DatabaseRowValueSchema.safeParse(value).success),
+  );
+
+type TemplateInput = {
+  name?: string;
+  icon?: string | null;
+  title?: string;
+  properties?: Record<string, DatabasePropertyValue>;
+  content?: string;
+  isDefault?: boolean;
+  position?: number;
+};
+
+/** Only one template is the default: setting one clears the others. */
+const clearOtherDefaults = (db: DatabaseAdapter, workspaceId: string, databaseId: string, keepId: string) =>
+  db
+    .prepare(`UPDATE database_templates SET is_default = 0 WHERE workspace_id = ? AND database_id = ? AND id <> ? AND is_default = 1`)
+    .bind(workspaceId, databaseId, keepId);
+
+export const createDatabaseTemplate = async (
+  db: DatabaseAdapter,
+  workspaceId: string,
+  databaseId: string,
+  input: TemplateInput & { name: string },
+): Promise<DatabaseTemplate> => {
+  const record = await loadDatabaseRecord(db, workspaceId, databaseId);
+  const stats = await db
+    .prepare(`SELECT COUNT(*) AS total, MAX(position) AS position FROM database_templates WHERE workspace_id = ? AND database_id = ?`)
+    .bind(workspaceId, databaseId)
+    .first<{ total: number; position: number | null }>();
+  if ((stats?.total ?? 0) >= DATABASE_TEMPLATE_LIMIT) {
+    throw new AppError("too_many_templates", `A database can have at most ${DATABASE_TEMPLATE_LIMIT} templates.`, 409);
+  }
+  const id = createId("dbt");
+  const now = isoNow();
+  const properties = normalizeTemplateValues(parseSchema(record.schema_json), input.properties);
+  const statements = [
+    db
+      .prepare(
+        `INSERT INTO database_templates (id, database_id, workspace_id, name, icon, title, properties_json, content_markdown, is_default, position, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .bind(
+        id, databaseId, workspaceId, input.name, input.icon ?? null, input.title ?? "", JSON.stringify(properties),
+        input.content ?? "", input.isDefault ? 1 : 0, input.position ?? (stats?.position ?? 0) + POSITION_GAP, now, now,
+      ),
+  ];
+  if (input.isDefault) statements.push(clearOtherDefaults(db, workspaceId, databaseId, id));
+  await db.batch(statements);
+  return getTemplateRecord(db, workspaceId, databaseId, id);
+};
+
+export const updateDatabaseTemplate = async (
+  db: DatabaseAdapter,
+  workspaceId: string,
+  databaseId: string,
+  templateId: string,
+  input: TemplateInput,
+): Promise<DatabaseTemplate> => {
+  const record = await loadDatabaseRecord(db, workspaceId, databaseId);
+  const current = await getTemplateRecord(db, workspaceId, databaseId, templateId);
+  const next = {
+    name: input.name ?? current.name,
+    icon: input.icon === undefined ? current.icon : input.icon,
+    title: input.title ?? current.title,
+    properties: input.properties ? normalizeTemplateValues(parseSchema(record.schema_json), input.properties) : current.properties,
+    content: input.content ?? current.content,
+    isDefault: input.isDefault ?? current.isDefault,
+    position: input.position ?? current.position,
+  };
+  const statements = [
+    db
+      .prepare(
+        `UPDATE database_templates SET name = ?, icon = ?, title = ?, properties_json = ?, content_markdown = ?, is_default = ?, position = ?, updated_at = ?
+         WHERE workspace_id = ? AND database_id = ? AND id = ?`
+      )
+      .bind(
+        next.name, next.icon, next.title, JSON.stringify(next.properties), next.content, next.isDefault ? 1 : 0, next.position, isoNow(),
+        workspaceId, databaseId, templateId,
+      ),
+  ];
+  if (next.isDefault) statements.push(clearOtherDefaults(db, workspaceId, databaseId, templateId));
+  await db.batch(statements);
+  return getTemplateRecord(db, workspaceId, databaseId, templateId);
+};
+
+export const deleteDatabaseTemplate = async (db: DatabaseAdapter, workspaceId: string, databaseId: string, templateId: string) => {
+  await getTemplateRecord(db, workspaceId, databaseId, templateId);
+  await db
+    .prepare(`DELETE FROM database_templates WHERE workspace_id = ? AND database_id = ? AND id = ?`)
+    .bind(workspaceId, databaseId, templateId)
+    .run();
 };

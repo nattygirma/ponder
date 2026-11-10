@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { BoardView, CalendarView, GalleryView, ListView, RowPeekContext, TableView, TimelineView, type DatabaseViewProps } from "./DatabaseViews";
+import { NewRowButton } from "./DatabaseTemplates";
 import { RowPeek } from "./RowPeek";
 import { useDatabase, type DatabaseHandle } from "./useDatabase";
 
@@ -180,11 +181,55 @@ const SortPanel = ({ db, config, update }: { db: DatabaseHandle; config: Databas
   );
 };
 
+const newPropertyId = () => crypto.randomUUID().replace(/-/g, "").slice(0, 12);
+
+/**
+ * Turns sub-items or dependencies on or off. On, it reuses a two-way relation of this database to itself with
+ * the expected names (left from an earlier time), or makes one; off, it keeps the relations and their values.
+ */
+const RelationPairSwitch = ({ db, kind }: { db: DatabaseHandle; kind: "subItems" | "dependencies" }) => {
+  const { t } = useTranslation();
+  const schema = db.database.schema;
+  const [firstName, secondName] = kind === "subItems"
+    ? [t("pages.db.parentItem"), t("pages.db.subItem")]
+    : [t("pages.db.blockedBy"), t("pages.db.blocking")];
+  const enabled = Boolean(schema[kind]);
+  const set = (on: boolean) => {
+    if (!on) {
+      void db.updateSchema({ [kind]: undefined });
+      return;
+    }
+    const selfRelation = (name: string) => schema.properties.find((property) => (
+      property.type === "relation" && property.name === name && property.relation?.databaseId === db.database.id && property.relation.syncedPropertyId
+    ));
+    const existing = selfRelation(firstName);
+    const partner = existing && schema.properties.find((property) => property.id === existing.relation?.syncedPropertyId);
+    const [firstId, secondId] = existing && partner ? [existing.id, partner.id] : [newPropertyId(), newPropertyId()];
+    const added = existing && partner ? [] : [
+      { id: firstId, name: firstName, type: "relation" as const, relation: { databaseId: db.database.id, syncedPropertyId: secondId } },
+      { id: secondId, name: secondName, type: "relation" as const, relation: { databaseId: db.database.id, syncedPropertyId: firstId } },
+    ];
+    const pair = kind === "subItems"
+      ? { subItems: { parentPropertyId: firstId, childPropertyId: secondId } }
+      : { dependencies: { blockedByPropertyId: firstId, blockingPropertyId: secondId } };
+    void db.updateSchema({ properties: [...schema.properties, ...added], ...pair });
+  };
+  return (
+    <label className="flex items-start justify-between gap-3 text-sm">
+      <span>
+        {t(kind === "subItems" ? "pages.db.subItems" : "pages.db.dependencies")}
+        <span className="block text-xs text-slate-500">{t(kind === "subItems" ? "pages.db.subItemsHelp" : "pages.db.dependenciesHelp")}</span>
+      </span>
+      <Switch checked={enabled} onCheckedChange={set} />
+    </label>
+  );
+};
+
 const PropertiesPanel = ({ db, config, update }: { db: DatabaseHandle; config: DatabaseViewConfig; update: DatabaseViewProps["updateConfig"] }) => {
   const properties = db.database.schema.properties;
   const visible = (id: string) => !config.visiblePropertyIds || config.visiblePropertyIds.includes(id);
   return (
-    <div className="max-h-72 space-y-1 overflow-y-auto">
+    <div className="max-h-96 space-y-1 overflow-y-auto">
       {properties.filter((property) => property.type !== "title").map((property) => (
         <label key={property.id} className="flex items-center justify-between gap-2 text-sm">
           <span className="truncate">{property.name}</span>
@@ -196,6 +241,10 @@ const PropertiesPanel = ({ db, config, update }: { db: DatabaseHandle; config: D
           />
         </label>
       ))}
+      <div className="space-y-2 border-t border-slate-100 pt-2">
+        <RelationPairSwitch db={db} kind="subItems" />
+        <RelationPairSwitch db={db} kind="dependencies" />
+      </div>
     </div>
   );
 };
@@ -347,7 +396,7 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
           ) : null}
           <ToolbarButton icon={Settings2} label={t("pages.db.properties")}><PropertiesPanel db={db} config={config} update={updateConfig} /></ToolbarButton>
           <Input className="h-7 w-32 text-xs" value={search} placeholder={t("pages.db.search")} aria-label={t("pages.db.search")} onChange={(event) => setSearch(event.target.value)} />
-          <Button size="sm" className="ml-1 h-7 bg-[#2383e2] text-white hover:bg-[#0077d4]" onClick={() => void db.addRow()}>{t("pages.db.new")}</Button>
+          <NewRowButton db={db} />
         </div>
       </div>
       <RowPeekContext.Provider value={setPeekRowId}>
