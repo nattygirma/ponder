@@ -46,6 +46,11 @@ export const teamGuard: MiddlewareHandler<AppEnv> = async (c, next) => {
     const level = await getPageAccessLevel(db, auth, id!);
     return level === "none" ? hidden() : next();
   }
+  // Following a page and counting a view only need to see it, whatever the person's role.
+  if (area === "pages" && id && (sub === "subscription" || sub === "views")) {
+    const level = await getPageAccessLevel(db, auth, id);
+    return level === "none" ? hidden() : next();
+  }
   if (write ? !MEMBER_WRITABLE.has(area) || auth.teamRole === "viewer" && area !== "comments" && area !== "memos" : !READABLE.has(area)) {
     return denied();
   }

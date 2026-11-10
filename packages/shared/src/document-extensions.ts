@@ -18,6 +18,7 @@ import { createPonderTaskItem } from "./task-item-input";
 import { MathCodeFence } from "./mathematics-markdown";
 import { createPonderMarked } from "./markdown-options";
 import { PageBlockAttributes, PageColorMark } from "./page-color";
+import { SuggestionMarks } from "./suggestion";
 
 export type CreatePonderDocumentExtensionsOptions = {
   mathematics: AnyExtension[];
@@ -68,6 +69,7 @@ export const createPonderDocumentExtensions = (
   options.databaseEmbed ?? DatabaseEmbed,
   options.linkPreview ?? LinkPreview,
   PageColorMark,
+  ...SuggestionMarks,
   // Markdown has no block colours or ids, so its documents stay free of those fields.
   ...(options.markdown ? [] : [PageBlockAttributes]),
   Callout,

@@ -23,6 +23,7 @@ import * as m from "motion/react-m";
 import { MemoListPane, MemoSelectionActionBar } from "./MemoListPane";
 import { PagesProvider, useWorkspaceLayoutPreference } from "./pages/PagesProvider";
 import { OPEN_PAGE_DRAWER_EVENT } from "./pages/PhoneChrome";
+import { PageListView } from "./pages/PageListView";
 import { HomeView } from "./pages/HomeView";
 import { ConnectionsView } from "./pages/Connections";
 import { LibraryView } from "./pages/LibraryView";
@@ -1363,7 +1364,8 @@ export const WorkspaceApp = ({
     setSelectedMemoId(memo.id);
     setActivePane("editor");
 
-    if (!isDesktopViewport() && !isStructuredNote) {
+    // The page layout edits in place on phones too.
+    if (!isDesktopViewport() && !isStructuredNote && !pagesEnabled) {
       openStandaloneMobileEditor(memo.id);
     }
   };
@@ -1442,7 +1444,7 @@ export const WorkspaceApp = ({
       setCreatedMemoEditId(data.memo.id);
       setSelectedMemoId(data.memo.id);
       setActivePane("editor");
-      if (!isDesktopViewport()) openStandaloneMobileEditor(data.memo.id);
+      if (!isDesktopViewport() && !pagesEnabled) openStandaloneMobileEditor(data.memo.id);
     },
   });
 
@@ -2799,9 +2801,12 @@ export const WorkspaceApp = ({
     setActivePane("editor");
   };
 
-  const handleNewChat = () => {
+  const handleNewChat = () => handleOpenChat(null);
+
+  const handleOpenChat = (threadId: string | null) => {
     // The chat panel lives beside a page, and reads its open state when it mounts.
-    void import("./ai-sidebar/AiSidebar").then(({ writeAiSidebarOpen }) => {
+    void import("./ai-sidebar/AiSidebar").then(({ openAiSidebarThread, writeAiSidebarOpen }) => {
+      if (threadId) openAiSidebarThread(threadId);
       writeAiSidebarOpen(true);
       setRightView("editor");
       setNoteAiAssistantOpenToken((value) => value + 1);
@@ -3465,10 +3470,10 @@ export const WorkspaceApp = ({
   };
 
   // On a phone the page layout works like Notion's app: one page at a time, with the
-  // sidebar sliding in over it. Trash and tag lists still use the note list.
+  // sidebar sliding in over it. Trash and tag lists are page lists there too.
   const phonePages = !isDesktop && pagesEnabled;
   const phonePagesActive = phonePages
-    && memoView === "notebook" && !selectedTag && !search && !memoSelectionModeActive && !mobileEditorReturnMemoId;
+    && (memoView === "notebook" || memoView === "trash") && !search && !memoSelectionModeActive && !mobileEditorReturnMemoId;
   const shownPane: Pane = phonePagesActive ? "editor" : visibleActivePane;
   const [pageDrawerOpen, setPageDrawerOpen] = useState(false);
   useEffect(() => {
@@ -3488,7 +3493,8 @@ export const WorkspaceApp = ({
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [pageDrawerOpen]);
-  const showPhoneHome = phonePagesActive && rightView === "editor" && !selectedMemoId;
+  const showPhoneHome = phonePagesActive && rightView === "editor" && !selectedMemoId && memoView === "notebook" && !selectedTag;
+  const phonePageList = phonePagesActive && rightView === "editor" && !selectedMemoId && (memoView === "trash" || Boolean(selectedTag));
 
   const shouldRenderRightPane = isDesktop || shownPane === "editor";
   const rightPaneLoadingLabel =
@@ -3543,7 +3549,7 @@ export const WorkspaceApp = ({
       notebookNames={notebookNamesById}
       defaultNotebookId={createMemoNotebookId}
       rootNotebookId={defaultMemoNotebookId}
-      pageLinks={isDesktop}
+      pageLinks={isDesktop || phonePages}
       onTogglePin={handleTogglePagePinned}
       onOpenPage={handleOpenPluginNote}
       onDeletePage={handleDeletePage}
@@ -3675,6 +3681,7 @@ export const WorkspaceApp = ({
                   onOpenHome={handleOpenHome}
                   onOpenSearch={handleOpenQuickSwitcher}
                   onNewChat={handleNewChat}
+                  onOpenChat={handleOpenChat}
                   searchHint={formatShortcutBinding({ key: "k", ctrlOrMeta: true, shift: false, alt: false })}
                 />
               </Suspense>
@@ -3882,6 +3889,28 @@ export const WorkspaceApp = ({
                     <HomeView userName={user?.displayName || user?.username || null} />
                   ) : rightView === "library" ? (
                     <LibraryView />
+                  ) : phonePageList ? (
+                    <PageListView
+                      kind={memoView === "trash" ? "trash" : "tag"}
+                      tag={selectedTag}
+                      memos={memos}
+                      isLoading={memosQuery.isLoading}
+                      onOpen={(memo) => {
+                        if (memoView !== "trash") {
+                          handleOpenPluginNote(memo.id, memo.notebookId);
+                          return;
+                        }
+                        // A page in Trash opens read-only, with its restore action.
+                        clearPendingMemoSelection();
+                        clearPendingCreatedMemo();
+                        setCreatedMemoEditId(null);
+                        setSelectedMemoId(memo.id);
+                        setActivePane("editor");
+                      }}
+                      onRestore={handleRestoreMemoFromList}
+                      onDeleteForever={(memoId) => setMemoDeleteConfirmation({ kind: "single", memoIds: [memoId], permanent: true })}
+                      onEmptyTrash={handleEmptyTrash}
+                    />
                   ) : rightView === "connections" ? (
                     <ConnectionsView onOpenPlugins={handleOpenPluginManager} onOpenExternalAgents={handleOpenExternalAgents} />
                   ) : rightView === "settings" ? (

@@ -7,6 +7,33 @@ export const pagesEnUS = {
     plugins: "Plugins", downloadApps: "Download apps",
     openSidebar: "Open sidebar", closeSidebar: "Close sidebar", inbox: "Inbox",
   },
+  sidebarTabs: {
+    label: "Sidebar navigation", home: "Home", chat: "Chat", meetings: "Meetings",
+    recentChats: "Recent chats", noChats: "Chats with AI show up here.", chatsFailed: "Chats could not be loaded.", loading: "Loading…",
+    takeNotes: "Take notes", notesTitle: "{{title}} notes", today: "Today", tomorrow: "Tomorrow",
+    meetingsHint: "Connect your calendar to see your meetings here and take notes for them.",
+  },
+  pageList: {
+    trash: "Trash", trashEmpty: "Nothing in Trash", trashHint: "Pages you delete stay here until you delete them for good.",
+    filter: "Search pages", restore: "Restore", deleteForever: "Delete for good", emptyTrash: "Empty Trash",
+    tagEmpty: "No pages have this tag.", loading: "Loading pages…",
+  },
+  activity: {
+    notify: "Notify me", notifyAll: "All updates & comments", notifyComments: "All comments", notifyDefault: "Replies & mentions",
+    notifyFailed: "Notify me could not be changed.",
+    analytics: "Updates & analytics", period: "Past {{count}} days", views: "Views", viewers: "Unique viewers",
+    chart: "Views per day", recentViewers: "Recent viewers", updates: "Updates", edited: "{{name}} edited", someone: "Someone",
+    created: "Page created", viewsOne: "1 view", viewsMany: "{{count}} views",
+    noViewers: "Nobody has viewed this page yet.", loading: "Loading…", failed: "Analytics could not be loaded.",
+  },
+  suggest: {
+    toggle: "Suggest edits", on: "Suggesting", stop: "Stop", count: "{{count}} suggestions", countOne: "1 suggestion",
+    accept: "Accept", reject: "Reject", acceptAll: "Accept all", rejectAll: "Reject all", by: "{{name}} suggested", you: "You", someone: "Someone",
+    restyled: "Changed formatting", blocks: "Changed blocks",
+  },
+  phoneBar: {
+    label: "Formatting", insert: "Insert a block", mention: "Mention a page", indent: "Indent", outdent: "Outdent", done: "Hide keyboard",
+  },
   home: {
     goodMorning: "Good morning", goodAfternoon: "Good afternoon", goodEvening: "Good evening",
     recent: "Recently visited", getStarted: "Get started", noPages: "Pages you open will show up here.",
@@ -174,6 +201,8 @@ export const pagesEnUS = {
     empty: "Nothing new.",
     mentioned: "{{name}} mentioned you",
     replied: "{{name}} replied",
+    commented: "{{name}} commented",
+    edited: "{{name}} edited",
     open: "Inbox, {{count}} unread",
   },
   db: {

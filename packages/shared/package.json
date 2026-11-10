@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./page-color": "./src/page-color.ts",
+    "./suggestion": "./src/suggestion.ts",
     "./connected-links": "./src/connected-links.ts",
     "./diagram-canvas": "./src/diagram-canvas.ts",
     "./public-demo": "./src/public-demo.ts",

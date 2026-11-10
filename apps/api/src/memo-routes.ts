@@ -19,6 +19,7 @@ import { createId } from "./entity-utils";
 import { apiError, badRequest, notFound } from "./http-errors";
 import type { ListMemosInput, ListMemosResult } from "./memo-list-service";
 import { getActorLabel, getAuditActor, getWorkspaceId, requireScopes } from "./request-auth";
+import { notifyPageEdit } from "./page-activity-service";
 import { deleteReleasedResourceObjects } from "./resource-service";
 import type { DatabaseAdapter } from "./storage-contract";
 type MemoRouteDependencies = {
@@ -370,6 +371,10 @@ export const registerMemoRoutes = (
     if (result.releasedResources?.length) {
       await deleteReleasedResourceObjects(context.env, result.releasedResources);
     }
+    // Best effort: the save already happened, so a failed notification never fails it.
+    const auth = context.get("auth");
+    await notifyPageEdit(context.env.storage.db, getWorkspaceId(context), memoId, auth?.actorId ?? null, auth?.displayName ?? auth?.username ?? "Someone")
+      .catch((error: unknown) => console.error("Ponder page edit notification failed", error));
     return context.json({ memo: result.memo });
   };
 

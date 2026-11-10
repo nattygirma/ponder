@@ -248,3 +248,28 @@ input.ponder-page-title-input {
 [data-page-color="red"], [data-block-color="red"] { color: var(--page-red); }
 [data-page-color="red_background"] { background: var(--page-red-bg); border-radius: 3px; }
 [data-block-color="red_background"] { background: var(--page-red-bg); border-radius: 3px; }
+
+/* Suggest edits: proposed additions and removals, until someone accepts or rejects them. */
+.ProseMirror ins[data-id] {
+  text-decoration: none;
+  background: rgb(16 185 129 / 0.14);
+  box-shadow: inset 0 -2px 0 rgb(16 185 129 / 0.55);
+  color: inherit;
+}
+
+.ProseMirror del[data-id] {
+  text-decoration: line-through;
+  text-decoration-color: rgb(225 29 72 / 0.85);
+  background: rgb(244 63 94 / 0.08);
+  color: rgb(190 18 60);
+}
+
+/* A whole block added or removed is wrapped by its mark; keep it a block. */
+.ProseMirror ins[data-id]:has(> :is(p, h1, h2, h3, h4, ul, ol, li, blockquote, div, pre, table)),
+.ProseMirror del[data-id]:has(> :is(p, h1, h2, h3, h4, ul, ol, li, blockquote, div, pre, table)) {
+  display: block;
+}
+
+.ProseMirror .ponder-suggestion-modify {
+  box-shadow: inset 2px 0 0 rgb(59 130 246 / 0.6);
+}

@@ -2,6 +2,7 @@ import type { AppNotification, MemoComment, WorkspaceMember } from "@ponder/shar
 import type { AuthContext } from "./api-context";
 import { AppError } from "./app-error";
 import { createId, isoNow } from "./entity-utils";
+import { listCommentSubscribers } from "./page-activity-service";
 import type { DatabaseAdapter, PreparedStatementAdapter } from "./storage-contract";
 
 const COMMENT_LIMIT = 500;
@@ -127,7 +128,11 @@ export const createMemoComment = async (
   ];
 
   const excerpt = excerptOf(input.body);
-  const recipients = new Map<string, "mention" | "reply">();
+  const recipients = new Map<string, "mention" | "reply" | "comment">();
+  // People following the page hear about every comment; a reply or mention to them says more, so it wins.
+  for (const follower of await listCommentSubscribers(db, workspaceId, memoId)) {
+    if (memberIds.has(follower)) recipients.set(follower, "comment");
+  }
   for (const participant of participants) recipients.set(participant, "reply");
   for (const mention of mentions) recipients.set(mention, "mention");
   if (actorId) recipients.delete(actorId);
@@ -147,7 +152,9 @@ export const createMemoComment = async (
     if (email) {
       emails.push({
         to: email,
-        subject: kind === "mention" ? `${authorName} mentioned you on ${pageTitle}` : `${authorName} replied on ${pageTitle}`,
+        subject: kind === "mention"
+          ? `${authorName} mentioned you on ${pageTitle}`
+          : kind === "reply" ? `${authorName} replied on ${pageTitle}` : `${authorName} commented on ${pageTitle}`,
         text: `${authorName} wrote on "${pageTitle}":\n\n${input.body}`,
       });
     }

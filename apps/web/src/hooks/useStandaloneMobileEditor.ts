@@ -9,12 +9,15 @@ export const useStandaloneMobileEditor = ({
   onBackToList,
   onDefaultEditConsumed,
   readOnly,
+  disabled = false,
 }: {
   memoId: string | null;
   mobileDefaultEditMemoId: string | null;
   onBackToList: () => void;
   onDefaultEditConsumed: () => void;
   readOnly: boolean;
+  /** The page layout edits in place on phones, so it never sends people to the standalone editor. */
+  disabled?: boolean;
 }) => {
   const [isMobileViewport, setIsMobileViewport] = useState(() =>
     typeof window === "undefined" ? false : window.matchMedia(MOBILE_EDITOR_QUERY).matches
@@ -23,11 +26,11 @@ export const useStandaloneMobileEditor = ({
   const standaloneOpenMemoIdRef = useRef<string | null>(null);
   const defaultEditRequested = Boolean(memoId && memoId === mobileDefaultEditMemoId && !readOnly);
   const editingActive = Boolean(
-    isMobileViewport && memoId && !readOnly && (defaultEditRequested || requestedMemoId === memoId)
+    !disabled && isMobileViewport && memoId && !readOnly && (defaultEditRequested || requestedMemoId === memoId)
   );
 
   useEffect(() => {
-    if (!isMobileViewport || !defaultEditRequested || !memoId) return;
+    if (disabled || !isMobileViewport || !defaultEditRequested || !memoId) return;
     if (consumeStandaloneMobileEditorReturn(memoId)) {
       onDefaultEditConsumed();
       setRequestedMemoId(null);
@@ -39,7 +42,7 @@ export const useStandaloneMobileEditor = ({
     standaloneOpenMemoIdRef.current = memoId;
     onDefaultEditConsumed();
     openStandaloneMobileEditor(memoId);
-  }, [defaultEditRequested, isMobileViewport, memoId, onBackToList, onDefaultEditConsumed]);
+  }, [defaultEditRequested, disabled, isMobileViewport, memoId, onBackToList, onDefaultEditConsumed]);
 
   useEffect(() => {
     const clearReturnedEditor = () => {
@@ -71,10 +74,10 @@ export const useStandaloneMobileEditor = ({
   }, [memoId]);
 
   const requestEdit = useCallback(() => {
-    if (!memoId || readOnly) return;
+    if (!memoId || readOnly || disabled) return;
     setRequestedMemoId(memoId);
     openStandaloneMobileEditor(memoId);
-  }, [memoId, readOnly]);
+  }, [disabled, memoId, readOnly]);
 
   return { editingActive, requestEdit };
 };

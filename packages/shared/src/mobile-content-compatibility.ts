@@ -303,7 +303,7 @@ const collectText = (node: TiptapNode | TiptapTextNode): string => {
 
 /** Produces a schema-safe secondary Markdown projection without mutating saved JSON. */
 /** Marks Markdown can carry even though the native editors only preserve them. */
-const MARKDOWN_ONLY_MARK_TYPES = new Set<string>(["pageColor"]);
+const MARKDOWN_ONLY_MARK_TYPES = new Set<string>(["pageColor", "insertion", "deletion"]);
 
 export const projectNativeUnknownContentForMarkdown = (doc: TiptapDoc): TiptapDoc => {
   const visit = (node: TiptapNode | TiptapTextNode, parentType: string): TiptapNode | TiptapTextNode => {

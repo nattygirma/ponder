@@ -11,6 +11,12 @@ import { cn } from "@/lib/utils";
 
 const KEY = ["notifications"] as const;
 const POLL_MS = 60_000;
+const NOTIFICATION_TEXT: Record<AppNotification["kind"], string> = {
+  mention: "pages.notifications.mentioned",
+  reply: "pages.notifications.replied",
+  comment: "pages.notifications.commented",
+  edit: "pages.notifications.edited",
+};
 
 export const NotificationsButton = ({ variant = "icon" }: { variant?: "icon" | "row" | "compact" }) => {
   const { t } = useTranslation();
@@ -74,12 +80,10 @@ export const NotificationsButton = ({ variant = "icon" }: { variant?: "icon" | "
           {(query.data?.notifications ?? []).map((notification) => (
             <button key={notification.id} type="button" className={cn("block w-full rounded px-2 py-1.5 text-left hover:bg-slate-100", notification.readAt && "opacity-60")} onClick={() => void openNotification(notification)}>
               <span className="block truncate text-xs text-slate-500">
-                {notification.kind === "mention"
-                  ? t("pages.notifications.mentioned", { name: notification.actorName })
-                  : t("pages.notifications.replied", { name: notification.actorName })}
+                {t(NOTIFICATION_TEXT[notification.kind] ?? "pages.notifications.replied", { name: notification.actorName })}
                 {notification.memoTitle ? ` · ${notification.memoTitle}` : ""}
               </span>
-              <span className="block truncate text-sm">{notification.excerpt}</span>
+              {notification.excerpt ? <span className="block truncate text-sm">{notification.excerpt}</span> : null}
             </button>
           ))}
           {query.data && query.data.notifications.length === 0 ? <p className="px-2 py-3 text-sm text-slate-500">{t("pages.notifications.empty")}</p> : null}

@@ -19,7 +19,8 @@ export type MemoComment = {
 
 export type AppNotification = {
   id: string;
-  kind: "mention" | "reply";
+  /** "comment" and "edit" come from following a page with Notify me. */
+  kind: "mention" | "reply" | "comment" | "edit";
   memoId: string;
   notebookId: string | null;
   memoTitle: string | null;
@@ -56,3 +57,21 @@ export const NotificationsReadSchema = z.object({
   ids: z.array(z.string().min(1).max(64)).max(100).optional(),
   all: z.boolean().optional(),
 }).refine((input) => input.all || (input.ids && input.ids.length > 0), { message: "Nothing to mark" });
+
+/** What Notify me is set to on a page. "default" means replies and mentions only. */
+export type PageSubscriptionLevel = "all" | "comments" | "default";
+
+export const PageSubscriptionSchema = z.object({
+  level: z.enum(["all", "comments", "default"]),
+});
+
+export type PageAnalytics = {
+  days: number;
+  createdAt: string;
+  totalViews: number;
+  uniqueViewers: number;
+  daily: { day: string; views: number; viewers: number }[];
+  viewers: { userId: string; name: string | null; views: number; lastViewedAt: string }[];
+  /** Saved versions of the page, newest first. */
+  updates: { at: string; name: string | null; system: boolean }[];
+};

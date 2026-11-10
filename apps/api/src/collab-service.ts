@@ -2,6 +2,7 @@ import { yXmlFragmentToProsemirrorJSON } from "@tiptap/y-tiptap";
 import * as Y from "yjs";
 import { docToMarkdown, markdownToDoc, type TiptapDoc } from "@ponder/shared";
 import type { AuthContext } from "./api-context";
+import { pageEditNotificationStatement } from "./page-activity-service";
 import { AppError } from "./app-error";
 import { isoNow } from "./entity-utils";
 import { updateMemoRecord } from "./memo-service";
@@ -229,6 +230,7 @@ export const syncCollab = async (
     statements.push(
       db.prepare(`INSERT INTO memo_collab_updates (memo_id, client_id, data, created_at) VALUES (?, ?, ?, ?)`)
         .bind(memoId, input.clientId, input.update, now),
+      pageEditNotificationStatement(db, auth.workspaceId, memoId, auth.actorId, auth.displayName ?? auth.username),
     );
   }
   await db.batch(statements);

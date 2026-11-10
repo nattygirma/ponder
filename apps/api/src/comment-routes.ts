@@ -1,4 +1,4 @@
-import { CommentCreateSchema, CommentUpdateSchema, NotificationsReadSchema } from "@ponder/shared";
+import { CommentCreateSchema, CommentUpdateSchema, NotificationsReadSchema, PageSubscriptionSchema } from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import type { Hono } from "hono";
 import type { AppContext, AppEnv } from "./api-context";
@@ -14,6 +14,7 @@ import {
   type CommentEmail,
 } from "./comment-service";
 import { apiError } from "./http-errors";
+import { getPageAnalytics, getPageSubscription, recordPageView, setPageSubscription } from "./page-activity-service";
 import { getWorkspaceId, requireScopes } from "./request-auth";
 
 const guarded = async (c: AppContext, scope: "read:memos" | "write:memos", handler: () => Promise<Response>) => {
@@ -66,6 +67,31 @@ export const registerCommentRoutes = (app: Hono<AppEnv>) => {
       if (!auth.actorId || auth.kind !== "user") return c.json({ notifications: [], unread: 0 });
       return c.json(await listNotifications(c.env.storage.db, auth.actorId, getWorkspaceId(c)));
     }));
+
+  // Notify me: only people signed in follow pages; API tokens have nobody to notify.
+  app.get("/api/v1/pages/:id/subscription", (c) =>
+    guarded(c, "read:memos", async () => {
+      const auth = c.get("auth");
+      if (!auth.actorId || auth.kind !== "user") return c.json({ level: "default" });
+      return c.json({ level: await getPageSubscription(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), auth.actorId) });
+    }));
+
+  app.put("/api/v1/pages/:id/subscription", zValidator("json", PageSubscriptionSchema), (c) =>
+    guarded(c, "read:memos", async () => {
+      const auth = c.get("auth");
+      if (!auth.actorId || auth.kind !== "user") throw new AppError("forbidden", "Sign in to follow pages.", 403);
+      return c.json({ level: await setPageSubscription(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), auth.actorId, c.req.valid("json").level) });
+    }));
+
+  app.post("/api/v1/pages/:id/views", (c) =>
+    guarded(c, "read:memos", async () => {
+      const auth = c.get("auth");
+      if (auth.actorId && auth.kind === "user") await recordPageView(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), auth.actorId);
+      return c.json({ ok: true });
+    }));
+
+  app.get("/api/v1/pages/:id/analytics", (c) =>
+    guarded(c, "read:memos", async () => c.json({ analytics: await getPageAnalytics(c.env.storage.db, getWorkspaceId(c), c.req.param("id")) })));
 
   app.post("/api/v1/notifications/read", zValidator("json", NotificationsReadSchema), (c) =>
     guarded(c, "write:memos", async () => {

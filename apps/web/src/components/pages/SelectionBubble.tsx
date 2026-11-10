@@ -83,7 +83,8 @@ export const SelectionBubble = ({ editor, showAi, onAsk, onExplain, onTranslate,
   const turnOpen = panel === "turn";
   const colorOpen = panel === "color";
   const turnLabels = useTurnIntoLabels();
-  const hasMark = (name: string) => Boolean(editor.schema.marks[name]);
+  // The schema is gone for a moment while the editor is swapped for another page's, so this must not throw then.
+  const hasMark = (name: string) => Boolean(editor.schema?.marks[name]);
   const apply = (name: string) => editor.chain().focus().toggleMark(name).run();
   const turn = (target: TurnIntoTarget) => {
     const { $from } = editor.state.selection;

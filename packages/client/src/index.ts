@@ -31,6 +31,8 @@ import type {
   JsonBackupRevision,
   MemoDetail,
   AppNotification,
+  PageAnalytics,
+  PageSubscriptionLevel,
   InvitationPreview,
   MemoComment,
   PageAccess,
@@ -1327,6 +1329,18 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
 
     markNotificationsRead: (payload: { ids?: string[]; all?: boolean }) =>
       request<{ ok: true }>("/api/v1/notifications/read", { method: "POST", body: JSON.stringify(payload) }),
+
+    getPageSubscription: (id: string) =>
+      request<{ level: PageSubscriptionLevel }>(`/api/v1/pages/${encodeURIComponent(id)}/subscription`),
+
+    setPageSubscription: (id: string, level: PageSubscriptionLevel) =>
+      request<{ level: PageSubscriptionLevel }>(`/api/v1/pages/${encodeURIComponent(id)}/subscription`, { method: "PUT", body: JSON.stringify({ level }) }),
+
+    recordPageView: (id: string) =>
+      request<{ ok: true }>(`/api/v1/pages/${encodeURIComponent(id)}/views`, { method: "POST" }),
+
+    getPageAnalytics: (id: string) =>
+      request<{ analytics: PageAnalytics }>(`/api/v1/pages/${encodeURIComponent(id)}/analytics`),
 
     getPageBacklinks: (id: string) =>
       request<{ backlinks: PageBacklink[] }>(`/api/v1/pages/${encodeURIComponent(id)}/backlinks`),

@@ -245,6 +245,14 @@ const writeAiSidebarThread = (threadId: string) => {
   writeStorage(AI_SIDEBAR_THREAD_KEY, threadId);
 };
 
+const AI_SIDEBAR_OPEN_THREAD_EVENT = "ponder:ai-sidebar-open-thread";
+
+/** Shows a chat in the panel: remembered for when the panel opens, and sent to it if it is open already. */
+export const openAiSidebarThread = (threadId: string) => {
+  writeAiSidebarThread(threadId);
+  window.dispatchEvent(new CustomEvent(AI_SIDEBAR_OPEN_THREAD_EVENT, { detail: threadId }));
+};
+
 const readLocalAdapter = readAiSidebarAdapter;
 
 const attachmentServerCode = (code: string | undefined) => (
@@ -759,6 +767,20 @@ function AiSidebarSession({
       if (stored && ids.has(stored)) return stored;
       return turnResult.turns[0]?.threadId ?? current;
     });
+  }, []);
+
+  // A chat picked from the sidebar's Chat tab while this panel is already open.
+  useEffect(() => {
+    const openThread = (event: Event) => {
+      const id = (event as CustomEvent<string>).detail;
+      if (typeof id !== "string" || !THREAD_ID_PATTERN.test(id)) return;
+      threadPinned.current = true;
+      setGraphicOpen(false);
+      setThreadId(id);
+      setError(null);
+    };
+    window.addEventListener(AI_SIDEBAR_OPEN_THREAD_EVENT, openThread);
+    return () => window.removeEventListener(AI_SIDEBAR_OPEN_THREAD_EVENT, openThread);
   }, []);
 
   useEffect(() => {

@@ -598,6 +598,7 @@ export const NotebookPane = ({
   onOpenHome,
   onOpenSearch,
   onNewChat,
+  onOpenChat,
   searchHint = "",
 }: {
   /** Use the page-first sidebar. */
@@ -613,6 +614,8 @@ export const NotebookPane = ({
   onOpenHome?: () => void;
   onOpenSearch?: () => void;
   onNewChat?: () => void;
+  /** Opens one of the person's AI chats, from the sidebar's Chat tab. */
+  onOpenChat?: (threadId: string) => void;
   searchHint?: string;
   repository: PonderRepository;
   user: AuthUser | null;
@@ -864,6 +867,7 @@ export const NotebookPane = ({
           ) : null}
           collapseButton={onToggleCollapsed ? <TooltipProvider delayDuration={0} skipDelayDuration={0}><SidebarCollapseButton collapsed={collapsed} onToggle={onToggleCollapsed} className="inline-flex" shortcutLabel={collapseShortcutLabel} /></TooltipProvider> : null}
           onNewChat={onNewChat ?? onBackToList}
+          onOpenChat={onOpenChat}
           bottomControls={(
             <TooltipProvider delayDuration={0} skipDelayDuration={0}>
               <PluginToolbarMenu host={pluginHost} onManage={onOpenPluginManager} align="start" className="h-7 w-7 rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-950" />

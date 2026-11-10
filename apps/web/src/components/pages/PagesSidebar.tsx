@@ -11,7 +11,6 @@ import {
   LayoutGrid,
   LayoutList,
   Library,
-  MessageCircle,
   CalendarDays,
   MessageCirclePlus,
   SlidersHorizontal,
@@ -41,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { openNotionImport } from "./NotionImport";
 import { ConnectCalendarDialog, eventTimeLabel, useCalendar } from "./Calendar";
 import { usePages } from "./PagesProvider";
+import { ChatTabPanel, MeetingsTabPanel, SidebarTabStrip, useSidebarTab, type SidebarTab } from "./SidebarTabs";
 import { isPageDrag, PAGE_DRAG_MIME, PageTreeBranch, PageTreeTouchContext } from "./PageTree";
 
 const ROW_CLASS = "flex h-[30px] w-full min-w-0 items-center gap-2 rounded-md px-2 text-left text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70";
@@ -157,6 +157,7 @@ export const PagesSidebar = ({
   onOpenHome,
   onOpenSearch,
   onNewChat,
+  onOpenChat,
   onOpenSettings,
   onOpenLibrary,
   onOpenExternalAgents,
@@ -183,6 +184,7 @@ export const PagesSidebar = ({
   onOpenHome: () => void;
   onOpenSearch: () => void;
   onNewChat: () => void;
+  onOpenChat?: (threadId: string) => void;
   onOpenSettings: () => void;
   onOpenLibrary: () => void;
   onOpenExternalAgents: () => void;
@@ -202,7 +204,8 @@ export const PagesSidebar = ({
   const [inviteDismissed, setInviteDismissed] = useState(readInviteCardDismissed);
   const [hiddenRows, setHiddenRows] = useState(readHiddenRows);
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const calendar = useCalendar(pages.enabled && !hiddenRows.includes("upcoming"));
+  const [tab, setTab] = useSidebarTab();
+  const calendar = useCalendar(pages.enabled && (!hiddenRows.includes("upcoming") || tab === "meetings"));
   const upcomingEvents = (calendar.data?.events ?? []).slice(0, 3);
   const calendarConnected = (calendar.data?.feeds.length ?? 0) > 0;
   const calendarError = calendar.data?.feeds.find((feed) => feed.lastError)?.lastError ?? null;
@@ -222,6 +225,26 @@ export const PagesSidebar = ({
   const newPage = () => {
     if (rootId) void pages.createPage({ notebookId: rootId });
   };
+  const selectTab = (next: SidebarTab) => {
+    setTab(next);
+    // Home is a page as well as a tab: choosing it shows both.
+    if (next === "home") onOpenHome();
+  };
+  const tabPanel = (onPhone: boolean) => tab === "chat" ? (
+    <ChatTabPanel phone={onPhone} onNewChat={onNewChat} onOpenChat={onOpenChat} />
+  ) : tab === "meetings" ? (
+    <MeetingsTabPanel
+      phone={onPhone}
+      events={(calendar.data?.events ?? []).slice(0, 40)}
+      connected={calendarConnected}
+      error={calendarError}
+      loading={calendar.isPending}
+      onManage={() => setCalendarOpen(true)}
+      onTakeNotes={canCreate && rootId ? (event) => {
+        void pages.createPage({ notebookId: rootId, title: t("pages.sidebarTabs.notesTitle", { title: event.title }) });
+      } : undefined}
+    />
+  ) : null;
   const isTeam = Boolean(workspace && !workspace.isPersonal);
   const sectionLabel = isTeam ? workspace?.name ?? "" : t("pages.sidebar.private");
   const openMembers = () => window.dispatchEvent(new Event(OPEN_MEMBERS_EVENT));
@@ -251,8 +274,11 @@ export const PagesSidebar = ({
             <SquarePen className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
+        <SidebarTabStrip tab={tab} onSelect={selectTab} phone />
         {syncStatus}
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))]" data-pages-sidebar-scroll>
+          <ConnectCalendarDialog open={calendarOpen} onOpenChange={setCalendarOpen} />
+          {tab !== "home" ? tabPanel(true) : (<>
           {favorites.length > 0 && isVisible("favorites") ? (
             <section aria-label={t("pages.sidebar.favorites")} className="pt-2">
               <div className="flex h-11 items-center px-3 text-[13px] font-semibold text-slate-500">{t("pages.sidebar.favorites")}</div>
@@ -283,6 +309,7 @@ export const PagesSidebar = ({
             <PhoneRow icon={<Trash2 className="h-5 w-5" aria-hidden="true" />} label={t("pages.sidebar.trash")} onClick={onOpenTrash} />
             {demoRow}
           </nav>
+          </>)}
         </div>
       </PageTreeTouchContext.Provider>
     );
@@ -321,34 +348,22 @@ export const PagesSidebar = ({
           <span className="min-w-0 flex-1 truncate">{t("pages.sidebar.search")}</span>
           <kbd className="shrink-0 rounded bg-slate-200/70 px-1 font-sans text-[11px] text-slate-500">{searchHint}</kbd>
         </button>
-        <div className="flex items-center gap-1 py-2">
-          <button
-            type="button"
-            className={cn("flex h-7 items-center gap-1.5 rounded-md px-2 text-sm font-medium text-slate-600 hover:bg-slate-100", homeActive && "ponder-workspace-selection text-slate-950")}
-            aria-current={homeActive ? "page" : undefined}
-            onClick={onOpenHome}
-          >
-            <Home className="h-4 w-4" aria-hidden="true" />
-            {t("pages.sidebar.home")}
-          </button>
-          <button type="button" className={ICON_BUTTON_CLASS} aria-label={t("pages.sidebar.newChat")} onClick={onNewChat}>
-            <MessageCircle className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
+        <SidebarTabStrip tab={tab} onSelect={selectTab} />
       </div>
 
-      <nav className="shrink-0 space-y-px px-2 pb-2" aria-label={t("notebookPane.entries")}>
+      {tab === "home" ? <nav className="shrink-0 space-y-px px-2 pb-2" aria-label={t("notebookPane.entries")}>
         <SidebarRow icon={<SquarePen className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.newPage")} onClick={newPage} />
         {isVisible("newChat") ? <SidebarRow icon={<MessageCirclePlus className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.newChat")} onClick={onNewChat} /> : null}
         {isVisible("library") ? <SidebarRow icon={<Library className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.library")} active={libraryActive} onClick={onOpenLibrary} /> : null}
         {isVisible("connections") ? <SidebarRow icon={<LayoutGrid className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.connections")} active={connectionsActive} onClick={onOpenConnections} /> : null}
         {isVisible("externalAgents") ? <SidebarRow icon={<Bot className="h-4 w-4" aria-hidden="true" />} label={t("pages.sidebar.externalAgents")} onClick={onOpenExternalAgents} /> : null}
         {demoRow}
-      </nav>
+      </nav> : null}
 
       {syncStatus}
 
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-2 pb-3" data-pages-sidebar-scroll>
+        {tab !== "home" ? tabPanel(false) : (<>
         {isVisible("upcoming") ? (
           <section aria-label={t("pages.calendar.upcoming")} data-sidebar-upcoming>
             <SectionHeader label={t("pages.calendar.upcoming")} onAdd={() => setCalendarOpen(true)} addLabel={t("pages.calendar.manage")} />
@@ -390,6 +405,7 @@ export const PagesSidebar = ({
           <PageTreeBranch pages={rootPages} depth={0} />
           {notebookRows}
         </section>
+        </>)}
       </div>
 
       <footer className="ponder-workspace-sidebar-footer shrink-0 px-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] pt-1.5">

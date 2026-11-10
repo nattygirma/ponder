@@ -276,11 +276,15 @@ import { BlockHandle, createBlockHandleExtension, type BlockHandleController } f
 import { MenuSearch } from "./pages/MenuSearch";
 import { PageBreadcrumbs, PageCover, PageHeader, PageLocationChip } from "./pages/PageHeader";
 import { PhoneMenuButton } from "./pages/PhoneChrome";
+import { PhoneFormatBar } from "./pages/PhoneFormatBar";
+import { PageAnalyticsDialog, PageAnalyticsMenuItem, PageNotifyMenu, usePageViewRecorder } from "./pages/PageActivity";
+import { createSuggestEditsExtension, isSuggesting, setSuggesting } from "./pages/suggest-edits";
+import { SuggestionsBar } from "./pages/SuggestionsBar";
 import { SELECTION_BUBBLE_OPTIONS, SelectionBubble, shouldShowSelectionBubble } from "./pages/SelectionBubble";
 import { createNotionShortcuts } from "./pages/notionShortcuts";
 import { PageShareButton } from "./teams/Teams";
 import { formatRelativeTime } from "@/lib/relative-time";
-import { ALargeSmall, CornerUpRight, Link as LinkIcon, Star as StarIcon } from "lucide-react";
+import { ALargeSmall, CornerUpRight, Link as LinkIcon, PenLine, Star as StarIcon } from "lucide-react";
 import { DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
 import { EditorDatabaseEmbed, RowProperties } from "./database/DatabasePane";
 import { AppMark, useConnections } from "./pages/Connections";
@@ -424,12 +428,14 @@ export const EditorPane = (props: EditorPaneProps) => {
   // Shared workspaces edit through the live session; personal notes keep their own save path.
   const collabMemoId = viewer?.teamRole && props.memo && !readOnly ? props.memo.id : null;
   const collab = useCollabSession(collabMemoId, viewer);
+  const pagesLayout = Boolean(usePages()?.enabled);
   const { editingActive, requestEdit } = useStandaloneMobileEditor({
     memoId: props.memo?.id ?? null,
     mobileDefaultEditMemoId: props.mobileDefaultEditMemoId,
     onBackToList: props.onBackToList,
     onDefaultEditConsumed: props.onMobileDefaultEditConsumed,
     readOnly,
+    disabled: pagesLayout,
   });
 
   if (editingActive) {
@@ -552,6 +558,7 @@ const RichEditorPane = ({
   const [imageUploadState, setImageUploadState] = useState<"idle" | "compressing" | "uploading" | "error">("idle");
   const [imagePreview, setImagePreview] = useState<ImagePreviewRequestDetail | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(false);
   const [aiAssistantOpen, setAiAssistantOpenState] = useState(readAiSidebarOpen);
   const setAiSidebarOpen = useCallback((open: boolean) => {
     setAiAssistantOpenState(open);
@@ -892,6 +899,8 @@ const RichEditorPane = ({
   };
   const pages = usePages();
   const pagesRef = useRef(pages);
+  const trackedPageId = pages?.enabled && memo && !isLocalMemoId(memo.id) && !memo.isDeleted ? memo.id : null;
+  usePageViewRecorder(trackedPageId, Boolean(trackedPageId));
   pagesRef.current = pages;
   const createSubPageRef = useRef<() => Promise<void>>(async () => undefined);
   const createDatabaseRef = useRef<() => Promise<void>>(async () => undefined);
@@ -1070,6 +1079,19 @@ const RichEditorPane = ({
           }
 
           const currentEditor = editorRef.current;
+          // A new page starts in its title, as in Notion; Enter then moves to the body.
+          if (pagesRef.current?.enabled && !readOnly) {
+            const titleInput = titleInputRef.current;
+            if (titleInput && !titleInput.readOnly) {
+              if (!titleInput.value) {
+                titleInput.focus();
+                return;
+              }
+            } else if (attempt < 120) {
+              focusWhenReady(attempt + 1);
+              return;
+            }
+          }
           if (!isMobileViewport || phonePages) {
             const hydratedForMemo = isEditorInstanceHydratedForMemo(
               editorInstanceMemoIdentityRef.current,
@@ -1386,6 +1408,10 @@ const RichEditorPane = ({
   if (!commentHighlightsRef.current) {
     commentHighlightsRef.current = createCommentHighlights(() => commentsRef.current.anchors, (threadId) => commentsRef.current.openThread(threadId));
   }
+  const suggestAuthorIdRef = useRef<string | null>(null);
+  suggestAuthorIdRef.current = viewer?.id ?? null;
+  const suggestEditsRef = useRef<ReturnType<typeof createSuggestEditsExtension> | null>(null);
+  if (!suggestEditsRef.current) suggestEditsRef.current = createSuggestEditsExtension(() => suggestAuthorIdRef.current);
   const pluginEmbedExtension = useMemo(() => createPluginEmbedExtension(pluginHost), [pluginHost]);
   const inlineFieldExtension = useMemo(() => createInlineFieldExtension(i18n.getFixedT(i18n.language)), [i18n, i18n.language]);
   const editor = useEditor({
@@ -1430,6 +1456,7 @@ const RichEditorPane = ({
       notionShortcutsRef.current,
       blockHandleRef.current.extension,
       commentHighlightsRef.current,
+      suggestEditsRef.current,
       ...(collab
         ? [
             Collaboration.configure({ document: collab.doc, field: "default" }),
@@ -4567,6 +4594,8 @@ const RichEditorPane = ({
                     <History className="h-4 w-4 text-slate-500" aria-hidden="true" />
                     {t("pages.topBar.versionHistory")}
                   </DropdownMenuItem>
+                  {trackedPageId ? <PageNotifyMenu memoId={trackedPageId} /> : null}
+                  {trackedPageId ? <PageAnalyticsMenuItem onOpen={() => setAnalyticsOpen(true)} /> : null}
                   {effectiveReadOnly ? null : (
                     <DropdownMenuItem className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700" onClick={() => openAiAssistantRef.current()}>
                       <Sparkles className="h-4 w-4 text-slate-500" aria-hidden="true" />
@@ -4632,6 +4661,19 @@ const RichEditorPane = ({
                       <Lock className="h-4 w-4 text-slate-500" aria-hidden="true" />
                       <span className="flex-1">{t("pages.topBar.lockPage")}</span>
                       {desktopReadingProtection ? <Check className="h-4 w-4 text-slate-500" aria-hidden="true" /> : null}
+                    </DropdownMenuItem>
+                  )}
+                  {effectiveReadOnly || !editor ? null : (
+                    <DropdownMenuItem
+                      className="flex h-9 w-full items-center gap-2 px-3 text-left text-sm text-slate-700"
+                      aria-checked={isSuggesting(editor)}
+                      role="menuitemcheckbox"
+                      data-suggest-edits-toggle
+                      onSelect={() => setSuggesting(editor, !isSuggesting(editor))}
+                    >
+                      <PenLine className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                      <span className="flex-1">{t("pages.suggest.toggle")}</span>
+                      {isSuggesting(editor) ? <Check className="h-4 w-4 text-slate-500" aria-hidden="true" /> : null}
                     </DropdownMenuItem>
                   )}
                   {effectiveReadOnly ? null : (
@@ -5139,6 +5181,7 @@ const RichEditorPane = ({
                     palette={noteProse.palette}
                   />
                 ) : null}
+                {pageMode ? <SuggestionsBar editor={editor} canReview={!effectiveReadOnly} viewerId={viewer?.id ?? null} /> : null}
                 <EditorTableContextMenu editor={editor} readOnly={effectiveReadOnly}>
                   <AttachmentTranscriptContext.Provider value={attachmentTranscriptContext}>
                     <EditorContent editor={editor} />
@@ -5297,6 +5340,10 @@ const RichEditorPane = ({
         </IconTooltip>
       ) : null}
 
+      {phonePages && !effectiveReadOnly ? (
+        <PhoneFormatBar editor={editor} onPickFile={() => fileInputRef.current?.click()} />
+      ) : null}
+
       {isMobileViewport && !mobileEditingActive && !readOnly && !phonePages && (
         <Button
           className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-30 h-12 w-12 rounded-full shadow-lg sm:hidden"
@@ -5316,6 +5363,8 @@ const RichEditorPane = ({
           <Pencil className="h-5 w-5" />
         </Button>
       )}
+
+      {trackedPageId ? <PageAnalyticsDialog memoId={trackedPageId} open={analyticsOpen} onOpenChange={setAnalyticsOpen} /> : null}
 
       {historyOpen && (
         <RevisionHistoryDialog

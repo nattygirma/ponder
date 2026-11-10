@@ -1,8 +1,12 @@
 import { DatabaseEmbed } from "@ponder/shared";
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import { useTranslation } from "react-i18next";
-import { Database } from "lucide-react";
-import type { ReactNode } from "react";
+import { Database, Link as LinkIcon, Lock, MoreHorizontal, Star, Trash2 } from "lucide-react";
+import { useState, type ReactNode } from "react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { ShareMemoDialog } from "@/components/dialogs/ShareMemoDialog";
+import { PageShareButton } from "@/components/teams/Teams";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { PageBreadcrumbs, PageCover, PageHeader } from "@/components/pages/PageHeader";
 import { usePages } from "@/components/pages/PagesProvider";
 import { PageIcon } from "@/components/pages/PageTree";
@@ -11,13 +15,54 @@ import { DatabaseSurface } from "./DatabaseSurface";
 import { DatabaseCell } from "./DatabaseCell";
 import { useDatabase, useRowContext } from "./useDatabase";
 
+/** Share and ••• for a database page in the phone top bar, matching a document page's. */
+const DatabasePhoneActions = ({ memoId }: { memoId: string }) => {
+  const { t } = useTranslation();
+  const pages = usePages();
+  const [shareOpen, setShareOpen] = useState(false);
+  const page = pages?.getPage(memoId);
+  if (!pages || !page) return null;
+  return (
+    <div className="flex shrink-0 items-center gap-0.5 text-sm text-slate-700" data-database-phone-actions>
+      <PageShareButton
+        memoId={memoId}
+        fallback={(
+          <button type="button" className="flex h-9 items-center gap-1 rounded px-1.5 active:bg-slate-100" onClick={() => setShareOpen(true)}>
+            <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+            {t("pages.topBar.share")}
+          </button>
+        )}
+      />
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <button type="button" className="flex h-9 w-9 items-center justify-center rounded-md active:bg-slate-100" aria-label={t("editor.moreAria")}>
+            <MoreHorizontal className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuItem onSelect={() => void copyTextToClipboard(pages.pageLink(memoId))}>
+            <LinkIcon className="h-4 w-4" aria-hidden="true" />{t("pages.topBar.copyLink")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => pages.toggleFavorite(memoId)}>
+            <Star className="h-4 w-4" aria-hidden="true" />{t(page.isPinned ? "pages.topBar.unfavorite" : "pages.topBar.favorite")}
+          </DropdownMenuItem>
+          <DropdownMenuItem className="text-rose-700" onSelect={() => void pages.deletePage(page)}>
+            <Trash2 className="h-4 w-4" aria-hidden="true" />{t("pages.delete")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ShareMemoDialog memoId={memoId} open={shareOpen} onOpenChange={setShareOpen} />
+    </div>
+  );
+};
+
 /** Full-page database, shown in place of the editor when the selected page is a database. */
 export const DatabasePane = ({ memoId, databaseId, title }: { memoId: string; databaseId: string; title: string }) => {
   const { t } = useTranslation();
   const page = usePages()?.getPage(memoId);
   return (
     <div className="h-full min-w-0 overflow-y-auto bg-transparent" data-database-pane>
-      <PhoneTopBar title={title || t("common.untitledMemo")} icon={<PageIcon icon={page?.icon} database className="h-5 w-5 text-base" />} />
+      <PhoneTopBar title={title || t("common.untitledMemo")} icon={<PageIcon icon={page?.icon} database className="h-5 w-5 text-base" />} actions={<DatabasePhoneActions memoId={memoId} />} />
       <div className="hidden px-4 pt-2 text-xs text-slate-500 lg:block"><PageBreadcrumbs memoId={memoId} fallbackTitle={title} /></div>
       <PageCover memoId={memoId} readOnly={false} />
       <div className="px-6 pb-16 sm:px-12">
