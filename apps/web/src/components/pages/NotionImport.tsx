@@ -251,7 +251,10 @@ export const NotionImportHost = () => {
       <DialogContent data-notion-import>
         <DialogHeader>
           <DialogTitle>{t("pages.notionImport.title")}</DialogTitle>
-          <DialogDescription>{report ? t("pages.notionImport.done", { pages: report.pages, databases: report.databases }) : t("pages.notionImport.help")}</DialogDescription>
+          <DialogDescription>{report ? t("pages.notionImport.done", {
+            pages: report.pages === 1 ? t("pages.notionImport.pagesOne") : t("pages.notionImport.pagesMany", { count: report.pages }),
+            databases: report.databases === 1 ? t("pages.notionImport.databasesOne") : t("pages.notionImport.databasesMany", { count: report.databases }),
+          }) : t("pages.notionImport.help")}</DialogDescription>
         </DialogHeader>
         <input
           ref={input}

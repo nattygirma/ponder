@@ -158,6 +158,21 @@ const stripHeader = (markdown: string, columns: Set<string>) => {
   return lines.slice(index).join("\n");
 };
 
+/** The "Name: value" lines under a row page's title, for a row the table itself doesn't list. */
+const rowProperties = (markdown: string, columns: Set<string>) => {
+  const values = new Map<string, string>();
+  const lines = markdown.replace(/\r\n/g, "\n").split("\n");
+  let index = 0;
+  while (index < lines.length && (!lines[index]!.trim() || /^#\s/.test(lines[index]!))) index += 1;
+  for (; index < lines.length; index += 1) {
+    const match = /^([^:]+):\s?(.*)$/.exec(lines[index]!);
+    const name = match?.[1]?.trim() ?? "";
+    if (!match || !columns.has(name)) break;
+    values.set(name, match[2]!.trim());
+  }
+  return values;
+};
+
 const inferRelations = (databases: NotionDatabase[]) => {
   const titles = new Map(databases.map((database) => [database.key, new Set(database.rows.map((row) => normalizeTitle(row.title)))]));
   for (const database of databases) {
@@ -200,8 +215,22 @@ export const buildNotionPlan = (archive: Uint8Array): NotionPlan => {
   const databases: NotionDatabase[] = [];
   const databaseColumns = new Map<string, Set<string>>();
   const known = new Set<string>([...csvFiles.keys(), ...markdownFiles.map(stemOf)]);
+  // Newer exports name a page's folder without its id ("Task List/" beside "Task List <id>.csv"),
+  // so each folder also answers to its page's name without the id, unless two pages there share that name.
+  const byFolderName = new Map<string, string | null>();
+  for (const stem of known) {
+    const { title, id } = parseName(stem);
+    if (!id) continue;
+    const folder = dirName(stem) ? `${dirName(stem)}/${baseName(stem).slice(0, baseName(stem).length - id.length).trim()}` : baseName(stem).slice(0, -id.length).trim();
+    if (!folder || folder === stem || !title) continue;
+    byFolderName.set(folder, byFolderName.has(folder) && byFolderName.get(folder) !== stem ? null : stem);
+  }
   const parentOf = (stem: string) => {
-    for (let dir = dirName(stem); dir; dir = dirName(dir)) if (known.has(dir)) return dir;
+    for (let dir = dirName(stem); dir; dir = dirName(dir)) {
+      if (known.has(dir)) return dir;
+      const named = byFolderName.get(dir);
+      if (named) return named;
+    }
     return null;
   };
 
@@ -243,7 +272,10 @@ export const buildNotionPlan = (archive: Uint8Array): NotionPlan => {
     if (database) {
       const row = database.rows.find((item) => !item.pageKey && normalizeTitle(item.title) === normalizeTitle(title));
       if (row) row.pageKey = stem;
-      else database.rows.push({ title, cells: [title], pageKey: stem });
+      else {
+        const values = rowProperties(text, databaseColumns.get(database.key)!);
+        database.rows.push({ title, cells: database.columns.map((column, index) => (index === 0 ? title : values.get(column.name) ?? "")), pageKey: stem });
+      }
     }
     return page;
   });

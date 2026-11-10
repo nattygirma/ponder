@@ -65,6 +65,38 @@ describe("notion export plan", () => {
     expect(body).toContain(`\`\`\`\n[Child](Home%20${A}/Child%20${B}.md)\n\`\`\``);
   });
 
+  test("reads newer exports whose folders have no ids", () => {
+    // The layout of a real 2026 export: "Task List <id>.csv" with its row pages in "Task List/".
+    const newer = buildNotionPlan(zipSync({
+      [`Task List ${A}.csv`]: strToU8("﻿Name\n\nTake Fig on a walk\n"),
+      [`Task List ${A}_all.csv`]: strToU8("﻿Name,Date Created,Status\n,\"October 17, 2021 7:15 AM\",\nTake Fig on a walk,\"October 17, 2021 7:15 AM\",Doing\n"),
+      [`Task List/Take Fig on a walk ${B}.md`]: strToU8("# Take Fig on a walk\n\nDate Created: October 17, 2021 7:15 AM\nStatus: Doing\n"),
+      [`Task List/New Task ${A.replace(/a/g, "9")}.md`]: strToU8("# New Task\n\nDate Created: October 17, 2021 7:15 AM\n\n# To Do\n"),
+      [`Task List/Untitled ${C}.md`]: strToU8("# Untitled\n\nDate Created: October 17, 2021 7:15 AM\n\n# Tasks\n\n- [ ]  ...\n"),
+      [`Home ${D}.md`]: strToU8("# Home\n"),
+      [`Home/Child ${E}.md`]: strToU8("# Child\n"),
+      [`Home/Child/Grandchild ${F}.md`]: strToU8("# Grandchild\n"),
+    }));
+    const find = (title) => newer.entries.find((item) => item.title === title);
+    const tasks = find("Task List");
+    expect(find("Take Fig on a walk").rowOf).toBe(tasks.key);
+    expect(find("Untitled").rowOf).toBe(tasks.key);
+    expect(tasks.rows.map((row) => [row.title, Boolean(row.pageKey)])).toEqual([["Untitled", true], ["Take Fig on a walk", true], ["New Task", true]]);
+    // A page the table doesn't list keeps the properties written at its top.
+    expect(tasks.rows[2].cells).toEqual(["New Task", "October 17, 2021 7:15 AM", ""]);
+    expect(find("Child").parentKey).toBe(find("Home").key);
+    expect(find("Grandchild").parentKey).toBe(find("Child").key);
+  });
+
+  test("a folder name two pages share is left unlinked rather than guessed", () => {
+    const shared = buildNotionPlan(zipSync({
+      [`Notes ${A}.md`]: strToU8("# Notes\n"),
+      [`Notes ${B}.md`]: strToU8("# Notes\n"),
+      [`Notes/Inside ${C}.md`]: strToU8("# Inside\n"),
+    }));
+    expect(shared.entries.find((item) => item.title === "Inside").parentKey).toBe(null);
+  });
+
   test("rejects other files clearly", () => {
     expect(() => buildNotionPlan(strToU8("not a zip"))).toThrow(NotionImportError);
     expect(() => buildNotionPlan(zipSync({ "a.txt": strToU8("x") }))).toThrow(NotionImportError);
