@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import * as m from "motion/react-m";
 import { MemoListPane, MemoSelectionActionBar } from "./MemoListPane";
 import { PagesProvider, useWorkspaceLayoutPreference } from "./pages/PagesProvider";
+import { OPEN_PAGE_DRAWER_EVENT } from "./pages/PhoneChrome";
 import { HomeView } from "./pages/HomeView";
 import { ConnectionsView } from "./pages/Connections";
 import { LibraryView } from "./pages/LibraryView";
@@ -565,7 +566,7 @@ export const WorkspaceApp = ({
           : isInitialExecutionCenterRoute
             ? "execution-center"
           // People land on Home, unless they followed a link to a page.
-          : pagesEnabled && isDesktopViewport() && !isTrashRoute && !new URLSearchParams(window.location.search).has("p")
+          : pagesEnabled && !isTrashRoute && !new URLSearchParams(window.location.search).has("p")
             ? "home"
             : "editor"
   );
@@ -3463,7 +3464,33 @@ export const WorkspaceApp = ({
     updateMemoListWidth(nextWidth);
   };
 
-  const shouldRenderRightPane = isDesktop || visibleActivePane === "editor";
+  // On a phone the page layout works like Notion's app: one page at a time, with the
+  // sidebar sliding in over it. Trash and tag lists still use the note list.
+  const phonePages = !isDesktop && pagesEnabled;
+  const phonePagesActive = phonePages
+    && memoView === "notebook" && !selectedTag && !search && !memoSelectionModeActive && !mobileEditorReturnMemoId;
+  const shownPane: Pane = phonePagesActive ? "editor" : visibleActivePane;
+  const [pageDrawerOpen, setPageDrawerOpen] = useState(false);
+  useEffect(() => {
+    const open = () => setPageDrawerOpen(true);
+    window.addEventListener(OPEN_PAGE_DRAWER_EVENT, open);
+    return () => window.removeEventListener(OPEN_PAGE_DRAWER_EVENT, open);
+  }, []);
+  // Going anywhere from the sidebar closes it.
+  useEffect(() => {
+    setPageDrawerOpen(false);
+  }, [selectedMemoId, rightView, memoView, selectedTag, quickSwitcherOpen, isDesktop]);
+  useEffect(() => {
+    if (!pageDrawerOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPageDrawerOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [pageDrawerOpen]);
+  const showPhoneHome = phonePagesActive && rightView === "editor" && !selectedMemoId;
+
+  const shouldRenderRightPane = isDesktop || shownPane === "editor";
   const rightPaneLoadingLabel =
     rightView === "settings"
       ? t("workspace.loading.settings")
@@ -3495,7 +3522,7 @@ export const WorkspaceApp = ({
       : isStandaloneRuntime
         ? t("workspace.pullToRefresh.pullNotes")
         : t("workspace.pullToRefresh.pullPage");
-  const showMobileSettingsNav = visibleActivePane === "editor" && rightView === "settings";
+  const showMobileSettingsNav = visibleActivePane === "editor" && rightView === "settings" && !phonePages;
   // In the page layout the tree replaces the note list; trash, tags and search still need the list.
   const pagesLayoutActive = Boolean(
     isDesktop && pagesEnabled && (rightView === "editor" || rightView === "home" || rightView === "library" || rightView === "connections") && memoView === "notebook"
@@ -3563,14 +3590,22 @@ export const WorkspaceApp = ({
             id="ponder-notebook-sidebar"
             className={cn(
               "ponder-workspace-sidebar relative min-h-0 overflow-hidden border-r",
-              desktopFocusModeActive
+              phonePages
+                ? cn(
+                    "fixed inset-y-0 left-0 z-50 block w-[min(326px,87vw)] transition-transform duration-200 ease-out",
+                    pageDrawerOpen ? "translate-x-0 shadow-[0_0_32px_rgba(0,0,0,0.28)]" : "pointer-events-none -translate-x-full",
+                  )
+                : desktopFocusModeActive
                 ? "hidden"
                 : visibleActivePane === "notebooks"
                   ? "block lg:block"
                   : "hidden lg:block"
             )}
+            data-phone-drawer={phonePages ? (pageDrawerOpen ? "open" : "closed") : undefined}
+            aria-hidden={phonePages && !pageDrawerOpen ? true : undefined}
+            inert={phonePages && !pageDrawerOpen ? true : undefined}
           >
-            {(isDesktop || visibleActivePane === "notebooks") && (
+            {(isDesktop || visibleActivePane === "notebooks" || phonePages) && (
               <Suspense fallback={<PaneLoadingFallback label={t("workspace.loading.notebooks")} />}>
                 <NotebookPane
                   repository={repository}
@@ -3629,7 +3664,8 @@ export const WorkspaceApp = ({
                   collapsed={desktopNotebookSidebarCollapsed}
                   onToggleCollapsed={() => setNotebookSidebarCollapsed(!notebookSidebarCollapsed)}
                   collapseShortcutLabel={formatShortcutBinding(shortcutSettings.toggleSidebar)}
-                  pagesSidebar={isDesktop && pagesEnabled}
+                  pagesSidebar={pagesEnabled}
+                  phone={phonePages}
                   homeActive={rightView === "home"}
                   libraryActive={rightView === "library"}
                   connectionsActive={rightView === "connections"}
@@ -3666,8 +3702,8 @@ export const WorkspaceApp = ({
               desktopFocusModeActive
                 ? "hidden"
                 : threePaneEditor
-                  ? (visibleActivePane === "memos" ? "block lg:block" : "hidden lg:block")
-                  : (visibleActivePane === "memos" ? "block lg:hidden" : "hidden lg:hidden")
+                  ? (shownPane === "memos" ? "block lg:block" : "hidden lg:block")
+                  : (shownPane === "memos" ? "block lg:hidden" : "hidden lg:hidden")
             )}
           >
             <MemoListPane
@@ -3838,11 +3874,11 @@ export const WorkspaceApp = ({
             />
           </section>
 
-          <section className={cn("ponder-workspace-editor min-h-0 min-w-0 lg:block", visibleActivePane === "editor" ? "block" : "hidden", showMobileSettingsNav && "pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0")}>
+          <section className={cn("ponder-workspace-editor min-h-0 min-w-0 lg:block", shownPane === "editor" ? "block" : "hidden", showMobileSettingsNav && "pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0")}>
             {shouldRenderRightPane && (
               <Suspense fallback={<PaneLoadingFallback label={rightPaneLoadingLabel} />}>
                 <m.div key={rightView} className="h-full min-h-0 min-w-0" {...paneEnterMotion}>
-                  {rightView === "home" ? (
+                  {rightView === "home" || showPhoneHome ? (
                     <HomeView userName={user?.displayName || user?.username || null} />
                   ) : rightView === "library" ? (
                     <LibraryView />
@@ -4181,6 +4217,7 @@ export const WorkspaceApp = ({
       <QuickMemoSwitcher
         open={quickSwitcherOpen}
         wide={isDesktop && pagesEnabled}
+        fullScreen={phonePages}
         query={quickSwitcherQuery}
         repository={repository}
         onOpenChange={(open) => {
@@ -4314,7 +4351,18 @@ export const WorkspaceApp = ({
         options={requestedPluginPanel?.options}
         onClose={() => setRequestedPluginPanel(null)}
       />
-      {(visibleActivePane !== "editor" || showMobileSettingsNav) && !memoSelectionModeActive && (
+      {phonePages ? (
+        <div
+          className={cn(
+            "fixed inset-0 z-40 bg-black/40 transition-opacity duration-200",
+            pageDrawerOpen ? "opacity-100" : "pointer-events-none opacity-0",
+          )}
+          aria-hidden="true"
+          data-phone-drawer-scrim
+          onClick={() => setPageDrawerOpen(false)}
+        />
+      ) : null}
+      {!phonePages && (visibleActivePane !== "editor" || showMobileSettingsNav) && !memoSelectionModeActive && (
         <MobileBottomNav
           activeItem={mobileBottomNavActive}
           canCreateMemo={canCreateMemo && memoView !== "trash"}

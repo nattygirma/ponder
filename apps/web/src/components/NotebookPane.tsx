@@ -588,6 +588,7 @@ export const NotebookPane = ({
   onToggleCollapsed,
   collapseShortcutLabel,
   pagesSidebar = false,
+  phone = false,
   homeActive = false,
   libraryActive = false,
   connectionsActive = false,
@@ -599,8 +600,10 @@ export const NotebookPane = ({
   onNewChat,
   searchHint = "",
 }: {
-  /** Use the page-first sidebar. Only the desktop layout has one. */
+  /** Use the page-first sidebar. */
   pagesSidebar?: boolean;
+  /** The page sidebar is a phone drawer, sized for touch. */
+  phone?: boolean;
   homeActive?: boolean;
   libraryActive?: boolean;
   connectionsActive?: boolean;
@@ -823,7 +826,7 @@ export const NotebookPane = ({
   return (
     <div className="flex h-full min-h-0 flex-col overflow-hidden" data-notebook-sidebar-collapsed={collapsed ? "true" : "false"}>
       <div className={cn("flex min-h-0 flex-1 flex-col", collapsed && "hidden")}>
-      <header className="flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-end justify-between border-b border-slate-200 px-4 pb-3 pt-[env(safe-area-inset-top)] lg:hidden">
+      <header className={cn("flex h-[calc(4rem+env(safe-area-inset-top))] shrink-0 items-end justify-between border-b border-slate-200 px-4 pb-3 pt-[env(safe-area-inset-top)] lg:hidden", pagesSidebar && "hidden")}>
         <div>
           <div className="text-base font-semibold tracking-normal">{t("notebookPane.notebooks")}</div>
           <div className="text-xs text-slate-500">{user?.username ?? t("notebookPane.workspaceFallback")}</div>
@@ -841,6 +844,7 @@ export const NotebookPane = ({
       <NotionImportHost />
       {pagesSidebar ? (
         <PagesSidebar
+          phone={phone}
           homeActive={homeActive}
           libraryActive={libraryActive}
           connectionsActive={connectionsActive}

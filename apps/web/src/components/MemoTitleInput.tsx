@@ -30,8 +30,27 @@ export const MemoTitleInput = forwardRef<HTMLInputElement, MemoTitleInputProps>(
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
     if (!textarea) return;
-    textarea.style.height = "auto";
-    textarea.style.height = `${textarea.scrollHeight}px`;
+    const fit = () => {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    };
+    fit();
+    // The title's size changes with the screen (a phone title is smaller), so refit when it is resized or rotated.
+    let width = textarea.clientWidth;
+    const observer = new ResizeObserver(() => {
+      if (textarea.clientWidth === width) return;
+      width = textarea.clientWidth;
+      fit();
+    });
+    observer.observe(textarea);
+    let disposed = false;
+    document.fonts?.ready.then(() => {
+      if (!disposed) fit();
+    });
+    return () => {
+      disposed = true;
+      observer.disconnect();
+    };
   }, [multiline, value]);
   const [truncated, setTruncated] = useState(false);
   useLayoutEffect(() => {

@@ -246,7 +246,7 @@ export const PageComments = ({ memoId, editor, readOnly, controllerRef }: {
   return (
     <div ref={container} className="group/page-comments mb-3 min-h-6" data-page-comments>
       {empty ? (
-        <button type="button" className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-slate-400 opacity-0 hover:bg-slate-100 focus-visible:opacity-100 group-hover/page-comments:opacity-100" onClick={() => setComposing(true)}>
+        <button type="button" className="flex items-center gap-1 rounded px-1.5 py-0.5 text-xs text-slate-400 opacity-0 hover:bg-slate-100 focus-visible:opacity-100 group-hover/page-comments:opacity-100 max-sm:text-sm max-sm:opacity-100" onClick={() => setComposing(true)}>
           <MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />{t("pages.comments.addPlaceholder")}
         </button>
       ) : null}

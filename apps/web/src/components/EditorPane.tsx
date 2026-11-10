@@ -275,6 +275,7 @@ import { PAGE_TREE_QUERY_KEY, usePages } from "./pages/PagesProvider";
 import { BlockHandle, createBlockHandleExtension, type BlockHandleController } from "./pages/BlockHandle";
 import { MenuSearch } from "./pages/MenuSearch";
 import { PageBreadcrumbs, PageCover, PageHeader, PageLocationChip } from "./pages/PageHeader";
+import { PhoneMenuButton } from "./pages/PhoneChrome";
 import { SELECTION_BUBBLE_OPTIONS, SelectionBubble, shouldShowSelectionBubble } from "./pages/SelectionBubble";
 import { createNotionShortcuts } from "./pages/notionShortcuts";
 import { PageShareButton } from "./teams/Teams";
@@ -731,7 +732,9 @@ const RichEditorPane = ({
   });
   const isMemoShared = Boolean(shareStatusQuery.data?.share);
   const mobileDefaultEditRequested = Boolean(memo?.id && memo.id === mobileDefaultEditMemoId && !readOnly);
-  const mobileEditingActive = !collab && (isMobileEditing || mobileDefaultEditRequested);
+  // Pages on a phone edit in place like Notion, with no read view or plain-text editor.
+  const phonePages = Boolean(usePages()?.enabled && isMobileViewport);
+  const mobileEditingActive = !collab && !phonePages && (isMobileEditing || mobileDefaultEditRequested);
 
   const viewer = useViewer();
   const teamRestricted = Boolean(viewer?.teamRole && viewer.teamRole !== "owner");
@@ -739,7 +742,7 @@ const RichEditorPane = ({
   const accessReadOnly = teamRestricted && pageAccess.data?.level !== "edit";
   const effectiveReadOnly = readOnly
     || accessReadOnly
-    || (isMobileViewport && !mobileEditingActive)
+    || (isMobileViewport && !mobileEditingActive && !phonePages)
     || (!isMobileViewport && desktopReadingProtection);
   const useMobilePlainTextEditor = isMobileViewport && mobileEditingActive && !readOnly;
   const collabRef = useRef(collab ?? null);
@@ -1067,7 +1070,7 @@ const RichEditorPane = ({
           }
 
           const currentEditor = editorRef.current;
-          if (!isMobileViewport) {
+          if (!isMobileViewport || phonePages) {
             const hydratedForMemo = isEditorInstanceHydratedForMemo(
               editorInstanceMemoIdentityRef.current,
               hydratedMemoIdRef.current,
@@ -1130,7 +1133,7 @@ const RichEditorPane = ({
         window.cancelAnimationFrame(frame);
       };
     }
-  }, [focusMobileInputTarget, isMobileViewport, memo?.id, mobileDefaultEditMemoId, onMobileDefaultEditConsumed, readOnly]);
+  }, [focusMobileInputTarget, isMobileViewport, memo?.id, mobileDefaultEditMemoId, onMobileDefaultEditConsumed, phonePages, readOnly]);
 
   const uploadEditorResource = useCallback(async (targetMemoId: string, uploadFile: File, isImage: boolean) => {
     const mimeType = resolveResourceUploadMimeType(uploadFile.name, uploadFile.type);
@@ -4187,7 +4190,7 @@ const RichEditorPane = ({
     && !hasUnsavedChanges;
   const saveStatusLabel = `${saveLabel} · ${t("editor.characterCount", { count: characterCount })}`;
 
-  const pageMode = Boolean(pages?.enabled && !isMobileViewport && !useMarkdownSourceEditor);
+  const pageMode = Boolean(pages?.enabled && !useMarkdownSourceEditor);
   createSubPageRef.current = async () => {
     if (!memo || !pagesRef.current) return;
     const page = await pagesRef.current.createPage({ parentId: memo.id, reveal: false });
@@ -4315,10 +4318,10 @@ const RichEditorPane = ({
             }}
           >
           <div
-            className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 px-4 sm:flex-nowrap"
+            className={cn("flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 px-4 sm:flex-nowrap", pageMode && "max-lg:pl-1")}
           >
           <MemoEditorTopRowLeading
-            mobileBackButton={(
+            mobileBackButton={pageMode ? <PhoneMenuButton /> : (
               <Button
                 className="lg:hidden"
                 size="icon"
@@ -4332,10 +4335,10 @@ const RichEditorPane = ({
               </Button>
             )}
             titleInput={pageMode && memo
-              ? <PageBreadcrumbs memoId={memo.id} fallbackTitle={title} location={<PageLocationChip notebookId={memo.notebookId} options={notebookOptions} disabled={effectiveReadOnly} onMove={(id) => void handleNotebookChange(id)} />} />
+              ? <PageBreadcrumbs memoId={memo.id} fallbackTitle={title} phone={isMobileViewport} location={<PageLocationChip notebookId={memo.notebookId} options={notebookOptions} disabled={effectiveReadOnly} onMove={(id) => void handleNotebookChange(id)} />} />
               : renderTitleInput("w-full min-w-0 px-2")}
           />
-          <MemoEditorMetadataRow
+          {pageMode && isMobileViewport ? null : <MemoEditorMetadataRow
             hideNotebook={pageMode}
             rowClassName={MEMO_EDITOR_METADATA_ROW_CLASS_NAME}
             contentMarkdown={currentMarkdownForAi}
@@ -4381,7 +4384,7 @@ const RichEditorPane = ({
                 )}
               </>
             )}
-          />
+          />}
           </div>
           </div>
           </div>
@@ -4436,6 +4439,7 @@ const RichEditorPane = ({
             </m.span>
             </IconTooltip>
             )}
+            {phonePages && savedQuietly && imageUploadState === "idle" ? null : (
             <IconTooltip label={saveStatusReason ? `${mobileStatusLabel}. ${saveStatusReason}` : mobileStatusLabel}>
             <m.span
               key={`${imageUploadState}-${saveState}-${String(hasUnsavedChanges)}`}
@@ -4449,6 +4453,7 @@ const RichEditorPane = ({
               {mobileStatusLabel}
             </m.span>
             </IconTooltip>
+            )}
             </div>
             {pageMode ? null : <MemoEditorToolbarDivider className="mx-0.5 hidden h-4 sm:block" />}
             <div className="flex items-center gap-0.5">
@@ -4657,7 +4662,7 @@ const RichEditorPane = ({
                   />
                   {pageNode ? (
                     <IconTooltip label={t("pages.topBar.copyLink")}>
-                      <Button className="h-8 w-8" size="icon" variant="ghost" aria-label={t("pages.topBar.copyLink")} onClick={copyPageLink}>
+                      <Button className="hidden h-8 w-8 sm:inline-flex" size="icon" variant="ghost" aria-label={t("pages.topBar.copyLink")} onClick={copyPageLink}>
                         <LinkIcon className="h-4 w-4" aria-hidden="true" />
                       </Button>
                     </IconTooltip>
@@ -4665,7 +4670,7 @@ const RichEditorPane = ({
                   {pageNode ? (
                     <IconTooltip label={t(pageNode.isPinned ? "pages.topBar.unfavorite" : "pages.topBar.favorite")}>
                       <Button
-                        className="h-8 w-8"
+                        className="hidden h-8 w-8 sm:inline-flex"
                         size="icon"
                         variant="ghost"
                         aria-label={t(pageNode.isPinned ? "pages.topBar.unfavorite" : "pages.topBar.favorite")}
@@ -4678,7 +4683,7 @@ const RichEditorPane = ({
                   ) : null}
                 </div>
               ) : undefined}
-              moreButtonClassName={cn(!mobileEditingActive && !readOnly && "hidden sm:inline-flex")}
+              moreButtonClassName={cn(!mobileEditingActive && !readOnly && !phonePages && "hidden sm:inline-flex")}
               moreMenuClassName="w-56 rounded-md"
               onOpenExecutionCenter={onOpenExecutionCenter}
               onSearch={() => openNoteSearch()}
@@ -5139,7 +5144,7 @@ const RichEditorPane = ({
                     <EditorContent editor={editor} />
                   </AttachmentTranscriptContext.Provider>
                 </EditorTableContextMenu>
-                {pageMode && !effectiveReadOnly && editor && blockHandleRef.current ? <BlockHandle pageId={memo?.id ?? null} pageLink={pages && memo ? pages.pageLink(memo.id) : null} onSkill={(kind, pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi(kind); }} onAskAi={(pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi("ask"); }} onComment={(pos, node) => { const anchor = anchorFromBlock(editor, pos, node); if (anchor) commentsRef.current.startThread(anchor); }} editor={editor} controller={blockHandleRef.current} /> : null}
+                {pageMode && !isMobileViewport && !effectiveReadOnly && editor && blockHandleRef.current ? <BlockHandle pageId={memo?.id ?? null} pageLink={pages && memo ? pages.pageLink(memo.id) : null} onSkill={(kind, pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi(kind); }} onAskAi={(pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi("ask"); }} onComment={(pos, node) => { const anchor = anchorFromBlock(editor, pos, node); if (anchor) commentsRef.current.startThread(anchor); }} editor={editor} controller={blockHandleRef.current} /> : null}
               </div>
             )}
           </div>
@@ -5278,9 +5283,11 @@ const RichEditorPane = ({
             className={cn(
               "absolute z-30 size-11 rounded-full border-slate-200 bg-card text-slate-950 shadow-[0_8px_24px_rgba(15,23,42,0.14)] hover:bg-card hover:text-slate-950",
               // The phone note view already has an edit button in this corner.
-              isMobileViewport && !mobileEditingActive
+              isMobileViewport && !mobileEditingActive && !phonePages
                 ? "bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-4"
-                : AI_ASSISTANT_LAUNCHER_POSITION,
+                : phonePages
+                  ? "bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 size-10"
+                  : AI_ASSISTANT_LAUNCHER_POSITION,
             )}
             aria-label={t("aiAssistant.open")}
             onClick={openAiAssistant}
@@ -5290,7 +5297,7 @@ const RichEditorPane = ({
         </IconTooltip>
       ) : null}
 
-      {isMobileViewport && !mobileEditingActive && !readOnly && (
+      {isMobileViewport && !mobileEditingActive && !readOnly && !phonePages && (
         <Button
           className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-30 h-12 w-12 rounded-full shadow-lg sm:hidden"
           size="icon"

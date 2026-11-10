@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { DatabaseCell, OptionChip, RowTitle } from "./DatabaseCell";
 import { AddPropertyMenu, PropertyMenu } from "./PropertyMenu";
 import type { DatabaseHandle } from "./useDatabase";
+import { isDesktopViewport } from "@/lib/workspace-shell";
 
 const PAGE_SIZE = 100;
 const ROW_DRAG_MIME = "application/x-ponder-database-row";
@@ -34,7 +35,8 @@ const useOpenRow = (db: DatabaseHandle) => {
   const pages = usePages();
   const peek = useContext(RowPeekContext);
   return (row: Pick<DatabaseRow, "id">) => {
-    if (peek) peek(row.id);
+    // A phone has no room beside the table, so the row opens as its own page.
+    if (peek && isDesktopViewport()) peek(row.id);
     else pages?.openPage({ id: row.id, notebookId: db.database.notebookId });
   };
 };
@@ -131,7 +133,7 @@ export const TableView = ({ db, rows, config, visible, updateConfig }: DatabaseV
                 </span>
               ) : null}
               <div className="min-w-0 flex-1"><DatabaseCell db={db} row={row} property={property} /></div>
-              <span className="flex shrink-0 gap-0.5 opacity-0 focus-within:opacity-100 group-hover/row:opacity-100">
+              <span className="flex shrink-0 gap-0.5 opacity-0 focus-within:opacity-100 group-hover/row:opacity-100 max-lg:opacity-100">
                 <button type="button" className="rounded p-0.5 text-slate-500 hover:bg-slate-200" aria-label={t("pages.db.openRow")} onClick={() => openRow(row)}>
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>
@@ -202,7 +204,7 @@ const Card = ({ db, row, visible, children }: { db: DatabaseHandle; row: Databas
   return (
     <div className="group/card relative rounded-md border border-slate-200 bg-card p-2 text-sm shadow-sm">
       {children}
-      <button type="button" className="absolute right-1 top-1 rounded bg-card p-0.5 text-slate-500 opacity-0 hover:bg-slate-100 focus-visible:opacity-100 group-hover/card:opacity-100" aria-label={t("pages.db.openRow")} onClick={() => openRow(row)}>
+      <button type="button" className="absolute right-1 top-1 rounded bg-card p-0.5 text-slate-500 opacity-0 hover:bg-slate-100 focus-visible:opacity-100 group-hover/card:opacity-100 max-lg:opacity-100" aria-label={t("pages.db.openRow")} onClick={() => openRow(row)}>
         <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
       <div className="pr-5 font-medium"><RowTitle db={db} row={row} /></div>
@@ -313,7 +315,7 @@ export const ListView = ({ db, rows, visible }: DatabaseViewProps) => {
           {visible.filter((property) => property.type !== "title").map((property) => (
             <div key={property.id} className="w-36 min-w-0 shrink-0 text-xs text-slate-600"><DatabaseCell db={db} row={row} property={property} /></div>
           ))}
-          <button type="button" className="rounded p-0.5 text-slate-500 opacity-0 hover:bg-slate-200 focus-visible:opacity-100 group-hover/row:opacity-100" aria-label={t("pages.db.openRow")} onClick={() => openRow(row)}>
+          <button type="button" className="rounded p-0.5 text-slate-500 opacity-0 hover:bg-slate-200 focus-visible:opacity-100 group-hover/row:opacity-100 max-lg:opacity-100" aria-label={t("pages.db.openRow")} onClick={() => openRow(row)}>
             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>

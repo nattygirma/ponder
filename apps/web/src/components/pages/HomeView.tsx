@@ -7,6 +7,7 @@ import { openNotionImport } from "./NotionImport";
 import { ConnectCalendarDialog, eventTimeLabel, useCalendar } from "./Calendar";
 import { usePages } from "./PagesProvider";
 import { PageIcon } from "./PageTree";
+import { PhoneTopBar } from "./PhoneChrome";
 
 const IMPORT_HINT_KEY = "ponder.home.importHintDismissed";
 
@@ -58,7 +59,8 @@ export const HomeView = ({ userName }: { userName: string | null }) => {
 
   return (
     <div className="h-full overflow-y-auto bg-[var(--workspace-editor,transparent)]" data-home-view>
-      <div className="mx-auto w-full max-w-3xl px-6 py-14">
+      <PhoneTopBar title={t("pages.sidebar.home")} />
+      <div className="mx-auto w-full max-w-3xl px-6 pb-14 pt-6 lg:pt-14">
         <h1 className="text-center text-3xl font-semibold tracking-tight text-slate-900">
           {userName ? `${greeting}, ${userName}` : greeting}
         </h1>

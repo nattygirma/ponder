@@ -41,11 +41,26 @@ import { cn } from "@/lib/utils";
 import { openNotionImport } from "./NotionImport";
 import { ConnectCalendarDialog, eventTimeLabel, useCalendar } from "./Calendar";
 import { usePages } from "./PagesProvider";
-import { isPageDrag, PAGE_DRAG_MIME, PageTreeBranch } from "./PageTree";
+import { isPageDrag, PAGE_DRAG_MIME, PageTreeBranch, PageTreeTouchContext } from "./PageTree";
 
 const ROW_CLASS = "flex h-[30px] w-full min-w-0 items-center gap-2 rounded-md px-2 text-left text-sm text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70";
 const ICON_BUTTON_CLASS = "flex h-7 w-7 items-center justify-center rounded-md text-slate-500 hover:bg-slate-100 hover:text-slate-950 disabled:opacity-50";
 const INVITE_CARD_KEY = "ponder.sidebar.inviteCardDismissed";
+
+const PHONE_ROW_CLASS = "flex h-11 w-full min-w-0 items-center gap-3 rounded-md px-3 text-left text-base text-slate-700 active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70";
+const PHONE_ICON_BUTTON_CLASS = "relative flex h-9 w-9 items-center justify-center rounded-md text-slate-600 active:bg-slate-100 disabled:opacity-50";
+
+const PhoneRow = ({ icon, label, active, muted, onClick }: { icon: ReactNode; label: string; active?: boolean; muted?: boolean; onClick: () => void }) => (
+  <button
+    type="button"
+    className={cn(PHONE_ROW_CLASS, muted && "text-slate-500", active && "ponder-workspace-selection font-medium text-slate-950")}
+    aria-current={active ? "page" : undefined}
+    onClick={onClick}
+  >
+    <span className="flex h-5 w-5 shrink-0 items-center justify-center text-slate-500">{icon}</span>
+    <span className="min-w-0 flex-1 truncate">{label}</span>
+  </button>
+);
 
 const SidebarRow = ({ icon, label, active, onClick }: { icon: ReactNode; label: string; active?: boolean; onClick: () => void }) => (
   <button
@@ -152,6 +167,7 @@ export const PagesSidebar = ({
   connectionsActive,
   onOpenConnections,
   downloadUrl,
+  phone = false,
 }: {
   homeActive: boolean;
   libraryActive: boolean;
@@ -177,6 +193,8 @@ export const PagesSidebar = ({
   connectionsActive?: boolean;
   onOpenConnections: () => void;
   downloadUrl: string;
+  /** Lay the sidebar out as Notion's phone drawer. */
+  phone?: boolean;
 }) => {
   const { t, i18n } = useTranslation();
   const pages = usePages()!;
@@ -214,6 +232,60 @@ export const PagesSidebar = ({
       // The card returns next visit when storage is unavailable.
     }
   };
+
+  if (phone) {
+    return (
+      <PageTreeTouchContext.Provider value>
+        <div className="flex h-[calc(3rem+env(safe-area-inset-top))] shrink-0 items-center gap-0.5 px-1.5 pt-[env(safe-area-inset-top)]" data-pages-sidebar data-phone-sidebar>
+          <div className="min-w-0 flex-1 [&_[data-workspace-switcher]]:p-0">
+            <WorkspaceSwitcher />
+          </div>
+          <div className="flex items-center [&_button]:h-9 [&_button]:w-9">
+            <NotificationsButton variant="compact" />
+          </div>
+          <button type="button" className={PHONE_ICON_BUTTON_CLASS} aria-label={t("pages.sidebar.search")} onClick={onOpenSearch} data-sidebar-search>
+            <Search className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <button type="button" className={PHONE_ICON_BUTTON_CLASS} aria-label={t("pages.sidebar.newPage")} disabled={!canCreate} onClick={newPage}>
+            <SquarePen className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+        {syncStatus}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-1.5 pb-[max(1rem,env(safe-area-inset-bottom))]" data-pages-sidebar-scroll>
+          {favorites.length > 0 && isVisible("favorites") ? (
+            <section aria-label={t("pages.sidebar.favorites")} className="pt-2">
+              <div className="flex h-11 items-center px-3 text-[13px] font-semibold text-slate-500">{t("pages.sidebar.favorites")}</div>
+              <PageTreeBranch pages={favorites} depth={0} />
+            </section>
+          ) : null}
+          <section aria-label={sectionLabel} className="pt-2">
+            <div className="flex h-11 items-center pl-3 pr-1 text-[13px] font-semibold text-slate-500">
+              <span className="min-w-0 flex-1 truncate">{sectionLabel}</span>
+            </div>
+            <PageTreeBranch pages={rootPages} depth={0} />
+            {notebookRows}
+            {canCreate ? (
+              <PhoneRow muted icon={<Plus className="h-5 w-5" aria-hidden="true" />} label={t("pages.sidebar.addNew")} onClick={newPage} />
+            ) : null}
+          </section>
+          <nav className="mt-4 border-t border-slate-200 pt-3" aria-label={t("notebookPane.entries")}>
+            <PhoneRow icon={<Home className="h-5 w-5" aria-hidden="true" />} label={t("pages.sidebar.home")} active={homeActive} onClick={onOpenHome} />
+            {isVisible("library") ? <PhoneRow icon={<Library className="h-5 w-5" aria-hidden="true" />} label={t("pages.sidebar.library")} active={libraryActive} onClick={onOpenLibrary} /> : null}
+            {isVisible("connections") ? <PhoneRow icon={<LayoutGrid className="h-5 w-5" aria-hidden="true" />} label={t("pages.sidebar.connections")} active={connectionsActive} onClick={onOpenConnections} /> : null}
+            {isTeam ? <PhoneRow icon={<UserPlus className="h-5 w-5" aria-hidden="true" />} label={t("pages.sidebar.invite")} onClick={openMembers} /> : null}
+            <PhoneRow icon={<FileInput className="h-5 w-5" aria-hidden="true" />} label={t("pages.home.importTitle")} onClick={openNotionImport} />
+            <PhoneRow
+              icon={<span className="relative flex"><Settings className="h-5 w-5" aria-hidden="true" />{showSettingsNotice ? <span className="absolute -right-0.5 -top-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500" /> : null}</span>}
+              label={t("pages.sidebar.settings")}
+              onClick={onOpenSettings}
+            />
+            <PhoneRow icon={<Trash2 className="h-5 w-5" aria-hidden="true" />} label={t("pages.sidebar.trash")} onClick={onOpenTrash} />
+            {demoRow}
+          </nav>
+        </div>
+      </PageTreeTouchContext.Provider>
+    );
+  }
 
   return (
     <>

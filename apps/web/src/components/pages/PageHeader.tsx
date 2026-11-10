@@ -57,11 +57,20 @@ const usePageMeta = (memoId: string) => {
   return treePage ?? context.data?.row;
 };
 
-export const PageBreadcrumbs = ({ memoId, fallbackTitle, location }: { memoId: string; fallbackTitle: string; location?: ReactNode }) => {
+export const PageBreadcrumbs = ({ memoId, fallbackTitle, location, phone = false }: { memoId: string; fallbackTitle: string; location?: ReactNode; phone?: boolean }) => {
   const pages = usePages();
   const { t } = useTranslation();
   const page = pages?.getPage(memoId);
   if (!pages) return null;
+  // A phone top bar has room for the page alone, as in Notion's app.
+  if (phone) {
+    return (
+      <div className="flex h-8 min-w-0 flex-1 items-center gap-1.5 text-base text-slate-900" data-phone-page-title>
+        <PageIcon icon={page?.icon} className="h-5 w-5 text-base" />
+        <span className="truncate">{fallbackTitle || t("common.untitledMemo")}</span>
+      </div>
+    );
+  }
   const ancestors = pages.ancestorsOf(memoId);
   return (
     <nav aria-label={t("pages.breadcrumbs")} className="flex h-8 w-full min-w-0 items-center gap-0.5 overflow-hidden px-2 text-xs text-slate-500">
@@ -229,18 +238,18 @@ export const PageHeader = ({ memoId, readOnly, titleInput }: { memoId: string; r
   );
 
   return (
-    <div className={cn("group/page-header pb-2", page?.cover ? "pt-0" : "pt-10")} data-page-header>
+    <div className={cn("group/page-header pb-2", page?.cover ? "pt-0" : "pt-10 max-sm:pt-3")} data-page-header>
       {page?.icon ? (
         <div className={cn("relative", page.cover && "-mt-9")}>
           {iconPicker(
-            <button type="button" className="rounded-md text-[3.5rem] leading-none hover:bg-slate-100/60 disabled:cursor-default" disabled={readOnly} aria-label={t("pages.changeIcon")}>
+            <button type="button" className="rounded-md text-[3.5rem] leading-none hover:bg-slate-100/60 disabled:cursor-default max-sm:text-[2.75rem]" disabled={readOnly} aria-label={t("pages.changeIcon")}>
               {page.icon}
             </button>,
           )}
         </div>
       ) : null}
       {readOnly ? null : (
-        <div className="flex h-7 items-center gap-1 text-xs text-slate-500 opacity-0 transition-opacity group-focus-within/page-header:opacity-100 group-hover/page-header:opacity-100">
+        <div className="flex h-7 items-center gap-1 text-xs text-slate-500 opacity-0 transition-opacity group-focus-within/page-header:opacity-100 group-hover/page-header:opacity-100 max-sm:h-9 max-sm:text-sm max-sm:opacity-100">
           {page?.icon ? null : iconPicker(
             <button type="button" className="flex items-center gap-1 rounded px-1.5 py-1 hover:bg-slate-100">
               <Smile className="h-3.5 w-3.5" aria-hidden="true" />

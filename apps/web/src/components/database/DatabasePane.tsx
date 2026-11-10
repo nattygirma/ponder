@@ -5,6 +5,8 @@ import { Database } from "lucide-react";
 import type { ReactNode } from "react";
 import { PageBreadcrumbs, PageCover, PageHeader } from "@/components/pages/PageHeader";
 import { usePages } from "@/components/pages/PagesProvider";
+import { PageIcon } from "@/components/pages/PageTree";
+import { PhoneTopBar } from "@/components/pages/PhoneChrome";
 import { DatabaseSurface } from "./DatabaseSurface";
 import { DatabaseCell } from "./DatabaseCell";
 import { useDatabase, useRowContext } from "./useDatabase";
@@ -12,11 +14,13 @@ import { useDatabase, useRowContext } from "./useDatabase";
 /** Full-page database, shown in place of the editor when the selected page is a database. */
 export const DatabasePane = ({ memoId, databaseId, title }: { memoId: string; databaseId: string; title: string }) => {
   const { t } = useTranslation();
+  const page = usePages()?.getPage(memoId);
   return (
     <div className="h-full min-w-0 overflow-y-auto bg-transparent" data-database-pane>
-      <div className="px-4 pt-2 text-xs text-slate-500"><PageBreadcrumbs memoId={memoId} fallbackTitle={title} /></div>
+      <PhoneTopBar title={title || t("common.untitledMemo")} icon={<PageIcon icon={page?.icon} database className="h-5 w-5 text-base" />} />
+      <div className="hidden px-4 pt-2 text-xs text-slate-500 lg:block"><PageBreadcrumbs memoId={memoId} fallbackTitle={title} /></div>
       <PageCover memoId={memoId} readOnly={false} />
-      <div className="px-12 pb-16">
+      <div className="px-6 pb-16 sm:px-12">
         <DatabaseSurface
           databaseId={databaseId}
           header={(db) => (

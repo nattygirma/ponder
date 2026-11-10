@@ -110,6 +110,15 @@ input.ponder-page-title-input {
   letter-spacing: -0.01em;
 }
 
+/* Notion's phone app sets page titles smaller. */
+@media (max-width: 639px) {
+  .ponder-page-title-input input,
+  textarea.ponder-page-title-input,
+  input.ponder-page-title-input {
+    font-size: 1.75rem;
+  }
+}
+
 .ponder-db-chip {
   display: inline-flex;
   max-width: 100%;

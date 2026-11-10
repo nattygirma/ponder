@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { formatRelativeTime } from "@/lib/relative-time";
 import { usePages } from "./PagesProvider";
 import { PageIcon } from "./PageTree";
+import { PhoneTopBar } from "./PhoneChrome";
 
 /** Every page in the workspace, most recently edited first. */
 export const LibraryView = () => {
@@ -23,7 +24,8 @@ export const LibraryView = () => {
 
   return (
     <div className="h-full overflow-y-auto bg-[var(--workspace-editor,transparent)]" data-library-view>
-      <div className="mx-auto w-full max-w-3xl px-6 py-14">
+      <PhoneTopBar title={t("pages.library.title")} />
+      <div className="mx-auto w-full max-w-3xl px-6 pb-14 pt-6 lg:pt-14">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t("pages.library.title")}</h1>
         <Input
           className="mt-6 h-8"
@@ -32,9 +34,9 @@ export const LibraryView = () => {
           value={filter}
           onChange={(event) => setFilter(event.target.value)}
         />
-        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_10rem_8rem] gap-3 border-b border-slate-200 px-2 pb-1.5 text-xs font-medium text-slate-500">
+        <div className="mt-4 grid grid-cols-[minmax(0,1fr)_6rem] sm:grid-cols-[minmax(0,1fr)_10rem_8rem] gap-3 border-b border-slate-200 px-2 pb-1.5 text-xs font-medium text-slate-500">
           <span>{t("pages.library.name")}</span>
-          <span>{t("pages.library.location")}</span>
+          <span className="hidden sm:block">{t("pages.library.location")}</span>
           <span>{t("pages.library.edited")}</span>
         </div>
         {rows.length === 0 ? (
@@ -43,14 +45,14 @@ export const LibraryView = () => {
           <button
             key={page.id}
             type="button"
-            className="grid w-full grid-cols-[minmax(0,1fr)_10rem_8rem] items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70"
+            className="grid w-full grid-cols-[minmax(0,1fr)_6rem] sm:grid-cols-[minmax(0,1fr)_10rem_8rem] items-center gap-3 rounded-md px-2 py-1.5 text-left text-sm hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400/70"
             onClick={() => pages.openPage(page)}
           >
             <span className="flex min-w-0 items-center gap-2">
               <PageIcon icon={page.icon} database={Boolean(page.databaseId)} />
               <span className="truncate text-slate-900">{page.title?.trim() || t("common.untitledMemo")}</span>
             </span>
-            <span className="truncate text-slate-500">{location(page.parentId, page.notebookId)}</span>
+            <span className="hidden truncate text-slate-500 sm:block">{location(page.parentId, page.notebookId)}</span>
             <span className="truncate text-slate-500">{formatRelativeTime(page.updatedAt, i18n.language)}</span>
           </button>
         ))}

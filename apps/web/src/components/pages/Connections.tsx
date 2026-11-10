@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { PhoneTopBar } from "./PhoneChrome";
 
 const CONNECTIONS_KEY = ["connections"] as const;
 
@@ -91,7 +92,8 @@ export const ConnectionsView = ({ onOpenPlugins, onOpenExternalAgents }: { onOpe
 
   return (
     <div className="h-full overflow-y-auto bg-[var(--workspace-editor,transparent)]" data-connections-view>
-      <div className="mx-auto w-full max-w-3xl px-6 py-14">
+      <PhoneTopBar title={t("pages.connections.title")} />
+      <div className="mx-auto w-full max-w-3xl px-6 pb-14 pt-6 lg:pt-14">
         <h1 className="text-3xl font-bold tracking-tight text-slate-900">{t("pages.connections.title")}</h1>
         <p className="mt-2 text-sm text-slate-500">{t("pages.connections.intro")}</p>
         <Input

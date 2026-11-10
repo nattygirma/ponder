@@ -5,6 +5,7 @@ export const pagesEnUS = {
     search: "Search", home: "Home", newPage: "New page", newItem: "More ways to create", newChat: "New chat", customize: "Customize sidebar", upcoming: "Upcoming events", library: "Library", connections: "Connections", externalAgents: "External agents", trash: "Trash", inviteHint: "Collaborate with your team.", noPagesInside: "No pages inside", private: "Private",
     favorites: "Favorites", addNew: "Add new", settings: "Settings", invite: "Invite members", more: "More",
     plugins: "Plugins", downloadApps: "Download apps",
+    openSidebar: "Open sidebar", closeSidebar: "Close sidebar", inbox: "Inbox",
   },
   home: {
     goodMorning: "Good morning", goodAfternoon: "Good afternoon", goodEvening: "Good evening",

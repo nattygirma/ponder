@@ -39,6 +39,8 @@ type QuickMemoSwitcherProps = {
   repository: PonderRepository;
   /** The large search window with date groups and a preview, used by the page layout. */
   wide?: boolean;
+  /** Fill the screen, as Notion's phone search does. */
+  fullScreen?: boolean;
   onOpenChange: (open: boolean) => void;
   onQueryChange: (query: string) => void;
   onOpenMemo: (memo: MemoSummary) => void;
@@ -95,6 +97,7 @@ export const QuickMemoSwitcher = ({
   query,
   repository,
   wide = false,
+  fullScreen = false,
   onOpenChange,
   onQueryChange,
   onOpenMemo,
@@ -192,7 +195,12 @@ export const QuickMemoSwitcher = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("block translate-y-0 overflow-hidden p-0", wide ? "top-[9%] max-w-[1008px]" : "top-[18%] max-w-xl")} data-page-search={wide ? "" : undefined}>
+      <DialogContent className={cn(
+        "block translate-y-0 overflow-hidden p-0",
+        fullScreen
+          ? "left-0 top-0 h-[100dvh] max-w-none translate-x-0 rounded-none border-0 pt-[env(safe-area-inset-top)] data-[state=open]:slide-in-from-left-0 data-[state=open]:slide-in-from-top-0"
+          : wide ? "top-[9%] max-w-[1008px]" : "top-[18%] max-w-xl",
+      )} data-page-search={wide ? "" : undefined}>
         <DialogTitle className="sr-only">{t("quickSwitcher.title")}</DialogTitle>
         <DialogDescription className="sr-only">{t("quickSwitcher.description")}</DialogDescription>
         <Command shouldFilter={false} value={selectedMemoId} onValueChange={setSelectedMemoId}>
@@ -239,7 +247,7 @@ export const QuickMemoSwitcher = ({
             </div>
           ) : null}
           <div className={cn(wide && "grid h-[min(36rem,70dvh)] grid-cols-[minmax(0,1fr)_minmax(0,24rem)] gap-3 p-2")}>
-            <CommandList className={cn(wide ? "max-h-none" : "max-h-[min(26rem,60dvh)]", "p-1.5")}>
+            <CommandList className={cn(wide ? "max-h-none" : fullScreen ? "max-h-[calc(100dvh-4rem)]" : "max-h-[min(26rem,60dvh)]", "p-1.5")}>
               {loading ? (
                 <div className="flex items-center justify-center gap-2 py-8 text-sm text-slate-500" role="status">
                   <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -293,7 +301,7 @@ export const QuickMemoSwitcher = ({
               </aside>
             ) : null}
           </div>
-          <div className="flex items-center justify-between border-t border-slate-100 px-3 py-2 text-xs text-slate-400">
+          <div className={cn("flex items-center justify-between border-t border-slate-100 px-3 py-2 text-xs text-slate-400", fullScreen && "hidden")}>
             <span>{t("quickSwitcher.openHint")}</span>
             <span>{t("quickSwitcher.closeHint")}</span>
           </div>
