@@ -12,10 +12,22 @@ import { loadCompanionAttachmentParts } from "./companion-attachments";
 import { listCompanionMemories, listCompanionTurns, mapCompanionTurn, type CompanionScope, type TurnRow } from "./companion-service";
 import { companionToolDefinitions } from "./companion-agent-tools";
 import { parseJsonArray } from "./companion-tool-receipts";
+import { HOST_AI_STREAM_MAX_TOKENS, hostAiKeyWorkspace } from "./host-ai";
 
 export const COMPANION_IDENTITY_VERSION = 18;
 export const COMPANION_MAX_STEPS = 8;
 export const COMPANION_MAX_OUTPUT_TOKENS = 2048;
+/**
+ * The reply cap for one step. Several tool calls (note edits, diagrams) easily pass 2,048 tokens, and a reply that
+ * hits the cap runs none of its tool calls. AppKeep AI streams with no time limit and caps to what the balance can
+ * pay for, so it gets the most; Claude and Gemini take 8,192 everywhere; other services keep the small default,
+ * since some reject anything larger.
+ */
+export const companionMaxOutputTokens = (credentials: { provider: string; apiKey: string }) => {
+  if (hostAiKeyWorkspace(credentials.apiKey)) return HOST_AI_STREAM_MAX_TOKENS;
+  if (credentials.provider === "anthropic" || credentials.provider === "google") return 8192;
+  return COMPANION_MAX_OUTPUT_TOKENS;
+};
 export const COMPANION_INSTRUCTIONS = `You are Ponder, a thoughtful personal knowledge companion.
 Be warm, direct, honest, and concise. Connect ideas without inventing personal history or feelings.
 ${COMPANION_MATH_FORMAT_INSTRUCTION}
@@ -244,6 +256,6 @@ export async function prepareCompanionTurn(args: {
     messages,
     tools: companionToolDefinitions(args.input),
     maxSteps: COMPANION_MAX_STEPS,
-    maxOutputTokens: COMPANION_MAX_OUTPUT_TOKENS,
+    maxOutputTokens: companionMaxOutputTokens(args.credentials),
   };
 }

@@ -164,21 +164,23 @@ export const CompanionTurnResumeSchema = z.object({
   answers: z.array(CompanionAnswerSchema).max(3).optional(),
 }).strict();
 export type CompanionTurnResume = z.infer<typeof CompanionTurnResumeSchema>;
+/** The longest reply text a chat turn keeps. Long replies stream, so this is generous. */
+export const COMPANION_RESPONSE_MAX_CHARS = 64_000;
 export const CompanionToolExecuteSchema = z.object({
   name: z.string().trim().min(1).max(80),
   input: z.record(z.string(), z.unknown()).default({}),
   callId: z.string().trim().min(1).max(100).optional(),
-  response: z.string().max(16000).optional(),
+  response: z.string().max(COMPANION_RESPONSE_MAX_CHARS).optional(),
   process: z.string().max(32000).optional(),
 }).strict();
 export type CompanionToolExecuteInput = z.infer<typeof CompanionToolExecuteSchema>;
 export const CompanionTurnCheckpointSchema = z.object({
-  response: z.string().max(16000),
+  response: z.string().max(COMPANION_RESPONSE_MAX_CHARS),
   process: z.string().max(32000).optional(),
 }).strict();
 export type CompanionTurnCheckpointInput = z.infer<typeof CompanionTurnCheckpointSchema>;
 export const CompanionTurnCompleteSchema = z.object({
-  response: z.string().max(16000),
+  response: z.string().max(COMPANION_RESPONSE_MAX_CHARS),
   process: z.string().max(32000).optional(),
   status: z.enum(["completed", "interrupted", "failed"]),
   inputTokens: z.number().int().nonnegative().optional(),
@@ -390,7 +392,7 @@ export const CompanionMemoryImportSchema = z.object({
 /** Only fixed categories and HTTP status cross the UI boundary. Never forward SDK
  * messages, request bodies, response bodies, URLs, headers, or credentials. */
 export type CompanionFailureDiagnostics = {
-  reason: "http" | "timeout" | "server" | "network" | "invalidResponse" | "emptyResponse" | "responseLimit";
+  reason: "http" | "timeout" | "server" | "network" | "invalidResponse" | "emptyResponse" | "responseLimit" | "cutOff";
   status?: number;
 };
 
@@ -417,6 +419,7 @@ export const companionFailureDiagnostics = (error: unknown, depth = 0): Companio
     || record.name === "AI_TypeValidationError") return { reason: "invalidResponse" };
   if (record.name === "AI_NoOutputGeneratedError" || record.message === "No text returned.") return { reason: "emptyResponse" };
   if (record.message === "Response limit exceeded.") return { reason: "responseLimit" };
+  if (record.message === "Reply cut off.") return { reason: "cutOff" };
   if (typeof record.message === "string" && (
     (record.name === "TypeError" && /fetch|network|cors/i.test(record.message))
     || /^(?:fetch failed|failed to fetch|net::ERR_[A-Z_]+)(?:$|\b)/i.test(record.message)

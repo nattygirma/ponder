@@ -415,6 +415,7 @@ export const enUS = {
       "invalidResponse": "The provider returned an incompatible response. Check the selected API protocol and streaming support.",
       "emptyResponse": "The model returned no text or completed tool calls.",
       "responseLimit": "The model response exceeded the conversation limit.",
+      "cutOff": "The reply reached its length limit before the model finished, so it was cut off. Ask for a shorter answer or fewer changes at once.",
     },
     "conflict": "A memory was changed elsewhere or the 50-memory limit was reached. Refresh and try again.",
     "historyFull": "Chats and discoveries reached the combined 500-record limit. Export and clear history before continuing.",

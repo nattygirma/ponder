@@ -403,6 +403,7 @@ export const pl = {
       "invalidResponse": "Dostawca zwrócił niezgodną odpowiedź. Sprawdź protokół API i obsługę strumieniowania.",
       "emptyResponse": "Model nie zwrócił tekstu ani ukończonych wywołań narzędzi.",
       "responseLimit": "Odpowiedź modelu przekroczyła limit długości rozmowy.",
+      "cutOff": "Odpowiedź osiągnęła limit długości, zanim model skończył, więc została ucięta. Poproś o krótszą odpowiedź lub mniej zmian naraz.",
     },
     "conflict": "Wspomnienie zostało zmienione w innym miejscu lub osiągnięto limit 50 wspomnień. Odśwież i spróbuj ponownie.",
     "historyFull": "Rozmowy i odkrycia osiągnęły łączny limit 500 zapisów. Przed kontynuowaniem wyeksportuj i wyczyść historię.",

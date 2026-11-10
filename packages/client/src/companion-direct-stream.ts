@@ -11,7 +11,7 @@ import type {
   CompanionTurnCompleteInput,
 } from "@ponder/shared";
 import type { ModelMessage } from "ai";
-import { companionFailureDiagnostics, isHostAiBalanceError, sealCompanionProcess } from "@ponder/shared";
+import { COMPANION_RESPONSE_MAX_CHARS, companionFailureDiagnostics, isHostAiBalanceError, sealCompanionProcess } from "@ponder/shared";
 import { throwIfAborted } from "./abort-signal";
 import { createClientAiModel } from "./ai-model";
 
@@ -233,20 +233,25 @@ export const streamDirectCompanion = async (
       messages,
       abortSignal: options.signal,
     });
+    let finishReason: string | undefined;
     for await (const part of result.fullStream) {
       throwIfAborted(options.signal);
       if (part.type === "error") throw part.error;
+      if (part.type === "finish-step" || part.type === "finish") finishReason = part.finishReason;
       if (part.type !== "text-delta") continue;
       const delta = typeof part.text === "string" ? part.text : "";
       if (!delta) continue;
       response += delta;
-      if (response.length > 16000) throw new Error("Response limit exceeded.");
+      if (response.length > COMPANION_RESPONSE_MAX_CHARS) throw new Error("Response limit exceeded.");
       options.onEvent({ type: "text-delta", text: delta });
       if (response.length - persisted >= 300) {
         await options.checkpoint({ response, process });
         persisted = response.length;
       }
     }
+    // The model hit its reply cap: the SDK runs none of that step's tool calls, even complete ones. Say so plainly
+    // (what it wrote so far is kept) instead of reporting an empty reply.
+    if (finishReason === "length") throw new Error("Reply cut off.");
     if (!response.trim() && !tools.some(item => item.status === "done") && !todos.length && !questions.length) {
       throw new Error("No text returned.");
     }

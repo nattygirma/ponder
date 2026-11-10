@@ -26,6 +26,8 @@ const bindings = (env) => ({
   connectionProviders: env.ALTSTACK?.connectionProviders ? () => env.ALTSTACK.connectionProviders() : undefined,
   // AppKeep's text model, paid from the owner's balance: Ponder offers it as the "AppKeep AI" service.
   hostAiText: env.ALTSTACK?.ai?.text ? (request, options) => env.ALTSTACK.ai.text(request, options) : undefined,
+  // The same model streamed, with no time limit (platform 2026-11 and later); older platforms answer in one piece.
+  hostAiStream: env.ALTSTACK?.ai?.stream ? (request, options) => env.ALTSTACK.ai.stream(request, options) : undefined,
 });
 
 export default {

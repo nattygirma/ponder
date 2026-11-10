@@ -147,7 +147,9 @@ export function CompanionChat({
     if (event.type === "process") setTurns(previous => previous.map(turn => turn.id === id ? { ...turn, process: event.text, response: "" } : turn));
     if (event.type === "tools") setTurns(previous => previous.map(turn => turn.id === id ? { ...turn, tools: event.tools, todos: event.todos, questions: event.questions } : turn));
     if (event.type === "done") setTurns(previous => previous.map(turn => turn.id === id ? event.turn : turn));
-    if (event.type === "error") setError(explainError(new ApiRequestError(event.code, 500, event.code)));
+    if (event.type === "error") {
+      setError(event.diagnostics?.reason === "cutOff" ? t("companion.failureDetails.cutOff") : explainError(new ApiRequestError(event.code, 500, event.code)));
+    }
   };
 
   const recoverTurn = async (id: string, fallback: string) => {

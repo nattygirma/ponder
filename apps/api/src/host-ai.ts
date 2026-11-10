@@ -9,11 +9,16 @@ export const HOST_AI_DISPLAY_NAME = "AppKeep AI";
 export const HOST_AI_MODELS = [
   { modelId: "claude-sonnet-5-5", displayName: "Claude Sonnet 5.5" },
   { modelId: "claude-opus-5-5", displayName: "Claude Opus 5.5" },
+  { modelId: "claude-haiku-5-5", displayName: "Claude Haiku 5.5" },
+  { modelId: "claude-fable-5-2", displayName: "Claude Fable 5.2" },
 ] as const;
 const DEFAULT_MODEL = HOST_AI_MODELS[0].modelId;
 const MAX_TOKENS = 16_000;
+// Streamed replies have no time limit, so they can be long; the platform lowers the cap to what the balance can pay for.
+export const HOST_AI_STREAM_MAX_TOKENS = 32_000;
 const DEFAULT_MAX_TOKENS = 4_096;
 const EFFORTS = new Set(["low", "medium", "high"]);
+const STREAM_EFFORTS = new Set(["low", "medium", "high", "xhigh", "max"]);
 const HOST_BLOCKS = new Set(["text", "tool_use", "tool_result", "thinking", "redacted_thinking"]);
 
 export type HostAiTextRequest = {
@@ -32,7 +37,15 @@ export type HostAiTextResult =
   | { ok: false; reason: "insufficient_funds"; required_micros: number; available_micros: number };
 export type HostAiText = (request: HostAiTextRequest, options?: { user?: string; ref?: string }) => Promise<HostAiTextResult>;
 
-export type HostAiEnvironment = { hostAiText?: HostAiText; ALTSTACK_APP_URL?: string };
+/** The host's streaming call (AppKeep's ai.stream): Claude's own Messages request in, Claude's own server-sent events out. */
+export type HostAiStreamRequest = Record<string, unknown> & { model: string; messages: HostAiTextRequest["messages"]; max_tokens: number };
+export type HostAiStreamResult =
+  | { ok: true; id: string; model: string; max_tokens: number; stream: ReadableStream<Uint8Array> }
+  | { ok: false; reason: "insufficient_funds"; required_micros: number; available_micros: number }
+  | { ok: false; reason: "error"; status: number; type: string; message: string };
+export type HostAiStream = (request: HostAiStreamRequest, options?: { user?: string; ref?: string }) => Promise<HostAiStreamResult>;
+
+export type HostAiEnvironment = { hostAiText?: HostAiText; hostAiStream?: HostAiStream; ALTSTACK_APP_URL?: string };
 
 export const hostAiProviderId = (workspaceId: string) => `aip_host_${workspaceId}`;
 export const hostAiModelConfigId = (workspaceId: string, modelId: string) =>
@@ -77,7 +90,7 @@ const systemText = (system: unknown) => {
 };
 
 /** An Anthropic Messages request as the host's one-turn call. Unsupported settings (temperature, tool_choice) are dropped. */
-export const toHostAiRequest = (body: unknown): { request: HostAiTextRequest; stream: boolean; model: string } => {
+export const toHostAiRequest = (body: unknown): { request: HostAiTextRequest; streamRequest: HostAiStreamRequest; stream: boolean; model: string } => {
   const input = asRecord(body);
   if (!input || !Array.isArray(input.messages) || !input.messages.length) throw new HostAiRequestError("messages is required.");
   const model = HOST_AI_MODELS.some((item) => item.modelId === input.model) ? input.model as string : DEFAULT_MODEL;
@@ -112,8 +125,27 @@ export const toHostAiRequest = (body: unknown): { request: HostAiTextRequest; st
   const requested = Math.round(Number(input.max_tokens ?? DEFAULT_MAX_TOKENS)) || DEFAULT_MAX_TOKENS;
   const effort = asRecord(input.output_config)?.effort;
   const system = systemText(input.system);
+  const outputConfig = asRecord(input.output_config);
+  const toolChoice = asRecord(input.tool_choice);
+  // The streaming call takes Claude's request nearly as sent: the system blocks keep their cache breakpoints, and
+  // thinking and tool_choice pass through (the platform checks them and drops what the models refuse).
+  const streamRequest: HostAiStreamRequest = {
+    model,
+    messages,
+    max_tokens: Math.min(HOST_AI_STREAM_MAX_TOKENS, Math.max(1, requested)),
+    output_config: {
+      ...(outputConfig?.format ? { format: outputConfig.format } : {}),
+      effort: STREAM_EFFORTS.has(String(effort)) ? effort : "low",
+    },
+    ...(typeof input.system === "string" || Array.isArray(input.system) ? { system: input.system } : {}),
+    ...(tools.length ? { tools } : {}),
+    ...(asRecord(input.thinking) ? { thinking: input.thinking } : {}),
+    ...(toolChoice && (toolChoice.type === "auto" || toolChoice.type === "none") ? { tool_choice: toolChoice } : {}),
+    ...(Array.isArray(input.stop_sequences) ? { stop_sequences: input.stop_sequences } : {}),
+  };
   return {
     stream: input.stream === true,
+    streamRequest,
     model,
     request: {
       model,

@@ -7,7 +7,8 @@ import { Hono } from "hono";
 import { consumeProviderEventStream } from "@ponder/shared/provider-event-stream";
 import { extractAiDirectStreamDelta } from "@ponder/shared/ai-generation";
 import { decryptAiCredential, getAiSettings, loadDefaultAiModelCredentials } from "./ai-service.ts";
-import { HOST_AI_PATH, hostAiProviderId } from "./host-ai.ts";
+import { HOST_AI_PATH, HOST_AI_STREAM_MAX_TOKENS, hostAiProviderId } from "./host-ai.ts";
+import { COMPANION_MAX_OUTPUT_TOKENS, companionMaxOutputTokens } from "./companion-prepare.ts";
 import { registerHostAiRoutes } from "./host-ai-routes.ts";
 
 // AppKeep AI: a workspace on AppKeep with no AI service gets one backed by the host's text model,
@@ -70,7 +71,7 @@ describe("AppKeep AI provider", () => {
     const settings = await getAiSettings(s.env.storage.db, WS, true, false, s.env);
     expect(settings.providers).toHaveLength(1);
     expect(settings.providers[0]).toMatchObject({ provider: "anthropic", displayName: "AppKeep AI", baseUrl: `${APP_URL}${HOST_AI_PATH}`, isEnabled: true });
-    expect(settings.providers[0].models.map((model) => model.modelId)).toEqual(["claude-opus-5-5", "claude-sonnet-5-5"].sort());
+    expect(settings.providers[0].models.map((model) => model.modelId).sort()).toEqual(["claude-fable-5-2", "claude-haiku-5-5", "claude-opus-5-5", "claude-sonnet-5-5"]);
     expect(settings.defaultModelId).toBeTruthy();
 
     const credentials = await loadDefaultAiModelCredentials(s.env.storage.db, WS, s.env);
@@ -79,6 +80,15 @@ describe("AppKeep AI provider", () => {
 
     await getAiSettings(s.env.storage.db, WS, true, false, s.env);
     expect(s.sqlite.query("SELECT COUNT(*) AS n FROM ai_provider_configs").get().n).toBe(1);
+  });
+
+  test("a workspace that got AppKeep AI earlier gets the models added since, and keeps its default", async () => {
+    const s = setup();
+    const first = await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    s.sqlite.query("DELETE FROM ai_models WHERE model_id IN ('claude-haiku-5-5', 'claude-fable-5-2')").run();
+    const later = await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    expect(later.providers[0].models.map((model) => model.modelId).sort()).toEqual(["claude-fable-5-2", "claude-haiku-5-5", "claude-opus-5-5", "claude-sonnet-5-5"]);
+    expect(later.defaultModelId).toBe(first.defaultModelId);
   });
 
   test("it follows the copy's address, and isn't added back over the workspace's own service", async () => {
@@ -220,5 +230,102 @@ describe("AppKeep AI provider", () => {
 
     const generated = await generateText({ model, prompt: "Say hi" });
     expect(generated.text).toBe("Found: nothing");
+  });
+});
+
+describe("AppKeep AI streaming (ai.stream)", () => {
+  const sse = (events) => new ReadableStream({
+    start(controller) {
+      for (const event of events) controller.enqueue(new TextEncoder().encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`));
+      controller.close();
+    },
+  });
+  const claudeEvents = (text, stopReason = "end_turn") => [
+    { type: "message_start", message: { id: "msg_s", type: "message", role: "assistant", model: "claude-sonnet-5-5", content: [], stop_reason: null, usage: { input_tokens: 20, output_tokens: 0 } } },
+    { type: "content_block_start", index: 0, content_block: { type: "text", text: "" } },
+    ...text.split(" ").map((word, i) => ({ type: "content_block_delta", index: 0, delta: { type: "text_delta", text: (i ? " " : "") + word } })),
+    { type: "content_block_stop", index: 0 },
+    { type: "message_delta", delta: { stop_reason: stopReason, stop_sequence: null }, usage: { output_tokens: 9 } },
+    { type: "message_stop" },
+  ];
+  const streaming = (result) => {
+    const s = setup();
+    s.streamCalls = [];
+    s.env.hostAiStream = async (request) => { s.streamCalls.push(request); return result(request); };
+    return s;
+  };
+
+  test("a streamed request goes to the host's stream as Claude's request and comes back as it arrives", async () => {
+    const s = streaming(() => ({ ok: true, id: "air_1", model: "claude-sonnet-5-5", max_tokens: 32_000, stream: sse(claudeEvents("Hello from the stream.")) }));
+    await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    const key = await keyFor(s);
+    const system = [{ type: "text", text: "Be brief.", cache_control: { type: "ephemeral" } }];
+    const res = await post(s, key, {
+      model: "claude-opus-5-5", stream: true, max_tokens: 100_000, system, temperature: 0.2,
+      thinking: { type: "adaptive", display: "summarized" }, tool_choice: { type: "auto" },
+      tools: [{ name: "lookup", input_schema: { type: "object" } }, { type: "web_search_20260209", name: "web_search" }],
+      messages: [{ role: "user", content: "hi" }],
+    });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("content-type")).toContain("text/event-stream");
+    expect(res.headers.get("x-appkeep-ai-request")).toBe("air_1");
+    expect(res.headers.get("access-control-allow-origin")).toBe("*");
+    expect(await res.text()).toContain('"text":" stream."');
+    expect(s.calls).toHaveLength(0);
+    const [sent] = s.streamCalls;
+    expect(sent.model).toBe("claude-opus-5-5");
+    expect(sent.max_tokens).toBe(HOST_AI_STREAM_MAX_TOKENS);
+    expect(sent.system).toEqual(system);
+    expect(sent.thinking).toEqual({ type: "adaptive", display: "summarized" });
+    expect(sent.tool_choice).toEqual({ type: "auto" });
+    expect(sent.output_config).toEqual({ effort: "low" });
+    expect(sent.tools.map((t) => t.name)).toEqual(["lookup"]);
+    expect("temperature" in sent).toBe(false);
+  });
+
+  test("a request that isn't streamed still answers in one piece", async () => {
+    const s = streaming(() => { throw new Error("must not stream"); });
+    await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    const res = await post(s, await keyFor(s), { messages: [{ role: "user", content: "hi" }] });
+    expect(res.status).toBe(200);
+    expect((await res.json()).content.at(-1).text).toBe("Hello from AppKeep.");
+    expect(s.calls).toHaveLength(1);
+  });
+
+  test("a low balance and the host's own errors keep their status", async () => {
+    let next;
+    const s = streaming(() => next());
+    await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    const key = await keyFor(s);
+    const ask = { stream: true, messages: [{ role: "user", content: "hi" }] };
+    next = () => ({ ok: false, reason: "insufficient_funds", required_micros: 50_000, available_micros: 0 });
+    const broke = await post(s, key, ask);
+    expect(broke.status).toBe(402);
+    expect((await broke.json()).error.type).toBe("billing_error");
+    next = () => ({ ok: false, reason: "error", status: 429, type: "rate_limit_error", message: "Claude is busy." });
+    const busy = await post(s, key, ask);
+    expect(busy.status).toBe(429);
+    expect(await busy.json()).toEqual({ type: "error", error: { type: "rate_limit_error", message: "Claude is busy." } });
+    next = () => { throw new Error("connection lost"); };
+    const lost = await post(s, key, ask);
+    expect(lost.status).toBe(502);
+  });
+
+  test("the AI SDK's Anthropic client streams through it and sees a cut-off reply", async () => {
+    const s = streaming(() => ({ ok: true, id: "air_2", model: "claude-sonnet-5-5", max_tokens: 50, stream: sse(claudeEvents("Partial answer", "max_tokens")) }));
+    await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    const anthropic = createAnthropic({ baseURL: `${APP_URL}${HOST_AI_PATH}`, apiKey: await keyFor(s), fetch: s.fetchApp });
+    const result = streamText({ model: anthropic("claude-sonnet-5-5"), prompt: "Say hi", maxOutputTokens: 50 });
+    let text = "";
+    for await (const delta of result.textStream) text += delta;
+    expect(text).toBe("Partial answer");
+    expect(await result.finishReason).toBe("length");
+  });
+
+  test("AppKeep AI gets a long reply cap, Claude and Gemini a medium one, other services the small default", () => {
+    expect(companionMaxOutputTokens({ provider: "anthropic", apiKey: `pkhost.${WS}.${"a".repeat(48)}` })).toBe(HOST_AI_STREAM_MAX_TOKENS);
+    expect(companionMaxOutputTokens({ provider: "anthropic", apiKey: "sk-ant-x" })).toBe(8192);
+    expect(companionMaxOutputTokens({ provider: "google", apiKey: "g" })).toBe(8192);
+    expect(companionMaxOutputTokens({ provider: "openai-compatible", apiKey: "o" })).toBe(COMPANION_MAX_OUTPUT_TOKENS);
   });
 });

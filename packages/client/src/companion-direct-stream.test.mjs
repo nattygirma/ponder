@@ -208,6 +208,22 @@ test("a resumed turn with answered questions completes after the reply (#637)", 
   expect(completed[0]).toMatchObject({ status: "completed", response: "Translated note." });
 });
 
+test("a reply that hits its length cap fails as cut off and keeps what it wrote", async () => {
+  const { streamDirectCompanion } = await import("./companion-direct-stream.ts");
+  const events = [];
+  const completed = [];
+  await streamDirectCompanion(preparedTurn, {
+    fetch: async () => new Response('data: {"choices":[{"delta":{"content":"Partial reply"}}]}\n\ndata: {"choices":[{"delta":{},"finish_reason":"length"}]}\n\ndata: [DONE]\n\n', { headers: { "content-type": "text/event-stream" } }),
+    onEvent: event => events.push(event),
+    executeTool: async () => { throw new Error("must not execute tools"); },
+    checkpoint: async () => {},
+    complete: async body => { completed.push(body); return { turn: { ...preparedTurn.turn, ...body } }; },
+  });
+  expect(completed).toHaveLength(1);
+  expect(completed[0]).toMatchObject({ status: "failed", response: "Partial reply" });
+  expect(events.at(-1)).toEqual({ type: "error", code: "companion_generation_failed", diagnostics: { reason: "cutOff" } });
+});
+
 describe("direct companion failure codes", () => {
   const apiError = (statusCode, url) => Object.assign(new Error("Payment required"), { name: "AI_APICallError", statusCode, url });
 

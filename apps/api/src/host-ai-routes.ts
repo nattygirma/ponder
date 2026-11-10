@@ -72,6 +72,22 @@ export const registerHostAiRoutes = (app: Hono<AppEnv>) => {
       const message = error instanceof HostAiRequestError ? error.message : "The AI request isn't valid JSON.";
       return json(anthropicError("invalid_request_error", message), 400);
     }
+    // Streamed: the platform's stream goes straight to the browser as it arrives, with no time limit.
+    const hostAiStream = c.env.hostAiStream;
+    if (translated.stream && hostAiStream) {
+      let started: Awaited<ReturnType<typeof hostAiStream>>;
+      try {
+        started = await hostAiStream(translated.streamRequest);
+      } catch (error) {
+        const message = error instanceof Error && error.message ? error.message : "AppKeep AI failed. Try again.";
+        return json(anthropicError("api_error", message), 502);
+      }
+      if (!started.ok && started.reason === "insufficient_funds") return json(anthropicError("billing_error", lowBalanceMessage(started.required_micros)), 402);
+      if (!started.ok) return json(anthropicError(started.type, started.message), started.status >= 400 && started.status < 600 ? started.status : 502);
+      return new Response(started.stream, {
+        headers: { ...CORS_HEADERS, "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-store", "x-appkeep-ai-request": started.id },
+      });
+    }
     let result: Awaited<ReturnType<typeof hostAiText>>;
     try {
       result = await hostAiText(translated.request);

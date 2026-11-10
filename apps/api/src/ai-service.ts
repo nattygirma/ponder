@@ -226,6 +226,18 @@ export const ensureHostAiProvider = async (
       await db.prepare(`UPDATE ai_provider_configs SET base_url = ?, updated_at = ? WHERE id = ? AND workspace_id = ?`)
         .bind(baseUrl, new Date().toISOString(), providerId, workspaceId).run();
     }
+    // Models AppKeep AI gained after this workspace got it show up in the model picker too.
+    const listed = await db.prepare(`SELECT model_id FROM ai_models WHERE provider_config_id = ?`)
+      .bind(providerId).all<{ model_id: string }>();
+    const have = new Set((listed.results ?? []).map((row) => row.model_id));
+    const missing = HOST_AI_MODELS.filter((model) => !have.has(model.modelId));
+    if (missing.length) {
+      const now = new Date().toISOString();
+      await db.batch(missing.map((model) => db.prepare(
+        `INSERT OR IGNORE INTO ai_models (id, provider_config_id, model_id, display_name, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+      ).bind(hostAiModelConfigId(workspaceId, model.modelId), providerId, model.modelId, model.displayName, now, now)));
+    }
     return;
   }
   const others = await db.prepare(`SELECT COUNT(*) AS count FROM ai_provider_configs WHERE workspace_id = ?`)
