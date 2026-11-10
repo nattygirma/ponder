@@ -7,7 +7,7 @@ import { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { createPonderClient } from "../../../../packages/client/src/index";
 import { createPonderZipStream, parsePonderZip, restorePonderZip, validateBackupRelationships, type JsonBackupSource } from "../../../../packages/shared/src/backup-archive";
-import type { JsonBackupManifest } from "../../../../packages/shared/src/backup";
+import { EMPTY_JSON_BACKUP_PAGES, type JsonBackupManifest, type JsonBackupPages } from "../../../../packages/shared/src/backup";
 import type { AuthSession, Notebook, Resource, AiPromptTemplate } from "../../../../packages/shared/src/types";
 import { encryptArchive, decryptArchive } from "./encrypted-archive.mjs";
 
@@ -123,6 +123,14 @@ const runExport = async () => {
     signal, resourceOrigin: input.context.baseUrl,
     listNotebooks: async () => ({ notebooks: await collect<Notebook>("notebooks") }),
     listPrompts: async () => ({ prompts: await collect<AiPromptTemplate>("prompts") }),
+    // Servers from before page backups answer 404; their backups stay plain notes.
+    listPages: async () => {
+      const context = input.context;
+      const response = await fetchWithDiagnostics(`${context.baseUrl}/api/v1/backups/pages`, { signal, headers: { Authorization: `Bearer ${context.token}`, "Accept-Language": context.locale ?? "en-US" }, credentials: "omit" });
+      if (response.status === 404) return EMPTY_JSON_BACKUP_PAGES;
+      if (!response.ok) fail("backup_request_failed", `Backup request failed (${response.status}).`, response.status);
+      return response.json() as Promise<JsonBackupPages>;
+    },
     getPage: async (offset) => {
       const result = await page<Awaited<ReturnType<JsonBackupSource["getPage"]>> & { nextCursor: string | null }>("memos", cursor);
       resourceByUrl.clear();
@@ -236,7 +244,7 @@ const runImport = async () => {
     });
     await restorePonderZip(backup, {
       restoreNotebooks: client.restoreJsonNotebooks, restoreMemos: client.restoreJsonMemos,
-      restorePrompts: client.restoreJsonAiPrompts, createResourceRestoreSink: client.createJsonResourceRestoreSink,
+      restorePrompts: client.restoreJsonAiPrompts, restorePages: client.restoreJsonPages, createResourceRestoreSink: client.createJsonResourceRestoreSink,
     }, (progress) => send("progress", { stage: "restoring", ...progress }));
     return { manifest: backup.manifest };
   } finally { await archive?.close(); await rm(staged, { force: true }); }

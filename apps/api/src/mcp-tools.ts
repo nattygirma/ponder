@@ -1,4 +1,5 @@
 import { posterPatchInputSchema, posterOperationsInputSchema } from "./mcp-poster-schema";
+import { WORKSPACE_IDEMPOTENT_TOOLS, WORKSPACE_NON_DESTRUCTIVE_TOOLS, WORKSPACE_READ_ONLY_TOOLS, WORKSPACE_TOOL_DEFINITIONS } from "./mcp-workspace-tools";
 import { ARCHITECTURE_RESOURCE_ICONS, INFOGRAPHIC_NOTE_TEMPLATES, POSTER_FORMATS, POSTER_TEMPLATES, POSTER_TEMPLATE_SELECTION_INSTRUCTION, TABLE_FIELD_TYPES } from "@ponder/shared";
 
 const DIAGRAM_IR_NODE_TYPES = [
@@ -1109,16 +1110,19 @@ const IDEMPOTENT_MCP_TOOLS = new Set([
   "restore_default_ai_instructions",
 ]);
 
-export const MCP_TOOLS = MCP_TOOL_DEFINITIONS.map((tool) => {
-  const readOnly = READ_ONLY_MCP_TOOLS.has(tool.name);
+// The note tools, then the Notion-style tools for pages, databases, comments, versions and people.
+const ALL_TOOL_DEFINITIONS: { name: string; description: string; inputSchema: unknown }[] = [...MCP_TOOL_DEFINITIONS, ...WORKSPACE_TOOL_DEFINITIONS];
+
+export const MCP_TOOLS = ALL_TOOL_DEFINITIONS.map((tool) => {
+  const readOnly = READ_ONLY_MCP_TOOLS.has(tool.name) || WORKSPACE_READ_ONLY_TOOLS.has(tool.name);
   return {
     ...tool,
     title: tool.name.split("_").map((part) => part[0]?.toUpperCase() + part.slice(1)).join(" "),
     outputSchema: { type: "object" },
     annotations: {
       readOnlyHint: readOnly,
-      destructiveHint: readOnly ? false : !NON_DESTRUCTIVE_MCP_TOOLS.has(tool.name),
-      idempotentHint: readOnly || IDEMPOTENT_MCP_TOOLS.has(tool.name),
+      destructiveHint: readOnly ? false : !(NON_DESTRUCTIVE_MCP_TOOLS.has(tool.name) || WORKSPACE_NON_DESTRUCTIVE_TOOLS.has(tool.name)),
+      idempotentHint: readOnly || IDEMPOTENT_MCP_TOOLS.has(tool.name) || WORKSPACE_IDEMPOTENT_TOOLS.has(tool.name),
       openWorldHint: false,
     },
   };

@@ -25,7 +25,16 @@ import {
 
 import type { ModelMessage, UserContent } from "ai";
 import { AppError } from "./app-error";
-import { decryptSecret } from "./secret-encryption";
+import {
+  createHostAiKey,
+  HOST_AI_DISPLAY_NAME,
+  HOST_AI_MODELS,
+  type HostAiEnvironment,
+  hostAiBaseUrl,
+  hostAiModelConfigId,
+  hostAiProviderId,
+} from "./host-ai";
+import { decryptSecret, encryptSecret } from "./secret-encryption";
 import type { DatabaseAdapter } from "./storage-contract";
 
 export {
@@ -195,13 +204,62 @@ const withAiCredentialAvailability = async (
   }
 };
 
+/**
+ * On a host that offers AI (AppKeep), a workspace with no AI service of its own gets "AppKeep AI", with its
+ * models and a default, so AI works without anyone's key. It's added once: a workspace that removes it and
+ * keeps its own service doesn't get it back. Its address follows the copy's own address if that changes.
+ */
+export const ensureHostAiProvider = async (
+  db: DatabaseAdapter,
+  workspaceId: string,
+  environment?: AiCredentialEnvironment & HostAiEnvironment,
+) => {
+  const baseUrl = environment ? hostAiBaseUrl(environment) : null;
+  const encryptionKey = environment ? resolvePrimaryAiCredentialEncryptionKey(environment) : undefined;
+  if (!baseUrl || !encryptionKey) return;
+  const providerId = hostAiProviderId(workspaceId);
+  const existing = await db.prepare(
+    `SELECT base_url FROM ai_provider_configs WHERE id = ? AND workspace_id = ?`,
+  ).bind(providerId, workspaceId).first<{ base_url: string }>();
+  if (existing) {
+    if (existing.base_url !== baseUrl) {
+      await db.prepare(`UPDATE ai_provider_configs SET base_url = ?, updated_at = ? WHERE id = ? AND workspace_id = ?`)
+        .bind(baseUrl, new Date().toISOString(), providerId, workspaceId).run();
+    }
+    return;
+  }
+  const others = await db.prepare(`SELECT COUNT(*) AS count FROM ai_provider_configs WHERE workspace_id = ?`)
+    .bind(workspaceId).first<{ count: number }>();
+  if (Number(others?.count ?? 0) > 0) return;
+  const now = new Date().toISOString();
+  const defaultModelId = hostAiModelConfigId(workspaceId, HOST_AI_MODELS[0].modelId);
+  await db.batch([
+    db.prepare(
+      `INSERT OR IGNORE INTO ai_provider_configs (
+         id, workspace_id, provider, display_name, base_url, api_key_encrypted, is_enabled, created_at, updated_at
+       ) VALUES (?, ?, 'anthropic', ?, ?, ?, 1, ?, ?)`,
+    ).bind(providerId, workspaceId, HOST_AI_DISPLAY_NAME, baseUrl, await encryptSecret(createHostAiKey(workspaceId), encryptionKey), now, now),
+    ...HOST_AI_MODELS.map((model) => db.prepare(
+      `INSERT OR IGNORE INTO ai_models (id, provider_config_id, model_id, display_name, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    ).bind(hostAiModelConfigId(workspaceId, model.modelId), providerId, model.modelId, model.displayName, now, now)),
+    db.prepare(
+      `INSERT INTO ai_workspace_settings (workspace_id, default_model_id, created_at, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(workspace_id) DO UPDATE SET default_model_id = excluded.default_model_id, updated_at = excluded.updated_at
+       WHERE ai_workspace_settings.default_model_id IS NULL`,
+    ).bind(workspaceId, defaultModelId, now, now),
+  ]);
+};
+
 export const getAiSettings = async (
   db: DatabaseAdapter,
   workspaceId: string,
   encryptionConfigured: boolean,
   readOnly: boolean,
-  environment?: AiCredentialEnvironment,
+  environment?: AiCredentialEnvironment & HostAiEnvironment,
 ): Promise<AiSettings> => {
+  if (!readOnly) await ensureHostAiProvider(db, workspaceId, environment);
   const [providersResult, modelsResult, defaultModelId] = await Promise.all([
     db.prepare(
       `${selectProviderSql} WHERE workspace_id = ? ORDER BY created_at ASC, id ASC`,
@@ -421,8 +479,9 @@ export const prepareAiTranscriptionCredentials = async (
 export const loadDefaultAiModelCredentials = async (
   db: DatabaseAdapter,
   workspaceId: string,
-  environment: AiCredentialEnvironment,
+  environment: AiCredentialEnvironment & HostAiEnvironment,
 ) => {
+  await ensureHostAiProvider(db, workspaceId, environment);
   const row = await db.prepare(
     `SELECT
        models.id AS model_config_id,
@@ -462,7 +521,7 @@ export const loadDefaultAiModelCredentials = async (
 export const getDefaultAiDirectTarget = async (
   db: DatabaseAdapter,
   workspaceId: string,
-  environment: AiCredentialEnvironment,
+  environment: AiCredentialEnvironment & HostAiEnvironment,
 ) => {
   const credentials = await loadDefaultAiModelCredentials(db, workspaceId, environment);
   return {

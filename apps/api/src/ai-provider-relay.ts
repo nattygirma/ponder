@@ -3,6 +3,7 @@ import { bodyLimit } from "hono/body-limit";
 import type { AppEnv } from "./api-context";
 import { apiError } from "./http-errors";
 import { getWorkspaceId, requireScopes } from "./request-auth";
+import { hostAiBaseUrl } from "./host-ai";
 
 type Provider = { provider: string; base_url: string };
 const relayHeaders = new Set([
@@ -61,6 +62,13 @@ export const registerAiProviderRelay = (app: Hono<AppEnv>, fetchProvider: typeof
         method, headers, redirect: "manual", signal: c.req.raw.signal,
         ...(method === "POST" ? { body: c.req.raw.body, duplex: "half" } : {}),
       };
+      // AppKeep AI is this app's own service: answer it here instead of calling out to our own address.
+      const hostBase = hostAiBaseUrl(c.env);
+      if (hostBase && target.href.startsWith(`${hostBase}/`)) {
+        let executionContext: typeof c.executionCtx | undefined;
+        try { executionContext = c.executionCtx; } catch { /* not every runtime has one */ }
+        return await app.fetch(new Request(target, requestInit), c.env, executionContext);
+      }
       const upstream = await fetchProvider(target, requestInit);
       if (upstream.status >= 300 && upstream.status < 400) {
         await upstream.body?.cancel();

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
+import { prerender } from "react-dom/static";
 import { createInstance } from "i18next";
 import { I18nextProvider } from "react-i18next";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -40,7 +40,8 @@ describe("infographic sidebar note links", () => {
   test("renders note links as in-app anchors and leaves external links as buttons", async () => {
     const i18n = createInstance();
     await i18n.init({ lng: "en-US", resources: { "en-US": { translation: enUS } } });
-    const markup = renderToStaticMarkup(createElement(
+    // prerender waits for the reply's Markdown renderer, which loads on first use.
+    const { prelude } = await prerender(createElement(
       QueryClientProvider,
       { client: queryClient },
       createElement(
@@ -52,6 +53,7 @@ describe("infographic sidebar note links", () => {
         }),
       ),
     ));
+    const markup = await new Response(prelude).text();
     expect(markup).toContain('href="#memo=memo_demo_infographic"');
     expect(markup).toContain('href="#memo=memo_03de025fc0134b7da0d155c2c1686b92"');
     expect(markup).toContain("演进里程碑");

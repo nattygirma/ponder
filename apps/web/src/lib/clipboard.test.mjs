@@ -351,7 +351,7 @@ describe("copyImageBlobToClipboard", () => {
   });
 
   test("share image dialog surfaces the existing copy failure message", () => {
-    const source = readFileSync(new URL("../components/dialogs/ShareNoteImageDialog.tsx", import.meta.url), "utf8");
+    const source = readFileSync(new URL("../components/dialogs/ShareNoteImageDialogContent.tsx", import.meta.url), "utf8");
     expect(source).toContain('t("editor.imageShare.copyFailed")');
     expect(source).toContain('role="alert"');
   });

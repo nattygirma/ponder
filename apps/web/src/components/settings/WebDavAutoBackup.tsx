@@ -32,7 +32,7 @@ export const WebDavAutoBackup = () => {
       saveWebDavBackupSchedule({ ...schedule, lastAttemptAt: attemptAt });
       try {
         const temporary = await createPonderZipTemporaryFile(
-          { listNotebooks: api.listNotebooks, listPrompts: api.listAiPrompts, getPage: api.getJsonBackupPage, getResourceResponse: api.getResourceResponse },
+          { listNotebooks: api.listNotebooks, listPrompts: api.listAiPrompts, listPages: api.getPageBackup, getPage: api.getJsonBackupPage, getResourceResponse: api.getResourceResponse },
           { ponderVersion: __PONDER_APP_VERSION__, buildId: __PONDER_BUILD_ID__ }
         );
         await uploadWebDavBackup(config, password, temporary.file).finally(temporary.cleanup);

@@ -27,6 +27,7 @@ import type {
   JsonBackupMemo,
   JsonBackupNotebook,
   JsonBackupAiPrompt,
+  JsonBackupPages,
   JsonBackupRevision,
   MemoDetail,
   AppNotification,
@@ -1276,6 +1277,7 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
       request<{
         available: boolean;
         canManage: boolean;
+        unavailableProviders?: string[] | null;
         accounts: { id: string; provider: string; name: string; status: "active" | "expired"; connectedAt: string }[];
       }>("/api/v1/connections"),
 
@@ -1769,6 +1771,14 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
       request<{ ok: true }>("/api/v1/restores/json/memos", {
         method: "POST",
         body: JSON.stringify({ memos }),
+      }),
+
+    getPageBackup: () => request<JsonBackupPages>("/api/v1/backups/pages"),
+
+    restoreJsonPages: (pages: Partial<JsonBackupPages>) =>
+      request<{ ok: true }>("/api/v1/restores/json/pages", {
+        method: "POST",
+        body: JSON.stringify(pages),
       }),
 
     restoreJsonAiPrompts: (prompts: JsonBackupAiPrompt[]) =>

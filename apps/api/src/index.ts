@@ -73,6 +73,7 @@ import { registerAuthRoutes } from "./auth-routes";
 import { registerApiTokenRoutes } from "./api-token-routes";
 import { registerObjectStorageRoutes } from "./object-storage-routes";
 import { registerAiRoutes } from "./ai-routes";
+import { registerHostAiRoutes } from "./host-ai-routes";
 import { registerPluginCapabilityRoutes } from "./plugin-capability-routes";
 import { registerCompanionRoutes } from "./companion-routes";
 import { registerAiPromptRoutes } from "./ai-prompt-routes";
@@ -153,6 +154,9 @@ const DEMO_RESET_LEASE_MS = 5 * 60 * 1000;
 const DEMO_RESET_COOLDOWN_MS = 60 * 1000;
 const DEFAULT_R2_BUCKET_NAME = "ponder-resources";
 const app = new Hono<AppEnv>();
+
+// AppKeep AI answers browsers on any origin with its own CORS rules, so it goes before the API's.
+registerHostAiRoutes(app);
 
 // Packaged desktop uses ponder-app://app; the previous file:// renderer sent Origin "null".
 const API_CORS_ORIGINS = [

@@ -1,4 +1,4 @@
-import { PONDER_ZIP_FORMAT, PONDER_ZIP_FORMAT_VERSION, JsonBackupManifestSchema, JsonBackupAiPromptSchema, JsonBackupMemoSchema, JsonBackupNotebookSchema, type JsonBackupManifest, type JsonBackupAiPrompt, type JsonBackupMemo, type JsonBackupNotebook, type JsonBackupResource, type JsonBackupRevision } from "./backup";
+import { PONDER_ZIP_FORMAT, PONDER_ZIP_FORMAT_VERSION, EMPTY_JSON_BACKUP_PAGES, JsonBackupManifestSchema, JsonBackupAiPromptSchema, JsonBackupMemoSchema, JsonBackupNotebookSchema, JsonBackupPagesSchema, type JsonBackupManifest, type JsonBackupAiPrompt, type JsonBackupMemo, type JsonBackupNotebook, type JsonBackupPages, type JsonBackupResource, type JsonBackupRevision } from "./backup";
 import type { MemoDetail, Notebook, Resource } from "./types";
 import { Reader, ZipReader, ZipWriter, Uint8ArrayReader, type CreateReadableOptions } from "@zip.js/zip.js/index-native.js";
 import { buildNoteMarkdown, buildNotebookExportPaths, getExportResourceExtension, replaceExportResourceUrl, sanitizeExportPathSegment, uniqueExportName } from "./backup-markdown";
@@ -51,6 +51,8 @@ export type JsonBackupSource = {
   getResourceResponse?: (resourceUrl: string) => Promise<Response>;
   getResourceBlob?: (resourceUrl: string) => Promise<Blob>;
   listPrompts: () => Promise<{ prompts: JsonBackupAiPrompt[] }>;
+  /** Page tree, databases and comments. Sources without it write a backup of plain notes. */
+  listPages?: () => Promise<JsonBackupPages>;
 };
 
 type JsonResourceRestoreSink = {
@@ -67,6 +69,8 @@ type JsonRestoreTarget = {
     metadata: JsonBackupResource,
   ) => Promise<JsonResourceRestoreSink>;
   restorePrompts: (prompts: JsonBackupAiPrompt[]) => Promise<unknown>;
+  /** Without it, pages come back as plain notes. */
+  restorePages?: (pages: Partial<JsonBackupPages>) => Promise<unknown>;
 };
 
 export type ParsedPonderZip = {
@@ -74,6 +78,7 @@ export type ParsedPonderZip = {
   notebooks: JsonBackupNotebook[];
   memos: JsonBackupMemo[];
   prompts: JsonBackupAiPrompt[];
+  pages: JsonBackupPages;
   archive: Blob;
 };
 
@@ -93,6 +98,22 @@ const toBackupNotebook = (notebook: Notebook): JsonBackupNotebook => ({
   sortOrder: notebook.sortOrder,
   createdAt: notebook.createdAt, updatedAt: notebook.updatedAt,
 });
+
+/** Page data for exactly these notes: anything pointing at a note or database outside them is dropped. */
+export const keepPagesFor = (pages: JsonBackupPages, memoIds: Set<string>): JsonBackupPages => {
+  const databases = pages.databases.filter((database) => memoIds.has(database.pageMemoId));
+  const databaseIds = new Set(databases.map((database) => database.id));
+  return {
+    pages: pages.pages.filter((page) => memoIds.has(page.memoId)).map((page) => ({
+      ...page,
+      parentId: page.parentId !== null && memoIds.has(page.parentId) ? page.parentId : null,
+      databaseId: page.databaseId !== null && databaseIds.has(page.databaseId) ? page.databaseId : null,
+    })),
+    databases,
+    views: pages.views.filter((view) => databaseIds.has(view.databaseId)),
+    comments: pages.comments.filter((comment) => memoIds.has(comment.memoId)),
+  };
+};
 
 export const createPonderZipStream = async (
   source: JsonBackupSource,
@@ -133,6 +154,7 @@ export const createPonderZipStream = async (
       let total = 0;
       let revisionCount = 0;
       let resourceCount = 0;
+      const writtenMemoIds = new Set<string>();
       while (true) {
         abort.signal.throwIfAborted();
         const page = await source.getPage(offset, 25, cursor);
@@ -168,6 +190,7 @@ export const createPonderZipStream = async (
           await addJson(`memos/${memo.id}.json`, { memo, revisions, resources });
           await zip.add(`${directory}/${stem}.md`, new Uint8ArrayReader(strToU8(buildNoteMarkdown(markdown, memo, notebookPath))), { signal: abort.signal });
           revisionCount += revisions.length;
+          writtenMemoIds.add(memo.id);
           completed++;
           onProgress?.({ completed, total });
         }
@@ -175,6 +198,8 @@ export const createPonderZipStream = async (
         offset = page.nextOffset;
         cursor = page.nextCursor ?? undefined;
       }
+      // Read after the notes, and kept to the notes in this archive, so it never points outside it.
+      if (source.listPages) await addJson("pages.json", keepPagesFor(await source.listPages(), writtenMemoIds));
       const manifest: JsonBackupManifest = {
         format: PONDER_ZIP_FORMAT, formatVersion: PONDER_ZIP_FORMAT_VERSION, schemaVersion: 1,
         ...version, exportedAt: new Date().toISOString(), includesTrash: false,
@@ -266,6 +291,7 @@ const MAX_RESTORED_IMAGE_BYTES = 100 * 1024 * 1024;
 const isStructuredZipEntry = (path: string) => path === "manifest.json"
   || path === "notebooks.json"
   || path === "prompts.json"
+  || path === "pages.json"
   || /^memos\/[^/]+\.json$/.test(path);
 
 const concatZipChunks = (chunks: Uint8Array[], total: number) => {
@@ -407,6 +433,13 @@ export const parsePonderZip = async (
     throw new PonderZipImportError("invalidData", promptsResult.error);
   }
   const prompts = promptsResult.data as JsonBackupAiPrompt[];
+  // pages.json is optional: older backups and plain-note sources don't have it.
+  const pagesValue = structuredEntries.has("pages.json") ? parseJsonEntry(structuredEntries, "pages.json") : EMPTY_JSON_BACKUP_PAGES;
+  const pagesResult = JsonBackupPagesSchema.safeParse(pagesValue);
+  if (!pagesResult.success) {
+    throw new PonderZipImportError("invalidData", pagesResult.error);
+  }
+  const pages = pagesResult.data;
   const memoPaths = [...structuredEntries.keys()].filter((path) => /^memos\/[^/]+\.json$/.test(path)).sort();
   const memos: JsonBackupMemo[] = [];
   for (const path of memoPaths) {
@@ -451,7 +484,18 @@ export const parsePonderZip = async (
     throw new PonderZipImportError("incompleteResources");
   }
 
-  return { manifest, notebooks, memos, prompts, archive: blob };
+  const memoIds = new Set(memos.map((memo) => memo.memo.id));
+  const databaseIds = new Set(pages.databases.map((database) => database.id));
+  if (
+    pages.pages.some((page) => !memoIds.has(page.memoId) || (page.parentId !== null && !memoIds.has(page.parentId)) || (page.databaseId !== null && !databaseIds.has(page.databaseId)))
+    || pages.databases.some((database) => !memoIds.has(database.pageMemoId))
+    || pages.views.some((view) => !databaseIds.has(view.databaseId))
+    || pages.comments.some((comment) => !memoIds.has(comment.memoId))
+  ) {
+    throw new PonderZipImportError("invalidData");
+  }
+
+  return { manifest, notebooks, memos, prompts, pages, archive: blob };
 };
 
 /** The new desktop path validates relationships before any target write. */
@@ -515,6 +559,18 @@ export const restorePonderZip = async (
     await target.restoreMemos(batch);
     completed += batch.length;
     onProgress?.({ completed, total });
+  }
+
+  // Every note exists now, so the tree, databases and comments can point at them.
+  // Databases first, then views, pages and comments, each in requests of at most 500.
+  const pages = backup.pages ?? EMPTY_JSON_BACKUP_PAGES;
+  if (target.restorePages) {
+    for (const key of ["databases", "views", "pages", "comments"] as const) {
+      const list = pages[key];
+      for (let index = 0; index < list.length; index += 500) {
+        await target.restorePages({ [key]: list.slice(index, index + 500) });
+      }
+    }
   }
 
   const resourcesByPath = new Map(

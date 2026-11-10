@@ -94,6 +94,7 @@ import {
     normalizeFilename,
   } from "./resource-service";
 import { assertScope, getActorLabel, getAuditActor } from "./request-auth";
+import { callWorkspaceTool, isWorkspaceTool } from "./mcp-workspace-tools";
 import { restoreMissingDefaultAiPrompts } from "./ai-prompt-seed";
 import {
   getAiPromptTemplateRow,
@@ -1278,6 +1279,7 @@ export const callMcpTool = async (
       };
     }
     default:
+      if (isWorkspaceTool(name)) return callWorkspaceTool(c, auth, name, args);
       throw new Error(`Unknown tool: ${name}`);
   }
 };

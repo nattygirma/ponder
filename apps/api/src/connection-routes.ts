@@ -13,11 +13,17 @@ const requireConnectionOwner = (c: AppContext) => {
 export const registerConnectionRoutes = (app: Hono<AppEnv>) => {
   app.get("/api/v1/connections", (c) =>
     guarded(c, "read:memos", async () => {
-      const accounts = await listAccounts(c);
+      const [accounts, providers] = await Promise.all([
+        listAccounts(c),
+        c.env.listConnections && c.env.connectionProviders ? c.env.connectionProviders().catch(() => null) : null,
+      ]);
       return c.json({
         // False when the app isn't running on a host that offers login connections.
         available: Boolean(c.env.listConnections),
         canManage: canUseConnections(c),
+        // Providers the host can't connect yet (no login set up there): shown as coming soon.
+        // Null when the host doesn't say, and every provider is offered.
+        unavailableProviders: providers ? providers.filter((item) => !item.available).map((item) => item.provider) : null,
         accounts: accounts.map((account) => ({
           id: account.id,
           provider: account.provider,

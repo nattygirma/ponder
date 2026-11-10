@@ -155,6 +155,82 @@ export const RestoreJsonMemosSchema = z.object({
   memos: z.array(JsonBackupMemoSchema).min(1).max(10),
 });
 
+/*
+ * pages.json: what makes notes into Notion-style pages. Notes keep their IDs on restore,
+ * so everything here points at memo IDs from memos/*.json. Older backups have no pages.json.
+ */
+const IdSchema = z.string().trim().min(1).max(200);
+const JsonRecordSchema = z.record(z.string(), z.unknown());
+
+export const JsonBackupPageNodeSchema = z.object({
+  memoId: IdSchema,
+  parentId: IdSchema.nullable(),
+  position: z.number().finite(),
+  icon: z.string().max(64).nullable(),
+  cover: z.string().max(2048).nullable(),
+  style: JsonRecordSchema.nullable(),
+  /** The database this page is a row of. */
+  databaseId: IdSchema.nullable(),
+  properties: JsonRecordSchema,
+});
+
+export const JsonBackupDatabaseSchema = z.object({
+  id: IdSchema,
+  pageMemoId: IdSchema,
+  schema: JsonRecordSchema,
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+});
+
+export const JsonBackupDatabaseViewSchema = z.object({
+  id: IdSchema,
+  databaseId: IdSchema,
+  name: z.string().min(1).max(120),
+  type: z.string().min(1).max(40),
+  config: JsonRecordSchema,
+  position: z.number().finite(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+});
+
+export const JsonBackupCommentSchema = z.object({
+  id: IdSchema,
+  memoId: IdSchema,
+  threadId: IdSchema,
+  quote: z.string().max(2000).nullable(),
+  quoteOccurrence: z.number().int().min(0),
+  body: z.string().min(1).max(10000),
+  mentions: z.array(z.string().max(64)).max(50),
+  authorId: z.string().max(200).nullable(),
+  authorName: z.string().min(1).max(200),
+  resolvedAt: z.string().nullable(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+});
+
+export const JsonBackupPagesSchema = z.object({
+  pages: z.array(JsonBackupPageNodeSchema),
+  databases: z.array(JsonBackupDatabaseSchema),
+  views: z.array(JsonBackupDatabaseViewSchema),
+  comments: z.array(JsonBackupCommentSchema),
+});
+
+export type JsonBackupPageNode = z.infer<typeof JsonBackupPageNodeSchema>;
+export type JsonBackupDatabase = z.infer<typeof JsonBackupDatabaseSchema>;
+export type JsonBackupDatabaseView = z.infer<typeof JsonBackupDatabaseViewSchema>;
+export type JsonBackupComment = z.infer<typeof JsonBackupCommentSchema>;
+export type JsonBackupPages = z.infer<typeof JsonBackupPagesSchema>;
+
+export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [] };
+
+/** One restore request: any mix of the four lists, sent in order databases, views, pages, comments. */
+export const RestoreJsonPagesSchema = z.object({
+  pages: z.array(JsonBackupPageNodeSchema).max(500).default([]),
+  databases: z.array(JsonBackupDatabaseSchema).max(500).default([]),
+  views: z.array(JsonBackupDatabaseViewSchema).max(500).default([]),
+  comments: z.array(JsonBackupCommentSchema).max(500).default([]),
+});
+
 export const JsonBackupAiPromptSchema = z.object({
   id: z.string().trim().min(1).max(200),
   origin: z.enum(["default", "custom"]),

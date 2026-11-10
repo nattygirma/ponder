@@ -45,6 +45,7 @@ export const HomeView = ({ userName }: { userName: string | null }) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendar = useCalendar();
   const events = (calendar.data?.events ?? []).slice(0, 5);
+  const calendarError = calendar.data?.feeds.find((feed) => feed.lastError)?.lastError ?? null;
   const rootId = pages.rootNotebookId;
   const greeting = t(greetingKey(new Date().getHours()));
 
@@ -115,9 +116,12 @@ export const HomeView = ({ userName }: { userName: string | null }) => {
               ))}
             </div>
           ) : (
+            <>
+            {calendarError ? <p className="mb-2 text-sm text-red-600" data-home-calendar-error>{calendarError}</p> : null}
             <Button type="button" variant="outline" size="sm" onClick={() => setCalendarOpen(true)}>
               {calendar.data?.feeds.length ? t("pages.calendar.manage") : t("pages.calendar.connect")}
             </Button>
+            </>
           )}
           <ConnectCalendarDialog open={calendarOpen} onOpenChange={setCalendarOpen} />
         </section>

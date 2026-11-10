@@ -20,7 +20,7 @@ import {
 } from "./note-search";
 
 import type { MarkdownSourceEditorRef } from "./MarkdownSourceEditor";
-import { getMarkdownSearchMatches } from "./markdown-source-search";
+import { findLiteralMatches } from "./literal-search";
 
 type EditorNoteSearchControllerOptions = {
   markdownMode: boolean;
@@ -82,11 +82,11 @@ export const useEditorNoteSearchController = ({
   }
 
   const noteSearchMatches = useMemo(
-    () => markdownMode ? getMarkdownSearchMatches(markdownSource, noteSearchQuery) : getEditorSearchMatches(editor, noteSearchQuery),
+    () => markdownMode ? findLiteralMatches(markdownSource, noteSearchQuery) : getEditorSearchMatches(editor, noteSearchQuery),
     [dirtyVersion, editor, markdownMode, markdownSource, memoId, noteSearchQuery],
   );
   const contentSearchMatches = useMemo(
-    () => markdownMode ? getMarkdownSearchMatches(markdownSource, contentSearchQuery) : getEditorSearchMatches(editor, contentSearchQuery),
+    () => markdownMode ? findLiteralMatches(markdownSource, contentSearchQuery) : getEditorSearchMatches(editor, contentSearchQuery),
     [contentSearchQuery, dirtyVersion, editor, markdownMode, markdownSource, memoId],
   );
 

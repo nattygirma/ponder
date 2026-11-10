@@ -1,27 +1,25 @@
-import { cjk } from "@streamdown/cjk";
-import { code } from "@streamdown/code";
-import { math } from "@streamdown/math";
-import { mermaid } from "@streamdown/mermaid";
-import { memo } from "react";
-import { Streamdown } from "streamdown";
-import "katex/dist/katex.min.css";
+import { lazy, memo, Suspense } from "react";
 import { cn } from "@/lib/utils";
-import { normalizeSidebarMathDelimiters, rewriteSidebarNoteLinks, sidebarNoteLinkAllowedTags, sidebarNoteLinkComponents } from "./sidebar-note-links";
 
-const sidebarStreamdownPlugins = { cjk, code, mermaid, math };
+// Streamdown and its plugins bring Mermaid, Shiki and KaTeX with them (several hundred KB). They load
+// with the first AI message instead of with the workspace; until then the message shows as plain text.
+const AiSidebarMessageContent = lazy(() =>
+  import("./AiSidebarMessageContent").then((module) => ({ default: module.AiSidebarMessageContent })),
+);
+
+type AiSidebarMessageProps = { children: string; className?: string; isAnimating?: boolean };
 
 export const AiSidebarMessage = memo(
-  ({ className, children, isAnimating }: { children: string; className?: string; isAnimating?: boolean }) => (
-    <Streamdown
-      allowedTags={sidebarNoteLinkAllowedTags}
-      className={cn("ai-sidebar-message size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0", className)}
-      components={sidebarNoteLinkComponents}
-      isAnimating={isAnimating}
-      plugins={sidebarStreamdownPlugins}
-      tableMaxHeight={240}
+  (props: AiSidebarMessageProps) => (
+    <Suspense
+      fallback={
+        <div className={cn("ai-sidebar-message size-full whitespace-pre-wrap [&>*:first-child]:mt-0 [&>*:last-child]:mb-0", props.className)}>
+          {props.children}
+        </div>
+      }
     >
-      {rewriteSidebarNoteLinks(normalizeSidebarMathDelimiters(children))}
-    </Streamdown>
+      <AiSidebarMessageContent {...props} />
+    </Suspense>
   ),
   (prev, next) => prev.children === next.children && prev.isAnimating === next.isAnimating && prev.className === next.className,
 );

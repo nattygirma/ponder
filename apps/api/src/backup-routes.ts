@@ -2,6 +2,7 @@ import {
   emptyDoc,
   JsonBackupResourceMetadataSchema,
   RestoreJsonMemosSchema,
+  RestoreJsonPagesSchema,
   RestoreJsonNotebooksSchema,
   type JsonBackupMemo,
   type JsonBackupNotebook,
@@ -30,6 +31,7 @@ import {
   type ResourceRow,
 } from "./resource-service";
 import { getWorkspaceId, requireScopes, requireUser } from "./request-auth";
+import { readPageBackup, restorePageBackup } from "./page-backup";
 import type { DatabaseAdapter } from "./storage-contract";
 import type { initiateResourceRestoreUpload as initiateResourceRestoreUploadService } from "./resource-upload-service";
 
@@ -445,6 +447,25 @@ export const registerBackupRoutes = (
       ...exportContinuation(page, offset, includeTotal ? offset + page.length < totalCount : memoRows.results.length > limit),
     });
   });
+
+  // Pages, databases, views and comments: one response, since it is metadata beside the notes.
+  app.get("/api/v1/backups/pages", async (context) => {
+    const denied = requireScopes(context, "read:memos");
+    if (denied) return denied;
+    context.header("Cache-Control", "private, no-store");
+    return context.json(await readPageBackup(context.env.storage.db, getWorkspaceId(context)));
+  });
+
+  app.post(
+    "/api/v1/restores/json/pages",
+    zValidator("json", RestoreJsonPagesSchema),
+    async (context) => {
+      const denied = requireUser(context);
+      if (denied) return denied;
+      const restored = await restorePageBackup(context.env.storage.db, getWorkspaceId(context), context.req.valid("json"));
+      return context.json({ ok: true, restored });
+    },
+  );
 
   app.post(
     "/api/v1/restores/json/notebooks",

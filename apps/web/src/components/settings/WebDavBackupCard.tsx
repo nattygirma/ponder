@@ -81,7 +81,7 @@ export const WebDavBackupCard = () => {
     try {
       const normalized = persistSettings();
       const temporary = await createPonderZipTemporaryFile(
-        { listNotebooks: api.listNotebooks, listPrompts: api.listAiPrompts, getPage: api.getJsonBackupPage, getResourceResponse: api.getResourceResponse },
+        { listNotebooks: api.listNotebooks, listPrompts: api.listAiPrompts, listPages: api.getPageBackup, getPage: api.getJsonBackupPage, getResourceResponse: api.getResourceResponse },
         { ponderVersion: __PONDER_APP_VERSION__, buildId: __PONDER_BUILD_ID__ },
         setProgress
       );

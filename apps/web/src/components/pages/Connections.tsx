@@ -85,6 +85,7 @@ export const ConnectionsView = ({ onOpenPlugins, onOpenExternalAgents }: { onOpe
   });
   const available = connections.data?.available ?? false;
   const canManage = connections.data?.canManage ?? false;
+  const notReady = new Set(connections.data?.unavailableProviders ?? []);
   const notice = !connections.data ? null
     : !available ? t("pages.connections.unavailable")
     : !canManage ? t("pages.connections.ownerOnly")
@@ -110,6 +111,8 @@ export const ConnectionsView = ({ onOpenPlugins, onOpenExternalAgents }: { onOpe
           {apps.map((app) => {
             const accounts = (connections.data?.accounts ?? []).filter((account) => account.provider === app.provider);
             const expired = accounts.some((account) => account.status === "expired");
+            // The host has no login for this app yet: say so rather than offer a Connect that fails.
+            const comingSoon = notReady.has(app.provider) && accounts.length === 0;
             return (
               <div key={app.id} className="flex flex-col justify-between gap-3 rounded-lg border border-slate-200 p-3" data-connection-app={app.id}>
                 <div className="min-w-0">
@@ -125,7 +128,11 @@ export const ConnectionsView = ({ onOpenPlugins, onOpenExternalAgents }: { onOpe
                   ) : null}
                 </div>
                 <div className="flex gap-2">
-                  {accounts.length === 0 || expired ? (
+                  {comingSoon ? (
+                    <span className="inline-flex h-7 items-center rounded-md bg-slate-100 px-2.5 text-xs font-medium text-slate-500" data-connection-coming-soon>
+                      {t("pages.connections.comingSoon")}
+                    </span>
+                  ) : accounts.length === 0 || expired ? (
                     <Button
                       type="button"
                       size="sm"

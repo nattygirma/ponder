@@ -397,6 +397,15 @@ export default defineConfig({
               priority: 37,
             },
             {
+              // Streamdown itself (the AI message renderer) imports Mermaid up front. Keep it apart from
+              // the parser stack below, which the editor needs, so Mermaid loads with the first AI
+              // message rather than with every page. The parser stack doesn't import Streamdown, so
+              // this adds no cycle between the two chunks.
+              name: "vendor-streamdown-react",
+              test: /node_modules[\\/](?:streamdown|@streamdown)[\\/]/,
+              priority: 37,
+            },
+            {
               name: "vendor-streamdown",
               test: /node_modules[\\/](?:streamdown|@streamdown|micromark|mdast|unist|remark|rehype|vfile|zwitch|longest-streak|character-entities|property-information|space-separated-tokens|comma-separated-tokens|html-void-elements|ccount|devlop|bail|trough|unified)[\\/]/,
               priority: 35,

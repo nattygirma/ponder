@@ -56,6 +56,51 @@ export const listAccounts = async (c: AppContext, provider?: string): Promise<Ho
 const activeAccounts = async (c: AppContext, provider: string) =>
   (await listAccounts(c, provider)).filter((account) => account.status === "active").slice(0, MAX_ACCOUNTS);
 
+// ---- Calendars ----
+
+/** A calendar the provider refused, with words the owner can act on. */
+class CalendarReadError extends Error {}
+
+const providerMessage = (body: Json | null) => {
+  const error = body?.error;
+  const text = typeof error === "string" ? error : error?.message ?? body?.error_description ?? body?.message;
+  return text ? oneLine(text, 300) : "";
+};
+
+const providerReasons = (body: Json | null) => {
+  const error = body?.error;
+  if (!error || typeof error !== "object") return "";
+  const reasons = [error.status, error.code, ...(Array.isArray(error.errors) ? error.errors.map((item: Json) => item?.reason) : []),
+    ...(Array.isArray(error.details) ? error.details.map((item: Json) => item?.reason) : [])];
+  return reasons.filter(Boolean).join(" ").toLowerCase();
+};
+
+/**
+ * Reads a calendar response, or throws a CalendarReadError naming what went wrong. The host answers
+ * 401 itself when the login can't be used (code connection_unavailable); the rest is the provider's.
+ */
+const readCalendar = async (response: Response, service: string): Promise<Json> => {
+  let body: Json | null = null;
+  try {
+    body = await response.json() as Json;
+  } catch {
+    body = null;
+  }
+  if (response.ok && body) return body;
+  const message = providerMessage(body);
+  const reasons = providerReasons(body);
+  if (response.status === 401) {
+    throw new CalendarReadError(`Log in to ${service} again to see these events.`);
+  }
+  if (/insufficient|scope/.test(reasons) || /insufficient authentication scopes|scope/i.test(message)) {
+    throw new CalendarReadError(`${service} didn't give calendar access. Log in to ${service} again and allow access to your calendar.`);
+  }
+  if (/accessnotconfigured|service_disabled/.test(reasons) || /has not been used in project|is disabled/i.test(message)) {
+    throw new CalendarReadError(`${service}'s calendar service is turned off for this login. The AppKeep team has to turn it on.${message ? ` ${service} said: ${message}` : ""}`);
+  }
+  throw new CalendarReadError(`${service} refused to share this calendar (${response.status}${message ? `: ${message}` : ""}).`);
+};
+
 // ---- Google Calendar ----
 
 const googleTime = (value: Json | undefined) => {
@@ -72,8 +117,7 @@ const loadGoogleEvents = async (connectionId: string, from: number, to: number):
     orderBy: "startTime",
     maxResults: "100",
   });
-  const data = await readJson(await callProvider(connectionId, `https://www.googleapis.com/calendar/v3/calendars/primary/events?${query}`));
-  if (!data) throw new Error("calendar request failed");
+  const data = await readCalendar(await callProvider(connectionId, `https://www.googleapis.com/calendar/v3/calendars/primary/events?${query}`), "Google");
   const events: CalendarEvent[] = [];
   for (const item of Array.isArray(data.items) ? data.items as Json[] : []) {
     const start = googleTime(item.start);
@@ -107,10 +151,9 @@ const loadOutlookEvents = async (connectionId: string, from: number, to: number)
     $top: "100",
     $select: "id,subject,start,end,isAllDay,isCancelled,location",
   });
-  const data = await readJson(await callProvider(connectionId, `https://graph.microsoft.com/v1.0/me/calendarView?${query}`, {
+  const data = await readCalendar(await callProvider(connectionId, `https://graph.microsoft.com/v1.0/me/calendarView?${query}`, {
     headers: { prefer: 'outlook.timezone="UTC"' },
-  }));
-  if (!data) throw new Error("calendar request failed");
+  }), "Microsoft");
   const events: CalendarEvent[] = [];
   for (const item of Array.isArray(data.value) ? data.value as Json[] : []) {
     const allDay = item.isAllDay === true;
@@ -145,8 +188,11 @@ export const loadConnectedCalendars = async (c: AppContext, from: number, to: nu
     if (account.status !== "active") return { ...base, lastError: `Log in to ${app.service} again to see these events.`, events: [] };
     try {
       return { ...base, lastError: null, events: await app.load(account.id, from, to) };
-    } catch {
-      return { ...base, lastError: "This calendar could not be read.", events: [] };
+    } catch (error) {
+      const lastError = error instanceof CalendarReadError ? error.message : "This calendar could not be read.";
+      // The host keeps the app's log; this line is what the owner and support see there.
+      console.warn(`${app.label} for ${account.id}: ${lastError}`);
+      return { ...base, lastError, events: [] };
     }
   }));
 };

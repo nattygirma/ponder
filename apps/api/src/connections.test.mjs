@@ -107,10 +107,24 @@ describe("Google Calendar", () => {
     expect(calls).toEqual([]);
   });
 
-  test("a refused request reports an error instead of failing the whole calendar", async () => {
+  test("a login the host can't use asks to log in again instead of failing the whole calendar", async () => {
     respond = () => json({ error: { code: "connection_unavailable" } }, 401);
     const [calendar] = await loadConnectedCalendars(context(OWNER, [account("c1", "google", "me")]), 0, 1);
-    expect(calendar).toMatchObject({ lastError: "This calendar could not be read.", events: [] });
+    expect(calendar).toMatchObject({ lastError: "Log in to Google again to see these events.", events: [] });
+  });
+
+  test("a turned-off Calendar API says so and passes on Google's words", async () => {
+    respond = () => json({ error: { code: 403, status: "PERMISSION_DENIED", message: "Google Calendar API has not been used in project 123 before or it is disabled.", errors: [{ reason: "accessNotConfigured" }] } }, 403);
+    const [calendar] = await loadConnectedCalendars(context(OWNER, [account("c1", "google", "me")]), 0, 1);
+    expect(calendar.lastError).toContain("turned off");
+    expect(calendar.lastError).toContain("has not been used in project 123");
+    expect(calendar.events).toEqual([]);
+  });
+
+  test("a login without calendar access asks to allow it", async () => {
+    respond = () => json({ error: { code: 403, status: "PERMISSION_DENIED", message: "Request had insufficient authentication scopes.", details: [{ reason: "ACCESS_TOKEN_SCOPE_INSUFFICIENT" }] } }, 403);
+    const [calendar] = await loadConnectedCalendars(context(OWNER, [account("c1", "google", "me")]), 0, 1);
+    expect(calendar.lastError).toBe("Google didn't give calendar access. Log in to Google again and allow access to your calendar.");
   });
 });
 
@@ -137,7 +151,7 @@ describe("Outlook Calendar", () => {
     const calendars = await loadConnectedCalendars(context(OWNER, [account("g1", "google", "a"), account("m1", "microsoft", "b"), account("s1", "slack", "c")]), 0, 1);
     expect(calendars.map((calendar) => calendar.id)).toEqual(["connection:g1", "connection:m1"]);
     expect(calendars[0].events).toHaveLength(1);
-    expect(calendars[1].lastError).toBe("This calendar could not be read.");
+    expect(calendars[1].lastError).toBe("Microsoft refused to share this calendar (500).");
   });
 
   test("an expired login names Microsoft", async () => {
@@ -219,5 +233,36 @@ describe("search and Drive", () => {
     expect(calls[0].headers.get("content-type")).toContain("multipart/related");
     expect(calls[0].body).toContain('"mimeType":"application/vnd.google-apps.document"');
     expect(calls[0].body).toContain("<p>Hi</p>");
+  });
+});
+
+describe("GET /api/v1/connections", () => {
+  const request = async (env) => {
+    const { Hono } = await import("hono");
+    const { registerConnectionRoutes } = await import("./connection-routes.ts");
+    const app = new Hono();
+    app.use("*", async (c, next) => { c.set("auth", { ...OWNER, scopes: [] }); await next(); });
+    registerConnectionRoutes(app);
+    return (await app.request("/api/v1/connections", {}, env)).json();
+  };
+  const listConnections = async () => [account("c1", "google", "me@example.test")];
+
+  test("names the providers the host can't connect yet, so they show as coming soon", async () => {
+    const body = await request({
+      listConnections,
+      connectionProviders: async () => [
+        { provider: "google", name: "Google", available: true },
+        { provider: "slack", name: "Slack", available: false },
+        { provider: "github", name: "GitHub", available: false },
+      ],
+    });
+    expect(body).toMatchObject({ available: true, canManage: true, unavailableProviders: ["slack", "github"] });
+    expect(body.accounts).toHaveLength(1);
+  });
+
+  test("offers every provider when the host doesn't say, or can't answer", async () => {
+    expect((await request({ listConnections })).unavailableProviders).toBeNull();
+    expect((await request({ listConnections, connectionProviders: async () => { throw new Error("down"); } })).unavailableProviders).toBeNull();
+    expect(await request({})).toMatchObject({ available: false, unavailableProviders: null });
   });
 });

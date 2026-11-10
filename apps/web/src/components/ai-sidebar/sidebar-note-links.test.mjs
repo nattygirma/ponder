@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Streamdown } from "streamdown";
-import { AiSidebarMessage } from "./AiSidebarMessage.tsx";
+import { AiSidebarMessageContent as AiSidebarMessage } from "./AiSidebarMessageContent.tsx";
 import { normalizeSidebarMathDelimiters, rewriteSidebarNoteLinks, sidebarNoteLinkAllowedTags, sidebarNoteLinkComponents } from "./sidebar-note-links.tsx";
 
 const render = (markdown) => renderToStaticMarkup(createElement(Streamdown, {

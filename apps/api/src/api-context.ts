@@ -1,6 +1,7 @@
 import type { Context } from "hono";
 import type { CloudflareStorageBindings } from "./cloudflare-storage-adapter";
 import type { StorageAdapter } from "./storage-contract";
+import type { HostAiText } from "./host-ai";
 
 export type HostConnection = {
   id: string;
@@ -19,7 +20,11 @@ export type Bindings = {
   sendEmail?: (message: { to: string; subject: string; text: string }) => Promise<void>;
   /** Accounts connected by login, on hosts that offer it (AppKeep). They belong to the deployment. */
   listConnections?: (provider?: string) => Promise<HostConnection[]>;
+  /** One turn with the host's AI model, paid by the host account (AppKeep's ai.text). Offered as the "AppKeep AI" provider. */
+  hostAiText?: HostAiText;
   disconnectConnection?: (connectionId: string) => Promise<boolean>;
+  /** Which login providers the host can connect yet; the rest show as coming soon. Absent: all of them. */
+  connectionProviders?: () => Promise<{ provider: string; name: string; available: boolean }[]>;
   /** The only persistence dependency exposed to application code. */
   storage: StorageAdapter;
   PONDER_AUTH_USERNAME?: string;
