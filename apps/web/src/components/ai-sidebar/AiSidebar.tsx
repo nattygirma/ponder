@@ -107,6 +107,31 @@ const SIDEBAR_MIN_WIDTH = 320;
 const SIDEBAR_MAX_WIDTH = 560;
 const NARROW_QUERY = "(max-width: 767px)";
 
+/**
+ * The part of the screen the keyboard leaves visible, on phones. iPhone Safari doesn't shrink the page for its
+ * keyboard: it slides the visible area over the page instead, so a panel pinned to the page's full height ends up
+ * half above the screen. Pinning the panel to this area keeps it, and its message box, in view.
+ */
+const useVisibleArea = (enabled: boolean) => {
+  const [area, setArea] = useState<{ top: number; height: number } | null>(null);
+  useEffect(() => {
+    const viewport = typeof window === "undefined" ? undefined : window.visualViewport;
+    if (!enabled || !viewport) {
+      setArea(null);
+      return;
+    }
+    const update = () => setArea({ top: Math.max(0, Math.round(viewport.offsetTop)), height: Math.round(viewport.height) });
+    update();
+    viewport.addEventListener("resize", update);
+    viewport.addEventListener("scroll", update);
+    return () => {
+      viewport.removeEventListener("resize", update);
+      viewport.removeEventListener("scroll", update);
+    };
+  }, [enabled]);
+  return area;
+};
+
 const SKILLS = [
   { id: "summarize", command: "/summarize" },
   { id: "improve", command: "/improve" },
@@ -248,11 +273,19 @@ const writeAiSidebarThread = (threadId: string) => {
 
 const AI_SIDEBAR_OPEN_THREAD_EVENT = "ponder:ai-sidebar-open-thread";
 
+// The chat last asked for from outside the panel. A panel that mounts on it keeps it, even when it
+// has no messages yet, instead of falling back to the latest chat.
+let requestedThreadId: string | null = null;
+
 /** Shows a chat in the panel: remembered for when the panel opens, and sent to it if it is open already. */
 export const openAiSidebarThread = (threadId: string) => {
+  requestedThreadId = threadId;
   writeAiSidebarThread(threadId);
   window.dispatchEvent(new CustomEvent(AI_SIDEBAR_OPEN_THREAD_EVENT, { detail: threadId }));
 };
+
+/** New chat from the sidebar: an empty conversation, not the last one. */
+export const startAiSidebarChat = () => openAiSidebarThread(createClientUuid());
 
 const readLocalAdapter = readAiSidebarAdapter;
 
@@ -705,7 +738,7 @@ function AiSidebarSession({
   const alive = useRef(true);
   const handledSelectionRequestId = useRef<string | null>(null);
   const locked = useRef(false);
-  const threadPinned = useRef(false);
+  const threadPinned = useRef(requestedThreadId !== null && requestedThreadId === readAiSidebarThread());
   const active = useRef<ActiveTurn | null>(null);
   const attachmentSnapshot = useRef<PendingAttachment[]>([]);
   const acpTurnIds = useRef(new Map<string, string>());
@@ -1805,6 +1838,7 @@ export function AiSidebar(props: AiSidebarProps) {
   };
 
   const panelWidth = narrow ? Math.min(viewportWidth, 384) : width;
+  const visibleArea = useVisibleArea(narrow && open);
 
   return (
     <>
@@ -1834,6 +1868,7 @@ export function AiSidebar(props: AiSidebarProps) {
           "h-full min-h-0 min-w-0 shrink-0 overflow-hidden bg-card",
           narrow ? "fixed inset-y-0 right-0 z-50 shadow-xl" : "relative",
         )}
+        style={narrow && visibleArea ? { top: visibleArea.top, height: visibleArea.height, bottom: "auto" } : undefined}
         onDragOverCapture={(event) => {
           if (event.dataTransfer?.types?.includes("Files")) event.preventDefault();
         }}

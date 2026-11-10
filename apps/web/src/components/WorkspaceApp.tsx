@@ -2804,9 +2804,11 @@ export const WorkspaceApp = ({
   const handleNewChat = () => handleOpenChat(null);
 
   const handleOpenChat = (threadId: string | null) => {
-    // The chat panel lives beside a page, and reads its open state when it mounts.
-    void import("./ai-sidebar/AiSidebar").then(({ openAiSidebarThread, writeAiSidebarOpen }) => {
+    // The chat panel lives beside a page, and reads its open state when it mounts. No thread
+    // means New chat: start an empty conversation rather than reopening the last one.
+    void import("./ai-sidebar/AiSidebar").then(({ openAiSidebarThread, startAiSidebarChat, writeAiSidebarOpen }) => {
       if (threadId) openAiSidebarThread(threadId);
+      else startAiSidebarChat();
       writeAiSidebarOpen(true);
       setRightView("editor");
       setNoteAiAssistantOpenToken((value) => value + 1);
