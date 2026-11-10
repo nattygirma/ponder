@@ -11,10 +11,6 @@ import {
 import { resolve } from "node:path";
 import { tmpdir } from "node:os";
 import {
-  deploymentPrompts,
-  manualDeploymentCopy,
-} from "../apps/site/src/deployment-prompts";
-import {
   decideUpstreamSync,
   shouldRedeploy,
 } from "../scripts/upstream-sync-plan.mjs";
@@ -29,21 +25,6 @@ const repositoryRoot = resolve(import.meta.dir, "..");
 const normalizeLineEndings = (value: string) => value.replace(/\r\n/g, "\n");
 const readRepositoryFile = (path: string) =>
   normalizeLineEndings(readFileSync(resolve(repositoryRoot, path), "utf8"));
-const extractTextPrompt = (document: string, sectionHeading: string) => {
-  const sectionStart = document.indexOf(sectionHeading);
-  if (sectionStart === -1) throw new Error(`Missing deployment section: ${sectionHeading}`);
-  const match = document.slice(sectionStart).match(/```text\n([\s\S]*?)\n```/);
-  if (!match?.[1]) throw new Error(`Missing deployment prompt after: ${sectionHeading}`);
-  return match[1];
-};
-const extractSection = (document: string, sectionHeading: string) => {
-  const sectionStart = document.indexOf(sectionHeading);
-  if (sectionStart === -1) throw new Error(`Missing section: ${sectionHeading}`);
-  const sectionEnd = document.indexOf("\n---", sectionStart);
-  return document.slice(sectionStart, sectionEnd === -1 ? undefined : sectionEnd);
-};
-const normalizeMarkdownCopy = (value: string) =>
-  value.replace(/[`*]/g, "").replace(/\s+/g, " ").trim();
 const runFixtureGit = (cwd: string, ...args: string[]) => {
   const result = spawnSync("git", args, { cwd, encoding: "utf8" });
   if (result.error) throw result.error;
@@ -839,46 +820,25 @@ describe("Cloudflare deployment entrypoints", () => {
     }
   }, 20_000);
 
-  test("public deployment documentation exposes only Fork and Agent paths", () => {
-    const englishReadme = readRepositoryFile("README.md");
-    const japaneseReadme = readRepositoryFile("README.ja.md");
+  // Ponder's README sends people to AppKeep; the inherited self-hosting guides live in docs/.
+  test("the README points to AppKeep and offers no one-click Cloudflare deploy", () => {
+    const readme = readRepositoryFile("README.md");
 
-    expect(englishReadme).not.toContain("deploy.workers.cloudflare.com");
-    expect(englishReadme).not.toContain("Option C: Manual Deployment");
-    expect(englishReadme).toContain("Fork https://github.com/tianma-if/edgeever");
-    expect(japaneseReadme).not.toContain("deploy.workers.cloudflare.com");
-    expect(japaneseReadme).not.toContain("方案 C：手動導入");
-    expect(japaneseReadme).toContain("Fork https://github.com/tianma-if/edgeever");
+    expect(readme).toContain("https://appkeep.io/apps/ponder");
+    expect(readme).not.toContain("deploy.workers.cloudflare.com");
   });
 
-  test("product site deployment prompts mirror the root READMEs", () => {
-    const englishReadme = readRepositoryFile("README.md");
+  test("product site deployment copy comes from the shared prompts", () => {
     const siteDeploymentComponent = readRepositoryFile(
       "apps/site/src/components/agent-install-tabs.astro",
     );
 
-    expect(deploymentPrompts["en-US"]).toBe(
-      extractTextPrompt(englishReadme, "### Option A: Deploy with an AI Agent (Recommended)"),
-    );
     expect(siteDeploymentComponent).toContain('deploymentPrompts["en-US"]');
     expect(siteDeploymentComponent).toContain('manualDeploymentCopy["en-US"]');
     expect(siteDeploymentComponent).toContain("UnionPay");
     expect(siteDeploymentComponent).toContain("free storage allowance");
     expect(siteDeploymentComponent).not.toContain("dual-currency credit card");
     expect(siteDeploymentComponent).not.toContain("China Merchants Bank");
-
-    for (const [locale, readme, heading, separator] of [
-      ["en-US", englishReadme, "### Option B: Manual Online Deployment", ": "],
-    ] as const) {
-      const section = normalizeMarkdownCopy(extractSection(readme, heading));
-      const manualCopy = manualDeploymentCopy[locale];
-      expect(section).toContain(manualCopy.intro);
-      manualCopy.steps.forEach((step, index) => {
-        expect(section).toContain(
-          normalizeMarkdownCopy(`${index + 1}. ${step.title}${separator}${step.body}`),
-        );
-      });
-    }
   });
 
   test("AI Agent deployment remains fully online", () => {

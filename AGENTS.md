@@ -6,7 +6,7 @@ This file sets the rules for AI agents and contributors working on this project.
 
 - **Stack and background**: start with `README.md`.
 - **Mobile platform boundaries**: the Android client is in `apps/mobile` and uses Expo / React Native. The iOS client is in `apps/ios` and uses native Swift / SwiftUI.
-- **Documentation sync**: documentation is written in English. When you change the root README, update `README.md`, `README.ja.md` and `README.pl-PL.md` together.
+- **Documentation language**: documentation is written in English. The root README is English only; there are no translated READMEs to keep in sync.
 
 ## Change risk assessment
 
