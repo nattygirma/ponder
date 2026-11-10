@@ -7,6 +7,7 @@ import { registerSW } from "virtual:pwa-register";
 import { App } from "./app/App";
 import { bootstrapI18n } from "./i18n";
 import { emitPwaUpdateNotice } from "./lib/pwa-update-notice";
+import { installStaleBuildReload } from "./lib/stale-build-reload";
 import { withEnvironmentTitlePrefix } from "./lib/environment-title";
 import { initializeTheme, ThemeProvider } from "./components/ThemeProvider";
 import { installPhoneImageFillStyle } from "@ponder/shared/image-display";
@@ -164,6 +165,7 @@ const bootstrap = async () => {
       return;
     }
   } else if (!isDesktopRenderer) {
+    installStaleBuildReload();
     registerProductionServiceWorker();
   }
 

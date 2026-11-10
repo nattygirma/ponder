@@ -1,6 +1,6 @@
 import { AiAttachmentSchema, CompanionDiscoveryCompleteSchema, CompanionDiscoverySettingsInputSchema, CompanionIdSchema, CompanionMemoryImportSchema, CompanionMemoryInputSchema, CompanionMemoryUpdateSchema,
   CompanionToolExecuteSchema, CompanionTurnCheckpointSchema, CompanionTurnCompleteSchema,
-  CompanionTurnInputSchema, CompanionTurnResumeSchema, companionTurnLocale, type CompanionSource, type CompanionToolCall } from "@ponder/shared";
+  CompanionTurnInputSchema, CompanionTurnResumeSchema, companionTurnLocale, isHostAiBalanceError, type CompanionSource, type CompanionToolCall } from "@ponder/shared";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
@@ -37,6 +37,7 @@ export const companionGenerationFailure = (error: unknown): { code: string } => 
   const status = typeof record?.statusCode === "number" ? record.statusCode
     : typeof record?.status === "number" ? record.status : undefined;
   if (status === 401 || status === 403) return { code: "ai_credentials_rejected" };
+  if (isHostAiBalanceError(error)) return { code: "ai_host_balance_low" };
   if (status === 402) return { code: "ai_provider_payment_required" };
   if (status === 429) return { code: "ai_provider_rate_limited" };
   if (status === 400) return { code: "ai_provider_request_rejected" };

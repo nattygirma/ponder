@@ -391,6 +391,7 @@ export const pl = {
     "configureModel": "Przed rozpoczęciem rozmowy skonfiguruj domyślny model w ustawieniach AI.",
     "clientUpdateRequired": "Zaktualizuj instancję Ponder i klienta, a następnie spróbuj ponownie.",
     "credentialsRejected": "Dane uwierzytelniające domyślnego modelu zostały odrzucone. Sprawdź adres URL dostawcy i klucz API w ustawieniach AI.",
+    "hostBalanceLow": "Saldo AppKeep jest za niskie na to zapytanie AI. Doładuj je na appkeep.io/dashboard/wallet, aby dalej korzystać z AI.",
     "providerPaymentRequired": "Dostawca modelu zgłosił brak wystarczających środków. Sprawdź saldo konta i spróbuj ponownie.",
     "providerRateLimited": "Dostawca modelu ograniczył liczbę żądań. Odczekaj chwilę i spróbuj ponownie.",
     "providerRequestRejected": "Domyślny model odrzucił to żądanie. Upewnij się, że obsługuje wywoływanie narzędzi, lub wybierz inny model domyślny.",

@@ -736,6 +736,7 @@ function AiSidebarSession({
     if (code === "ai_client_required" || code === "ai_direct_unavailable") return t("companion.clientUpdateRequired");
     if (code === "ai_not_configured") return t("companion.configureModel");
     if (code === "ai_credentials_rejected") return t("companion.credentialsRejected");
+    if (code === "ai_host_balance_low") return t("companion.hostBalanceLow");
     if (code === "ai_provider_payment_required") return t("companion.providerPaymentRequired");
     if (code === "ai_provider_rate_limited") return t("companion.providerRateLimited");
     if (code === "ai_provider_request_rejected") return t("companion.providerRequestRejected");
@@ -1028,7 +1029,10 @@ function AiSidebarSession({
     if (event.type === "error") {
       const detail = explainDiagnostics(event.diagnostics);
       const explanation = explainError(new ApiRequestError(event.code, 0, event.code));
-      const message = event.code === "companion_generation_failed" ? detail || explanation : [explanation, detail].filter(Boolean).join(" ");
+      const message = event.code === "companion_generation_failed" ? detail || explanation
+        // The balance message is complete; "check the provider URL" would send people the wrong way.
+        : event.code === "ai_host_balance_low" ? explanation
+        : [explanation, detail].filter(Boolean).join(" ");
       setError(message);
       setTurnFailures((previous) => ({ ...previous, [id]: message }));
       if (attachmentServerCode(event.code)) restoreAttachments(attachmentSnapshot.current);

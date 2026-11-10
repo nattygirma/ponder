@@ -403,6 +403,7 @@ export const enUS = {
     "configureModel": "Configure a default model in AI settings before chatting.",
     "clientUpdateRequired": "Update the Ponder instance and client, then try again.",
     "credentialsRejected": "The default model credentials were rejected. Check the provider URL and API key in AI settings.",
+    "hostBalanceLow": "Your AppKeep balance is too low for this AI request. Add money at appkeep.io/dashboard/wallet to keep using AI.",
     "providerPaymentRequired": "The model provider reported insufficient credit. Check the account balance and try again.",
     "providerRateLimited": "The model provider rate-limited this request. Wait a moment and try again.",
     "providerRequestRejected": "The default model rejected this request. Confirm it supports tool calling, or choose a different default model.",

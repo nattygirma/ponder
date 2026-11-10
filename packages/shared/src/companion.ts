@@ -394,6 +394,16 @@ export type CompanionFailureDiagnostics = {
   status?: number;
 };
 
+/** A 402 from AppKeep AI (HOST_AI_PATH on the copy's own address) means the AppKeep
+ * balance can't cover the request, not that a model provider's account is out of credit. */
+export const isHostAiBalanceError = (error: unknown, depth = 0): boolean => {
+  if (!error || typeof error !== "object" || depth >= 3) return false;
+  const record = error as { statusCode?: unknown; status?: unknown; url?: unknown; cause?: unknown; lastError?: unknown };
+  const status = record.statusCode ?? record.status;
+  if (status === 402 && typeof record.url === "string" && record.url.includes("/api/host-ai/")) return true;
+  return isHostAiBalanceError(record.lastError, depth + 1) || isHostAiBalanceError(record.cause, depth + 1);
+};
+
 export const companionFailureDiagnostics = (error: unknown, depth = 0): CompanionFailureDiagnostics | undefined => {
   if (!error || typeof error !== "object" || depth >= 3) return undefined;
   const record = error as { statusCode?: unknown; status?: unknown; name?: unknown; message?: unknown; cause?: unknown };

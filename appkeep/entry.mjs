@@ -4,21 +4,16 @@
 //   first only for run_worker_first paths. AppKeep serves static files itself and hands
 //   everything else to the app, so the shell fallback is done here. AppKeep's ASSETS binding
 //   only matches exact file paths, so it is wrapped to behave like wrangler's
-//   not_found_handling = "single-page-application": a missing file (including "/") gets
-//   index.html. Public share pages and notebook sites load the shell through it.
+//   not_found_handling = "single-page-application": a missing page (including "/") gets
+//   index.html. Public share pages and notebook sites load the shell through it. Missing
+//   files under /assets/, and other paths with a file extension that aren't page loads,
+//   keep their 404: a tab still on an old build then sees its chunk is gone and reloads,
+//   instead of getting HTML for a script.
 // - PONDER_APPKEEP turns on sign-in through AppKeep's identity headers.
 import worker from "../apps/api/src/index.ts";
+import { spaAssets } from "./spa-assets.mjs";
 
 const WORKER_FIRST = [/^\/api\//, /^\/mcp$/, /^\/__scheduled$/, /^\/s\//, /^\/share\//];
-
-const spaAssets = (assets) => ({
-  async fetch(input, init) {
-    const request = new Request(input, init);
-    const asset = await assets.fetch(request);
-    if (asset.status !== 404 || (request.method !== "GET" && request.method !== "HEAD")) return asset;
-    return assets.fetch(new Request(new URL("/index.html", request.url), { method: request.method, headers: request.headers }));
-  },
-});
 
 const bindings = (env) => ({
   ...env,

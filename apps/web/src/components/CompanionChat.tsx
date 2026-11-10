@@ -67,6 +67,7 @@ export function CompanionChat({
     if (code === "ai_client_required" || code === "ai_direct_unavailable") return t("companion.clientUpdateRequired");
     if (code === "ai_not_configured") return t("companion.configureModel");
     if (code === "ai_credentials_rejected") return t("companion.credentialsRejected");
+    if (code === "ai_host_balance_low") return t("companion.hostBalanceLow");
     if (code === "ai_provider_payment_required") return t("companion.providerPaymentRequired");
     if (code === "ai_provider_rate_limited") return t("companion.providerRateLimited");
     if (code === "ai_provider_request_rejected") return t("companion.providerRequestRejected");

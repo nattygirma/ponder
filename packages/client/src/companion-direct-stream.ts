@@ -11,7 +11,7 @@ import type {
   CompanionTurnCompleteInput,
 } from "@ponder/shared";
 import type { ModelMessage } from "ai";
-import { companionFailureDiagnostics, sealCompanionProcess } from "@ponder/shared";
+import { companionFailureDiagnostics, isHostAiBalanceError, sealCompanionProcess } from "@ponder/shared";
 import { throwIfAborted } from "./abort-signal";
 import { createClientAiModel } from "./ai-model";
 
@@ -104,6 +104,7 @@ export const companionDirectFailureCode = (error: unknown): string => {
   const code = asString(record?.code);
   if (code === "companion_context_changed" || code === "ai_not_configured" || code === "ai_credentials_rejected") return code;
   if (status === 401 || status === 403) return "ai_credentials_rejected";
+  if (isHostAiBalanceError(error)) return "ai_host_balance_low";
   if (status === 402) return "ai_provider_payment_required";
   if (status === 429) return "ai_provider_rate_limited";
   if (status === 400) return "ai_provider_request_rejected";

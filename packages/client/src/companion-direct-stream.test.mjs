@@ -1,6 +1,6 @@
 import { describe, expect, test, spyOn } from "bun:test";
 import { createPonderClient } from "./index.ts";
-import { parsePreparedCompanion } from "./companion-direct-stream.ts";
+import { companionDirectFailureCode, parsePreparedCompanion } from "./companion-direct-stream.ts";
 
 const preparedTurn = {
   turn: {
@@ -206,4 +206,19 @@ test("a resumed turn with answered questions completes after the reply (#637)", 
   });
   expect(completed).toHaveLength(1);
   expect(completed[0]).toMatchObject({ status: "completed", response: "Translated note." });
+});
+
+describe("direct companion failure codes", () => {
+  const apiError = (statusCode, url) => Object.assign(new Error("Payment required"), { name: "AI_APICallError", statusCode, url });
+
+  test("an AppKeep AI 402 means the AppKeep balance is low", () => {
+    expect(companionDirectFailureCode(apiError(402, "https://ponder-abc.appkeep.app/api/host-ai/v1/messages"))).toBe("ai_host_balance_low");
+    // The SDK can wrap the call error (RetryError keeps it as lastError).
+    expect(companionDirectFailureCode({ name: "AI_RetryError", lastError: apiError(402, "https://x.appkeep.app/api/host-ai/v1/messages") })).toBe("ai_host_balance_low");
+  });
+
+  test("a model provider's own 402 still reads as the provider's credit", () => {
+    expect(companionDirectFailureCode(apiError(402, "https://api.anthropic.com/v1/messages"))).toBe("ai_provider_payment_required");
+    expect(companionDirectFailureCode(apiError(429, "https://x.appkeep.app/api/host-ai/v1/messages"))).toBe("ai_provider_rate_limited");
+  });
 });

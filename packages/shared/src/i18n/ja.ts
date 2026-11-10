@@ -391,6 +391,7 @@ export const ja = {
     "configureModel": "チャットの前に、AI 設定でデフォルトモデルを設定してください。",
     "clientUpdateRequired": "Ponder インスタンスとクライアントを更新してから、再試行してください。",
     "credentialsRejected": "デフォルトモデルの認証情報が拒否されました。AI 設定でプロバイダー URL と API キーを確認してください。",
+    "hostBalanceLow": "AppKeep の残高が足りないため、この AI リクエストを実行できません。AI を使い続けるには appkeep.io/dashboard/wallet で残高を追加してください。",
     "providerPaymentRequired": "モデル提供元が残高不足を返しました。残高を確認してから再試行してください。",
     "providerRateLimited": "モデル提供元がレート制限しています。しばらく待ってから再試行してください。",
     "providerRequestRejected": "デフォルトモデルがこのリクエストを拒否しました。ツール呼び出しに対応しているか確認するか、別のデフォルトモデルを選んでください。",
