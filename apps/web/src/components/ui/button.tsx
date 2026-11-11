@@ -19,7 +19,7 @@ const buttonVariants = cva(
         danger: "bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-100",
       },
       size: {
-        default: "h-9 px-4 py-2 text-sm",
+        default: "h-9 gap-2 px-4 py-2 text-sm",
         sm: "h-8 gap-1.5 px-2.5 text-xs",
         md: "h-9 gap-2 px-3 text-sm",
         icon: "h-8 w-8 p-0",

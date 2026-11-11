@@ -91,7 +91,7 @@ function InfographicCardPreview({ syntax }: { syntax: string }) {
   return (
     <div
       ref={rootRef}
-      className="relative w-full aspect-[16/10] overflow-hidden rounded-lg bg-slate-50/80 border border-slate-100 flex items-center justify-center group-hover:bg-white transition-colors"
+      className="relative w-full aspect-[16/10] overflow-hidden rounded-lg bg-slate-50/80 border border-slate-100 flex items-center justify-center group-hover:bg-card transition-colors"
       data-infographic-card-preview=""
     >
       <div
@@ -179,7 +179,7 @@ export function InfographicGallery({ onSelect, readOnly = false, className, isDi
             className={cn(
               "rounded-full px-3 py-1 text-xs font-medium transition-colors",
               selectedCategory === "all"
-                ? "bg-slate-900 text-white shadow-sm"
+                ? "bg-slate-900 text-slate-50 shadow-sm"
                 : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
             )}
           >
@@ -196,7 +196,7 @@ export function InfographicGallery({ onSelect, readOnly = false, className, isDi
                 className={cn(
                   "rounded-full px-3 py-1 text-xs font-medium transition-colors",
                   active
-                    ? "bg-slate-900 text-white shadow-sm"
+                    ? "bg-slate-900 text-slate-50 shadow-sm"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900"
                 )}
               >
@@ -213,7 +213,7 @@ export function InfographicGallery({ onSelect, readOnly = false, className, isDi
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("infographic.gallerySearchPlaceholder")}
-            className="h-8 pl-8 pr-7 text-xs bg-white"
+            className="h-8 pl-8 pr-7 text-xs bg-card"
           />
           {searchQuery ? (
             <button
@@ -229,7 +229,7 @@ export function InfographicGallery({ onSelect, readOnly = false, className, isDi
 
       {/* Grid of sample cards */}
       {filteredSamples.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white/50 py-12 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-card/50 py-12 text-center">
           <p className="text-sm text-slate-500">{t("infographic.noPreview")}</p>
         </div>
       ) : (
@@ -255,7 +255,7 @@ export function InfographicGallery({ onSelect, readOnly = false, className, isDi
                   }
                 }}
                 className={cn(
-                  "group relative flex flex-col justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-sm transition-all duration-150 text-left",
+                  "group relative flex flex-col justify-between rounded-xl border border-slate-200/90 bg-card p-4 shadow-sm transition-all duration-150 text-left",
                   readOnly
                     ? "opacity-75 cursor-default"
                     : "cursor-pointer hover:-translate-y-0.5 hover:border-emerald-500/80 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"

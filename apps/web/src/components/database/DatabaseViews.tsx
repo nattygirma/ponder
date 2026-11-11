@@ -450,7 +450,7 @@ export const CalendarView = ({ db, rows, config, updateConfig }: DatabaseViewPro
               }}
             >
               <div className="flex items-center justify-between text-xs text-slate-500">
-                <span className={cn(key === today && "rounded bg-slate-900 px-1 text-white")}>{day.getDate()}</span>
+                <span className={cn(key === today && "rounded bg-slate-900 px-1 text-slate-50")}>{day.getDate()}</span>
                 <button type="button" className="rounded px-1 opacity-0 hover:bg-slate-100 focus-visible:opacity-100 group-hover/day:opacity-100" aria-label={t("pages.db.addOnDay", { day: key })} onClick={() => void db.addRow({ properties: { [property.id]: { start: key } } })}>+</button>
               </div>
               {items.slice(0, 4).map((row) => (

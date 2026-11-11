@@ -223,11 +223,11 @@ export const SpeechProviderCard = ({
                 </Tooltip>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem disabled={readOnly} onSelect={() => { resetConnectionForm(); setShowConnection(true); }}>
-                    <Pencil className="mr-2 h-4 w-4" />{t("speechTranscription.editConnection")}
+                    <Pencil className="h-4 w-4" />{t("speechTranscription.editConnection")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="text-rose-600 focus:text-rose-700" disabled={readOnly} onSelect={deleteProvider}>
-                    <Trash2 className="mr-2 h-4 w-4" />{t("common.delete")}
+                    <Trash2 className="h-4 w-4" />{t("common.delete")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
