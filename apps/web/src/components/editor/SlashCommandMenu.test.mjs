@@ -5,113 +5,125 @@ import {
   formatCurrentDate,
   formatCurrentDateTime,
   formatCurrentTime,
+  SLASH_GROUP_ORDER,
 } from "./SlashCommandMenu.tsx";
 
+const colors = ["gray", "brown", "orange", "yellow", "green", "blue", "purple", "pink", "red"];
+const capital = (value) => value[0].toUpperCase() + value.slice(1);
+
+// Notion's labels, as read from its `/` menu on 2026-11-11.
 const labels = {
   menu: "Insert menu",
-  empty: "No matching commands.",
+  empty: "No results",
   close: "Close menu",
-  groups: { suggested: "Suggested", basic: "Basic blocks", insert: "Insert" },
-  items: {
-    ai: "Ask AI",
-    paragraph: "Body",
-    "heading-1": "Heading 1",
-    "heading-2": "Heading 2",
-    "heading-3": "Heading 3",
-    "heading-4": "Heading 4",
-    "heading-5": "Heading 5",
-    "heading-6": "Heading 6",
-    "bullet-list": "Bulleted list",
-    "ordered-list": "Numbered list",
-    "task-list": "Task list",
-    blockquote: "Quote",
-    "code-block": "Code block",
-    divider: "Divider",
-    fold: "Fold",
-    table: "Table",
-    "inline-math": "Insert formula",
-    "block-math": "Display formula",
-    "current-date": "Current date",
-    "current-time": "Current time",
-    "current-date-time": "Current date and time",
-    attachment: "Upload attachment",
-    "note-link": "Link a note",
-    "external-link": "Insert link",
-    "sub-page": "Page",
-    callout: "Callout",
-    "columns-2": "2 columns",
-    "columns-3": "3 columns",
-    database: "Database",
-    chart: "Chart",
-    button: "Button",
+  filtered: "Filtered results",
+  placeholder: "Type to search",
+  groups: {
+    suggested: "Suggested", basic: "Basic blocks", media: "Media", database: "Database", advanced: "Advanced blocks", inline: "Inline",
+    embeds: "Embeds", import: "Import", turnInto: "Turn into", actions: "Actions", textColor: "Text color", backgroundColor: "Background color",
   },
+  items: {
+    paragraph: "Text", "heading-1": "Heading 1", "heading-2": "Heading 2", "heading-3": "Heading 3", "heading-4": "Heading 4",
+    "bullet-list": "Bulleted list", "ordered-list": "Numbered list", "task-list": "To-do list", "toggle-list": "Toggle list",
+    "sub-page": "Page", callout: "Callout", blockquote: "Quote", table: "Table", divider: "Divider", "note-link": "Link to page",
+    image: "Image", video: "Video", audio: "Audio", "code-block": "Code", attachment: "File",
+    "view-table": "Table view", "view-board": "Board view", "view-gallery": "Gallery view", "view-list": "List view",
+    "view-calendar": "Calendar view", "view-timeline": "Timeline view",
+    "chart-vertical_bar": "Vertical bar chart", "chart-horizontal_bar": "Horizontal bar chart", "chart-line": "Line chart",
+    "chart-donut": "Donut chart", "chart-number": "Number chart",
+    "database-inline": "Database - Inline", "database-full-page": "Database - Full page", "linked-database": "Linked view of data source",
+    "block-math": "Block equation", button: "Button", "columns-2": "2 columns", "columns-3": "3 columns", "columns-4": "4 columns", "columns-5": "5 columns",
+    "inline-math": "Inline equation", "current-date": "Current date", "current-time": "Current time", "current-date-time": "Current date and time",
+    "external-link": "Web link", "import-markdown": "Text and Markdown", "import-zip": "ZIP",
+    "copy-link": "Copy link to block", duplicate: "Duplicate", "move-to": "Move to", delete: "Delete", ai: "Ask AI",
+  },
+  textColors: Object.fromEntries([["default", "Default text"], ...colors.map((color) => [color, `${capital(color)} text`])]),
+  backgroundColors: Object.fromEntries([["default", "Default background"], ...colors.map((color) => [color, `${capital(color)} background`])]),
 };
 
+const filter = (query, options = {}) => filterSlashCommandItems(createSlashCommandItems(labels, options.current ?? "paragraph"), query, { groups: labels.groups, ...options });
+const labelsOf = (items) => items.map((item) => item.label);
+const inGroup = (items, group) => labelsOf(items.filter((item) => item.group === group));
+
 describe("slash command menu", () => {
-  const items = createSlashCommandItems(labels);
+  test("lists Notion's groups in Notion's order", () => {
+    const groups = [...new Set(filter("").map((item) => item.group))];
+    expect(groups).toEqual(SLASH_GROUP_ORDER.filter((group) => group !== "embeds"));
+  });
 
-  test("shows all commands for a bare slash", () => {
-    const unfilteredItems = filterSlashCommandItems(items, "");
-    const heading6Index = unfilteredItems.findIndex((item) => item.id === "heading-6");
-
-    expect(unfilteredItems).toHaveLength(31);
-    expect(unfilteredItems.slice(heading6Index + 1, heading6Index + 4).map((item) => item.id)).toEqual([
-      "current-date",
-      "current-time",
-      "current-date-time",
+  test("uses Notion's labels, order and Markdown hints for Basic blocks", () => {
+    const basic = filter("").filter((item) => item.group === "basic");
+    expect(basic.map((item) => [item.label, item.hint ?? ""])).toEqual([
+      ["Text", ""], ["Heading 1", "#"], ["Heading 2", "##"], ["Heading 3", "###"], ["Heading 4", "####"],
+      ["Bulleted list", "-"], ["Numbered list", "1."], ["To-do list", "[]"], ["Toggle list", ">"], ["Page", ""],
+      ["Callout", ""], ["Quote", "\""], ["Table", ""], ["Divider", "---"], ["Link to page", ""],
     ]);
   });
 
-  test("searches localized labels and aliases", () => {
-    expect(filterSlashCommandItems(items, "AI").map((item) => item.id)).toEqual(["ai"]);
-    expect(filterSlashCommandItems(items, "todo").map((item) => item.id)).toEqual(["task-list"]);
-    expect(filterSlashCommandItems(items, "h2").map((item) => item.id)).toEqual(["heading-2"]);
-    expect(filterSlashCommandItems(items, "h5").map((item) => item.id)).toEqual(["heading-5"]);
-    expect(filterSlashCommandItems(items, "today").map((item) => item.id)).toEqual(["current-date"]);
-    expect(filterSlashCommandItems(items, "timestamp").map((item) => item.id)).toEqual(["current-date-time"]);
+  test("hides Heading 5 and 6 and Notion-only blocks Ponder lacks", () => {
+    const all = labelsOf(filter(""));
+    expect(all.some((label) => /Heading [56]/.test(label))).toBe(false);
+    for (const missing of ["Table of contents", "Tabs", "Synced block", "Breadcrumb", "Feed view", "Map view", "Embed", "Form"]) {
+      expect(all).not.toContain(missing);
+    }
   });
 
-  test("assigns every item a unique lowercase slash command alias", () => {
-    expect(items.map((item) => item.command)).toEqual([
-      "ai",
-      "text",
-      "h1",
-      "h2",
-      "h3",
-      "h4",
-      "h5",
-      "h6",
-      "date",
-      "time",
-      "datetime",
-      "bullet",
-      "numbered",
-      "task",
-      "quote",
-      "code",
-      "divider",
-      "fold",
-      "table",
-      "math",
-      "equation",
-      "upload",
-      "note",
-      "link",
-      "page",
-      "database",
-      "chart",
-      "button",
-      "callout",
-      "columns",
-      "columns3",
+  test("has one Database item per view and per chart type", () => {
+    expect(inGroup(filter(""), "database")).toEqual([
+      "Table view", "Board view", "Gallery view", "List view", "Calendar view", "Timeline view",
+      "Vertical bar chart", "Horizontal bar chart", "Line chart", "Donut chart", "Number chart",
+      "Database - Inline", "Database - Full page", "Linked view of data source",
     ]);
-    expect(items.every((item) => /^[a-z][a-z0-9]*$/.test(item.command))).toBe(true);
-    expect(new Set(items.map((item) => item.command)).size).toBe(items.length);
-    expect(filterSlashCommandItems(items, "collapse").map((item) => item.id)).toEqual(["fold"]);
-    expect(filterSlashCommandItems(items, "table").map((item) => item.id)).toEqual(["table"]);
-    expect(filterSlashCommandItems(items, "task").map((item) => item.id)).toEqual(["task-list"]);
-    expect(filterSlashCommandItems(items, "Formula").map((item) => item.id)).toEqual(["inline-math", "block-math"]);
-    expect(filterSlashCommandItems(items, "equation").map((item) => item.id)).toEqual(["block-math"]);
+  });
+
+  test("lists Media, Advanced, Inline, Import and Actions as Notion does", () => {
+    const all = filter("");
+    expect(inGroup(all, "media")).toEqual(["Image", "Video", "Audio", "Code", "File"]);
+    expect(inGroup(all, "advanced")).toEqual(["Block equation", "Button", "2 columns", "3 columns", "4 columns", "5 columns"]);
+    expect(inGroup(all, "inline")).toEqual(["Inline equation"]);
+    expect(inGroup(all, "import")).toEqual(["Text and Markdown", "ZIP"]);
+    expect(inGroup(all, "actions")).toEqual(["Copy link to block", "Duplicate", "Move to", "Delete", "Ask AI"]);
+    expect(inGroup(all, "textColor")).toHaveLength(10);
+    expect(inGroup(all, "backgroundColor")).toEqual(["Default background", ...colors.map((color) => `${capital(color)} background`)]);
+  });
+
+  test("suggests recently used blocks, or Ask AI before any are used", () => {
+    expect(inGroup(filter(""), "suggested")).toEqual(["Ask AI"]);
+    const suggested = filter("", { recent: ["view-board", "heading-2", "duplicate"] }).filter((item) => item.group === "suggested");
+    expect(suggested.map((item) => [item.label, item.origin])).toEqual([["Board view", "database"], ["Heading 2", "basic"]]);
+  });
+
+  test("checks the block's current type under Turn into", () => {
+    const turnInto = filter("", { current: "bullet" }).filter((item) => item.group === "turnInto");
+    expect(turnInto.map((item) => item.label)).toEqual([
+      "Text", "Heading 1", "Heading 2", "Heading 3", "Heading 4", "Bulleted list", "Numbered list", "To-do list", "Toggle list", "Code", "Quote", "Callout",
+    ]);
+    expect(turnInto.filter((item) => item.checked).map((item) => item.label)).toEqual(["Bulleted list"]);
+  });
+
+  test("filters like Notion: label prefixes first, group names match their items", () => {
+    expect(filter("table").map((item) => item.id)).toEqual(["table", "view-table"]);
+    expect(filter("red").map((item) => item.id)).toEqual(["text-red", "background-red", "ordered-list", "turn-ordered"]);
+    expect(filter("turn").every((item) => item.group === "turnInto")).toBe(true);
+    expect(filter("turn")).toHaveLength(12);
+    expect(filter("equation").map((item) => item.id)).toEqual(["block-math", "inline-math"]);
+    expect(filter("embed")).toEqual([]);
+    expect(filter("zzz")).toEqual([]);
+  });
+
+  test("keeps Ponder's extra date, time and link items findable by search only", () => {
+    expect(labelsOf(filter(""))).not.toContain("Current date");
+    expect(filter("today").map((item) => item.id)).toEqual(["current-date"]);
+    expect(filter("timestamp").map((item) => item.id)).toEqual(["current-date-time"]);
+    expect(filter("url").map((item) => item.id)).toEqual(["external-link"]);
+    expect(filter("collapse").map((item) => item.id)).toEqual(["toggle-list"]);
+    expect(filter("h2").map((item) => item.id)).toEqual(["heading-2"]);
+    expect(filter("todo").map((item) => item.id)).toEqual(["task-list"]);
+  });
+
+  test("gives every item a unique id", () => {
+    const items = createSlashCommandItems(labels);
+    expect(new Set(items.map((item) => item.id)).size).toBe(items.length);
   });
 
   test("formats local date and time as stable static text", () => {
