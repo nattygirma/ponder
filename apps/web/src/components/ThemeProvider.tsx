@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { DIAGRAM_CANVAS_LIGHT } from "@ponder/shared/diagram-canvas";
 import {
   DEFAULT_CUSTOM_DARK_COLORS,
@@ -140,6 +140,8 @@ interface AppearanceThemeContextValue {
   preference: ThemePreference;
   resolvedTheme: ResolvedTheme;
   setPreference: (preference: ThemePreference) => void;
+  /** A published site's fixed theme; it wins over the visitor's preference without being saved. */
+  setThemeOverride: (theme: ResolvedTheme | null) => void;
 }
 
 interface MermaidThemeContextValue {
@@ -309,20 +311,39 @@ const applyThemeToDocument = (preference: ThemePreference) => {
   return resolvedTheme;
 };
 
+// Notebook sites with a fixed theme get this meta tag in the server-rendered head,
+// so the first paint already uses the owner's theme.
+const getSiteThemeOverride = (): ResolvedTheme | null => {
+  if (typeof document === "undefined") return null;
+  const value = document.querySelector<HTMLMetaElement>('meta[name="ponder-site-theme"]')?.content;
+  return value === "light" || value === "dark" ? value : null;
+};
+
 export const initializeTheme = () => {
-  applyThemeToDocument(getStoredThemePreference());
+  applyThemeToDocument(getSiteThemeOverride() ?? getStoredThemePreference());
 };
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const [preference, setPreferenceState] = useState<ThemePreference>(getStoredThemePreference);
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(preference));
+  const [themeOverride, setThemeOverride] = useState<ResolvedTheme | null>(getSiteThemeOverride);
+  const effectivePreference: ThemePreference = themeOverride ?? preference;
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(effectivePreference));
   const [mermaidThemePreference, setMermaidThemePreference] = useState<MermaidThemePreference>(getStoredMermaidTheme);
   const [markdownThemePreference, setMarkdownThemePreference] = useState<MarkdownThemePreference>(getStoredMarkdownTheme);
   const [editorTheme, setEditorThemeState] = useState<string>(getStoredEditorTheme);
   const [customEditorThemes, setCustomEditorThemesState] = useState<CustomEditorTheme[]>(getStoredCustomEditorThemes);
 
+  const appliedPreference = useRef(effectivePreference);
+  const overrideRef = useRef(themeOverride);
+  overrideRef.current = themeOverride;
   useEffect(() => {
-    if (preference !== "system") {
+    if (appliedPreference.current === effectivePreference) return;
+    appliedPreference.current = effectivePreference;
+    setResolvedTheme(applyThemeToDocument(effectivePreference));
+  }, [effectivePreference]);
+
+  useEffect(() => {
+    if (effectivePreference !== "system") {
       return undefined;
     }
 
@@ -330,7 +351,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     const handleSystemThemeChange = () => setResolvedTheme(applyThemeToDocument("system"));
     mediaQuery.addEventListener("change", handleSystemThemeChange);
     return () => mediaQuery.removeEventListener("change", handleSystemThemeChange);
-  }, [preference]);
+  }, [effectivePreference]);
 
   const customEditorTheme = useMemo(() => {
     const active = customEditorThemes.find((t) => t.id === editorTheme);
@@ -341,7 +362,10 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
   const setPreference = useCallback((nextPreference: ThemePreference) => {
     // Apply the class before scheduling React work so a theme toggle can paint
     // without waiting for the workspace and editor tree to render.
-    setResolvedTheme(applyThemeToDocument(nextPreference));
+    if (!overrideRef.current) {
+      appliedPreference.current = nextPreference;
+      setResolvedTheme(applyThemeToDocument(nextPreference));
+    }
     setPreferenceState(nextPreference);
     window.localStorage.setItem(THEME_STORAGE_KEY, nextPreference);
   }, []);
@@ -392,6 +416,7 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
       preference,
       resolvedTheme,
       setPreference,
+      setThemeOverride,
     }),
     [preference, resolvedTheme, setPreference]
   );

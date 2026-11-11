@@ -62,7 +62,9 @@ export const PublicNotebookSharePage = () => {
     document.head.appendChild(robots);
     const previous = document.title;
     document.title = withEnvironmentTitlePrefix(
-      `${note?.title?.trim() || share?.name || t("sharing.notebookTitle")} · Ponder`,
+      share
+        ? note?.title?.trim() && note.title.trim() !== share.name ? `${note.title.trim()} · ${share.name}` : share.name
+        : `${t("sharing.notebookTitle")} · Ponder`,
       {
         development: import.meta.env.DEV,
         profile: __PONDER_DEVELOPMENT_PROFILE__,

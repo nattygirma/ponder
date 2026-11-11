@@ -236,7 +236,13 @@ export const PublicNotebookSite = ({ share, token, selectedId, children }: {
 }) => {
   const { t } = useTranslation();
   const { hash } = useLocation();
-  const { preference, setPreference } = useAppearanceTheme();
+  const { preference, setPreference, setThemeOverride } = useAppearanceTheme();
+  const siteTheme = share.settings?.theme ?? "system";
+  useEffect(() => {
+    setThemeOverride(siteTheme === "system" ? null : siteTheme);
+    return () => setThemeOverride(null);
+  }, [siteTheme, setThemeOverride]);
+  const contact = share.settings?.contactButton;
   const [mobileOpen, setMobileOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -294,7 +300,7 @@ export const PublicNotebookSite = ({ share, token, selectedId, children }: {
       {share.settings?.homeMemoId && <Link to={directory} onClick={navigate} className={`${linkClass} block px-3 py-2 text-sm`}>{t("notebookSite.directory")}</Link>}
       {sections[0] && <NavigationNotes memos={sections[0].memos} selectedId={selectedId} href={href} onNavigate={navigate} />}
       {sections.slice(1).filter((section) => section.memos.length).map((section) => <NavigationSection key={section.notebook.id} section={section} selectedId={selectedId} containsSelection={section.memos.some((memo) => memo.id === selectedId)} href={href} onNavigate={navigate} />)}
-    </nav><div className="px-8 py-5 text-[11px] text-muted-foreground">{t("sharing.sitePoweredBy")}</div>
+    </nav>
   </div>;
   return <NotebookSiteSearchContext.Provider value={(selectedTag) => { setTag(selectedTag ?? ""); setSearchOpen(true); }}><TooltipProvider delayDuration={400}>
     <div data-site-theme="default" className="ponder-notebook-site min-h-[100dvh] bg-card text-foreground">
@@ -303,7 +309,8 @@ export const PublicNotebookSite = ({ share, token, selectedId, children }: {
         <Link to={root} onClick={navigate} className={`${linkClass} flex min-w-0 items-center gap-3 font-semibold`}><SiteLogo key={share.settings?.logoUrl} src={share.settings?.logoUrl} /><span className="max-w-[40vw] truncate">{share.name}</span></Link>
         <div className="flex flex-wrap items-center gap-3">
           <nav className="flex flex-wrap gap-3 text-xs">{share.settings?.headerLinks.map((link, i) => <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{link.label}</a>)}</nav>
-          <select aria-label={t("notebookSite.theme")} value={preference} onChange={(event) => setPreference(event.target.value as ThemePreference)} className="max-w-28 rounded border bg-background px-1 py-1 text-xs">{(["light", "dark", "system"] as const).map((value) => <option key={value} value={value}>{t(`notebookSite.${value}`)}</option>)}</select>
+          {siteTheme === "system" && <select aria-label={t("notebookSite.theme")} value={preference} onChange={(event) => setPreference(event.target.value as ThemePreference)} className="max-w-28 rounded border bg-background px-1 py-1 text-xs">{(["light", "dark", "system"] as const).map((value) => <option key={value} value={value}>{t(`notebookSite.${value}`)}</option>)}</select>}
+          {contact && <Button asChild size="sm" variant="solid"><a href={contact.url} target={contact.url.startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer">{contact.label}</a></Button>}
           <ButtonTooltip title={t(sidebarOpen ? "sharing.siteHideContents" : "sharing.siteShowContents")}><Button variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label={t(sidebarOpen ? "sharing.siteHideContents" : "sharing.siteShowContents")} aria-expanded={sidebarOpen} aria-controls="notebook-site-sidebar" onClick={() => setSidebarOpen((open) => !open)}>{sidebarOpen ? <PanelLeftClose className="size-4" /> : <PanelLeftOpen className="size-4" />}</Button></ButtonTooltip>
           <Drawer open={mobileOpen} onOpenChange={setMobileOpen} shouldScaleBackground={false}><DrawerTrigger asChild><Button variant="outline" size="sm" className="lg:hidden"><Menu className="size-4" />{t("sharing.notebookContents")}</Button></DrawerTrigger><DrawerContent className="h-[85dvh] bg-card"><DrawerHeader><DrawerTitle>{share.name}</DrawerTitle><DrawerDescription>{t("sharing.siteNoteCount", { count: notes.length })}</DrawerDescription><DrawerClose asChild><Button variant="outline" size="sm">{t("common.close")}</Button></DrawerClose></DrawerHeader>{contents}</DrawerContent></Drawer>
         </div>
