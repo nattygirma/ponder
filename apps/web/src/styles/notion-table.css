@@ -1,0 +1,239 @@
+/*
+ * Notion's simple table. These rules apply to tables drawn by PonderTableView (the editor, the
+ * read-only editor and public pages) and override the older card-style table in globals.css.
+ */
+.ProseMirror .tableWrapper.ponder-table {
+  container-type: normal;
+  display: block;
+  width: auto;
+  max-width: 100%;
+  margin: 4px 0;
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ProseMirror .tableWrapper.ponder-table > table {
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  margin: 0;
+  border-collapse: collapse;
+  border-spacing: 0;
+  table-layout: fixed;
+}
+
+.ProseMirror .tableWrapper.ponder-table > table[style*="width: 100%"] {
+  width: 100%;
+}
+
+.ProseMirror .tableWrapper.ponder-table col {
+  min-width: 0 !important;
+}
+
+.ProseMirror .tableWrapper.ponder-table td,
+.ProseMirror .tableWrapper.ponder-table th {
+  position: relative;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+  height: 34px;
+  padding: 7px 9px;
+  border: 1px solid rgb(230 229 227);
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: normal;
+  text-align: start;
+  vertical-align: top;
+  white-space: break-spaces;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  transition: none;
+}
+
+.ProseMirror .tableWrapper.ponder-table th {
+  background: rgb(247 246 243);
+  color: inherit;
+  font-weight: 500;
+}
+
+.ProseMirror .tableWrapper.ponder-table td p,
+.ProseMirror .tableWrapper.ponder-table th p {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.ProseMirror .tableWrapper.ponder-table td strong,
+.ProseMirror .tableWrapper.ponder-table th strong {
+  color: inherit;
+}
+
+/* Cell colours: a text colour or a background, from the row, column or cell menu. */
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="gray"] { color: var(--page-gray); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="brown"] { color: var(--page-brown); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="orange"] { color: var(--page-orange); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="yellow"] { color: var(--page-yellow); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="green"] { color: var(--page-green); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="blue"] { color: var(--page-blue); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="purple"] { color: var(--page-purple); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="pink"] { color: var(--page-pink); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="red"] { color: var(--page-red); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="gray_background"] { background: var(--page-gray-bg); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="brown_background"] { background: var(--page-brown-bg); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="orange_background"] { background: var(--page-orange-bg); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="yellow_background"] { background: var(--page-yellow-bg); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="green_background"] { background: var(--page-green-bg); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="blue_background"] { background: var(--page-blue-bg); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="purple_background"] { background: var(--page-purple-bg); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="pink_background"] { background: var(--page-pink-bg); }
+.ProseMirror .tableWrapper.ponder-table :is(td, th)[data-color="red_background"] { background: var(--page-red-bg); }
+
+/* Selected cells: like Notion, only the blue outline drawn by TableControls marks them, no tint. */
+.ProseMirror .tableWrapper.ponder-table .selectedCell::after {
+  content: none;
+}
+
+.ProseMirror.ProseMirror-hideselection .tableWrapper.ponder-table .selectedCell ::selection {
+  background: transparent;
+}
+
+/* Column resizing: the blue line on a column's edge. */
+.ProseMirror .tableWrapper.ponder-table .column-resize-handle {
+  position: absolute;
+  top: -1px;
+  right: -2px;
+  bottom: -1px;
+  z-index: 2;
+  width: 3px;
+  pointer-events: none;
+  background: rgb(35 131 226);
+}
+
+.ProseMirror.resize-cursor {
+  cursor: col-resize;
+}
+
+/* Controls drawn over the page by TableControls. */
+.ponder-table-controls > * {
+  position: fixed;
+  z-index: 40;
+}
+
+.ponder-table-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgb(55 53 47 / 0.09);
+  border-radius: 4px;
+  background: rgb(255 255 255);
+  color: rgb(55 53 47 / 0.45);
+  touch-action: none;
+  transition: background 120ms ease;
+}
+
+.ponder-table-bar:hover,
+.ponder-table-bar:focus-visible {
+  background: rgb(55 53 47 / 0.06);
+  outline: none;
+}
+
+.ponder-table-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 2px solid rgb(255 255 255);
+  border-radius: 4px;
+  background: rgb(55 53 47 / 0.24);
+  color: rgb(255 255 255);
+  touch-action: none;
+}
+
+.ponder-table-handle:hover,
+.ponder-table-handle:focus-visible {
+  background: rgb(55 53 47 / 0.45);
+  outline: none;
+}
+
+.ponder-table-handle.is-open {
+  background: rgb(35 131 226);
+}
+
+.ponder-table-outline {
+  border: 2px solid;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.ponder-table-cell-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid rgb(55 53 47 / 0.09);
+  border-radius: 4px;
+  background: rgb(255 255 255);
+  color: rgb(55 53 47 / 0.65);
+  box-shadow: 0 1px 2px rgb(15 15 15 / 0.08);
+}
+
+.ponder-table-cell-button:hover,
+.ponder-table-cell-button.is-open {
+  background: rgb(239 239 238);
+}
+
+.ponder-table-drop {
+  border-radius: 2px;
+  background: rgb(35 131 226 / 0.6);
+  pointer-events: none;
+}
+
+/* Phone: bigger targets for fingers. */
+@media (pointer: coarse) {
+  .ponder-table-bar {
+    min-width: 24px;
+    min-height: 24px;
+  }
+}
+
+/* Dark mode, with Notion's dark table colours. */
+:root.dark .ProseMirror .tableWrapper.ponder-table :is(td, th) {
+  border-color: rgb(255 255 255 / 0.094);
+}
+
+:root.dark .ProseMirror .tableWrapper.ponder-table th {
+  background: rgb(255 255 255 / 0.03);
+}
+
+:root.dark .ponder-table-bar,
+:root.dark .ponder-table-cell-button {
+  border-color: rgb(255 255 255 / 0.094);
+  background: rgb(32 32 32);
+  color: rgb(255 255 255 / 0.46);
+}
+
+:root.dark .ponder-table-bar:hover,
+:root.dark .ponder-table-cell-button:hover,
+:root.dark .ponder-table-cell-button.is-open {
+  background: rgb(255 255 255 / 0.055);
+}
+
+:root.dark .ponder-table-handle {
+  border-color: rgb(25 25 25);
+  background: rgb(255 255 255 / 0.28);
+  color: rgb(25 25 25);
+}
+
+:root.dark .ponder-table-handle.is-open {
+  background: rgb(35 131 226);
+  color: rgb(255 255 255);
+}

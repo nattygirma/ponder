@@ -1,11 +1,13 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { DragHandle } from "@tiptap/extension-drag-handle";
 import { TextSelection } from "@tiptap/pm/state";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import type { Editor } from "@tiptap/react";
 import { CALLOUT_NODE_TYPE } from "@ponder/shared";
-import { Baseline, Copy, CornerUpRight, Link2, MessageSquare, GripVertical, Plus, Repeat2, Sparkles, Trash2 } from "lucide-react";
+import { Baseline, Copy, CornerUpRight, Database, Link2, MessageSquare, GripVertical, MoveHorizontal, PanelLeft, PanelTop, Plus, Repeat2, Sparkles, Trash2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { fitTableToWidth, hasHeader, releaseTable, selectWholeTable, toggleTableHeader } from "@/lib/editor-table-actions";
 import { PAGE_COLORS, type PageColor } from "@ponder/shared/page-color";
 import { MenuSearch } from "./MenuSearch";
 import { usePages } from "./PagesProvider";
@@ -142,7 +144,7 @@ const mountedDom = (editor: Editor): HTMLElement | null => {
   }
 };
 
-export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, onAskAi, onSkill }: {
+export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, onAskAi, onSkill, onTurnTableIntoDatabase }: {
   editor: Editor;
   controller: BlockHandleController;
   /** The link to this page; a block link adds the block to it. */
@@ -151,6 +153,8 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
   onSkill?: (kind: "improve" | "proofread" | "reformat" | "explain" | "translate", pos: number, node: BlockTarget["node"]) => void;
   onComment?: (pos: number, node: BlockTarget["node"]) => void;
   onAskAi?: (pos: number, node: BlockTarget["node"]) => void;
+  /** Notion's "Turn into database" for a simple table. */
+  onTurnTableIntoDatabase?: (pos: number) => void;
 }) => {
   const { t } = useTranslation();
   const current = useSyncExternalStore(controller.subscribe, controller.getTarget, controller.getTarget);
@@ -208,6 +212,7 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
   const target = { current: menu?.target ?? current };
   const convertible = Boolean(menu && CONVERTIBLE.has(menu.target.node.type.name));
   const closeMenu = () => {
+    if (menu?.target.node.type.name === "table") releaseTable(editor, menu.target.pos);
     setMenu(null);
     editor.commands.setMeta("lockDragHandle", false);
   };
@@ -330,6 +335,7 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
               if (!current) return;
               const rect = event.currentTarget.getBoundingClientRect();
               editor.commands.setMeta("lockDragHandle", true);
+              if (current.node.type.name === "table") selectWholeTable(editor, current.pos);
               setMenu({ target: current, left: rect.left, top: rect.top });
             }}
           >
@@ -359,6 +365,45 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
               </DropdownMenuSubContent>
             </DropdownMenuSub>
           ) : null}
+          {menu?.target.node.type.name === "table" ? (() => {
+            // Notion's table section: Turn into database, Fit to width, then switches that keep the menu open.
+            const tablePos = menu.target.pos;
+            const refresh = () => {
+              const updated = editor.state.doc.nodeAt(tablePos);
+              if (updated) setMenu({ ...menu, target: { node: updated, pos: tablePos } });
+            };
+            const switchItem = (key: string, icon: ReactNode, label: string, checked: boolean, toggle: () => void) => (
+              <DropdownMenuItem key={key} onSelect={(event) => { event.preventDefault(); toggle(); refresh(); }}>
+                {icon}
+                <span className="flex-1">{label}</span>
+                <Switch className="pointer-events-none scale-75 data-[state=checked]:bg-[rgb(35,131,226)]" checked={checked} tabIndex={-1} aria-hidden="true" />
+              </DropdownMenuItem>
+            );
+            return (
+              <>
+                {onTurnTableIntoDatabase ? (
+                  <DropdownMenuItem onSelect={() => onTurnTableIntoDatabase(tablePos)}>
+                    <Database className="h-4 w-4" aria-hidden="true" />
+                    {t("pages.table.turnIntoDatabase")}
+                  </DropdownMenuItem>
+                ) : null}
+                <DropdownMenuItem onSelect={() => {
+                  const wrapper = editor.view.nodeDOM(tablePos);
+                  const width = wrapper instanceof HTMLElement ? wrapper.clientWidth : 0;
+                  // One pixel is left for the table's outer border, as with new tables, so no scrollbar appears.
+                  if (width > 1) fitTableToWidth(editor, tablePos, width - 1);
+                }}>
+                  <MoveHorizontal className="h-4 w-4" aria-hidden="true" />
+                  {t("pages.table.fitWidth")}
+                </DropdownMenuItem>
+                {switchItem("headerRow", <PanelTop className="h-4 w-4" aria-hidden="true" />, t("pages.table.headerRow"),
+                  hasHeader(editor.state, tablePos, "row"), () => toggleTableHeader(editor, tablePos, "row"))}
+                {switchItem("headerColumn", <PanelLeft className="h-4 w-4" aria-hidden="true" />, t("pages.table.headerColumn"),
+                  hasHeader(editor.state, tablePos, "column"), () => toggleTableHeader(editor, tablePos, "column"))}
+                <DropdownMenuSeparator />
+              </>
+            );
+          })() : null}
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>
               <Baseline className="h-4 w-4" aria-hidden="true" />

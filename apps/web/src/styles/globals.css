@@ -2690,7 +2690,6 @@ html[data-ponder-extension-theme] .ponder-memo-divider {
   color: var(--brand-green);
 }
 
-.ProseMirror .tableWrapper,
 .markdown-content .tableWrapper {
   --mobile-table-column-width: clamp(4.5rem, 24cqi, 12rem);
   container-type: inline-size;
@@ -2713,7 +2712,6 @@ html[data-ponder-extension-theme] .ponder-memo-divider {
   box-shadow: 0 1px 3px rgb(var(--slate-900-rgb) / 0.03);
 }
 
-.ProseMirror table,
 .markdown-content table {
   width: 100%;
   max-width: none;
@@ -2724,49 +2722,40 @@ html[data-ponder-extension-theme] .ponder-memo-divider {
 }
 
 /* Container query responsive column distributions for 1-4 columns */
-.ProseMirror table:has(> colgroup > col:first-child:last-child),
 .markdown-content table:has(> colgroup > col:first-child:last-child) {
   --mobile-table-column-width: 100cqi;
 }
 
-.ProseMirror table:has(> colgroup > col:first-child:nth-last-child(2)),
 .markdown-content table:has(> colgroup > col:first-child:nth-last-child(2)) {
   --mobile-table-column-width: 50cqi;
 }
 
-.ProseMirror table:has(> colgroup > col:first-child:nth-last-child(3)),
 .markdown-content table:has(> colgroup > col:first-child:nth-last-child(3)) {
   --mobile-table-column-width: calc(100cqi / 3);
 }
 
-.ProseMirror table:has(> colgroup > col:first-child:nth-last-child(4)),
 .markdown-content table:has(> colgroup > col:first-child:nth-last-child(4)) {
   --mobile-table-column-width: 25cqi;
 }
 
 /* For tables with 5+ columns on narrow viewports, expand width and scroll inside tableWrapper */
-.ProseMirror table:has(> colgroup > col:first-child:nth-last-child(n+5)),
 .markdown-content table:has(> colgroup > col:first-child:nth-last-child(n+5)) {
   width: max-content;
   --mobile-table-column-width: clamp(4.5rem, 24cqi, 12rem);
 }
 
 /* For tables without colgroup (plain markdown or pasted html), allow natural distribution */
-.ProseMirror table:not(:has(colgroup)),
 .markdown-content table:not(:has(colgroup)) {
   table-layout: auto;
   width: 100%;
   min-width: 100%;
 }
 
-.ProseMirror table col,
 .markdown-content table col {
   width: var(--mobile-table-column-width) !important;
   min-width: var(--mobile-table-column-width) !important;
 }
 
-.ProseMirror th,
-.ProseMirror td,
 .markdown-content th,
 .markdown-content td {
   position: relative;
@@ -2787,7 +2776,6 @@ html[data-ponder-extension-theme] .ponder-memo-divider {
   transition: background-color 120ms ease;
 }
 
-.ProseMirror th,
 .markdown-content th {
   background: #f3f4f6;
   color: #111827;
@@ -2796,57 +2784,44 @@ html[data-ponder-extension-theme] .ponder-memo-divider {
   letter-spacing: -0.01em;
 }
 
-.ProseMirror th strong,
-.ProseMirror th b,
 .markdown-content th strong,
 .markdown-content th b {
   color: inherit;
 }
 
-.ProseMirror td strong,
-.ProseMirror td b,
 .markdown-content td strong,
 .markdown-content td b {
   color: #111827;
 }
 
-.ProseMirror th:last-child,
-.ProseMirror td:last-child,
 .markdown-content th:last-child,
 .markdown-content td:last-child {
   border-right: 0;
 }
 
-.ProseMirror tr:last-child td,
 .markdown-content tr:last-child td {
   border-bottom: 0;
 }
 
-.ProseMirror tbody tr:nth-child(even) td,
 .markdown-content tbody tr:nth-child(even) td {
   background: #f9fafb;
 }
 
-.ProseMirror tbody tr:hover td,
 .markdown-content tbody tr:hover td {
   background: rgb(var(--slate-100-rgb) / 0.6);
 }
 
 @media (min-width: 768px) {
-  .ProseMirror table:not(:has(> colgroup > col:first-child:nth-last-child(n+5))),
   .markdown-content table:not(:has(> colgroup > col:first-child:nth-last-child(n+5))) {
     width: 100%;
     table-layout: auto;
   }
 
-  .ProseMirror table:not(:has(> colgroup > col:first-child:nth-last-child(n+5))) col,
   .markdown-content table:not(:has(> colgroup > col:first-child:nth-last-child(n+5))) col {
     width: auto !important;
     min-width: 0 !important;
   }
 
-  .ProseMirror table:not(:has(> colgroup > col:first-child:nth-last-child(n+5))) th,
-  .ProseMirror table:not(:has(> colgroup > col:first-child:nth-last-child(n+5))) td,
   .markdown-content table:not(:has(> colgroup > col:first-child:nth-last-child(n+5))) th,
   .markdown-content table:not(:has(> colgroup > col:first-child:nth-last-child(n+5))) td {
     width: auto;
@@ -2866,7 +2841,7 @@ html[data-ponder-extension-theme] .ponder-memo-divider {
   line-height: inherit;
 }
 
-.ProseMirror .selectedCell::after {
+.ProseMirror .tableWrapper:not(.ponder-table) .selectedCell::after {
   position: absolute;
   inset: 0;
   content: "";
@@ -2874,39 +2849,31 @@ html[data-ponder-extension-theme] .ponder-memo-divider {
   background: rgb(16 185 129 / 0.14);
 }
 
-:root.dark .ProseMirror th,
 :root.dark .markdown-content th {
   background: rgb(255 255 255 / 0.06);
   color: hsl(var(--foreground));
 }
 
-:root.dark .ProseMirror td strong,
-:root.dark .ProseMirror td b,
 :root.dark .markdown-content td strong,
 :root.dark .markdown-content td b {
   color: #f3f4f6;
 }
 
-:root.dark .ProseMirror .tableWrapper,
 :root.dark .markdown-content .tableWrapper {
   border-color: rgb(var(--slate-200-rgb) / 0.9);
   background: var(--workspace-editor);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
 }
 
-:root.dark .ProseMirror th,
-:root.dark .ProseMirror td,
 :root.dark .markdown-content th,
 :root.dark .markdown-content td {
   border-color: rgb(var(--slate-200-rgb) / 0.7);
 }
 
-:root.dark .ProseMirror tbody tr:nth-child(even) td,
 :root.dark .markdown-content tbody tr:nth-child(even) td {
   background: rgb(255 255 255 / 0.02);
 }
 
-:root.dark .ProseMirror tbody tr:hover td,
 :root.dark .markdown-content tbody tr:hover td {
   background: rgb(255 255 255 / 0.055);
 }
