@@ -1,6 +1,12 @@
 import { z } from "zod";
 
 const httpsUrl = z.url({ protocol: /^https$/ });
+/** Google Analytics 4 measurement ids look like `G-ABC123XYZ`. */
+export const GA_MEASUREMENT_ID_PATTERN = /^G-[A-Z0-9]{4,16}$/;
+/** Favicons are stored inline as small PNG data URLs (resized in the browser before upload). */
+export const NOTEBOOK_SITE_FAVICON_MAX_LENGTH = 12_000;
+export const NOTEBOOK_SITE_THEMES = ["system", "light", "dark"] as const;
+export type NotebookSiteTheme = (typeof NOTEBOOK_SITE_THEMES)[number];
 export const NotebookSiteSettingsSchema = z.object({
   homeMemoId: z.string().nullable().default(null),
   logoUrl: httpsUrl.nullable().default(null),
@@ -8,6 +14,16 @@ export const NotebookSiteSettingsSchema = z.object({
   footerText: z.string().default(""),
   allowIndexing: z.boolean().default(false),
   sortMode: z.enum(["existing", "title"]).default("existing"),
+  theme: z.enum(NOTEBOOK_SITE_THEMES).default("system"),
+  contactButton: z.object({
+    label: z.string().trim().min(1).max(40),
+    url: z.union([httpsUrl, z.string().trim().regex(/^mailto:[^\s<>"]+@[^\s<>"]+$/i)]),
+  }).strict().nullable().default(null),
+  faviconDataUrl: z.string().max(NOTEBOOK_SITE_FAVICON_MAX_LENGTH)
+    .regex(/^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/).nullable().default(null),
+  gaMeasurementId: z.string().trim().toUpperCase().regex(GA_MEASUREMENT_ID_PATTERN).nullable().default(null),
+  description: z.string().trim().max(300).default(""),
+  ogImageUrl: httpsUrl.nullable().default(null),
 }).strict();
 export type NotebookSiteSettings = z.infer<typeof NotebookSiteSettingsSchema>;
 export const NotebookSiteUpdateSchema = z.object({
@@ -19,6 +35,12 @@ export const NotebookSiteUpdateSchema = z.object({
     footerText: NotebookSiteSettingsSchema.shape.footerText.removeDefault().optional(),
     allowIndexing: NotebookSiteSettingsSchema.shape.allowIndexing.removeDefault().optional(),
     sortMode: NotebookSiteSettingsSchema.shape.sortMode.removeDefault().optional(),
+    theme: NotebookSiteSettingsSchema.shape.theme.removeDefault().optional(),
+    contactButton: NotebookSiteSettingsSchema.shape.contactButton.removeDefault().optional(),
+    faviconDataUrl: NotebookSiteSettingsSchema.shape.faviconDataUrl.removeDefault().optional(),
+    gaMeasurementId: NotebookSiteSettingsSchema.shape.gaMeasurementId.removeDefault().optional(),
+    description: NotebookSiteSettingsSchema.shape.description.removeDefault().optional(),
+    ogImageUrl: NotebookSiteSettingsSchema.shape.ogImageUrl.removeDefault().optional(),
   }).strict().optional(),
 }).strict();
 export type NotebookSiteUpdate = z.infer<typeof NotebookSiteUpdateSchema>;

@@ -338,7 +338,7 @@ describe("public notebook site controls", () => {
     f.db.run("UPDATE memos SET title = ? WHERE id = 'memo_child'", ["无标题笔记"]);
     const untitledHtml = await (await render("/s/docs/memo_child")).text();
     expect(untitledHtml).not.toContain("无标题笔记");
-    expect(untitledHtml).toMatch(/<title>[^<]+ · Ponder<\/title>/);
+    expect(untitledHtml).toContain("<title>root</title>");
     await manage(f, "/memos/memo_child", { excluded: true });
     const hidden = await render("/s/docs/memo_child");
     expect(hidden.status).toBe(404);
@@ -364,6 +364,118 @@ describe("public notebook site controls", () => {
       expect(html).toContain(`<meta name="robots" content="${PUBLIC_PAGE_ROBOTS}">`);
       expect(html).toContain(`rel="canonical" href="${url}"`);
     }
+  });
+});
+
+describe("notebook site options", () => {
+  const favicon = `data:image/png;base64,${"A".repeat(200)}`;
+  const shell = '<html><head><title>Ponder</title><link rel="icon" href="/favicon.svg" type="image/svg+xml" /><link rel="apple-touch-icon" href="/apple-touch-icon.png" /></head><body></body></html>';
+  const render = (f, path, method = "GET") => renderNotebookSitePage(new Request(`https://example.org${path}`, { method }),
+    f.environment.storage.db, async () => new Response(shell, { headers: { "content-type": "text/html" } }));
+
+  test("validates theme, contact button, favicon, analytics id, description and social image", async () => {
+    const f = fixture();
+    for (const settings of [
+      { theme: "sepia" },
+      { contactButton: { label: "", url: "https://example.org" } },
+      { contactButton: { label: "Hi", url: "http://example.org" } },
+      { contactButton: { label: "Hi", url: "javascript:alert(1)" } },
+      { faviconDataUrl: "data:image/svg+xml;base64,PHN2Zz4=" },
+      { faviconDataUrl: `data:image/png;base64,${"A".repeat(13_000)}` },
+      { gaMeasurementId: "UA-12345-1" },
+      { gaMeasurementId: "G-1</script>" },
+      { description: "x".repeat(301) },
+      { ogImageUrl: "http://example.org/a.png" },
+    ]) expect((await manage(f, "/site", { settings })).status).toBe(400);
+    const saved = await manage(f, "/site", { settings: {
+      theme: "dark", contactButton: { label: "Get in touch", url: "mailto:hi@example.org" },
+      faviconDataUrl: favicon, gaMeasurementId: "g-abc1234", description: "Docs", ogImageUrl: "https://example.org/og.png",
+    } });
+    expect(saved.status).toBe(200);
+    const { share } = await saved.json();
+    expect(share.siteSettings).toMatchObject({ theme: "dark", gaMeasurementId: "G-ABC1234", faviconDataUrl: favicon });
+    // The favicon is kept out of the public JSON; it is only needed in the page head.
+    const publicSettings = (await (await f.request()).json()).share.settings;
+    expect(publicSettings.faviconDataUrl).toBeNull();
+    expect(publicSettings.contactButton).toEqual({ label: "Get in touch", url: "mailto:hi@example.org" });
+    // Clearing fields removes them again.
+    await manage(f, "/site", { settings: { contactButton: null, faviconDataUrl: null, gaMeasurementId: null } });
+    expect((await (await manage(f, "")).json()).share.siteSettings).toMatchObject({ contactButton: null, faviconDataUrl: null, gaMeasurementId: null });
+  });
+
+  test("a large favicon does not count toward the 16 KiB settings limit", async () => {
+    const f = fixture();
+    const big = `data:image/png;base64,${"A".repeat(11_900)}`;
+    expect((await manage(f, "/site", { settings: { footerText: "x".repeat(15_000), faviconDataUrl: big } })).status).toBe(200);
+    expect((await manage(f, "/site", { settings: { footerText: "x".repeat(17_000) } })).status).toBe(400);
+  });
+
+  test("the page head carries the theme, favicon, analytics tag, titles and social image", async () => {
+    const f = fixture();
+    await manage(f, "/site", { siteSlug: "docs", settings: { allowIndexing: true } });
+    const plain = await (await render(f, "/s/docs/memo_child")).text();
+    expect(plain).not.toContain("googletagmanager");
+    expect(plain).not.toContain("ponder-site-theme");
+    expect(plain).toContain('href="/favicon.svg"');
+    expect(plain).toContain("<title>memo_child · root</title>");
+    expect(plain).toContain('<meta property="og:site_name" content="root">');
+    expect(plain).not.toContain("Ponder</title>");
+    await manage(f, "/site", { settings: { theme: "dark", faviconDataUrl: favicon, gaMeasurementId: "G-ABC1234",
+      description: "All about root", ogImageUrl: "https://example.org/og.png" } });
+    for (const path of ["/s/docs", "/s/docs/memo_child", `/share/notebook/${token}`]) {
+      const html = await (await render(f, path)).text();
+      expect(html).toContain('<script async src="https://www.googletagmanager.com/gtag/js?id=G-ABC1234"></script>');
+      expect(html).toContain('gtag("config","G-ABC1234")');
+      expect(html).toContain('<meta name="ponder-site-theme" content="dark">');
+      expect(html).toContain(`<link rel="icon" type="image/png" href="${favicon}">`);
+      expect(html).not.toContain('href="/favicon.svg"');
+      expect(html).not.toContain('href="/apple-touch-icon.png"');
+      expect(html).toContain('<meta property="og:image" content="https://example.org/og.png">');
+      expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
+    }
+    const home = await (await render(f, "/s/docs")).text();
+    expect(home).toContain("<title>root</title>");
+    // Notes with an excerpt describe themselves; the site description covers the rest.
+    expect(home).toContain('<meta name="description" content="All about root">');
+    // The analytics tag is only on site pages, never on another site.
+    expect(await render(f, "/share/individual-token")).toBeNull();
+  });
+
+  test("sitemap.xml lists every published page and robots.txt follows the indexing toggle", async () => {
+    const f = fixture();
+    await manage(f, "/site", { siteSlug: "docs" });
+    const blocked = await render(f, "/s/docs/robots.txt");
+    expect(blocked.status).toBe(200);
+    expect(await blocked.text()).toBe("User-agent: *\nDisallow: /s/docs/\n");
+    expect((await render(f, "/s/docs/sitemap.xml")).status).toBe(404);
+    const page = await render(f, "/s/docs");
+    expect(page.headers.get("X-Robots-Tag")).toBe(PUBLIC_PAGE_ROBOTS);
+    expect(await page.text()).toContain(`<meta name="robots" content="${PUBLIC_PAGE_ROBOTS}">`);
+
+    await manage(f, "/site", { settings: { allowIndexing: true } });
+    await manage(f, "/memos/memo_child", { excluded: true });
+    const robots = await (await render(f, "/s/docs/robots.txt")).text();
+    expect(robots).toContain("Allow: /s/docs/");
+    expect(robots).toContain("Sitemap: https://example.org/s/docs/sitemap.xml");
+    const sitemap = await render(f, "/s/docs/sitemap.xml");
+    expect(sitemap.status).toBe(200);
+    expect(sitemap.headers.get("content-type")).toContain("application/xml");
+    const xml = await sitemap.text();
+    const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]).sort();
+    expect(locs).toEqual([
+      "https://example.org/s/docs",
+      "https://example.org/s/docs/memo_grand",
+      "https://example.org/s/docs/memo_root",
+    ]);
+    expect(xml).not.toContain("memo_private");
+    expect(xml).not.toContain("memo_other");
+    expect((await render(f, "/s/docs/sitemap.xml", "HEAD")).status).toBe(200);
+    expect((await render(f, "/s/missing/sitemap.xml")).status).toBe(404);
+
+    // A password turns indexing off, so the sitemap goes away and robots.txt disallows.
+    await manage(f, "", { passwordProtected: true });
+    expect((await render(f, "/s/docs/sitemap.xml")).status).toBe(404);
+    expect(await (await render(f, "/s/docs/robots.txt")).text()).toContain("Disallow: /s/docs/");
   });
 });
 

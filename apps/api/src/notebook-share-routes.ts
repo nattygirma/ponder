@@ -132,7 +132,8 @@ export const registerNotebookShareRoutes = (app: Hono<AppEnv>) => {
     if (!existing) return notFound(c, "Active share not found");
     const input = c.req.valid("json");
     const settings = { ...readNotebookSiteSettings(existing.site_settings_json), ...input.settings };
-    if (new TextEncoder().encode(JSON.stringify(settings)).length > 16 * 1024)
+    // The favicon has its own size cap in the schema; every other setting shares 16 KiB.
+    if (new TextEncoder().encode(JSON.stringify({ ...settings, faviconDataUrl: null })).length > 16 * 1024)
       return apiError(c, "invalid_site_settings", "Site settings exceed 16 KiB", 400);
     if (input.settings?.allowIndexing && existing.password_hash)
       return apiError(c, "invalid_site_settings", "Password-protected sites cannot enable indexing", 400);
@@ -145,7 +146,7 @@ export const registerNotebookShareRoutes = (app: Hono<AppEnv>) => {
         site_slug = CASE WHEN ? THEN ? ELSE site_slug END,
         site_settings_json = json_patch(site_settings_json, ?), updated_at = ?
         WHERE id = ? AND workspace_id = ?
-        AND length(CAST(json_patch(site_settings_json, ?) AS BLOB)) <= 16384
+        AND length(CAST(json_remove(json_patch(site_settings_json, ?), '$.faviconDataUrl') AS BLOB)) <= 16384
         AND (? = 0 OR password_hash IS NULL) RETURNING id`)
         .bind(input.siteSlug !== undefined ? 1 : 0, input.siteSlug || null, patch, isoNow(), existing.id,
           getWorkspaceId(c), patch, input.settings?.allowIndexing ? 1 : 0).first();
@@ -423,7 +424,8 @@ export const registerPublicNotebookShareRoutes = (app: Hono<AppEnv>) => {
     const share: PublicNotebookShare = {
       notebookId: root.notebook_id,
       siteSlug: root.site_slug,
-      settings: root.settings,
+      // The favicon is only needed in the server-rendered head, so keep it out of the JSON.
+      settings: { ...root.settings, faviconDataUrl: null },
       name: root.name,
       notebooks: notebooks.results.map((n) => ({
         ...n,
