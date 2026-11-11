@@ -277,6 +277,21 @@ const AI_SIDEBAR_OPEN_THREAD_EVENT = "ponder:ai-sidebar-open-thread";
 // has no messages yet, instead of falling back to the latest chat.
 let requestedThreadId: string | null = null;
 
+// Replies that keep running after the panel that started them closed (opening a table or diagram swaps in
+// another panel). A reply isn't cut off by moving around the app; the next panel's Stop can still end it.
+const backgroundReplies = new Map<string, AbortController>();
+// How often a panel checks on a reply it isn't running itself, and for how long at most.
+const WATCH_REPLY_MS = 3_000;
+const WATCH_REPLY_LIMIT_MS = 10 * 60_000;
+
+/** Whether a closing panel leaves its reply running: a built-in reply that has started saves itself as it goes. */
+export const replyOutlivesPanel = (current: { kind: "companion" | "acp"; started: boolean } | null) =>
+  current?.kind === "companion" && current.started;
+
+/** Whether a panel must check the server for a reply: one is running in this chat and this panel isn't running it. */
+export const panelWatchesReply = (input: { builtin: boolean; busy: boolean; turns: { status: string }[] }) =>
+  input.builtin && !input.busy && input.turns.some((turn) => turn.status === "running");
+
 /** Shows a chat in the panel: remembered for when the panel opens, and sent to it if it is open already. */
 export const openAiSidebarThread = (threadId: string) => {
   requestedThreadId = threadId;
@@ -823,7 +838,8 @@ function AiSidebarSession({
     return () => {
       alive.current = false;
       const current = active.current;
-      current?.controller.abort();
+      // A started reply finishes in the background and saves itself; only one that hasn't started yet is dropped.
+      if (!replyOutlivesPanel(current)) current?.controller.abort();
       if (current?.kind === "acp" && current.requestId) void cancelDesktopAcp(current.requestId).catch(() => undefined);
     };
   }, []);
@@ -1096,6 +1112,7 @@ function AiSidebarSession({
     if (!current) {
       const runningTurn = turns.find((turn) => turn.threadId === threadId && turn.status === "running");
       if (!runningTurn || readAiSidebarSource() === "local") return;
+      backgroundReplies.get(runningTurn.id)?.abort();
       try { await api.cancelCompanionTurn(runningTurn.id); }
       catch (cause) { if (alive.current) setError(explainError(cause)); }
       await reloadCompanion().catch(() => undefined);
@@ -1244,6 +1261,7 @@ function AiSidebarSession({
         })),
       }, ...previous]);
       if (active.current?.id === id) active.current.started = true;
+      backgroundReplies.set(id, controller);
       const focus = sidebarCompanionFocus(focusAtSend, useCurrentNote);
       const payload: CompanionTurnInput = {
         id,
@@ -1277,6 +1295,7 @@ function AiSidebarSession({
             setTurnFailures((previous) => ({ ...previous, [id]: message }));
           }
         } finally {
+          backgroundReplies.delete(id);
           if (active.current?.id === id) active.current = null;
           locked.current = false;
           if (alive.current) {
@@ -1520,6 +1539,18 @@ function AiSidebarSession({
   const visibleCompanion = source === "builtin";
   const visibleTurns = visibleCompanion ? threadTurns : localThreadTurns;
   const running = busy || visibleTurns.some((turn) => turn.status === "running");
+  // A reply this panel isn't running (started before the panel opened, or in another tab) only changes on the
+  // server, so check it until it ends. Otherwise the panel would show "Replying…" forever.
+  const watchingReply = panelWatchesReply({ builtin: visibleCompanion, busy, turns: threadTurns });
+  useEffect(() => {
+    if (!watchingReply) return;
+    const timer = window.setInterval(() => { void reloadCompanion().catch(() => undefined); }, WATCH_REPLY_MS);
+    const limit = window.setTimeout(() => window.clearInterval(timer), WATCH_REPLY_LIMIT_MS);
+    return () => {
+      window.clearInterval(timer);
+      window.clearTimeout(limit);
+    };
+  }, [watchingReply, reloadCompanion]);
 
   const renderSelectionReply = (turnId: string, response: string, status: string) => {
     const kind = selectionTurnKinds[turnId];
@@ -1546,7 +1577,7 @@ function AiSidebarSession({
           {draft ? <NoteEditDiff before={draft.before} after={draft.after} /> : null}
           {conflicts[action.id] ? <p role="alert" className="text-xs text-rose-700">{conflicts[action.id]}</p> : null}
           <div className="flex gap-2">
-            <Button type="button" size="sm" variant="solid" className="border-slate-900 bg-slate-900 hover:border-slate-800 hover:bg-slate-800" disabled={running || acting} onClick={() => void applyAction(action)}>
+            <Button type="button" size="sm" variant="solid" className="border-slate-900 bg-slate-900 text-slate-50 hover:border-slate-800 hover:bg-slate-800" disabled={running || acting} onClick={() => void applyAction(action)}>
               {t(draft ? "aiAssistant.sidebar.proposalConfirm" : "aiAssistant.sidebar.proposalConfirmOther")}
             </Button>
             <Button type="button" size="sm" variant="outline" disabled={running || acting} onClick={() => void dismissAction(action)}>

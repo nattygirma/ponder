@@ -41,3 +41,21 @@ describe("New chat", () => {
     expect(stored.get(THREAD_KEY)).not.toBe(fresh);
   });
 });
+
+describe("A reply while moving around the app", () => {
+  test("a started built-in reply keeps running when its panel closes; one not started yet, or a local agent's, doesn't", () => {
+    expect(sidebar.replyOutlivesPanel({ kind: "companion", started: true })).toBe(true);
+    expect(sidebar.replyOutlivesPanel({ kind: "companion", started: false })).toBe(false);
+    expect(sidebar.replyOutlivesPanel({ kind: "acp", started: true })).toBe(false);
+    expect(sidebar.replyOutlivesPanel(null)).toBe(false);
+  });
+
+  test("a panel checks the server for a running reply it isn't running itself, so it never stays on Replying", () => {
+    const running = [{ status: "completed" }, { status: "running" }];
+    expect(sidebar.panelWatchesReply({ builtin: true, busy: false, turns: running })).toBe(true);
+    // The panel running the reply gets its events directly.
+    expect(sidebar.panelWatchesReply({ builtin: true, busy: true, turns: running })).toBe(false);
+    expect(sidebar.panelWatchesReply({ builtin: true, busy: false, turns: [{ status: "interrupted" }] })).toBe(false);
+    expect(sidebar.panelWatchesReply({ builtin: false, busy: false, turns: running })).toBe(false);
+  });
+});
