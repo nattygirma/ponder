@@ -33,6 +33,7 @@ export * from "./teams";
 export * from "./database";
 export * from "./notion-import";
 export * from "./database-engine";
+export * from "./database-chart";
 export * from "./note-prose";
 export * from "./note-prose-css";
 export * from "./notebooks";

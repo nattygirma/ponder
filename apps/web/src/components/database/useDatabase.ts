@@ -45,6 +45,8 @@ export type DatabaseHandle = {
   rows: DatabaseRow[];
   cells: Map<string, Record<string, ComputedCell>>;
   related: Map<string, { database: DatabaseDetail; rows: DatabaseRow[] }>;
+  /** Workspace members' names by user id, for person values. */
+  people: ReadonlyMap<string, string>;
   error: string | null;
   clearError: () => void;
   rename: (title: string) => Promise<void>;
@@ -155,6 +157,7 @@ export const useDatabase = (databaseId: string) => {
       rows: rowsQuery.data,
       cells,
       related,
+      people,
       error,
       clearError: () => setError(null),
       rename: async (title) => {
@@ -254,7 +257,7 @@ export const useDatabase = (databaseId: string) => {
         await attempt(() => api.deleteDatabaseView(databaseId, viewId));
       },
     };
-  }, [attempt, cells, databaseId, detail.data, error, patchDetail, patchRows, queryClient, related, rowsQuery.data]);
+  }, [attempt, cells, databaseId, detail.data, error, patchDetail, patchRows, people, queryClient, related, rowsQuery.data]);
 
   return {
     handle,

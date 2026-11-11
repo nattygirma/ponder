@@ -38,6 +38,34 @@ const propertyDefaults = (type: DatabasePropertyType): Partial<DatabaseProperty>
   return {};
 };
 
+const cleanPrefix = (value: string) => value.trim().replace(/[^A-Za-z0-9_-]/g, "");
+
+/** Notion's ID prefix field: the numbers it will produce are previewed as you type. */
+const IdPrefixEditor = ({ prefix, onChange }: { prefix: string; onChange: (prefix: string) => void }) => {
+  const { t } = useTranslation();
+  const [draft, setDraft] = useState(prefix);
+  const shown = cleanPrefix(draft) || "TASK";
+  return (
+    <label className="block text-xs text-slate-500">
+      {t("pages.db.idPrefix")}
+      <Input
+        className="h-8 font-mono"
+        maxLength={12}
+        value={draft}
+        placeholder="TASK"
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={() => {
+          const next = cleanPrefix(draft);
+          setDraft(next);
+          if (next !== prefix) onChange(next);
+        }}
+        onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }}
+      />
+      <span className="mt-1 block font-mono" data-id-preview>{`${shown}-1, ${shown}-2, ${shown}-3, …`}</span>
+    </label>
+  );
+};
+
 export const useTypeLabel = () => {
   const { t } = useTranslation();
   return (type: DatabasePropertyType) => t(`pages.db.types.${type}`);
@@ -272,23 +300,7 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
             </Select>
           </label>
         ) : null}
-        {property.type === "unique_id" ? (
-          <label className="block text-xs text-slate-500">
-            {t("pages.db.idPrefix")}
-            <Input
-              className="h-8 font-mono"
-              maxLength={12}
-              defaultValue={property.uniqueId?.prefix ?? ""}
-              placeholder="TASK"
-              onBlur={(event) => {
-                const prefix = event.target.value.trim().replace(/[^A-Za-z0-9_-]/g, "");
-                if (prefix !== (property.uniqueId?.prefix ?? "")) patch({ uniqueId: { prefix } });
-              }}
-              onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }}
-            />
-            <span className="mt-1 block">{t("pages.db.idPrefixHelp")}</span>
-          </label>
-        ) : null}
+        {property.type === "unique_id" ? <IdPrefixEditor prefix={property.uniqueId?.prefix ?? ""} onChange={(prefix) => patch({ uniqueId: { prefix } })} /> : null}
         {property.type === "relation" ? <RelationEditor db={db} property={property} /> : null}
         {property.type === "rollup" ? <RollupEditor db={db} property={property} onChange={patch} /> : null}
         {property.type === "formula" ? (

@@ -29,7 +29,7 @@ export const DATABASE_PROPERTY_TYPES = [
 ] as const;
 export type DatabasePropertyType = (typeof DATABASE_PROPERTY_TYPES)[number];
 
-export const DATABASE_VIEW_TYPES = ["table", "board", "calendar", "gallery", "list", "timeline"] as const;
+export const DATABASE_VIEW_TYPES = ["table", "board", "calendar", "gallery", "list", "timeline", "chart"] as const;
 export type DatabaseViewType = (typeof DATABASE_VIEW_TYPES)[number];
 
 export const DATABASE_OPTION_COLORS = ["gray", "brown", "orange", "yellow", "green", "blue", "purple", "pink", "red"] as const;
@@ -123,6 +123,59 @@ export const DatabaseSortSchema = z.object({
 });
 export type DatabaseSort = z.infer<typeof DatabaseSortSchema>;
 
+export const CHART_TYPES = ["vertical_bar", "horizontal_bar", "line", "donut", "number"] as const;
+export type ChartType = (typeof CHART_TYPES)[number];
+export const CHART_COLORS = ["auto", "colorful", "colorless", "blue", "yellow", "green", "purple", "teal", "orange", "pink", "red"] as const;
+export type ChartColor = (typeof CHART_COLORS)[number];
+/** How the Y axis (or a donut's slices, or a number chart) sums a number property. Count needs no property. */
+export const CHART_AGGREGATES = ["sum", "average", "median", "min", "max", "range"] as const;
+export type ChartAggregate = (typeof CHART_AGGREGATES)[number];
+export const CHART_X_SORTS = ["manual", "asc", "desc", "value_asc", "value_desc"] as const;
+export type ChartXSort = (typeof CHART_X_SORTS)[number];
+export const CHART_DATE_GROUPS = ["day", "week", "month", "year"] as const;
+export type ChartDateGroup = (typeof CHART_DATE_GROUPS)[number];
+export const CHART_HEIGHTS = ["small", "medium", "large", "extra_large"] as const;
+export const CHART_GRID_LINES = ["none", "horizontal", "vertical", "both"] as const;
+export const CHART_AXIS_NAMES = ["none", "x", "y", "both"] as const;
+export const CHART_DONUT_LABELS = ["none", "value", "name", "name_and_value", "percent"] as const;
+/** Like Notion: at most 200 groups along the X axis and 50 groups in the legend. */
+export const CHART_GROUP_LIMIT = 200;
+export const CHART_SERIES_LIMIT = 50;
+
+export const DatabaseChartConfigSchema = z.object({
+  type: z.enum(CHART_TYPES),
+  /** What the X axis shows, or what each donut slice represents. */
+  xPropertyId: z.string().max(64).nullable(),
+  xSort: z.enum(CHART_X_SORTS),
+  dateGroup: z.enum(CHART_DATE_GROUPS),
+  /** Group keys hidden from the chart, as Notion's "Hidden groups". */
+  hiddenGroups: z.array(z.string().max(200)).max(CHART_GROUP_LIMIT),
+  omitZero: z.boolean(),
+  /** Null counts rows; otherwise the number property the Y axis sums up. */
+  yPropertyId: z.string().max(64).nullable(),
+  yAggregate: z.enum(CHART_AGGREGATES),
+  /** Splits each X group by a second property: stacked bars, one line each. */
+  groupByPropertyId: z.string().max(64).nullable(),
+  cumulative: z.boolean(),
+  rangeMin: z.number().finite().nullable(),
+  rangeMax: z.number().finite().nullable(),
+  referenceLines: z.array(z.object({ value: z.number().finite(), label: z.string().trim().max(60) })).max(5),
+  color: z.enum(CHART_COLORS),
+  height: z.enum(CHART_HEIGHTS),
+  gridLine: z.enum(CHART_GRID_LINES),
+  axisName: z.enum(CHART_AXIS_NAMES),
+  dataLabels: z.boolean(),
+  donutLabels: z.enum(CHART_DONUT_LABELS),
+  /** Null hides the caption. */
+  caption: z.string().max(500).nullable(),
+  smoothLine: z.boolean(),
+  gradientArea: z.boolean(),
+  showValueInCenter: z.boolean(),
+  colorByValue: z.boolean(),
+  legend: z.boolean(),
+}).partial();
+export type DatabaseChartConfig = z.infer<typeof DatabaseChartConfigSchema>;
+
 export const DatabaseViewConfigSchema = z.object({
   filterMode: z.enum(["and", "or"]).optional(),
   filters: z.array(DatabaseFilterSchema).max(50).optional(),
@@ -134,6 +187,10 @@ export const DatabaseViewConfigSchema = z.object({
   /** Calendar date, or timeline start. */
   datePropertyId: z.string().max(64).nullable().optional(),
   columnWidths: z.record(z.string(), z.number().min(40).max(2000)).optional(),
+  /** How this view shows sub-items, as Notion's "Show as": nested under toggles (the default), one flat list, or not at all. */
+  subItemsDisplay: z.enum(["nested", "flattened", "disabled"]).optional(),
+  /** Chart views only. */
+  chart: DatabaseChartConfigSchema.optional(),
 });
 export type DatabaseViewConfig = z.infer<typeof DatabaseViewConfigSchema>;
 
@@ -302,7 +359,8 @@ export type DatabaseTemplate = {
 export const DATABASE_TEMPLATE_LIMIT = 50;
 
 const templateFields = {
-  name: z.string().trim().min(1).max(120),
+  // Empty while a new template is still untitled, as in Notion.
+  name: z.string().trim().max(120),
   icon: z.string().trim().max(32).nullable(),
   title: z.string().trim().max(160),
   properties: z.record(z.string(), DatabaseRowValueSchema),

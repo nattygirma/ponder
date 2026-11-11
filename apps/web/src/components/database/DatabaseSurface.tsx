@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowDownUp, CalendarDays, Columns3, Filter, GalleryHorizontal, Group, List, ListTree, MoreHorizontal, Plus, Settings2, Table2, Trash2, X } from "lucide-react";
+import { ArrowDownUp, CalendarDays, ChartPie, Columns3, Filter, GalleryHorizontal, Group, List, ListTree, MoreHorizontal, Plus, Settings2, Table2, Trash2, X } from "lucide-react";
 import {
   applyDatabaseView,
   DATABASE_VIEW_TYPES,
+  defaultChartXProperty,
   type DatabaseFilter,
   type DatabaseProperty,
   type DatabaseView as DatabaseViewRecord,
@@ -20,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { BoardView, CalendarView, GalleryView, ListView, RowPeekContext, TableView, TimelineView, type DatabaseViewProps } from "./DatabaseViews";
 import { NewRowButton } from "./DatabaseTemplates";
+import { ChartSettings, ChartView } from "./DatabaseChart";
 import { RowPeek } from "./RowPeek";
 import { useDatabase, type DatabaseHandle } from "./useDatabase";
 
@@ -30,6 +32,7 @@ const VIEW_ICONS: Record<DatabaseViewType, typeof Table2> = {
   gallery: GalleryHorizontal,
   list: List,
   timeline: ListTree,
+  chart: ChartPie,
 };
 
 const VIEW_COMPONENTS: Record<DatabaseViewType, (props: DatabaseViewProps) => ReactNode> = {
@@ -39,6 +42,7 @@ const VIEW_COMPONENTS: Record<DatabaseViewType, (props: DatabaseViewProps) => Re
   gallery: GalleryView,
   list: ListView,
   timeline: TimelineView,
+  chart: ChartView,
 };
 
 const TEXT_OPERATORS: FilterOperator[] = ["contains", "not_contains", "is", "is_not", "starts_with", "ends_with", "is_empty", "is_not_empty"];
@@ -243,9 +247,28 @@ const PropertiesPanel = ({ db, config, update }: { db: DatabaseHandle; config: D
       ))}
       <div className="space-y-2 border-t border-slate-100 pt-2">
         <RelationPairSwitch db={db} kind="subItems" />
+        {db.database.schema.subItems ? <SubItemsDisplay config={config} update={update} /> : null}
         <RelationPairSwitch db={db} kind="dependencies" />
       </div>
     </div>
+  );
+};
+
+const SUB_ITEM_DISPLAYS = ["nested", "flattened", "disabled"] as const;
+
+/** Notion's per-view "Show as" for sub-items. */
+const SubItemsDisplay = ({ config, update }: { config: DatabaseViewConfig; update: DatabaseViewProps["updateConfig"] }) => {
+  const { t } = useTranslation();
+  return (
+    <label className="flex items-center justify-between gap-3 pl-3 text-xs text-slate-500">
+      {t("pages.db.subItemsShowAs")}
+      <Select value={config.subItemsDisplay ?? "nested"} onValueChange={(value) => update({ subItemsDisplay: value as (typeof SUB_ITEM_DISPLAYS)[number] })}>
+        <SelectTrigger className="h-7 w-40" aria-label={t("pages.db.subItemsShowAs")}><SelectValue /></SelectTrigger>
+        <SelectContent>
+          {SUB_ITEM_DISPLAYS.map((value) => <SelectItem key={value} value={value}>{t(`pages.db.subItemsDisplay.${value}`)}</SelectItem>)}
+        </SelectContent>
+      </Select>
+    </label>
   );
 };
 
@@ -322,7 +345,9 @@ const AddView = ({ db, onAdded }: { db: DatabaseHandle; onAdded: (id: string) =>
           return (
             <button key={type} type="button" className="flex w-full items-center gap-2 rounded px-2 py-1 text-left hover:bg-slate-100" onClick={async () => {
               setOpen(false);
-              const view = await db.addView({ name: t(`pages.db.views.${type}`), type });
+              // A chart starts on the most chartable property, as Notion picks one for you.
+              const config = type === "chart" ? { chart: { xPropertyId: defaultChartXProperty(db.database.schema) } } : undefined;
+              const view = await db.addView({ name: t(`pages.db.views.${type}`), type, config });
               if (view) onAdded(view.id);
             }}>
               <Icon className="h-3.5 w-3.5" aria-hidden="true" />{t(`pages.db.views.${type}`)}
@@ -343,7 +368,11 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
   const views = db.database.views;
   const view = views.find((item) => item.id === activeId) ?? views[0];
   const schema = db.database.schema;
-  const config = view?.config ?? {};
+  const stored = view?.config ?? {};
+  // A view switched to a chart has no chart settings yet; it starts on the most chartable property.
+  const config = view?.type === "chart" && stored.chart?.xPropertyId === undefined
+    ? { ...stored, chart: { ...stored.chart, xPropertyId: defaultChartXProperty(schema) } }
+    : stored;
 
   const rows = useMemo(() => {
     const applied = applyDatabaseView({ schema, rows: db.rows, cells: db.cells, config, now: new Date() });
@@ -353,6 +382,7 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
 
   if (!view) return null;
   const updateConfig = (patch: Partial<DatabaseViewConfig>) => void db.updateView(view.id, { config: { ...config, ...patch } });
+  const isChart = view.type === "chart";
   const properties = schema.properties;
   const title = properties.find((property) => property.type === "title")!;
   const ordered = config.visiblePropertyIds
@@ -383,7 +413,7 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
         </div>
         <div className="ml-auto flex flex-wrap items-center gap-0.5">
           <ToolbarButton icon={Filter} label={t("pages.db.filter")} active={Boolean(config.filters?.length)}><FilterPanel db={db} config={config} update={updateConfig} /></ToolbarButton>
-          <ToolbarButton icon={ArrowDownUp} label={t("pages.db.sort")} active={Boolean(config.sorts?.length)}><SortPanel db={db} config={config} update={updateConfig} /></ToolbarButton>
+          {isChart ? null : <ToolbarButton icon={ArrowDownUp} label={t("pages.db.sort")} active={Boolean(config.sorts?.length)}><SortPanel db={db} config={config} update={updateConfig} /></ToolbarButton>}
           {view.type === "table" || view.type === "board" ? (
             <ToolbarButton icon={Group} label={t("pages.db.group")} active={Boolean(config.groupByPropertyId)}>
               <PropertyChoice value={config.groupByPropertyId} options={groupable} onChange={(groupByPropertyId) => updateConfig({ groupByPropertyId })} />
@@ -394,8 +424,14 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
               <PropertyChoice value={config.datePropertyId} options={dateOptions} onChange={(datePropertyId) => updateConfig({ datePropertyId })} />
             </ToolbarButton>
           ) : null}
-          <ToolbarButton icon={Settings2} label={t("pages.db.properties")}><PropertiesPanel db={db} config={config} update={updateConfig} /></ToolbarButton>
-          <Input className="h-7 w-32 text-xs" value={search} placeholder={t("pages.db.search")} aria-label={t("pages.db.search")} onChange={(event) => setSearch(event.target.value)} />
+          {isChart ? (
+            <ToolbarButton icon={Settings2} label={t("pages.db.chart.edit")}><ChartSettings db={db} config={config} update={updateConfig} rows={rows} viewName={view.name} /></ToolbarButton>
+          ) : (
+            <>
+              <ToolbarButton icon={Settings2} label={t("pages.db.properties")}><PropertiesPanel db={db} config={config} update={updateConfig} /></ToolbarButton>
+              <Input className="h-7 w-32 text-xs" value={search} placeholder={t("pages.db.search")} aria-label={t("pages.db.search")} onChange={(event) => setSearch(event.target.value)} />
+            </>
+          )}
           <NewRowButton db={db} />
         </div>
       </div>

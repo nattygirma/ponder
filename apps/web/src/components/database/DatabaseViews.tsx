@@ -32,7 +32,7 @@ export type DatabaseViewProps = {
 /** Set by the database surface so a row opens beside the table instead of replacing it. */
 export const RowPeekContext = createContext<((rowId: string) => void) | null>(null);
 
-const useOpenRow = (db: DatabaseHandle) => {
+export const useOpenRow = (db: DatabaseHandle) => {
   const pages = usePages();
   const peek = useContext(RowPeekContext);
   return (row: Pick<DatabaseRow, "id">) => {
@@ -108,10 +108,21 @@ export const TableView = ({ db, rows, config, visible, updateConfig }: DatabaseV
   const [limit, setLimit] = useState(PAGE_SIZE);
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(() => new Set());
   const subItems = db.database.schema.subItems;
+  const display = subItems ? config.subItemsDisplay ?? "nested" : "disabled";
   const nested = useMemo(
-    () => (subItems && !config.groupByPropertyId ? nestRows({ rows, parentPropertyId: subItems.parentPropertyId, expanded }) : null),
-    [config.groupByPropertyId, expanded, rows, subItems],
+    () => (subItems && display === "nested" && !config.groupByPropertyId ? nestRows({ rows, parentPropertyId: subItems.parentPropertyId, expanded }) : null),
+    [config.groupByPropertyId, display, expanded, rows, subItems],
   );
+  // A flattened list names each sub-item's parent in front of its title, as Notion does.
+  const parentName = useMemo(() => {
+    if (!subItems || display !== "flattened") return () => null;
+    const titles = new Map(db.rows.map((item) => [item.id, item.title || t("common.untitledMemo")]));
+    return (row: DatabaseRow) => {
+      const parents = row.properties[subItems.parentPropertyId];
+      const parentId = Array.isArray(parents) ? parents[0] : null;
+      return typeof parentId === "string" ? titles.get(parentId) ?? null : null;
+    };
+  }, [db.rows, display, subItems, t]);
   const depthOf = useMemo(() => new Map((nested ?? []).map((item) => [item.row.id, item])), [nested]);
   const toggle = (rowId: string, open?: boolean) => setExpanded((current) => {
     const next = new Set(current);
@@ -165,6 +176,11 @@ export const TableView = ({ db, rows, config, visible, updateConfig }: DatabaseV
               {canReorder ? (
                 <span draggable onDragStart={rowDrag(row.id)} className="absolute -left-5 top-1.5 cursor-grab text-slate-300 opacity-0 group-hover/row:opacity-100" aria-hidden="true">
                   <GripVertical className="h-4 w-4" />
+                </span>
+              ) : null}
+              {parentName(row) ? (
+                <span className="flex max-w-[40%] shrink-0 items-center gap-0.5 truncate text-xs text-slate-400" data-db-parent-name>
+                  {parentName(row)}<ChevronRight className="h-3 w-3 shrink-0" aria-hidden="true" />
                 </span>
               ) : null}
               <div className="min-w-0 flex-1"><DatabaseCell db={db} row={row} property={property} /></div>

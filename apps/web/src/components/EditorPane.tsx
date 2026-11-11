@@ -287,6 +287,7 @@ import { formatRelativeTime } from "@/lib/relative-time";
 import { ALargeSmall, CornerUpRight, Link as LinkIcon, PenLine, Star as StarIcon } from "lucide-react";
 import { DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuCheckboxItem } from "@/components/ui/dropdown-menu";
 import { EditorDatabaseEmbed, RowProperties } from "./database/DatabasePane";
+import { ChartInsertDialog } from "./database/DatabaseChart";
 import { AppMark, useConnections } from "./pages/Connections";
 import { EditorLinkPreview, LinkPreviewPaste } from "./pages/LinkPreviewBlock";
 import { PageComments, type PageCommentsController } from "./comments/PageComments";
@@ -855,6 +856,7 @@ const RichEditorPane = ({
       "columns-2": "",
       "columns-3": "",
       database: "",
+      chart: "",
     },
   });
   slashCommandLabelsRef.current = {
@@ -896,6 +898,7 @@ const RichEditorPane = ({
       "columns-2": t("pages.columns2"),
       "columns-3": t("pages.columns3"),
       database: t("pages.database"),
+      chart: t("pages.db.views.chart"),
     },
   };
   const pages = usePages();
@@ -905,6 +908,8 @@ const RichEditorPane = ({
   pagesRef.current = pages;
   const createSubPageRef = useRef<() => Promise<void>>(async () => undefined);
   const createDatabaseRef = useRef<() => Promise<void>>(async () => undefined);
+  const [chartPickerOpen, setChartPickerOpen] = useState(false);
+  const insertChartRef = useRef<(databaseId: string | null) => Promise<void>>(async () => undefined);
   const slashCommandActionsRef = useRef<SlashCommandActions | null>(null);
   if (!slashCommandActionsRef.current) {
     slashCommandActionsRef.current = {
@@ -916,6 +921,7 @@ const RichEditorPane = ({
       pagesAvailable: () => Boolean(pagesRef.current?.enabled),
       createSubPage: () => void createSubPageRef.current(),
       createDatabase: () => void createDatabaseRef.current(),
+      insertChart: () => setChartPickerOpen(true),
     };
   }
   const slashCommandExtensionRef = useRef<ReturnType<typeof createSlashCommandExtension> | null>(null);
@@ -4225,6 +4231,18 @@ const RichEditorPane = ({
     if (!page) return;
     editor?.chain().focus().insertContent({ type: SUB_PAGE_NODE_TYPE, attrs: { memoId: page.id, title: "" } }).run();
   };
+  insertChartRef.current = async (databaseId) => {
+    if (!memo) return;
+    let target = databaseId;
+    if (!target) {
+      const { database } = await api.createDatabase({ parentId: memo.id });
+      pagesRef.current?.refresh();
+      target = database.id;
+    }
+    // The chart is a view of the database, shown as a linked view on this page.
+    const { view } = await api.createDatabaseView(target, { name: t("pages.db.views.chart"), type: "chart" });
+    editor?.chain().focus().insertContent({ type: "ponderDatabase", attrs: { databaseId: target, viewId: view.id } }).run();
+  };
   createDatabaseRef.current = async () => {
     if (!memo) return;
     const { database } = await api.createDatabase({ parentId: memo.id });
@@ -4314,6 +4332,16 @@ const RichEditorPane = ({
             : undefined
         }
       />
+      {chartPickerOpen ? (
+        <ChartInsertDialog
+          databases={(pages?.nodes ?? []).flatMap((node) => (node.databaseId ? [{ id: node.id, databaseId: node.databaseId, title: node.title, icon: node.icon }] : []))}
+          onClose={() => setChartPickerOpen(false)}
+          onPick={(databaseId) => {
+            setChartPickerOpen(false);
+            void insertChartRef.current(databaseId);
+          }}
+        />
+      ) : null}
       {noteLinkPickerOpen && (
         <EditorNoteLinkPicker
           query={noteLinkQuery}

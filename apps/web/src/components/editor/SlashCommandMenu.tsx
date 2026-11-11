@@ -9,6 +9,7 @@ import {
   Braces,
   CalendarClock,
   CalendarDays,
+  ChartColumn,
   ChevronsDownUp,
   Columns2,
   Columns3,
@@ -72,7 +73,8 @@ export type SlashCommandId =
   | "callout"
   | "columns-2"
   | "columns-3"
-  | "database";
+  | "database"
+  | "chart";
 
 type SlashCommandGroup = "suggested" | "basic" | "insert";
 type SlashCommandIcon = ComponentType<{ className?: string }>;
@@ -94,6 +96,7 @@ export type SlashCommandActions = {
   pagesAvailable: () => boolean;
   createSubPage: () => void;
   createDatabase: () => void;
+  insertChart: () => void;
 };
 
 export type SlashCommandItem = {
@@ -145,12 +148,13 @@ export const createSlashCommandItems = (labels: SlashCommandLabels): SlashComman
   { id: "external-link", command: "link", group: "insert", icon: Link, label: labels.items["external-link"], keywords: ["url", "web"] },
   { id: "sub-page", command: "page", group: "insert", icon: FileText, label: labels.items["sub-page"], keywords: ["subpage", "child"] },
   { id: "database", command: "database", group: "insert", icon: Database, label: labels.items.database, keywords: ["board", "calendar", "kanban"] },
+  { id: "chart", command: "chart", group: "insert", icon: ChartColumn, label: labels.items.chart, keywords: ["graph", "bar", "line", "donut", "pie"] },
   { id: "callout", command: "callout", group: "basic", icon: Lightbulb, label: labels.items.callout, keywords: ["note", "tip", "warning"] },
   { id: "columns-2", command: "columns", group: "insert", icon: Columns2, label: labels.items["columns-2"], keywords: ["layout", "side"] },
   { id: "columns-3", command: "columns3", group: "insert", icon: Columns3, label: labels.items["columns-3"], keywords: ["layout", "side"] },
 ];
 
-const PAGE_LAYOUT_COMMANDS = new Set<SlashCommandId>(["sub-page", "database"]);
+const PAGE_LAYOUT_COMMANDS = new Set<SlashCommandId>(["sub-page", "database", "chart"]);
 
 export const filterSlashCommandItems = (items: SlashCommandItem[], query: string) => {
   const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -305,6 +309,10 @@ const runSlashCommand = ({
     case "database":
       chain.run();
       actions.createDatabase();
+      break;
+    case "chart":
+      chain.run();
+      actions.insertChart();
       break;
     case "callout": chain.wrapIn(CALLOUT_NODE_TYPE).run(); break;
     case "columns-2":
