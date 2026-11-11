@@ -8,7 +8,7 @@ describe("responsive table layout contracts", () => {
   test("globals.css provides container-query proportional column widths for compact tables", () => {
     expect(globals).not.toContain("min-width: 42rem !important;");
     expect(globals).not.toContain("calc((100vw - 3rem) / 3)");
-    expect(globals).toContain(".ProseMirror .tableWrapper");
+    expect(globals).toContain(".markdown-content .tableWrapper");
     expect(globals).toContain("container-type: inline-size;");
     expect(globals).toContain("--mobile-table-column-width: 100cqi;");
     expect(globals).toContain("--mobile-table-column-width: 50cqi;");
@@ -27,7 +27,16 @@ describe("responsive table layout contracts", () => {
 
   test("wide tables with 5+ columns expand and scroll smoothly inside wrapper", () => {
     expect(globals).toContain(".tableWrapper {\n  --mobile-table-column-width: clamp(4.5rem, 24cqi, 12rem);");
-    expect(globals).toMatch(/\.ProseMirror \.tableWrapper[\s\S]*?overflow-x: auto;/);
+    expect(globals).toMatch(/\.markdown-content \.tableWrapper[\s\S]*?overflow-x: auto;/);
     expect(mobileEditor).toMatch(/\.ponder-mobile-tiptap-content \.tableWrapper[\s\S]*?overflow-x: auto;/);
+  });
+
+  test("editor tables use Notion's fixed column widths, not the card layout", () => {
+    const notion = readFileSync(new URL("../styles/notion-table.css", import.meta.url), "utf8");
+    expect(globals).not.toMatch(/^\.ProseMirror table,$/m);
+    expect(globals).not.toMatch(/^\.ProseMirror table col,$/m);
+    expect(notion).toContain(".ProseMirror .tableWrapper.ponder-table > table");
+    expect(notion).toContain("table-layout: fixed;");
+    expect(notion).toContain("overflow-x: auto;");
   });
 });

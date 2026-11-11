@@ -103,7 +103,7 @@ const SharedRichText = ({ content, site = false }: { content: PublicMemoShare["c
         image: SharedImage.configure({ allowBase64: false, inline: false }),
         pdf: PdfAttachment,
         file: FileAttachment,
-        table: { table: { renderWrapper: true } },
+        table: { table: { renderWrapper: true, resizable: true } },
       }),
       (site ? SiteCodeBlock : PonderCodeBlock).configure({ lowlight: codeBlockLowlight, defaultLanguage: "plaintext" }),
       SharedThemeBlock,

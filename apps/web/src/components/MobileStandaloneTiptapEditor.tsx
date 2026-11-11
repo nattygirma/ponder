@@ -215,7 +215,7 @@ export const MobileStandaloneTiptapEditor = ({
         }),
         pdf: PdfAttachment,
         file: FileAttachment,
-        table: { table: { renderWrapper: true } },
+        table: { table: { renderWrapper: true, resizable: true } },
       }),
       PonderLink,
       inlineFieldExtension,

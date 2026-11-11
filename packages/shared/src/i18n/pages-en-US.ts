@@ -74,6 +74,16 @@ export const pagesEnUS = {
     continueWithGoogle: "Continue with Google", continueWithIcloud: "Continue with iCloud", continueWithOutlook: "Continue with Outlook", manageConnection: "Manage", back: "Back",
     titleGoogle: "Connect Google Calendar", titleIcloud: "Connect iCloud Calendar", titleOutlook: "Connect Outlook Calendar",
   },
+  table: {
+    rowMenu: "Row options", columnMenu: "Column options", cellMenu: "Cell options",
+    headerRow: "Header row", headerColumn: "Header column",
+    insertAbove: "Insert above", insertBelow: "Insert below", insertLeft: "Insert left", insertRight: "Insert right",
+    duplicate: "Duplicate", clearContents: "Clear contents", delete: "Delete",
+    mergeCells: "Merge cells", unmergeCells: "Unmerge cells",
+    addRow: "Click to add a new row", addColumn: "Click to add a new column", addBoth: "Drag to add or remove rows and columns",
+    dragHint: "Drag to move", fitWidth: "Fit to width", turnIntoDatabase: "Turn into database",
+    columnName: "Column {{index}}", colorText: "{{color}} text", databaseFailed: "The table could not be turned into a database.",
+  },
   peek: { label: "Side peek", close: "Close side peek", openFull: "Open as full page", title: "Row title", body: "Page content" },
   block: { moveTo: "Move to", movePlaceholder: "Move block to…", moveFailed: "The block could not be moved.", searchActions: "Search actions…", copyLink: "Copy link to block", skills: "Skills" },
   skills: {

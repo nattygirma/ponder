@@ -1,6 +1,8 @@
 import { getTextSerializersFromSchema, type TextSerializer } from "@tiptap/core";
 import type { Node } from "@tiptap/pm/model";
 import type { EditorProps } from "@tiptap/pm/view";
+import { CellSelection } from "@tiptap/pm/tables";
+import { cellSelectionToTsv } from "@ponder/shared/markdown-table";
 
 /** Container nodes (quotes, lists, items) must not each add a blank line. */
 export const serializeEditorTextRange = (doc: Node, from: number, to: number): string => {
@@ -28,7 +30,8 @@ export const serializeEditorTextRange = (doc: Node, from: number, to: number): s
 
 export const editorClipboardTextSerializer: NonNullable<EditorProps["clipboardTextSerializer"]> = (_slice, view) => {
   const { doc, selection } = view.state;
-  // Cell selections expose disjoint ranges: do not include the cells between them.
+  // Copied cells paste into spreadsheets and other tables as tab-separated rows, as in Notion.
+  if (selection instanceof CellSelection) return cellSelectionToTsv(selection);
   return [...selection.ranges]
     .sort((a, b) => a.$from.pos - b.$from.pos)
     .map(({ $from, $to }) => serializeEditorTextRange(doc, $from.pos, $to.pos))

@@ -273,6 +273,8 @@ import { createInlineFieldExtension } from "./editor/InlineField";
 import { createPluginEmbedExtension } from "./editor/PluginEmbed";
 import { PAGE_TREE_QUERY_KEY, usePages } from "./pages/PagesProvider";
 import { BlockHandle, createBlockHandleExtension, type BlockHandleController } from "./pages/BlockHandle";
+import { TableControls } from "./editor/TableControls";
+import { turnTableIntoDatabase } from "./editor/table-database";
 import { MenuSearch } from "./pages/MenuSearch";
 import { PageBreadcrumbs, PageCover, PageHeader, PageLocationChip } from "./pages/PageHeader";
 import { PhoneMenuButton } from "./pages/PhoneChrome";
@@ -1415,6 +1417,7 @@ const RichEditorPane = ({
     return true;
   }, [markDirtyStatus, queryClient, resourceInsertionLimit, t, uploadEditorResource]);
 
+  const [tableDatabaseFailed, setTableDatabaseFailed] = useState(false);
   const blockHandleRef = useRef<BlockHandleController | null>(null);
   if (!blockHandleRef.current) blockHandleRef.current = createBlockHandleExtension();
   const commentsRef = useRef<PageCommentsController>({ anchors: [], startThread: () => undefined, openThread: () => undefined, startPageComment: () => undefined });
@@ -1448,7 +1451,7 @@ const RichEditorPane = ({
         databaseEmbed: EditorDatabaseEmbed,
         linkPreview: EditorLinkPreview,
         buttonBlock: EditorButtonBlock.configure({ getPageId: () => buttonPageIdRef.current }),
-        table: { table: { renderWrapper: true } },
+        table: { table: { renderWrapper: true, resizable: true } },
       }),
       PonderLink.configure({ openOnClick: false }),
       LinkPreviewPaste,
@@ -5224,7 +5227,15 @@ const RichEditorPane = ({
                     <EditorContent editor={editor} />
                   </AttachmentTranscriptContext.Provider>
                 </EditorTableContextMenu>
-                {pageMode && !isMobileViewport && !effectiveReadOnly && editor && blockHandleRef.current ? <BlockHandle pageId={memo?.id ?? null} pageLink={pages && memo ? pages.pageLink(memo.id) : null} onSkill={(kind, pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi(kind); }} onAskAi={(pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi("ask"); }} onComment={(pos, node) => { const anchor = anchorFromBlock(editor, pos, node); if (anchor) commentsRef.current.startThread(anchor); }} editor={editor} controller={blockHandleRef.current} /> : null}
+                {editor && !effectiveReadOnly ? <TableControls editor={editor} touch={isMobileViewport} readOnly={effectiveReadOnly} /> : null}
+                {pageMode && !isMobileViewport && !effectiveReadOnly && editor && blockHandleRef.current ? <BlockHandle onTurnTableIntoDatabase={memo ? (pos) => {
+                  void turnTableIntoDatabase({ editor, tablePos: pos, pageId: memo.id, columnName: (index) => t("pages.table.columnName", { index: index + 1 }) })
+                    .then(() => pagesRef.current?.refresh())
+                    .catch(() => {
+                      setTableDatabaseFailed(true);
+                      window.setTimeout(() => setTableDatabaseFailed(false), 5000);
+                    });
+                } : undefined} pageId={memo?.id ?? null} pageLink={pages && memo ? pages.pageLink(memo.id) : null} onSkill={(kind, pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi(kind); }} onAskAi={(pos, node) => { editor.chain().focus().setTextSelection({ from: pos + 1, to: pos + node.nodeSize - 1 }).run(); requestSelectionAi("ask"); }} onComment={(pos, node) => { const anchor = anchorFromBlock(editor, pos, node); if (anchor) commentsRef.current.startThread(anchor); }} editor={editor} controller={blockHandleRef.current} /> : null}
               </div>
             )}
           </div>
@@ -5339,6 +5350,7 @@ const RichEditorPane = ({
       )}
 
       {driveSaveFailed && <ClipboardCopyNotice status="error">{t("pages.topBar.saveToDriveFailed")}</ClipboardCopyNotice>}
+      {tableDatabaseFailed && <ClipboardCopyNotice status="error">{t("pages.table.databaseFailed")}</ClipboardCopyNotice>}
 
       {wechatCopyState === "copying" && <WeChatCopyProgress />}
 
