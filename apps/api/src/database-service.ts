@@ -7,6 +7,8 @@ import {
   DatabaseSchemaSchema,
   DatabaseViewConfigSchema,
   DEFAULT_MEMO_TITLE,
+  nextScheduleRun,
+  ScheduleSchema,
   type DatabaseDetail,
   type DatabaseProperty,
   type DatabasePropertyValue,
@@ -16,6 +18,7 @@ import {
   type DatabaseView,
   type DatabaseViewConfig,
   type DatabaseViewType,
+  type TemplateRepeat,
   userIdFromActorLabel,
 } from "@ponder/shared";
 import type { AuditActor } from "./api-context";
@@ -73,7 +76,42 @@ type TemplateRecord = {
   content_markdown: string;
   is_default: number;
   position: number;
+  repeat_json: string | null;
+  repeat_next_at: string | null;
 };
+
+const TEMPLATE_COLUMNS = "id, database_id, name, icon, title, properties_json, content_markdown, is_default, position, repeat_json, repeat_next_at";
+
+/** A row was made or changed by a person, an API token or a schedule. Automations listen for these. */
+export type RowChange = {
+  kind: "added" | "edited";
+  workspaceId: string;
+  databaseId: string;
+  rowId: string;
+  before: Record<string, DatabasePropertyValue> | null;
+  after: Record<string, DatabasePropertyValue>;
+  /** Property ids whose stored value changed, plus "title" when the title did. */
+  changed: string[];
+};
+
+/**
+ * Who is told about a write. Writes made by an automation pass none, so an automation's
+ * edits never set off automations again: that is the loop guard.
+ */
+export type RowWriteOptions = { onRowChange?: (change: RowChange) => void };
+
+const parseRepeat = (json: string | null): TemplateRepeat | null => {
+  if (!json) return null;
+  try {
+    const parsed = ScheduleSchema.safeParse(JSON.parse(json));
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+};
+
+const sameValue = (left: DatabasePropertyValue | undefined, right: DatabasePropertyValue | undefined) =>
+  JSON.stringify(left ?? null) === JSON.stringify(right ?? null);
 
 const ROW_COLUMNS = "id, title, page_icon, page_cover, excerpt, properties_json, page_position, row_number, created_by, updated_by, created_at, updated_at";
 
@@ -125,6 +163,8 @@ const mapTemplate = (row: TemplateRecord): DatabaseTemplate => ({
   content: row.content_markdown,
   isDefault: row.is_default === 1,
   position: row.position,
+  repeat: parseRepeat(row.repeat_json),
+  repeatNextAt: row.repeat_next_at,
 });
 
 const loadDatabaseRecord = async (db: DatabaseAdapter, workspaceId: string, id: string) => {
@@ -150,7 +190,7 @@ const parseSchema = (json: string): DatabaseSchema => {
 const listTemplates = (db: DatabaseAdapter, workspaceId: string, databaseId: string) =>
   db
     .prepare(
-      `SELECT id, database_id, name, icon, title, properties_json, content_markdown, is_default, position
+      `SELECT ${TEMPLATE_COLUMNS}
        FROM database_templates WHERE workspace_id = ? AND database_id = ?
        ORDER BY position ASC, created_at ASC`
     )
@@ -387,7 +427,7 @@ const takeRowNumber = async (db: DatabaseAdapter, workspaceId: string, databaseI
 const getTemplateRecord = async (db: DatabaseAdapter, workspaceId: string, databaseId: string, templateId: string) => {
   const template = await db
     .prepare(
-      `SELECT id, database_id, name, icon, title, properties_json, content_markdown, is_default, position
+      `SELECT ${TEMPLATE_COLUMNS}
        FROM database_templates WHERE workspace_id = ? AND database_id = ? AND id = ?`
     )
     .bind(workspaceId, databaseId, templateId)
@@ -403,6 +443,7 @@ export const createDatabaseRow = async (
   input: { title?: string; properties?: Record<string, DatabasePropertyValue>; templateId?: string },
   actor: AuditActor,
   actorLabel: string,
+  options: RowWriteOptions = {},
 ): Promise<DatabaseRow> => {
   const record = await loadDatabaseRecord(db, workspaceId, databaseId);
   const count = await db
@@ -443,7 +484,12 @@ export const createDatabaseRow = async (
       .bind(databaseId, record.page_memo_id, JSON.stringify(values), position, number, template?.icon ?? null, workspaceId, created.id),
     ...syncStatements,
   ]);
-  return mapRow(await getRowRecord(db, workspaceId, databaseId, created.id));
+  const row = mapRow(await getRowRecord(db, workspaceId, databaseId, created.id));
+  options.onRowChange?.({
+    kind: "added", workspaceId, databaseId, rowId: row.id, before: null, after: row.properties,
+    changed: [...Object.keys(values), ...(row.title ? ["title"] : [])],
+  });
+  return row;
 };
 
 export const updateDatabaseRow = async (
@@ -454,6 +500,7 @@ export const updateDatabaseRow = async (
   input: { title?: string; properties?: Record<string, DatabasePropertyValue>; beforeId?: string | null; afterId?: string | null },
   actor: AuditActor,
   actorLabel: string,
+  options: RowWriteOptions = {},
 ): Promise<DatabaseRow> => {
   const record = await loadDatabaseRecord(db, workspaceId, databaseId);
   const schema = parseSchema(record.schema_json);
@@ -484,7 +531,16 @@ export const updateDatabaseRow = async (
   }
 
   if (statements.length > 0) await db.batch(statements);
-  return mapRow(await getRowRecord(db, workspaceId, databaseId, rowId));
+  const updated = mapRow(await getRowRecord(db, workspaceId, databaseId, rowId));
+  if (options.onRowChange) {
+    const before = parseProperties(row.properties_json);
+    const changed = Object.keys(sanitizeValues(schema, input.properties)).filter((key) => !sameValue(before[key], updated.properties[key]));
+    if (input.title !== undefined && visibleTitle(row.title) !== updated.title) changed.push("title");
+    if (changed.length > 0) {
+      options.onRowChange({ kind: "edited", workspaceId, databaseId, rowId, before, after: updated.properties, changed });
+    }
+  }
+  return updated;
 };
 
 const rowPositionNextTo = async (
@@ -596,6 +652,7 @@ type TemplateInput = {
   content?: string;
   isDefault?: boolean;
   position?: number;
+  repeat?: TemplateRepeat | null;
 };
 
 /** Only one template is the default: setting one clears the others. */
@@ -643,6 +700,8 @@ export const updateDatabaseTemplate = async (
   databaseId: string,
   templateId: string,
   input: TemplateInput,
+  /** The clock a repeat's first run is counted from. */
+  now: Date = new Date(),
 ): Promise<DatabaseTemplate> => {
   const record = await loadDatabaseRecord(db, workspaceId, databaseId);
   const current = await getTemplateRecord(db, workspaceId, databaseId, templateId);
@@ -666,6 +725,15 @@ export const updateDatabaseTemplate = async (
         workspaceId, databaseId, templateId,
       ),
   ];
+  if (input.repeat !== undefined) {
+    // A new or changed schedule starts its count again, as editing the cadence does in Notion.
+    const nextAt = input.repeat ? nextScheduleRun(input.repeat, now)?.toISOString() ?? null : null;
+    statements.push(
+      db
+        .prepare(`UPDATE database_templates SET repeat_json = ?, repeat_next_at = ?, repeat_runs = 0 WHERE workspace_id = ? AND database_id = ? AND id = ?`)
+        .bind(input.repeat ? JSON.stringify(input.repeat) : null, nextAt, workspaceId, databaseId, templateId),
+    );
+  }
   if (next.isDefault) statements.push(clearOtherDefaults(db, workspaceId, databaseId, templateId));
   await db.batch(statements);
   return getTemplateRecord(db, workspaceId, databaseId, templateId);
@@ -678,3 +746,27 @@ export const deleteDatabaseTemplate = async (db: DatabaseAdapter, workspaceId: s
     .bind(workspaceId, databaseId, templateId)
     .run();
 };
+
+export const getDatabaseRow = async (db: DatabaseAdapter, workspaceId: string, databaseId: string, rowId: string): Promise<DatabaseRow> =>
+  mapRow(await getRowRecord(db, workspaceId, databaseId, rowId));
+
+/** Templates whose "Duplicate every…" schedule is due, across the whole installation, for the cron. */
+export const listDueRepeatingTemplates = async (db: DatabaseAdapter, now: string, limit: number) => {
+  const rows = await db
+    .prepare(
+      `SELECT workspace_id, database_id, id, repeat_json, repeat_runs FROM database_templates
+       WHERE repeat_next_at IS NOT NULL AND repeat_next_at <= ? ORDER BY repeat_next_at LIMIT ?`
+    )
+    .bind(now, limit)
+    .all<{ workspace_id: string; database_id: string; id: string; repeat_json: string | null; repeat_runs: number }>();
+  return rows.results.map((row) => ({
+    workspaceId: row.workspace_id,
+    databaseId: row.database_id,
+    id: row.id,
+    repeat: parseRepeat(row.repeat_json),
+    runs: row.repeat_runs,
+  }));
+};
+
+export const setTemplateRepeatProgress = (db: DatabaseAdapter, templateId: string, runs: number, nextAt: string | null) =>
+  db.prepare(`UPDATE database_templates SET repeat_runs = ?, repeat_next_at = ? WHERE id = ?`).bind(runs, nextAt, templateId).run();

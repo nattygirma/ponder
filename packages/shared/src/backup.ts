@@ -196,6 +196,21 @@ export const JsonBackupDatabaseTemplateSchema = z.object({
   position: z.number().finite(),
   createdAt: z.string().min(1),
   updatedAt: z.string().min(1),
+  /** "Duplicate every…": missing from backups made before templates could repeat. */
+  repeat: JsonRecordSchema.nullable().optional(),
+});
+
+/** A database automation. Its trigger and actions are checked again when restored. */
+export const JsonBackupAutomationSchema = z.object({
+  id: IdSchema,
+  databaseId: IdSchema,
+  name: z.string().max(120),
+  enabled: z.boolean(),
+  trigger: JsonRecordSchema,
+  actions: z.array(JsonRecordSchema).max(20),
+  position: z.number().finite(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
 });
 
 export const JsonBackupDatabaseViewSchema = z.object({
@@ -231,16 +246,19 @@ export const JsonBackupPagesSchema = z.object({
   comments: z.array(JsonBackupCommentSchema),
   /** Missing from backups made before databases had templates. */
   templates: z.array(JsonBackupDatabaseTemplateSchema).default([]),
+  /** Missing from backups made before databases had automations. */
+  automations: z.array(JsonBackupAutomationSchema).default([]),
 });
 
 export type JsonBackupDatabaseTemplate = z.infer<typeof JsonBackupDatabaseTemplateSchema>;
+export type JsonBackupAutomation = z.infer<typeof JsonBackupAutomationSchema>;
 export type JsonBackupPageNode = z.infer<typeof JsonBackupPageNodeSchema>;
 export type JsonBackupDatabase = z.infer<typeof JsonBackupDatabaseSchema>;
 export type JsonBackupDatabaseView = z.infer<typeof JsonBackupDatabaseViewSchema>;
 export type JsonBackupComment = z.infer<typeof JsonBackupCommentSchema>;
 export type JsonBackupPages = z.infer<typeof JsonBackupPagesSchema>;
 
-export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [], templates: [] };
+export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [], templates: [], automations: [] };
 
 /** One restore request: any mix of the lists, sent in order databases, views, templates, pages, comments. */
 export const RestoreJsonPagesSchema = z.object({
@@ -249,6 +267,7 @@ export const RestoreJsonPagesSchema = z.object({
   views: z.array(JsonBackupDatabaseViewSchema).max(500).default([]),
   comments: z.array(JsonBackupCommentSchema).max(500).default([]),
   templates: z.array(JsonBackupDatabaseTemplateSchema).max(500).default([]),
+  automations: z.array(JsonBackupAutomationSchema).max(500).default([]),
 });
 
 export const JsonBackupAiPromptSchema = z.object({

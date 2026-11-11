@@ -20,7 +20,7 @@ export type MemoComment = {
 export type AppNotification = {
   id: string;
   /** "comment" and "edit" come from following a page with Notify me. */
-  kind: "mention" | "reply" | "comment" | "edit";
+  kind: "mention" | "reply" | "comment" | "edit" | "automation";
   memoId: string;
   notebookId: string | null;
   memoTitle: string | null;

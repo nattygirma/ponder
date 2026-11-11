@@ -21,6 +21,9 @@ const bindings = (env) => ({
   PONDER_APPKEEP: "true",
   RESOURCES: env.MEDIA,
   sendEmail: env.ALTSTACK?.sendEmail ? (message) => env.ALTSTACK.sendEmail(message) : undefined,
+  // Automations and repeating templates: tell AppKeep when the cron next has work, and send "Send webhook" events.
+  wakeAt: env.ALTSTACK?.wakeAt ? (when) => env.ALTSTACK.wakeAt(when) : undefined,
+  emitEvent: env.ALTSTACK?.emit ? (name, data) => env.ALTSTACK.emit(name, data) : undefined,
   listConnections: env.ALTSTACK?.connections ? (provider) => env.ALTSTACK.connections(provider) : undefined,
   disconnectConnection: env.ALTSTACK?.disconnect ? (id) => env.ALTSTACK.disconnect(id) : undefined,
   connectionProviders: env.ALTSTACK?.connectionProviders ? () => env.ALTSTACK.connectionProviders() : undefined,

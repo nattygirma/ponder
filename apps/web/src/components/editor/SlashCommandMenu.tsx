@@ -16,6 +16,7 @@ import {
   Database,
   FileText,
   Lightbulb,
+  MousePointerClick,
   Clock3,
   FileUp,
   Heading1,
@@ -33,7 +34,7 @@ import {
   Sigma,
   Table,
 } from "lucide-react";
-import { CALLOUT_NODE_TYPE, COLUMNS_NODE_TYPE, createColumnsContent } from "@ponder/shared";
+import { BUTTON_NODE_TYPE, CALLOUT_NODE_TYPE, COLUMNS_NODE_TYPE, createColumnsContent } from "@ponder/shared";
 import {
   Command,
   CommandEmpty,
@@ -74,7 +75,8 @@ export type SlashCommandId =
   | "columns-2"
   | "columns-3"
   | "database"
-  | "chart";
+  | "chart"
+  | "button";
 
 type SlashCommandGroup = "suggested" | "basic" | "insert";
 type SlashCommandIcon = ComponentType<{ className?: string }>;
@@ -97,6 +99,8 @@ export type SlashCommandActions = {
   createSubPage: () => void;
   createDatabase: () => void;
   insertChart: () => void;
+  /** Called just before a /button block goes in, so it opens its editor. */
+  beforeInsertButton?: () => void;
 };
 
 export type SlashCommandItem = {
@@ -149,12 +153,13 @@ export const createSlashCommandItems = (labels: SlashCommandLabels): SlashComman
   { id: "sub-page", command: "page", group: "insert", icon: FileText, label: labels.items["sub-page"], keywords: ["subpage", "child"] },
   { id: "database", command: "database", group: "insert", icon: Database, label: labels.items.database, keywords: ["board", "calendar", "kanban"] },
   { id: "chart", command: "chart", group: "insert", icon: ChartColumn, label: labels.items.chart, keywords: ["graph", "bar", "line", "donut", "pie"] },
+  { id: "button", command: "button", group: "insert", icon: MousePointerClick, label: labels.items.button, keywords: ["action", "automation", "click"] },
   { id: "callout", command: "callout", group: "basic", icon: Lightbulb, label: labels.items.callout, keywords: ["note", "tip", "warning"] },
   { id: "columns-2", command: "columns", group: "insert", icon: Columns2, label: labels.items["columns-2"], keywords: ["layout", "side"] },
   { id: "columns-3", command: "columns3", group: "insert", icon: Columns3, label: labels.items["columns-3"], keywords: ["layout", "side"] },
 ];
 
-const PAGE_LAYOUT_COMMANDS = new Set<SlashCommandId>(["sub-page", "database", "chart"]);
+const PAGE_LAYOUT_COMMANDS = new Set<SlashCommandId>(["sub-page", "database", "chart", "button"]);
 
 export const filterSlashCommandItems = (items: SlashCommandItem[], query: string) => {
   const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -313,6 +318,10 @@ const runSlashCommand = ({
     case "chart":
       chain.run();
       actions.insertChart();
+      break;
+    case "button":
+      actions.beforeInsertButton?.();
+      chain.insertContent([{ type: BUTTON_NODE_TYPE, attrs: { label: "", icon: "", actions: "[]" } }, { type: "paragraph" }]).run();
       break;
     case "callout": chain.wrapIn(CALLOUT_NODE_TYPE).run(); break;
     case "columns-2":

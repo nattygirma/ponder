@@ -1,7 +1,12 @@
 import {
+  AutomationActionSchema,
+  AutomationTriggerSchema,
   DatabaseSchemaSchema,
+  nextScheduleRun,
+  ScheduleSchema,
   DatabaseViewConfigSchema,
   DATABASE_VIEW_TYPES,
+  type JsonBackupAutomation,
   type JsonBackupComment,
   type JsonBackupDatabase,
   type JsonBackupDatabaseTemplate,
@@ -11,6 +16,7 @@ import {
   type TiptapDoc,
 } from "@ponder/shared";
 import { AppError } from "./app-error";
+import { rescheduleAutomations } from "./automation-service";
 import { replaceMemoLinksStatements } from "./page-service";
 import type { DatabaseAdapter, PreparedStatementAdapter } from "./storage-contract";
 
@@ -65,7 +71,11 @@ type PageBackupRow = {
 type DatabaseBackupRow = { id: string; page_memo_id: string; schema_json: string; created_at: string; updated_at: string };
 type TemplateBackupRow = {
   id: string; database_id: string; name: string; icon: string | null; title: string; properties_json: string;
-  content_markdown: string; is_default: number; position: number; created_at: string; updated_at: string;
+  content_markdown: string; is_default: number; position: number; created_at: string; updated_at: string; repeat_json: string | null;
+};
+type AutomationBackupRow = {
+  id: string; database_id: string; name: string; enabled: number; trigger_json: string; actions_json: string;
+  position: number; created_at: string; updated_at: string;
 };
 type ViewBackupRow = { id: string; database_id: string; name: string; type: string; config_json: string; position: number; created_at: string; updated_at: string };
 type CommentBackupRow = {
@@ -75,7 +85,7 @@ type CommentBackupRow = {
 
 /** Everything a backup needs beyond the notes themselves, for the notes not in Trash. */
 export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): Promise<JsonBackupPages> => {
-  const [pages, databases, views, comments, templates] = await Promise.all([
+  const [pages, databases, views, comments, templates, automations] = await Promise.all([
     db.prepare(
       `SELECT id, parent_memo_id, page_position, page_icon, page_cover, page_style, database_id, properties_json, row_number
        FROM memos WHERE workspace_id = ? AND is_deleted = 0 ORDER BY id ASC`,
@@ -100,12 +110,19 @@ export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): 
     ).bind(workspaceId).all<CommentBackupRow>(),
     db.prepare(
       `SELECT t.id, t.database_id, t.name, t.icon, t.title, t.properties_json, t.content_markdown, t.is_default, t.position,
-              t.created_at, t.updated_at
+              t.created_at, t.updated_at, t.repeat_json
        FROM database_templates t
        INNER JOIN databases d ON d.id = t.database_id
        INNER JOIN memos m ON m.id = d.page_memo_id
        WHERE t.workspace_id = ? AND m.is_deleted = 0 ORDER BY t.database_id ASC, t.position ASC, t.id ASC`,
     ).bind(workspaceId).all<TemplateBackupRow>(),
+    db.prepare(
+      `SELECT a.id, a.database_id, a.name, a.enabled, a.trigger_json, a.actions_json, a.position, a.created_at, a.updated_at
+       FROM database_automations a
+       INNER JOIN databases d ON d.id = a.database_id
+       INNER JOIN memos m ON m.id = d.page_memo_id
+       WHERE a.workspace_id = ? AND m.is_deleted = 0 ORDER BY a.database_id ASC, a.position ASC, a.id ASC`,
+    ).bind(workspaceId).all<AutomationBackupRow>(),
   ]);
   const live = new Set(pages.results.map((row) => row.id));
   return {
@@ -164,6 +181,25 @@ export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): 
       position: Number(row.position ?? 0),
       createdAt: row.created_at,
       updatedAt: row.updated_at,
+      repeat: parseObject(row.repeat_json),
+    })),
+    automations: automations.results.map((row): JsonBackupAutomation => ({
+      id: row.id,
+      databaseId: row.database_id,
+      name: row.name,
+      enabled: row.enabled === 1,
+      trigger: parseObject(row.trigger_json) ?? {},
+      actions: (() => {
+        try {
+          const parsed = JSON.parse(row.actions_json) as unknown;
+          return Array.isArray(parsed) ? parsed.filter((item): item is Record<string, unknown> => !!item && typeof item === "object") : [];
+        } catch {
+          return [];
+        }
+      })(),
+      position: Number(row.position ?? 0),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     })),
   };
 };
@@ -186,7 +222,7 @@ const existingIds = async (db: DatabaseAdapter, table: "memos" | "databases", wo
 /** A restore never overwrites another workspace's rows. */
 const assertNotInOtherWorkspace = async (
   db: DatabaseAdapter,
-  table: "databases" | "database_views" | "database_templates" | "memo_comments",
+  table: "databases" | "database_views" | "database_templates" | "database_automations" | "memo_comments",
   workspaceId: string,
   ids: string[],
 ) => {
@@ -210,6 +246,7 @@ const runBatches = async (db: DatabaseAdapter, statements: PreparedStatementAdap
 export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string, input: JsonBackupPages) => {
   const { pages, databases, views, comments } = input;
   const templates = input.templates ?? [];
+  const automations = input.automations ?? [];
   const memoIds = [
     ...pages.flatMap((page) => [page.memoId, ...(page.parentId ? [page.parentId] : [])]),
     ...databases.map((database) => database.pageMemoId),
@@ -228,9 +265,10 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
   await assertNotInOtherWorkspace(db, "databases", workspaceId, databases.map((item) => item.id));
   await assertNotInOtherWorkspace(db, "database_views", workspaceId, views.map((item) => item.id));
   await assertNotInOtherWorkspace(db, "database_templates", workspaceId, templates.map((item) => item.id));
+  await assertNotInOtherWorkspace(db, "database_automations", workspaceId, automations.map((item) => item.id));
   await assertNotInOtherWorkspace(db, "memo_comments", workspaceId, comments.map((item) => item.id));
 
-  const databaseIds = [...views.map((view) => view.databaseId), ...templates.map((template) => template.databaseId), ...pages.flatMap((page) => (page.databaseId ? [page.databaseId] : []))];
+  const databaseIds = [...views.map((view) => view.databaseId), ...templates.map((template) => template.databaseId), ...automations.map((item) => item.databaseId), ...pages.flatMap((page) => (page.databaseId ? [page.databaseId] : []))];
   const knownDatabases = await existingIds(db, "databases", workspaceId, databaseIds);
   for (const database of databases) knownDatabases.add(database.id);
   if (databaseIds.some((id) => !knownDatabases.has(id))) throw invalid("Backup page data points at a database that isn't in it.");
@@ -278,6 +316,34 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
       template.id, template.databaseId, workspaceId, template.name, template.icon, template.title, JSON.stringify(template.properties),
       template.content, template.isDefault ? 1 : 0, template.position, template.createdAt, template.updatedAt,
     ));
+    if (template.repeat !== undefined) {
+      // A repeat starts again from now; a damaged one is dropped rather than failing the restore.
+      const repeat = template.repeat ? ScheduleSchema.safeParse(template.repeat) : null;
+      const schedule = repeat?.success ? repeat.data : null;
+      statements.push(db.prepare(
+        `UPDATE database_templates SET repeat_json = ?, repeat_next_at = ?, repeat_runs = 0 WHERE workspace_id = ? AND id = ?`,
+      ).bind(schedule ? JSON.stringify(schedule) : null, schedule ? nextScheduleRun(schedule, new Date())?.toISOString() ?? null : null, workspaceId, template.id));
+    }
+  }
+  const restoredAutomations: string[] = [];
+  for (const automation of automations) {
+    const trigger = AutomationTriggerSchema.safeParse(automation.trigger);
+    const actions = automation.actions.flatMap((item) => {
+      const action = AutomationActionSchema.safeParse(item);
+      return action.success ? [action.data] : [];
+    });
+    if (!trigger.success || actions.length === 0) continue;
+    restoredAutomations.push(automation.id);
+    statements.push(db.prepare(
+      `INSERT INTO database_automations (id, workspace_id, database_id, name, enabled, trigger_json, actions_json, position, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET name = excluded.name, enabled = excluded.enabled, trigger_json = excluded.trigger_json,
+         actions_json = excluded.actions_json, position = excluded.position, updated_at = excluded.updated_at
+       WHERE database_automations.workspace_id = excluded.workspace_id AND database_automations.database_id = excluded.database_id`,
+    ).bind(
+      automation.id, automation.databaseId, workspaceId, automation.name, automation.enabled ? 1 : 0, JSON.stringify(trigger.data),
+      JSON.stringify(actions), automation.position, automation.createdAt, automation.updatedAt,
+    ));
   }
   for (const page of pages) {
     statements.push(db.prepare(
@@ -309,6 +375,8 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
     ));
   }
   await runBatches(db, statements);
+  // Time-based automations count from the restore, not from when the backup was made.
+  if (restoredAutomations.length) await rescheduleAutomations(db, workspaceId, restoredAutomations, new Date());
 
   // A restored row keeps its number, so new rows must count on from the highest one.
   const rowDatabases = [...new Set(pages.flatMap((page) => (page.databaseId ? [page.databaseId] : [])))];

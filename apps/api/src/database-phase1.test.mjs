@@ -53,7 +53,8 @@ describe("row numbers", () => {
 
   test("the migration numbers rows that already exist, in the order they were made", () => {
     const all = globSync("migrations/*.sql").sort();
-    const before = all.filter((file) => !file.includes("0097_"));
+    // Everything up to 0096: later migrations (0098 onward) build on what 0097 adds.
+    const before = all.filter((file) => /\/0(0[0-8]\d|09[0-6])_/.test(file));
     const { sqlite } = installation(before);
     const insert = sqlite.query(
       `INSERT INTO memos (id, workspace_id, notebook_id, title, excerpt, tags_json, created_by, updated_by, created_at, updated_at, database_id)

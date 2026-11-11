@@ -7,6 +7,7 @@ export const COLUMNS_NODE_TYPE = "ponderColumns" as const;
 export const COLUMN_NODE_TYPE = "ponderColumn" as const;
 export const DATABASE_EMBED_NODE_TYPE = "ponderDatabase" as const;
 export const LINK_PREVIEW_NODE_TYPE = "ponderLinkPreview" as const;
+export const BUTTON_NODE_TYPE = "ponderButton" as const;
 
 export const CALLOUT_COLORS = ["gray", "brown", "orange", "yellow", "green", "blue", "purple", "pink", "red"] as const;
 export type CalloutColor = (typeof CALLOUT_COLORS)[number];
@@ -18,6 +19,7 @@ export const PAGE_BLOCK_NODE_TYPES = [
   COLUMN_NODE_TYPE,
   DATABASE_EMBED_NODE_TYPE,
   LINK_PREVIEW_NODE_TYPE,
+  BUTTON_NODE_TYPE,
 ] as const;
 
 const escapeAttr = (value: string) =>
@@ -204,6 +206,51 @@ export const LinkPreview = Node.create({
   },
 
   markdownTokenizer: htmlBlockTokenizer(LINK_PREVIEW_NODE_TYPE, "ponder-link-preview", false),
+});
+
+/**
+ * Notion's /button block: a labelled button whose actions (the same ones as a Button property)
+ * are kept in the page as JSON, so they travel with it in Markdown, backups and copies.
+ */
+export const ButtonBlock = Node.create({
+  name: BUTTON_NODE_TYPE,
+  group: "block",
+  atom: true,
+  selectable: true,
+  draggable: true,
+
+  addAttributes() {
+    return { label: dataAttribute("label"), icon: dataAttribute("icon"), actions: { ...dataAttribute("actions"), default: "[]" } };
+  },
+
+  parseHTML() {
+    return [{ tag: 'div[data-type="ponder-button"]' }];
+  },
+
+  renderHTML({ node }) {
+    const { label, icon, actions } = node.attrs;
+    return [
+      "div",
+      { "data-type": "ponder-button", "data-label": label, "data-icon": icon, "data-actions": actions, class: "ponder-button-block" },
+      ["button", { type: "button", disabled: "true" }, `${icon ? `${String(icon)} ` : ""}${String(label || "Button")}`],
+    ];
+  },
+
+  parseMarkdown: (token) => ({
+    type: BUTTON_NODE_TYPE,
+    attrs: {
+      label: readAttr(blockAttrs(token), "label"),
+      icon: readAttr(blockAttrs(token), "icon"),
+      actions: readAttr(blockAttrs(token), "actions") || "[]",
+    },
+  }),
+
+  renderMarkdown: (node) => {
+    const attribute = (name: string, fallback = "") => `${name}="${escapeAttr(String(node.attrs?.[name] ?? fallback))}"`;
+    return `<ponder-button ${[attribute("label"), attribute("icon"), attribute("actions", "[]")].join(" ")}></ponder-button>`;
+  },
+
+  markdownTokenizer: htmlBlockTokenizer(BUTTON_NODE_TYPE, "ponder-button", false),
 });
 
 export const Callout = Node.create({

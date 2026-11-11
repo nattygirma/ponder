@@ -219,7 +219,7 @@ describe("page backup", () => {
     }, new Set(["a"]));
     expect(kept).toEqual({
       pages: [{ memoId: "a", parentId: null, position: 0, icon: null, cover: null, style: null, databaseId: null, properties: {} }],
-      databases: [], views: [], comments: [], templates: [],
+      databases: [], views: [], comments: [], templates: [], automations: [],
     });
   });
 });

@@ -101,10 +101,24 @@ import type {
   PluginAiGenerateRequest,
   PluginPublicFetchRequest,
   PluginPublicFetchResponse,
+  ActionOutcome,
+  AutomationAction,
+  AutomationRun,
+  AutomationTrigger,
+  DatabaseAutomation,
 } from "@ponder/shared";
 
 
-type DatabaseTemplateInput = Partial<Pick<DatabaseTemplate, "name" | "icon" | "title" | "properties" | "content" | "isDefault" | "position">>;
+type DatabaseTemplateInput = Partial<Pick<DatabaseTemplate, "name" | "icon" | "title" | "properties" | "content" | "isDefault" | "position" | "repeat">>;
+type AutomationInput = { name?: string; enabled?: boolean; trigger?: AutomationTrigger; actions?: AutomationAction[] };
+/** The browser's time zone, so "today" in a button's action is the clicker's today. */
+const browserTimeZone = () => {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  } catch {
+    return "UTC";
+  }
+};
 
 export const MAX_SINGLE_REQUEST_UPLOAD_BYTES = 5 * 1024 * 1024;
 
@@ -1238,6 +1252,36 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
 
     deleteDatabaseTemplate: (id: string, templateId: string) =>
       request<{ ok: true }>(`/api/v1/databases/${encodeURIComponent(id)}/templates/${encodeURIComponent(templateId)}`, { method: "DELETE" }),
+
+    listDatabaseAutomations: (id: string) =>
+      request<{ automations: DatabaseAutomation[]; email: { sent: number; limit: number | null; available: boolean }; webhooks: boolean }>(
+        `/api/v1/databases/${encodeURIComponent(id)}/automations`,
+      ),
+
+    createDatabaseAutomation: (id: string, payload: AutomationInput & { name: string; trigger: AutomationTrigger; actions: AutomationAction[] }) =>
+      request<{ automation: DatabaseAutomation }>(`/api/v1/databases/${encodeURIComponent(id)}/automations`, { method: "POST", body: JSON.stringify(payload) }),
+
+    updateDatabaseAutomation: (id: string, automationId: string, payload: AutomationInput) =>
+      request<{ automation: DatabaseAutomation }>(`/api/v1/databases/${encodeURIComponent(id)}/automations/${encodeURIComponent(automationId)}`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    deleteDatabaseAutomation: (id: string, automationId: string) =>
+      request<{ ok: true }>(`/api/v1/databases/${encodeURIComponent(id)}/automations/${encodeURIComponent(automationId)}`, { method: "DELETE" }),
+
+    listAutomationRuns: (id: string, automationId?: string) =>
+      request<{ runs: AutomationRun[] }>(
+        `/api/v1/databases/${encodeURIComponent(id)}/automation-runs${automationId ? `?automation=${encodeURIComponent(automationId)}` : ""}`,
+      ),
+
+    clickDatabaseButton: (id: string, rowId: string, propertyId: string) =>
+      request<{ outcome: ActionOutcome }>(
+        `/api/v1/databases/${encodeURIComponent(id)}/rows/${encodeURIComponent(rowId)}/buttons/${encodeURIComponent(propertyId)}`,
+        { method: "POST", headers: { "x-ponder-time-zone": browserTimeZone() } },
+      ),
+
+    runButtonBlock: (payload: { pageId?: string; actions: AutomationAction[] }) =>
+      request<{ outcome: ActionOutcome }>("/api/v1/buttons/run", {
+        method: "POST", body: JSON.stringify(payload), headers: { "x-ponder-time-zone": browserTimeZone() },
+      }),
 
     getDatabaseRowContext: (memoId: string) =>
       request<{ context: { database: DatabaseDetail; row: DatabaseRow } | null }>(`/api/v1/memos/${encodeURIComponent(memoId)}/database-row`),

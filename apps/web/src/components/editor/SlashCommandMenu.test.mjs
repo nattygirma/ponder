@@ -43,6 +43,7 @@ const labels = {
     "columns-3": "3 columns",
     database: "Database",
     chart: "Chart",
+    button: "Button",
   },
 };
 
@@ -53,7 +54,7 @@ describe("slash command menu", () => {
     const unfilteredItems = filterSlashCommandItems(items, "");
     const heading6Index = unfilteredItems.findIndex((item) => item.id === "heading-6");
 
-    expect(unfilteredItems).toHaveLength(30);
+    expect(unfilteredItems).toHaveLength(31);
     expect(unfilteredItems.slice(heading6Index + 1, heading6Index + 4).map((item) => item.id)).toEqual([
       "current-date",
       "current-time",
@@ -99,6 +100,7 @@ describe("slash command menu", () => {
       "page",
       "database",
       "chart",
+      "button",
       "callout",
       "columns",
       "columns3",

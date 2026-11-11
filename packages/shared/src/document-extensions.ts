@@ -11,7 +11,7 @@ import { ImageGallery } from "./image-gallery";
 import { MergeDivider } from "./merge-divider";
 import { PdfAttachment } from "./pdf-attachment";
 import { PluginEmbed } from "./plugin-embed";
-import { Callout, Column, Columns, DatabaseEmbed, LinkPreview, SubPage } from "./page-blocks";
+import { ButtonBlock, Callout, Column, Columns, DatabaseEmbed, LinkPreview, SubPage } from "./page-blocks";
 import { EmptyExternalLink } from "./empty-external-link";
 import { PonderLink } from "./editor-link";
 import { createPonderTaskItem } from "./task-item-input";
@@ -31,6 +31,7 @@ export type CreatePonderDocumentExtensionsOptions = {
   subPage?: AnyExtension;
   databaseEmbed?: AnyExtension;
   linkPreview?: AnyExtension;
+  buttonBlock?: AnyExtension;
   table?: Parameters<typeof TableKit.configure>[0];
   markdown?: boolean;
 };
@@ -68,6 +69,7 @@ export const createPonderDocumentExtensions = (
   options.subPage ?? SubPage,
   options.databaseEmbed ?? DatabaseEmbed,
   options.linkPreview ?? LinkPreview,
+  options.buttonBlock ?? ButtonBlock,
   PageColorMark,
   ...SuggestionMarks,
   // Markdown has no block colours or ids, so its documents stay free of those fields.

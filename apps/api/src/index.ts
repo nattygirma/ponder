@@ -94,6 +94,8 @@ import { registerWorkspaceExtensionRoutes } from "./workspace-extension-routes";
 import { registerBackupRoutes } from "./backup-routes";
 import { registerPageRoutes } from "./page-routes";
 import { registerDatabaseRoutes } from "./database-routes";
+import { registerAutomationRoutes } from "./automation-routes";
+import { automationEnvFrom, runScheduledAutomations } from "./automation-service";
 import { registerCommentRoutes } from "./comment-routes";
 import { registerCalendarRoutes } from "./calendar-routes";
 import { registerConnectionRoutes } from "./connection-routes";
@@ -170,7 +172,7 @@ app.use(
   "/api/*",
   cors({
     origin: API_CORS_ORIGINS,
-    allowHeaders: ["Content-Type", "Authorization", "x-ponder-import-context"],
+    allowHeaders: ["Content-Type", "Authorization", "x-ponder-import-context", "x-ponder-time-zone"],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     credentials: true,
   })
@@ -355,6 +357,7 @@ registerImportRoutes(app);
 registerTagRoutes(app);
 registerPageRoutes(app);
 registerDatabaseRoutes(app);
+registerAutomationRoutes(app);
 registerCommentRoutes(app);
 registerCalendarRoutes(app);
 registerConnectionRoutes(app);
@@ -498,6 +501,11 @@ const worker = {
       ...env,
       storage: createCloudflareStorageAdapter(env),
     } as Bindings;
+
+    // Database automations and repeating templates (the "*/5 * * * *" cron on AppKeep).
+    ctx.waitUntil(runScheduledAutomations(automationEnvFrom(runtimeEnv)).catch((error: unknown) => {
+      console.error("Ponder scheduled automations failed", error);
+    }));
 
     if (!isDemoMode(runtimeEnv)) {
       return;

@@ -41,3 +41,16 @@ describe("page blocks in Markdown", () => {
     expect(back.content[4].attrs).toEqual({ databaseId: "db_1", viewId: "v_1" });
   });
 });
+
+describe("/button blocks in Markdown", () => {
+  test("keep their name, icon and actions through a round trip", () => {
+    const actions = JSON.stringify([{ type: "add_comment", body: "Say \"hi\" <b>&</b>" }]);
+    const button = { type: "ponderButton", attrs: { label: "Start sprint", icon: "🚀", actions } };
+    const markdown = docToMarkdown({ type: "doc", content: [paragraph("Before"), button, paragraph("After")] });
+    expect(markdown).toContain("<ponder-button ");
+    const back = markdownToDoc(markdown);
+    expect(back.content.map((node) => node.type)).toEqual(["paragraph", "ponderButton", "paragraph"]);
+    expect(back.content[1].attrs).toEqual({ label: "Start sprint", icon: "🚀", actions });
+    expect(JSON.parse(back.content[1].attrs.actions)).toEqual([{ type: "add_comment", body: "Say \"hi\" <b>&</b>" }]);
+  });
+});

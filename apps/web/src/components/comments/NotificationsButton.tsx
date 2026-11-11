@@ -16,6 +16,7 @@ const NOTIFICATION_TEXT: Record<AppNotification["kind"], string> = {
   reply: "pages.notifications.replied",
   comment: "pages.notifications.commented",
   edit: "pages.notifications.edited",
+  automation: "pages.notifications.automation",
 };
 
 export const NotificationsButton = ({ variant = "icon" }: { variant?: "icon" | "row" | "compact" }) => {

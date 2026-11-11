@@ -1,4 +1,7 @@
 import { z } from "zod";
+import { ScheduleSchema, type Schedule } from "./automation-schedule";
+
+export type TemplateRepeat = Schedule;
 
 /** Notion-style databases: each row is a real page (a memo) with typed properties. */
 export const DATABASE_ROW_LIMIT = 5000;
@@ -26,6 +29,7 @@ export const DATABASE_PROPERTY_TYPES = [
   "last_edited_time",
   "last_edited_by",
   "unique_id",
+  "button",
 ] as const;
 export type DatabasePropertyType = (typeof DATABASE_PROPERTY_TYPES)[number];
 
@@ -74,12 +78,14 @@ export const DatabasePropertySchema = z.object({
   formula: z.object({ expression: z.string().max(4000) }).optional(),
   /** ID properties: an optional prefix shown before each row's number, like "TASK-12". */
   uniqueId: z.object({ prefix: z.string().trim().max(12).regex(/^[A-Za-z0-9_-]*$/) }).optional(),
+  /** Button properties: the actions a click runs on its row. Validated in full by ButtonConfigSchema. */
+  button: z.object({ actions: z.array(z.record(z.string(), z.unknown())).max(20) }).optional(),
 });
 export type DatabaseProperty = z.infer<typeof DatabasePropertySchema>;
 
 /** Property types whose values are worked out, never stored or edited. */
 export const COMPUTED_PROPERTY_TYPES: ReadonlySet<DatabasePropertyType> = new Set([
-  "title", "rollup", "formula", "created_time", "created_by", "last_edited_time", "last_edited_by", "unique_id",
+  "title", "rollup", "formula", "created_time", "created_by", "last_edited_time", "last_edited_by", "unique_id", "button",
 ]);
 
 const relationPairSchema = <A extends string, B extends string>(first: A, second: B) =>
@@ -354,6 +360,10 @@ export type DatabaseTemplate = {
   content: string;
   isDefault: boolean;
   position: number;
+  /** Notion's "Duplicate every…": a page is made from the template on this schedule. */
+  repeat: TemplateRepeat | null;
+  /** When the next page is due, while the template repeats. */
+  repeatNextAt: string | null;
 };
 
 export const DATABASE_TEMPLATE_LIMIT = 50;
@@ -369,5 +379,11 @@ const templateFields = {
   isDefault: z.boolean(),
 };
 
+export const DatabaseTemplateRepeatSchema = ScheduleSchema;
+
 export const DatabaseTemplateCreateSchema = z.object(templateFields).partial().extend({ name: templateFields.name });
-export const DatabaseTemplateUpdateSchema = z.object(templateFields).partial().extend({ position: z.number().optional() });
+export const DatabaseTemplateUpdateSchema = z.object(templateFields).partial().extend({
+  position: z.number().optional(),
+  /** Null stops the repeat ("Cancel recurrence"). */
+  repeat: DatabaseTemplateRepeatSchema.nullable().optional(),
+});

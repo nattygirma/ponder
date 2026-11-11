@@ -20,6 +20,15 @@ import { useWorkspaceMembers } from "@/components/comments/PageComments";
 export const databaseKey = (id: string) => ["database", id] as const;
 export const databaseRowsKey = (id: string) => ["database-rows", id] as const;
 export const rowContextKey = (memoId: string) => ["database-row-context", memoId] as const;
+export const automationsKey = (databaseId: string) => ["database-automations", databaseId] as const;
+
+export const useAutomations = (databaseId: string, enabled = true) =>
+  useQuery({
+    queryKey: automationsKey(databaseId),
+    queryFn: () => api.listDatabaseAutomations(databaseId),
+    enabled: enabled && Boolean(databaseId),
+    staleTime: 30_000,
+  });
 
 const fetchAllRows = async (id: string) => {
   const rows: DatabaseRow[] = [];
@@ -63,7 +72,7 @@ export type DatabaseHandle = {
   deleteView: (viewId: string) => Promise<void>;
 };
 
-export type TemplateInput = Partial<Pick<DatabaseTemplate, "name" | "icon" | "title" | "properties" | "content" | "isDefault">>;
+export type TemplateInput = Partial<Pick<DatabaseTemplate, "name" | "icon" | "title" | "properties" | "content" | "isDefault" | "repeat">>;
 
 const errorText = (error: unknown) => (error instanceof Error && error.message ? error.message : "Something went wrong.");
 
@@ -80,6 +89,17 @@ export const useDatabase = (databaseId: string) => {
     queryFn: () => fetchAllRows(databaseId),
     enabled: Boolean(databaseId),
   });
+
+  // Automations run on the server after a row is saved; their edits show once they have had a moment to run.
+  const automations = useAutomations(databaseId);
+  const automated = (automations.data?.automations ?? []).some((automation) => automation.enabled && automation.trigger.type !== "recurring" && automation.trigger.type !== "date_reached");
+  const refreshAfterAutomations = useCallback(() => {
+    if (!automated) return;
+    window.setTimeout(() => {
+      void queryClient.invalidateQueries({ queryKey: databaseRowsKey(databaseId) });
+      void queryClient.invalidateQueries({ queryKey: ["database-automation-runs", databaseId] });
+    }, 1500);
+  }, [automated, databaseId, queryClient]);
 
   const relatedIds = useMemo(
     () => [...new Set((detail.data?.schema.properties ?? []).flatMap((property) => (
@@ -177,6 +197,7 @@ export const useDatabase = (databaseId: string) => {
       addRow: async (input) => attempt(async () => {
         const { row } = await api.createDatabaseRow(databaseId, input ?? {});
         patchRows((rows) => [...rows, row]);
+        refreshAfterAutomations();
         // A template or a sub-item can fill a two-way relation, which changes the rows on its other side too.
         const values = { ...detail.data?.templates.find((template) => template.id === input?.templateId)?.properties, ...input?.properties };
         const syncedRelation = detail.data?.schema.properties.some((property) => (
@@ -196,6 +217,7 @@ export const useDatabase = (databaseId: string) => {
         await attempt(async () => {
           const { row } = await api.updateDatabaseRow(databaseId, rowId, input);
           patchRows((rows) => rows.map((current) => (current.id === rowId ? row : current)));
+          refreshAfterAutomations();
           queryClient.setQueryData(rowContextKey(rowId), (current: { database: DatabaseDetail; row: DatabaseRow } | null | undefined) => (
             current ? { ...current, row } : current
           ));
@@ -257,7 +279,7 @@ export const useDatabase = (databaseId: string) => {
         await attempt(() => api.deleteDatabaseView(databaseId, viewId));
       },
     };
-  }, [attempt, cells, databaseId, detail.data, error, patchDetail, patchRows, people, queryClient, related, rowsQuery.data]);
+  }, [attempt, cells, databaseId, detail.data, error, patchDetail, patchRows, people, queryClient, refreshAfterAutomations, related, rowsQuery.data]);
 
   return {
     handle,

@@ -19,6 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { usePages } from "@/components/pages/PagesProvider";
 import { cn } from "@/lib/utils";
 import type { DatabaseHandle } from "./useDatabase";
+import { ButtonCell } from "./ButtonProperty";
 
 const COMPUTED_TYPES = new Set(["rollup", "formula", "created_time", "last_edited_time", "unique_id"]);
 const MAX_FILES = 100;
@@ -396,6 +397,10 @@ export const DatabaseCell = ({ db, row, property, readOnly, onChange }: {
   if (property.type === "created_by" || property.type === "last_edited_by") {
     const id = property.type === "created_by" ? row.createdBy : row.updatedBy;
     return <PeopleChips ids={id ? [id] : []} />;
+  }
+  if (property.type === "button") {
+    // In the template editor there's no row to run it on yet.
+    return <ButtonCell db={db} row={row} property={property} readOnly={readOnly || Boolean(onChange)} />;
   }
   if (COMPUTED_TYPES.has(property.type)) {
     return (

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { EyeOff, Trash2 } from "lucide-react";
+import { EyeOff, Trash2, Zap } from "lucide-react";
 import {
   DATABASE_OPTION_COLORS,
   DATABASE_PROPERTY_TYPES,
@@ -18,6 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 import { usePages } from "@/components/pages/PagesProvider";
 import type { DatabaseHandle } from "./useDatabase";
+import { buttonActions, ButtonPropertyEditor } from "./ButtonProperty";
 
 const newId = () => crypto.randomUUID().replace(/-/g, "").slice(0, 12);
 
@@ -251,6 +252,7 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
   const { t } = useTranslation();
   const typeLabel = useTypeLabel();
   const [open, setOpen] = useState(false);
+  const [editingButton, setEditingButton] = useState(false);
 
   const patch = (next: Partial<DatabaseProperty>) => void db.updateSchema({
     properties: db.database.schema.properties.map((item) => (item.id === property.id ? { ...item, ...next } : item)),
@@ -268,6 +270,8 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
   };
 
   return (
+    <>
+    {editingButton ? <ButtonPropertyEditor db={db} property={property} onClose={() => setEditingButton(false)} /> : null}
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="w-72 space-y-2">
@@ -301,6 +305,17 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
           </label>
         ) : null}
         {property.type === "unique_id" ? <IdPrefixEditor prefix={property.uniqueId?.prefix ?? ""} onChange={(prefix) => patch({ uniqueId: { prefix } })} /> : null}
+        {property.type === "button" ? (
+          <button
+            type="button"
+            className="flex w-full items-center gap-2 rounded px-1.5 py-1 hover:bg-slate-100"
+            onClick={() => { setOpen(false); setEditingButton(true); }}
+            data-edit-button-automation
+          >
+            <Zap className="h-3.5 w-3.5" aria-hidden="true" />{t("pages.db.button.edit")}
+            {buttonActions(property).length === 0 ? <span className="ml-auto text-xs text-amber-600">{t("pages.db.button.noActions")}</span> : null}
+          </button>
+        ) : null}
         {property.type === "relation" ? <RelationEditor db={db} property={property} /> : null}
         {property.type === "rollup" ? <RollupEditor db={db} property={property} onChange={patch} /> : null}
         {property.type === "formula" ? (
@@ -329,5 +344,6 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
         )}
       </PopoverContent>
     </Popover>
+    </>
   );
 };

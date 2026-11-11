@@ -18,6 +18,10 @@ export type Bindings = {
   publicNetworkFetch?: (input: string, init: RequestInit) => Promise<Response>;
   /** Optional runtime driver for notification email; without it people get in-app notifications only. */
   sendEmail?: (message: { to: string; subject: string; text: string }) => Promise<void>;
+  /** Tells the host when scheduled work is next due (automations, repeating templates), or null for none. AppKeep's ALTSTACK.wakeAt. */
+  wakeAt?: (when: Date | null) => Promise<void>;
+  /** Sends an event to the deployment's webhooks (AppKeep's ALTSTACK.emit). Used by "Send webhook". */
+  emitEvent?: (name: string, data: unknown) => Promise<void>;
   /** Accounts connected by login, on hosts that offer it (AppKeep). They belong to the deployment. */
   listConnections?: (provider?: string) => Promise<HostConnection[]>;
   /** One turn with the host's AI model, paid by the host account (AppKeep's ai.text). Offered as the "AppKeep AI" provider. */

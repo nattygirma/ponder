@@ -1107,6 +1107,8 @@ export const computeRowValues = (input: {
         return rollupCell(dataset, row, property, depth);
       case "formula":
         return formulaCell(dataset, row, property, depth);
+      case "button":
+        return emptyCell();
     }
   };
 

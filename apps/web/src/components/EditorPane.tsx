@@ -290,6 +290,7 @@ import { EditorDatabaseEmbed, RowProperties } from "./database/DatabasePane";
 import { ChartInsertDialog } from "./database/DatabaseChart";
 import { AppMark, useConnections } from "./pages/Connections";
 import { EditorLinkPreview, LinkPreviewPaste } from "./pages/LinkPreviewBlock";
+import { EditorButtonBlock, openNextButtonEditor } from "./pages/ButtonBlock";
 import { PageComments, type PageCommentsController } from "./comments/PageComments";
 import { usePageAccess, useViewer } from "./teams/Teams";
 import { anchorFromBlock, anchorFromSelection, createCommentHighlights } from "./comments/CommentHighlights";
@@ -857,6 +858,7 @@ const RichEditorPane = ({
       "columns-3": "",
       database: "",
       chart: "",
+      button: "",
     },
   });
   slashCommandLabelsRef.current = {
@@ -899,6 +901,7 @@ const RichEditorPane = ({
       "columns-3": t("pages.columns3"),
       database: t("pages.database"),
       chart: t("pages.db.views.chart"),
+      button: t("pages.db.types.button"),
     },
   };
   const pages = usePages();
@@ -906,6 +909,9 @@ const RichEditorPane = ({
   const trackedPageId = pages?.enabled && memo && !isLocalMemoId(memo.id) && !memo.isDeleted ? memo.id : null;
   usePageViewRecorder(trackedPageId, Boolean(trackedPageId));
   pagesRef.current = pages;
+  // A /button block's actions (comments, notifications) go to the page it sits on.
+  const buttonPageIdRef = useRef<string | null>(null);
+  buttonPageIdRef.current = memo && !isLocalMemoId(memo.id) ? memo.id : null;
   const createSubPageRef = useRef<() => Promise<void>>(async () => undefined);
   const createDatabaseRef = useRef<() => Promise<void>>(async () => undefined);
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
@@ -922,6 +928,7 @@ const RichEditorPane = ({
       createSubPage: () => void createSubPageRef.current(),
       createDatabase: () => void createDatabaseRef.current(),
       insertChart: () => setChartPickerOpen(true),
+      beforeInsertButton: () => openNextButtonEditor(),
     };
   }
   const slashCommandExtensionRef = useRef<ReturnType<typeof createSlashCommandExtension> | null>(null);
@@ -1440,6 +1447,7 @@ const RichEditorPane = ({
         subPage: EditorSubPage,
         databaseEmbed: EditorDatabaseEmbed,
         linkPreview: EditorLinkPreview,
+        buttonBlock: EditorButtonBlock.configure({ getPageId: () => buttonPageIdRef.current }),
         table: { table: { renderWrapper: true } },
       }),
       PonderLink.configure({ openOnClick: false }),

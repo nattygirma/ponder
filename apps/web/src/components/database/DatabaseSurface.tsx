@@ -21,6 +21,7 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { BoardView, CalendarView, GalleryView, ListView, RowPeekContext, TableView, TimelineView, type DatabaseViewProps } from "./DatabaseViews";
 import { NewRowButton } from "./DatabaseTemplates";
+import { AutomationsButton } from "./DatabaseAutomations";
 import { ChartSettings, ChartView } from "./DatabaseChart";
 import { RowPeek } from "./RowPeek";
 import { useDatabase, type DatabaseHandle } from "./useDatabase";
@@ -432,6 +433,7 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
               <Input className="h-7 w-32 text-xs" value={search} placeholder={t("pages.db.search")} aria-label={t("pages.db.search")} onChange={(event) => setSearch(event.target.value)} />
             </>
           )}
+          <AutomationsButton db={db} />
           <NewRowButton db={db} />
         </div>
       </div>

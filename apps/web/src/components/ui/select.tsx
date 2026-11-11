@@ -2,6 +2,7 @@ import * as React from "react";
 import * as SelectPrimitive from "@radix-ui/react-select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PopoverContainer } from "./popover";
 
 const Select = SelectPrimitive.Root;
 const SelectGroup = SelectPrimitive.Group;
@@ -66,7 +67,8 @@ const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({ className, children, position = "popper", ...props }, ref) => (
-  <SelectPrimitive.Portal>
+  // Inside a modal dialog, opens within it (see PopoverContainer).
+  <SelectPrimitive.Portal container={React.useContext(PopoverContainer) ?? undefined}>
     <SelectPrimitive.Content
       ref={ref}
       className={cn(

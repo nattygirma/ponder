@@ -32,6 +32,7 @@ import {
 } from "./resource-service";
 import { getWorkspaceId, requireScopes, requireUser } from "./request-auth";
 import { readPageBackup, restorePageBackup } from "./page-backup";
+import { refreshWakeLater } from "./automation-routes";
 import type { DatabaseAdapter } from "./storage-contract";
 import type { initiateResourceRestoreUpload as initiateResourceRestoreUploadService } from "./resource-upload-service";
 
@@ -462,7 +463,9 @@ export const registerBackupRoutes = (
     async (context) => {
       const denied = requireUser(context);
       if (denied) return denied;
-      const restored = await restorePageBackup(context.env.storage.db, getWorkspaceId(context), context.req.valid("json"));
+      const input = context.req.valid("json");
+      const restored = await restorePageBackup(context.env.storage.db, getWorkspaceId(context), input);
+      if (input.automations.length || input.templates.some((template) => template.repeat)) refreshWakeLater(context);
       return context.json({ ok: true, restored });
     },
   );

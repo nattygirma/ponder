@@ -27,6 +27,7 @@ import {
   updateDatabaseTemplate,
   updateDatabaseView,
 } from "./database-service";
+import { refreshWakeLater, rowChangeListener } from "./automation-routes";
 import { apiError } from "./http-errors";
 import { getActorLabel, getAuditActor, getWorkspaceId, requireScopes } from "./request-auth";
 
@@ -76,13 +77,13 @@ export const registerDatabaseRoutes = (app: Hono<AppEnv>) => {
   app.post("/api/v1/databases/:id/rows", zValidator("json", DatabaseRowCreateSchema), (c) =>
     guarded(c, "write:memos", async () =>
       c.json({
-        row: await createDatabaseRow(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.valid("json"), getAuditActor(c), getActorLabel(c)),
+        row: await createDatabaseRow(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.valid("json"), getAuditActor(c), getActorLabel(c), rowChangeListener(c)),
       }, 201)));
 
   app.patch("/api/v1/databases/:id/rows/:rowId", zValidator("json", DatabaseRowUpdateSchema), (c) =>
     guarded(c, "write:memos", async () =>
       c.json({
-        row: await updateDatabaseRow(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.param("rowId"), c.req.valid("json"), getAuditActor(c), getActorLabel(c)),
+        row: await updateDatabaseRow(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.param("rowId"), c.req.valid("json"), getAuditActor(c), getActorLabel(c), rowChangeListener(c)),
       })));
 
   app.post("/api/v1/databases/:id/views", zValidator("json", DatabaseViewCreateSchema), (c) =>
@@ -104,10 +105,12 @@ export const registerDatabaseRoutes = (app: Hono<AppEnv>) => {
       c.json({ template: await createDatabaseTemplate(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.valid("json")) }, 201)));
 
   app.patch("/api/v1/databases/:id/templates/:templateId", zValidator("json", DatabaseTemplateUpdateSchema), (c) =>
-    guarded(c, "write:memos", async () =>
-      c.json({
-        template: await updateDatabaseTemplate(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.param("templateId"), c.req.valid("json")),
-      })));
+    guarded(c, "write:memos", async () => {
+      const input = c.req.valid("json");
+      const template = await updateDatabaseTemplate(c.env.storage.db, getWorkspaceId(c), c.req.param("id"), c.req.param("templateId"), input);
+      if (input.repeat !== undefined) refreshWakeLater(c);
+      return c.json({ template });
+    }));
 
   app.delete("/api/v1/databases/:id/templates/:templateId", (c) =>
     guarded(c, "write:memos", async () => {

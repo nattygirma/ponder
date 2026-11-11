@@ -3,7 +3,7 @@
   "slug": "ponder",
   "name": "Ponder",
   "icon": "icon.svg",
-  "version": "2.20.5",
+  "version": "2.21.0",
   "tagline": "Notes, notebooks and a web clipper, with AI and MCP",
   "description": "Self-hosted knowledge base: nested notebooks, rich text and Markdown, tables, diagrams, attachments, full-text search, sharing and an MCP server. Based on EdgeEver (github.com/tianma-if/edgeever). Free software under the AGPL-3.0: the complete source is at github.com/nattygirma/ponder.",
   "category": "productivity",
@@ -13,9 +13,10 @@
   "entry": "dist/app.js",
   "migrations": "migrations",
   "healthcheck": "/api/health",
+  "cron": ["*/5 * * * *"],
   "services": [
     { "name": "storage", "why": "Keeps your note attachments and images" },
-    { "name": "email", "why": "Sends team invitations and comment alerts" },
+    { "name": "email", "why": "Sends team invitations, comment alerts and mail from your database automations" },
     { "name": "ai", "why": "Runs Ponder's AI (writing help, the AI chat) without an API key of your own, paid from your AppKeep balance" }
   ],
   "connections": [

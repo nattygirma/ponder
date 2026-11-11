@@ -30,6 +30,8 @@ import {
 } from "@ponder/shared";
 import type { AppContext, AuthContext } from "./api-context";
 import { AppError } from "./app-error";
+import { rowChangeListener } from "./automation-routes";
+import { listAutomations } from "./automation-service";
 import { createMemoComment, deleteMemoComment, listMemoComments, listWorkspaceMembers, updateMemoComment } from "./comment-service";
 import { loadConnectedCalendars, searchConnectedApps } from "./connections";
 import {
@@ -103,7 +105,7 @@ export const WORKSPACE_TOOL_DEFINITIONS = [
     inputSchema: object({ query: str, query_type: { type: "string", enum: ["internal", "user"] }, page_url: { type: "string", description: "Only results inside this page." }, limit: limit(50) }, ["query"]) },
   { name: "connector_search", description: "Search the apps connected to this workspace (GitHub issues and pull requests).",
     inputSchema: object({ question: str, keywords: str, sources: strings }) },
-  { name: "fetch", description: "Read a page (properties, Markdown content and sub-pages), a database (schema and views), a view with its rows (\"view://<id>\"), or \"self\".",
+  { name: "fetch", description: "Read a page (properties, Markdown content and sub-pages), a database (schema, views and automations), a view with its rows (\"view://<id>\"), or \"self\".",
     inputSchema: object({ id: { type: "string", description: "Page, database or view id or URL, or \"self\"." } }, ["id"]) },
   { name: "list_private_pages", description: "Top-level pages only you can see (in a personal workspace, every top-level page).", inputSchema: object({ limit: limit(PAGE_LIST_MAX), cursor: str }) },
   { name: "list_shared_pages", description: "Pages shared with specific people.", inputSchema: object({ limit: limit(PAGE_LIST_MAX), cursor: str }) },
@@ -306,6 +308,8 @@ const toStoredValues = (schema: DatabaseSchema, input: Record<string, unknown>) 
       case "rollup": case "formula": case "created_time": case "last_edited_time":
       case "created_by": case "last_edited_by": case "unique_id":
         throw new AppError("invalid_params", `"${property.name}" is computed and can't be set.`, 400);
+      case "button":
+        throw new AppError("invalid_params", `"${property.name}" is a button; it has no value to set.`, 400);
       case "files":
         throw new AppError("invalid_params", `"${property.name}" holds uploaded files, which can only be added in Ponder.`, 400);
       case "number": {
@@ -560,7 +564,7 @@ const writeRowValues = async (c: AppContext, auth: AuthContext, database: Databa
   const schema: DatabaseSchema = structuredClone(database.schema);
   const { values, title, grew } = toStoredValues(schema, input);
   if (grew) await updateDatabase(c.env.storage.db, auth.workspaceId, database.id, { schema }, getAuditActor(c), getActorLabel(c));
-  return updateDatabaseRow(c.env.storage.db, auth.workspaceId, database.id, rowId, { ...(title !== undefined ? { title } : {}), properties: values }, getAuditActor(c), getActorLabel(c));
+  return updateDatabaseRow(c.env.storage.db, auth.workspaceId, database.id, rowId, { ...(title !== undefined ? { title } : {}), properties: values }, getAuditActor(c), getActorLabel(c), rowChangeListener(c));
 };
 
 const discussions = (comments: MemoComment[], includeResolved: boolean) => {
@@ -661,7 +665,15 @@ export const callWorkspaceTool = async (c: AppContext, auth: AuthContext, name: 
       }
       const id = stripId(raw);
       const databaseId = await db.prepare(`SELECT id FROM databases WHERE workspace_id = ? AND id = ?`).bind(ws, id).first<{ id: string }>();
-      if (databaseId) return databaseOut(c, await loadDatabase(c, auth, id, "view"));
+      if (databaseId) {
+        const database = await loadDatabase(c, auth, id, "view");
+        // Automations show what happens on their own when rows change, so an agent's edits don't surprise anyone.
+        const automations = (await listAutomations(db, ws, database.id)).map((automation) => ({
+          id: automation.id, name: automation.name, enabled: automation.enabled, trigger: automation.trigger,
+          actions: automation.actions.map((action) => action.type), next_run_at: automation.nextRunAt,
+        }));
+        return { ...databaseOut(c, database), automations };
+      }
       return await fetchPage(c, auth, id);
     }
     case "list_private_pages":
@@ -727,7 +739,7 @@ export const callWorkspaceTool = async (c: AppContext, auth: AuthContext, name: 
           const schema: DatabaseSchema = structuredClone(database.schema);
           const { values, title, grew } = toStoredValues(schema, asRecord(page.properties) ?? {});
           if (grew) database = await updateDatabase(db, ws, database.id, { schema }, actor, label);
-          const row = await createDatabaseRow(db, ws, database.id, { title: optional(page.title) ?? title, properties: values }, actor, label);
+          const row = await createDatabaseRow(db, ws, database.id, { title: optional(page.title) ?? title, properties: values }, actor, label, rowChangeListener(c));
           if (optional(page.content)) await saveMemo(c, auth, row.id, { contentMarkdown: String(page.content) });
           if (page.icon !== undefined || page.cover !== undefined) await updatePageMeta(db, ws, row.id, { icon: optional(page.icon) ?? null, cover: optional(page.cover) ?? null });
           created.push(row.id);
