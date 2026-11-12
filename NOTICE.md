@@ -104,3 +104,22 @@ live co-editing count too.
 
 The `:` emoji menu uses `@emoji-mart/data` (https://github.com/missive/emoji-mart),
 Copyright (c) 2022 Missive, licensed under the MIT License.
+
+Parts of Ponder's embeds (Phase E of the Notion blocks plan) are adapted from
+the same project and licence. AppFlowy-Web has a Google Drive embed but none of
+Notion's other named embeds, so only the parts below came from it; the other
+link rules are Ponder's own. Icons, images and branding were not copied; Ponder
+uses generic lucide icons and Notion's labels.
+
+- `packages/shared/src/google-drive-embed.ts`: recognising Google Drive, Docs,
+  Sheets, Slides and Forms links, finding the file id and building the preview
+  frame address (`blocks/google-drive/google-drive-utils.ts`).
+- `apps/web/src/components/pages/EmbedResizeHandles.tsx`: the drag-to-resize
+  handles, the draft size while dragging, cancelling on lost pointer capture
+  and the arrow-key steps (`blocks/google-drive/DriveResizeHandles.tsx`,
+  `drive-data.ts`).
+- `apps/web/src/components/pages/EmbedBlock.tsx`: the frame letting the
+  pointer through while a resize is under way, and its sandbox
+  (`blocks/google-drive/GoogleDriveBlock.tsx`).
+- `apps/web/src/styles/embed-blocks.css`: the resize handle styles
+  (`blocks/google-drive/google-drive.scss`).

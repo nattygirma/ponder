@@ -32,6 +32,8 @@ export * from "./notion-blocks";
 export * from "./media-links";
 export * from "./page-outline";
 export * from "./web-bookmark";
+export * from "./embed-services";
+export * from "./google-drive-embed";
 export * from "./comments";
 export * from "./teams";
 export * from "./database";

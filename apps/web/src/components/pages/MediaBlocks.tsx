@@ -17,7 +17,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent, type Keyboa
 import { useTranslation } from "react-i18next";
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import type { Editor } from "@tiptap/core";
-import { AudioLines, Bookmark, Image as ImageIcon, Paperclip, Video } from "lucide-react";
+import { AudioLines, Bookmark, Globe, Image as ImageIcon, Paperclip, Video } from "lucide-react";
 import {
   BOOKMARK_NODE_TYPE,
   bookmarkFallback,
@@ -40,9 +40,10 @@ import {
 import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { EmbedFrameView, EmbedPlaceholderView } from "./EmbedBlock";
 
-const ICONS: Record<MediaKind, typeof ImageIcon> = { image: ImageIcon, video: Video, audio: AudioLines, file: Paperclip, bookmark: Bookmark };
-const ACCEPT: Record<MediaKind, string | undefined> = { image: "image/*", video: "video/*", audio: "audio/*", file: undefined, bookmark: undefined };
+const ICONS: Record<MediaKind, typeof ImageIcon> = { image: ImageIcon, video: Video, audio: AudioLines, file: Paperclip, bookmark: Bookmark, embed: Globe };
+const ACCEPT: Record<MediaKind, string | undefined> = { image: "image/*", video: "video/*", audio: "audio/*", file: undefined, bookmark: undefined, embed: undefined };
 
 type MediaPlaceholderOptions = {
   /** Uploads files at the cursor, as a paste would. */
@@ -229,43 +230,30 @@ const MediaPlaceholderView = ({ editor, node, getPos, extension, selected }: Nod
   );
 };
 
+/** An empty /embed block (Phase E) has its own panel; the other kinds use Phase C's. */
+const MediaOrEmbedPlaceholderView = (props: NodeViewProps) => {
+  const [openOnMount] = useState(() => {
+    if (props.node.attrs.kind !== "embed" || !openNextPanel || !props.editor.isEditable) return false;
+    openNextPanel = false;
+    return true;
+  });
+  if (props.node.attrs.kind !== "embed") return <MediaPlaceholderView {...props} />;
+  return <EmbedPlaceholderView {...props} openOnMount={openOnMount} uploadFiles={(props.extension.options as MediaPlaceholderOptions).uploadFiles} />;
+};
+
 export const EditorMediaPlaceholder = MediaPlaceholder.extend<MediaPlaceholderOptions>({
   addOptions() {
     return { uploadFiles: () => undefined };
   },
   addNodeView() {
-    return ReactNodeViewRenderer(MediaPlaceholderView, { stopEvent: ({ event }) => !(event.type === "dragstart" || event.type === "drop") });
+    return ReactNodeViewRenderer(MediaOrEmbedPlaceholderView, { stopEvent: ({ event }) => !(event.type === "dragstart" || event.type === "drop") });
   },
 });
 
-/** A YouTube, Vimeo or Loom video in the provider's player, 16:9 like Notion's. */
-const VideoEmbedView = ({ node, selected }: NodeViewProps) => {
-  const url = String(node.attrs.url ?? "");
-  const embed = parseVideoEmbed(url);
-  return (
-    <NodeViewWrapper className={cn("ponder-embed-block", selected && "is-selected")} contentEditable={false} data-provider={embed?.provider}>
-      {embed ? (
-        <div className="ponder-embed-frame">
-          <iframe
-            src={embed.embedUrl}
-            title={embed.provider}
-            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
-            allow="fullscreen; picture-in-picture; encrypted-media; clipboard-write"
-            allowFullScreen
-            loading="lazy"
-            referrerPolicy="strict-origin-when-cross-origin"
-          />
-        </div>
-      ) : (
-        <a className="ponder-embed-link" href={normalizeMediaUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">{url}</a>
-      )}
-    </NodeViewWrapper>
-  );
-};
-
+/** YouTube, Vimeo and Loom players, and Phase E's embeds, in a frame that can be resized. */
 export const EditorVideoEmbed = VideoEmbed.extend({
   addNodeView() {
-    return ReactNodeViewRenderer(VideoEmbedView);
+    return ReactNodeViewRenderer(EmbedFrameView);
   },
 });
 

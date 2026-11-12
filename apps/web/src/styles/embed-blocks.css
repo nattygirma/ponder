@@ -1,0 +1,130 @@
+/* Phase E: Notion's Embed block and named embeds. Builds on Phase C's .ponder-embed-* rules in
+   page-blocks.css. Colors mix with currentColor or transparency, so light and dark share them.
+   The resize pills follow Notion's (6 x 48 px, translucent with a white rim) and AppFlowy-Web's
+   google-drive.scss (.drive-resize), adapted (AGPL-3.0, see NOTICE.md). */
+
+.ponder-embed-column { width: 100%; }
+.ponder-embed-card {
+  position: relative;
+  max-width: 100%;
+  margin: 0 auto;
+}
+.ponder-embed-frame.is-sized {
+  padding-bottom: 0;
+  min-height: 120px;
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+.ponder-embed-frame.is-sized iframe { background: transparent; }
+.ponder-embed-block.is-resizing { user-select: none; }
+/* Other frames swallow the pointer even while a handle holds capture, so a drag that crosses
+   another embed would stop there. Every frame on the page ignores the pointer during a resize. */
+body:has(.ponder-embed-block.is-resizing) iframe { pointer-events: none; }
+
+/* Resize handles: hidden until the frame is hovered, focused or selected. */
+.ponder-embed-resize {
+  position: absolute;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  opacity: 0;
+  touch-action: none;
+  transition: opacity 150ms ease-in-out;
+}
+.ponder-embed-resize::before {
+  content: "";
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 20px;
+  background: rgba(15, 15, 15, 0.6);
+  box-shadow: 0 0 0 1px rgba(15, 15, 15, 0.08);
+}
+.ponder-embed-card:hover .ponder-embed-resize,
+.ponder-embed-block.is-selected .ponder-embed-resize,
+.ponder-embed-block.is-resizing .ponder-embed-resize,
+.ponder-embed-resize:focus-visible { opacity: 1; }
+.ponder-embed-resize:focus-visible { outline: none; }
+.ponder-embed-resize:focus-visible::before { box-shadow: 0 0 0 2px #2383e2; }
+
+.ponder-embed-resize-left,
+.ponder-embed-resize-right { top: 0; bottom: 0; width: 15px; cursor: col-resize; }
+.ponder-embed-resize-left { left: 0; }
+.ponder-embed-resize-right { right: 0; }
+.ponder-embed-resize-left::before,
+.ponder-embed-resize-right::before { width: 6px; height: 48px; max-height: 50%; }
+
+.ponder-embed-resize-bottom { left: 20px; right: 20px; bottom: 0; height: 15px; cursor: row-resize; }
+.ponder-embed-resize-bottom::before { width: 48px; height: 6px; }
+
+/* Notion's bottom corners: a small bracket rather than a pill. */
+.ponder-embed-resize-bottom-left,
+.ponder-embed-resize-bottom-right { bottom: 0; width: 20px; height: 20px; }
+.ponder-embed-resize-bottom-left { left: 0; cursor: nesw-resize; }
+.ponder-embed-resize-bottom-right { right: 0; cursor: nwse-resize; }
+.ponder-embed-resize-bottom-left::before,
+.ponder-embed-resize-bottom-right::before {
+  width: 12px;
+  height: 12px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+}
+.ponder-embed-resize-bottom-left::before { border-left: 2px solid rgba(255, 255, 255, 0.9); border-bottom: 2px solid rgba(255, 255, 255, 0.9); filter: drop-shadow(0 0 1px rgba(15, 15, 15, 0.6)); }
+.ponder-embed-resize-bottom-right::before { border-right: 2px solid rgba(255, 255, 255, 0.9); border-bottom: 2px solid rgba(255, 255, 255, 0.9); filter: drop-shadow(0 0 1px rgba(15, 15, 15, 0.6)); }
+
+/* The hover toolbar at the top right, as Notion's block actions over an embed. */
+.ponder-embed-toolbar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 4;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 6px;
+  background: hsl(var(--popover));
+  box-shadow: 0 0 0 1px rgba(15, 15, 15, 0.1), 0 2px 4px rgba(15, 15, 15, 0.1);
+  opacity: 0;
+  transition: opacity 150ms ease-in-out;
+}
+.ponder-embed-card:hover .ponder-embed-toolbar,
+.ponder-embed-toolbar:focus-within { opacity: 1; }
+.ponder-embed-toolbar-button {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: inherit !important;
+}
+.ponder-embed-toolbar-button:hover { background: color-mix(in srgb, currentColor 8%, transparent); }
+
+.ponder-embed-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 6px;
+  color: inherit !important;
+  text-decoration: none !important;
+  font-size: 14px;
+}
+.ponder-embed-note { margin: 4px 2px 0; font-size: 12px; color: color-mix(in srgb, currentColor 55%, transparent); }
+
+/* Phones: no hover, so the handles and toolbar show while the block is selected. */
+@media (hover: none) {
+  .ponder-embed-block.is-selected .ponder-embed-toolbar { opacity: 1; }
+  .ponder-embed-resize-left,
+  .ponder-embed-resize-right { width: 22px; }
+}
+
+/* A Tweet is as wide as X draws it (550px), centred, as in Notion. */
+.ponder-embed-block[data-embed-service="tweet"] .ponder-embed-card { max-width: 550px; }
+.ponder-embed-block[data-embed-service="tweet"] .ponder-embed-frame.is-sized { background: transparent; }

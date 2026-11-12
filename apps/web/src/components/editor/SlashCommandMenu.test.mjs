@@ -44,6 +44,15 @@ const labels = {
   backgroundColors: Object.fromEntries([["default", "Default background"], ...colors.map((color) => [color, `${capital(color)} background`])]),
 };
 
+// Notion's Embeds group, read from its `/` menu on 2026-11-11 (less HTML, which the plan leaves out).
+const EMBEDS = [
+  "Google Drive", "Tweet", "GitHub Gist", "Google Maps", "Figma", "Abstract", "Invision", "Mixpanel", "Framer", "Whimsical",
+  "Miro", "Sketch", "Excalidraw", "PDF", "Loom", "Typeform", "CodePen", "Replit", "Hex", "Deepnote",
+  "Slack", "Trello", "Pitch", "OneDrive", "Dropbox", "Amplitude", "Claap", "Box", "Linear", "Lucidchart",
+  "Lucidspark", "Eraser", "ClickUp", "Plus", "Dovetail", "Streak Share", "Shortcut", "SendOwl", "Amplitude - EU", "Zendesk",
+  "Google Contacts", "Discord", "Microsoft Contacts", "PagerDuty", "Asana", "GitLab", "Zoom", "Adobe XD", "Jira", "GitHub",
+];
+
 const filter = (query, options = {}) => filterSlashCommandItems(createSlashCommandItems(labels, options.current ?? "paragraph"), query, { groups: labels.groups, ...options });
 const labelsOf = (items) => items.map((item) => item.label);
 const inGroup = (items, group) => labelsOf(items.filter((item) => item.group === group));
@@ -51,7 +60,7 @@ const inGroup = (items, group) => labelsOf(items.filter((item) => item.group ===
 describe("slash command menu", () => {
   test("lists Notion's groups in Notion's order", () => {
     const groups = [...new Set(filter("").map((item) => item.group))];
-    expect(groups).toEqual(SLASH_GROUP_ORDER.filter((group) => group !== "embeds"));
+    expect(groups).toEqual(SLASH_GROUP_ORDER);
   });
 
   test("uses Notion's labels, order and Markdown hints for Basic blocks", () => {
@@ -66,7 +75,7 @@ describe("slash command menu", () => {
   test("hides Heading 5 and 6 and Notion-only blocks Ponder lacks", () => {
     const all = labelsOf(filter(""));
     expect(all.some((label) => /Heading [56]/.test(label))).toBe(false);
-    for (const missing of ["Synced block", "AI Notetaker", "Feed view", "Map view", "Embed"]) {
+    for (const missing of ["Synced block", "AI Notetaker", "Feed view", "Map view", "HTML"]) {
       expect(all).not.toContain(missing);
     }
   });
@@ -117,7 +126,8 @@ describe("slash command menu", () => {
     expect(filter("turn").every((item) => item.group === "turnInto")).toBe(true);
     expect(filter("turn")).toHaveLength(15);
     expect(filter("equation").map((item) => item.id)).toEqual(["block-math", "inline-math"]);
-    expect(filter("embed")).toEqual([]);
+    // "embed" is the Embeds group's name, so Notion lists the whole group, Embed first.
+    expect(filter("embed").map((item) => item.label)).toEqual(["Embed", ...EMBEDS]);
     expect(filter("zzz")).toEqual([]);
   });
 
@@ -158,5 +168,21 @@ describe("slash command menu", () => {
     expect(formatCurrentDate(date)).toBe("2026-01-02");
     expect(formatCurrentTime(date)).toBe("03:04");
     expect(formatCurrentDateTime(date)).toBe("2026-01-02 03:04");
+  });
+
+  test("lists Notion's Embeds group: Embed, then every named service in Notion's order (Phase E)", () => {
+    const all = filter("");
+    expect(inGroup(all, "embeds")).toEqual(["Embed", ...EMBEDS]);
+    expect(all.filter((item) => item.group === "embeds").every((item) => typeof item.icon === "function" || typeof item.icon === "object")).toBe(true);
+    expect(filter("figma").map((item) => item.id)).toEqual(["embed-figma"]);
+    expect(filter("gist").map((item) => item.id)).toEqual(["embed-githubGist"]);
+    expect(filter("google").map((item) => item.id)).toEqual(["embed-googleDrive", "embed-googleMaps", "embed-googleContacts"]);
+    expect(filter("tweet").map((item) => item.id)).toEqual(["embed-tweet"]);
+    expect(filter("whiteboard").map((item) => item.id)).toEqual(["embed-miro", "embed-excalidraw", "embed-lucidspark", "embed-eraser"]);
+  });
+
+  test("puts a recently used embed in Suggested, named after its group", () => {
+    const suggested = filter("", { recent: ["embed-googleMaps"] }).filter((item) => item.group === "suggested");
+    expect(suggested.map((item) => [item.label, item.origin])).toEqual([["Google Maps", "embeds"]]);
   });
 });
