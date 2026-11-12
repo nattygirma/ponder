@@ -54,8 +54,8 @@ export const renderThemedMermaidSvg = (
         theme: "base",
         themeVariables: getOfficialMermaidThemeVariables(palette),
       });
-      const valid = await mermaid.parse(source, { suppressErrors: true });
-      if (!valid) throw new Error("Invalid Mermaid diagram");
+      // Without suppressErrors, a bad diagram throws Mermaid's own parse error, which the block shows.
+      await mermaid.parse(source);
       const { svg } = await mermaid.render(`ponder-mermaid-${++renderSequence}`, source);
       return svg;
     });

@@ -309,6 +309,11 @@ import { EditorDatabaseEmbed, RowProperties } from "./database/DatabasePane";
 import { ChartInsertDialog } from "./database/DatabaseChart";
 import { AppMark, useConnections } from "./pages/Connections";
 import { EditorLinkPreview, LinkPreviewPaste } from "./pages/LinkPreviewBlock";
+import { EditorTableOfContents } from "./pages/TableOfContentsBlock";
+import { EditorBreadcrumb } from "./pages/BreadcrumbBlock";
+import { EditorTabs } from "./pages/TabsBlock";
+import { EditorMediaPlaceholder, EditorVideoEmbed, EditorWebBookmark, openNextMediaPanel } from "./pages/MediaBlocks";
+import { FloatingOutline } from "./pages/FloatingOutline";
 import { EditorButtonBlock, openNextButtonEditor } from "./pages/ButtonBlock";
 import { PageComments, type PageCommentsController } from "./comments/PageComments";
 import { usePageAccess, useViewer } from "./teams/Teams";
@@ -886,6 +891,7 @@ const RichEditorPane = ({
         audio: item("audio"),
         "code-block": item("code"),
         attachment: item("file"),
+        "web-bookmark": item("webBookmark"),
         "view-table": item("tableView"),
         "view-board": item("boardView"),
         "view-gallery": item("galleryView"),
@@ -901,8 +907,15 @@ const RichEditorPane = ({
         "database-inline": item("databaseInline"),
         "database-full-page": item("databaseFullPage"),
         "linked-database": item("linkedView"),
+        toc: item("tableOfContents"),
         "block-math": item("blockEquation"),
         button: item("button"),
+        breadcrumb: item("breadcrumb"),
+        tabs: item("tabs"),
+        "toggle-heading-1": item("toggleHeading1"),
+        "toggle-heading-2": item("toggleHeading2"),
+        "toggle-heading-3": item("toggleHeading3"),
+        mermaid: item("mermaid"),
         "columns-2": item("columns2"),
         "columns-3": item("columns3"),
         "columns-4": item("columns4"),
@@ -977,6 +990,7 @@ const RichEditorPane = ({
       openLinkedDatabasePicker: () => setLinkedDatabasePickerOpen(true),
       insertChart: (type) => setChartPicker({ type }),
       beforeInsertButton: () => openNextButtonEditor(),
+      beforeInsertMedia: () => openNextMediaPanel(),
       importMarkdown: () => markdownImportInputRef.current?.click(),
       importZip: () => openNotionImport(),
       turnInto: (pos, target) => withEditor((current) => turnInto(current, pos, target)),
@@ -1476,6 +1490,9 @@ const RichEditorPane = ({
     });
     return true;
   }, [markDirtyStatus, queryClient, resourceInsertionLimit, t, uploadEditorResource]);
+  // An empty /image, /video, /audio or /file block uploads through the same path as a paste.
+  const insertResourceFilesRef = useRef(insertResourceFiles);
+  insertResourceFilesRef.current = insertResourceFiles;
 
   const [tableDatabaseFailed, setTableDatabaseFailed] = useState(false);
   const blockHandleRef = useRef<BlockHandleController | null>(null);
@@ -1511,6 +1528,14 @@ const RichEditorPane = ({
         databaseEmbed: EditorDatabaseEmbed,
         linkPreview: EditorLinkPreview,
         buttonBlock: EditorButtonBlock.configure({ getPageId: () => buttonPageIdRef.current }),
+        notionBlocks: {
+          toc: EditorTableOfContents,
+          breadcrumb: EditorBreadcrumb.configure({ getPageId: () => buttonPageIdRef.current }),
+          tabs: EditorTabs,
+          embed: EditorVideoEmbed,
+          bookmark: EditorWebBookmark,
+          media: EditorMediaPlaceholder.configure({ uploadFiles: (files) => void insertResourceFilesRef.current(files) }),
+        },
         table: { table: { renderWrapper: true, resizable: true } },
       }),
       PonderLink.configure({ openOnClick: false }),
@@ -4278,7 +4303,9 @@ const RichEditorPane = ({
     && !useMobilePlainTextEditor
     && !useMarkdownSourceEditor
     && !phonePreviewOpen;
-  const outlineReservesSpace = showDocumentOutline && !editorOutlineCollapsed;
+  // A page shows Notion's floating table of contents in place of the outline panel, unless turned off.
+  const showFloatingToc = showDocumentOutline && Boolean(pages?.enabled) && Boolean(memo) && pages?.getPage(memo?.id ?? "")?.style?.toc !== false;
+  const outlineReservesSpace = showDocumentOutline && !showFloatingToc && !editorOutlineCollapsed;
   const compactEditorReadingGutter = shouldCompactEditorReadingGutter({
     desktopColumn: isDesktopColumn,
     columnWidth: Math.max(0, editorColumnWidth - editorScrollbarGutter * 2),
@@ -4808,6 +4835,8 @@ const RichEditorPane = ({
                         </div>
                         <DropdownMenuCheckboxItem checked={Boolean(pageStyle?.small)} onSelect={(event) => { event.preventDefault(); setPageStyle({ small: !pageStyle?.small }); }}>{t("pages.topBar.smallText")}</DropdownMenuCheckboxItem>
                         <DropdownMenuCheckboxItem checked={Boolean(pageStyle?.wide)} onSelect={(event) => { event.preventDefault(); setPageStyle({ wide: !pageStyle?.wide }); }}>{t("pages.topBar.fullWidth")}</DropdownMenuCheckboxItem>
+                        {/* Notion's floating table of contents, on unless turned off. */}
+                        <DropdownMenuCheckboxItem checked={pageStyle?.toc !== false} onSelect={(event) => { event.preventDefault(); setPageStyle({ toc: pageStyle?.toc === false }); }}>{t("pages.topBar.tableOfContents")}</DropdownMenuCheckboxItem>
                       </DropdownMenuSubContent>
                     </DropdownMenuSub>
                   ) : null}
@@ -5367,7 +5396,10 @@ const RichEditorPane = ({
               noteProse={noteProse}
             />
           )}
-          {showDocumentOutline && memo && hydratedEditorMemoId === memo.id && (
+          {showFloatingToc && memo && hydratedEditorMemoId === memo.id && (
+            <FloatingOutline key={memo.id} editor={editor} scrollContainer={editorScrollContainer} />
+          )}
+          {showDocumentOutline && !showFloatingToc && memo && hydratedEditorMemoId === memo.id && (
             <EditorOutline
               key={memo.id}
               memoId={memo.id}
