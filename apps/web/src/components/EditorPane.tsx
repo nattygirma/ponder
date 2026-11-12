@@ -941,6 +941,7 @@ const RichEditorPane = ({
         default: t("pages.color.defaultBackground"),
         ...Object.fromEntries(colorNames.map((color) => [color, t(`pages.color.${color}Background`)])) as Record<(typeof colorNames)[number], string>,
       },
+      embedLabel: t("pages.embeds.menuLabel"),
     };
   }
   const pages = usePages();

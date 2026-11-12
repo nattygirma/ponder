@@ -1,4 +1,5 @@
 // Strings for pages, blocks, databases, comments and teams. Other locales reuse these until translated.
+import { embedsEnUS } from "./embeds-en-US";
 export const pagesEnUS = {
   form: {
     builder: "Form builder",
@@ -277,6 +278,8 @@ export const pagesEnUS = {
     linkedTitle: "Linked view of data source", linkedHint: "Show one of your databases here. Changes in either place show in both.", linkedEmpty: "No databases yet",
     importFailed: "The file could not be read.",
   },
+  // Notion's Embed block and named embeds (Phase E of the Notion blocks plan).
+  embeds: embedsEnUS,
   // Notion's table of contents, breadcrumb, tabs and media blocks (Phase C of the Notion blocks plan).
   blocks: {
     tocEmpty: "Add headings to create a table of contents.",

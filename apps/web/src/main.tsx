@@ -19,6 +19,7 @@ import { DesktopRendererErrorBoundary } from "./components/DesktopRendererErrorB
 import { reportDesktopRendererReadyAfterPaint } from "./lib/desktop-renderer-ready";
 import "./styles/globals.css";
 import "./styles/page-blocks.css";
+import "./styles/embed-blocks.css";
 import "./styles/notion-table.css";
 import "./styles/phone-sheet.css";
 import "./styles/editor-body-fonts.css";

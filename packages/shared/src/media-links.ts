@@ -112,10 +112,10 @@ export const fileNameFromUrl = (input: string, fallback = "file") => {
   }
 };
 
-/** What a link in each media block's Link tab may be. */
-export type MediaKind = "image" | "video" | "audio" | "file" | "bookmark";
+/** What a link in each media block's Link tab may be. "embed" is Phase E's /embed and named embeds. */
+export type MediaKind = "image" | "video" | "audio" | "file" | "bookmark" | "embed";
 
-export const MEDIA_KINDS: readonly MediaKind[] = ["image", "video", "audio", "file", "bookmark"];
+export const MEDIA_KINDS: readonly MediaKind[] = ["image", "video", "audio", "file", "bookmark", "embed"];
 
 export const isMediaKind = (value: unknown): value is MediaKind => typeof value === "string" && (MEDIA_KINDS as readonly string[]).includes(value);
 

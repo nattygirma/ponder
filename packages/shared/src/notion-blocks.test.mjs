@@ -76,7 +76,7 @@ describe("Phase C blocks in Markdown", () => {
 
   test("an unknown media kind reads as an image", () => {
     const back = markdownToDoc('<ponder-media kind="script"></ponder-media>');
-    expect(back.content[0]).toEqual({ type: "ponderMedia", attrs: { kind: "image" } });
+    expect(back.content[0]).toEqual({ type: "ponderMedia", attrs: { kind: "image", service: "" } });
   });
 
   test("toggle headings keep their level; toggle lists stay plain", () => {

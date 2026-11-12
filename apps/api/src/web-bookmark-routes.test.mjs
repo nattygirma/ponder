@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { fetchWebBookmark } from "./web-bookmark-routes.ts";
+import { allowsFraming, fetchWebBookmark, fetchWebPage } from "./web-bookmark-routes.ts";
 
 const html = (body) => new Response(body, { headers: { "content-type": "text/html; charset=utf-8" } });
 
@@ -49,5 +49,25 @@ describe("web bookmarks", () => {
     const big = `<html><head><title>Big</title></head><body>${"x".repeat(3_000_000)}</body></html>`;
     const bookmark = await fetchWebBookmark("https://example.com/", async () => html(big));
     expect(bookmark.title).toBe("Big");
+  });
+
+  test("say whether the page allows framing, for Notion's Embed (Phase E)", async () => {
+    const page = (headers) => async () => new Response("<title>x</title>", { headers: { "content-type": "text/html", ...headers } });
+    expect((await fetchWebPage("https://example.com/", page({}))).frameable).toBe(true);
+    expect((await fetchWebPage("https://example.com/", page({ "x-frame-options": "SAMEORIGIN" }))).frameable).toBe(false);
+    expect((await fetchWebPage("https://example.com/", page({ "content-security-policy": "default-src 'self'; frame-ancestors 'none'" }))).frameable).toBe(false);
+    expect((await fetchWebPage("https://example.com/", page({ "content-security-policy": "frame-ancestors *" }))).frameable).toBe(true);
+    expect((await fetchWebPage("https://example.com/f.pdf", async () => new Response("%PDF", { headers: { "content-type": "application/pdf" } }))).frameable).toBe(true);
+    expect((await fetchWebPage("https://example.com/", async () => new Response("gone", { status: 404 }))).frameable).toBeNull();
+    expect((await fetchWebPage("https://example.com/", async () => { throw new Error("offline"); })).frameable).toBeNull();
+    expect((await fetchWebPage("https://127.0.0.1/", page({}))).frameable).toBeNull();
+  });
+
+  test("read frame headers the way browsers do", () => {
+    expect(allowsFraming(new Headers({ "x-frame-options": "deny" }))).toBe(false);
+    expect(allowsFraming(new Headers({ "x-frame-options": "ALLOW-FROM https://a.example" }))).toBe(false);
+    expect(allowsFraming(new Headers({ "content-security-policy": "frame-ancestors https://a.example" }))).toBe(false);
+    expect(allowsFraming(new Headers({ "content-security-policy": "frame-ancestors https:" }))).toBe(true);
+    expect(allowsFraming(new Headers({ "content-security-policy": "script-src 'self'" }))).toBe(true);
   });
 });

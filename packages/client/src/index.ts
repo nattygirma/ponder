@@ -1385,7 +1385,7 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
 
     /** Title, description, icon and image for Notion's Web bookmark card. */
     getWebBookmark: (url: string) =>
-      request<{ bookmark: WebBookmarkData }>("/api/v1/web-bookmark", {
+      request<{ bookmark: WebBookmarkData; frameable?: boolean | null }>("/api/v1/web-bookmark", {
         method: "POST",
         body: JSON.stringify({ url }),
       }),

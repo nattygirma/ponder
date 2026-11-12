@@ -67,6 +67,9 @@ import { cn } from "@/lib/utils";
 import type { TurnIntoTarget } from "@/components/pages/BlockHandle";
 import { AiFaceIcon } from "@/components/AiFaceIcon";
 import { NEW_FORM_VIEW } from "@/components/database/form-block";
+// Phase E: Notion's Embeds group.
+import { EMBED_SERVICES, type EmbedServiceId } from "@ponder/shared";
+import { EMBED_SERVICE_ICONS, EmbedMenuIcon } from "@/components/pages/EmbedBlock";
 
 /**
  * Ponder's `/` menu, laid out like Notion's: the same groups, order, labels and Markdown hints.
@@ -153,6 +156,8 @@ export type SlashBlockId =
 
 export type SlashCommandId =
   | SlashBlockId
+  | "embed"
+  | `embed-${EmbedServiceId}`
   | `turn-${TurnIntoTarget}`
   | `text-${PageColorName | "default"}`
   | `background-${PageColorName | "default"}`;
@@ -169,6 +174,8 @@ export type SlashCommandLabels = {
   items: Record<SlashBlockId, string>;
   textColors: Record<PageColorName | "default", string>;
   backgroundColors: Record<PageColorName | "default", string>;
+  /** Phase E: the generic Embed item's label. The named embeds use their service names. */
+  embedLabel?: string;
 };
 
 export type SlashCommandActions = {
@@ -336,6 +343,11 @@ export const createSlashCommandItems = (labels: SlashCommandLabels, current: Tur
     item("current-time", "inline", Clock3, ["time", "now"], { searchOnly: true }),
     item("current-date-time", "inline", CalendarClock, ["datetime", "timestamp"], { searchOnly: true }),
     item("external-link", "inline", Link, ["link", "url", "web"], { searchOnly: true }),
+    // Embeds (Phase E): the generic Embed, then each named service in Notion's order.
+    { id: "embed", group: "embeds", icon: EmbedMenuIcon, label: labels.embedLabel ?? "Embed", keywords: ["embed", "iframe", "website"] },
+    ...EMBED_SERVICES.map((service): SlashCommandItem => ({
+      id: `embed-${service.id}`, group: "embeds", icon: EMBED_SERVICE_ICONS[service.id], label: service.label, keywords: service.keywords,
+    })),
     // Import: the formats Ponder can read today.
     item("import-markdown", "import", FileType, ["markdown", "md", "text", "txt"]),
     item("import-zip", "import", FileArchive, ["zip", "notion", "export"], { pageOnly: true }),
@@ -362,7 +374,7 @@ export const createSlashCommandItems = (labels: SlashCommandLabels, current: Tur
 /** Items the person used most recently, newest first, for Suggested. */
 const RECENT_KEY = "ponder.slash.recent";
 const RECENT_LIMIT = 3;
-const RECENT_GROUPS = new Set<SlashCommandGroup>(["basic", "media", "database", "advanced", "inline", "import"]);
+const RECENT_GROUPS = new Set<SlashCommandGroup>(["basic", "media", "database", "advanced", "inline", "embeds", "import"]);
 
 export const readRecentSlashItems = (): SlashCommandId[] => {
   try {
@@ -618,6 +630,12 @@ const runSlashCommand = ({
     actions.createDatabase(id.slice(5) as DatabaseViewType);
     return;
   }
+  // Phase E: an empty embed block that opens its link panel, as Notion's does.
+  if (id === "embed" || id.startsWith("embed-")) {
+    actions.beforeInsertMedia?.();
+    insertBlock(chain, { type: MEDIA_PLACEHOLDER_NODE_TYPE, attrs: { kind: "embed", service: id === "embed" ? "" : id.slice(6) } });
+    return;
+  }
   if (id.startsWith("chart-") && CHART_TYPES.has(id.slice(6))) {
     chain.run();
     actions.insertChart(id.slice(6) as ChartType);
@@ -799,10 +817,14 @@ export const createSlashCommandExtension = ({
       decorationClass: "ponder-slash-command-query",
       decorationContent: getLabels().placeholder,
       initialItems: itemsFor(this.editor, ""),
+      // Notion's search takes spaces ("google maps", Phase E), and closes once nothing matches.
+      allowSpaces: true,
       allow: ({ state, range }) => {
         const position = state.doc.resolve(range.from);
         // Notion's menu also opens in headings, so they can be turned into something else.
-        return this.editor.isEditable && (position.parent.type.name === "paragraph" || position.parent.type.name === "heading");
+        if (!this.editor.isEditable || (position.parent.type.name !== "paragraph" && position.parent.type.name !== "heading")) return false;
+        const query = state.doc.textBetween(Math.min(range.from + 1, range.to), range.to);
+        return !/\s/.test(query) || (!/^\s|\s{2}/.test(query) && itemsFor(this.editor, query).length > 0);
       },
       items: ({ query, editor }) => itemsFor(editor, query),
       command: ({ editor, range, props }) => runSlashCommand({ actions, editor, item: props, range }),

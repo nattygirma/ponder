@@ -1,5 +1,6 @@
 import { mergeAttributes, Node, type JSONContent } from "@tiptap/core";
-import { isMediaKind, normalizeMediaUrl, parseVideoEmbed } from "./media-links";
+import { clampEmbedSize, EMBED_ALLOW, EMBED_SANDBOX, isEmbedServiceId, resolveEmbed } from "./embed-services";
+import { isMediaKind, normalizeMediaUrl } from "./media-links";
 import { blockAttrs, childrenOrParagraph, dataAttribute, escapeAttr, htmlBlockTokenizer, readAttr, renderBlocks } from "./page-block-markdown";
 
 /**
@@ -97,29 +98,81 @@ export const createTabsContent = (titles: string[] = ["Tab 1", "Tab 2", "Tab 3"]
   content: titles.map(createTabContent),
 });
 
-const SANDBOX = "allow-scripts allow-same-origin allow-presentation allow-popups";
+/** The `<ponder-embed>` form: the link, then the `/` item it came from and its size, when set. */
+export const renderEmbedMarkdown = (attrs: Record<string, unknown> | undefined) => {
+  const service = isEmbedServiceId(attrs?.service) ? attrs.service : "";
+  const { width, height } = clampEmbedSize(attrs?.width, attrs?.height);
+  return `<ponder-embed url="${escapeAttr(String(attrs?.url ?? ""))}"${service ? ` service="${service}"` : ""}${width < 100 ? ` width="${width}"` : ""}${height ? ` height="${height}"` : ""}></ponder-embed>`;
+};
 
-/** A YouTube, Vimeo or Loom video, played in the provider's own frame. */
+const numberAttribute = (name: string) => ({
+  default: null,
+  parseHTML: (element: HTMLElement) => {
+    const value = Number(element.getAttribute(`data-${name}`));
+    return Number.isFinite(value) && value > 0 ? value : null;
+  },
+});
+
+/**
+ * Notion's Embed block and its named embeds (Phase E), and the YouTube, Vimeo and Loom players
+ * from Phase C. `service` is the `/` item it was made from; `width` is a percentage of the column
+ * and `height` a pixel height, both set by dragging its edges. A player keeps its 16:9 shape.
+ */
 export const VideoEmbed = Node.create({
   name: EMBED_NODE_TYPE,
   ...atomBlock,
-  addAttributes: () => ({ url: dataAttribute("url") }),
+  addAttributes: () => ({
+    url: dataAttribute("url"),
+    service: { default: "", parseHTML: (element: HTMLElement) => (isEmbedServiceId(element.getAttribute("data-service")) ? element.getAttribute("data-service") : "") },
+    width: numberAttribute("width"),
+    height: numberAttribute("height"),
+  }),
   parseHTML: () => [{ tag: 'div[data-type="ponder-embed"]' }],
   renderHTML: ({ node }) => {
     const url = String(node.attrs.url ?? "");
-    const embed = parseVideoEmbed(url);
+    const target = resolveEmbed(url, isEmbedServiceId(node.attrs.service) ? node.attrs.service : null);
+    const { width, height } = clampEmbedSize(node.attrs.width, node.attrs.height);
+    const frameHeight = target?.kind === "frame" && !target.video ? height || target.height : 0;
     return [
       "div",
-      { "data-type": "ponder-embed", "data-url": url, class: "ponder-embed" },
-      embed
-        ? ["iframe", { src: embed.embedUrl, sandbox: SANDBOX, allow: "fullscreen; picture-in-picture; encrypted-media", allowfullscreen: "true", loading: "lazy", referrerpolicy: "strict-origin-when-cross-origin" }]
+      {
+        "data-type": "ponder-embed",
+        "data-url": url,
+        ...(node.attrs.service ? { "data-service": String(node.attrs.service) } : {}),
+        ...(node.attrs.width ? { "data-width": String(width) } : {}),
+        ...(node.attrs.height ? { "data-height": String(height) } : {}),
+        class: "ponder-embed",
+        ...(width < 100 ? { style: `width:${width}%` } : {}),
+      },
+      target?.kind === "frame"
+        ? ["iframe", {
+          src: target.embedUrl,
+          title: url,
+          sandbox: EMBED_SANDBOX,
+          allow: EMBED_ALLOW,
+          allowfullscreen: "true",
+          loading: "lazy",
+          referrerpolicy: "strict-origin-when-cross-origin",
+          ...(frameHeight ? { height: String(frameHeight), style: `width:100%;height:${frameHeight}px;border:0` } : {}),
+        }]
         : ["a", { href: normalizeMediaUrl(url) ?? "#", target: "_blank", rel: "noopener noreferrer" }, url],
     ];
   },
-  parseMarkdown: (token) => ({ type: EMBED_NODE_TYPE, attrs: { url: readAttr(blockAttrs(token), "url") } }),
-  renderMarkdown: (node) => `<ponder-embed url="${escapeAttr(String(node.attrs?.url ?? ""))}"></ponder-embed>`,
+  parseMarkdown: (token) => {
+    const attrs = blockAttrs(token);
+    const service = readAttr(attrs, "service");
+    const { width, height } = clampEmbedSize(readAttr(attrs, "width"), readAttr(attrs, "height"));
+    return {
+      type: EMBED_NODE_TYPE,
+      attrs: { url: readAttr(attrs, "url"), service: isEmbedServiceId(service) ? service : "", width: width < 100 ? width : null, height: height || null },
+    };
+  },
+  renderMarkdown: (node) => renderEmbedMarkdown(node.attrs),
   markdownTokenizer: htmlBlockTokenizer(EMBED_NODE_TYPE, "ponder-embed", false),
 });
+
+/** Phase E's name for the block; Phase C called it VideoEmbed. */
+export const Embed = VideoEmbed;
 
 const BOOKMARK_ATTRIBUTES = ["url", "title", "description", "icon", "image"] as const;
 
@@ -166,13 +219,24 @@ export const MediaPlaceholder = Node.create({
   ...atomBlock,
   addAttributes: () => ({
     kind: { default: "image", parseHTML: (element: HTMLElement) => (isMediaKind(element.getAttribute("data-kind")) ? element.getAttribute("data-kind") : "image") },
+    // The named embed an empty /embed block is for (Phase E), or "" for Notion's generic Embed.
+    service: { default: "", parseHTML: (element: HTMLElement) => (isEmbedServiceId(element.getAttribute("data-service")) ? element.getAttribute("data-service") : "") },
   }),
   parseHTML: () => [{ tag: 'div[data-type="ponder-media"]' }],
-  renderHTML: ({ node }) => ["div", { "data-type": "ponder-media", "data-kind": node.attrs.kind, class: "ponder-media-placeholder" }],
+  renderHTML: ({ node }) => ["div", {
+    "data-type": "ponder-media",
+    "data-kind": node.attrs.kind,
+    ...(node.attrs.service ? { "data-service": String(node.attrs.service) } : {}),
+    class: "ponder-media-placeholder",
+  }],
   parseMarkdown: (token) => {
     const kind = readAttr(blockAttrs(token), "kind");
-    return { type: MEDIA_PLACEHOLDER_NODE_TYPE, attrs: { kind: isMediaKind(kind) ? kind : "image" } };
+    const service = readAttr(blockAttrs(token), "service");
+    return { type: MEDIA_PLACEHOLDER_NODE_TYPE, attrs: { kind: isMediaKind(kind) ? kind : "image", service: kind === "embed" && isEmbedServiceId(service) ? service : "" } };
   },
-  renderMarkdown: (node) => `<ponder-media kind="${escapeAttr(String(node.attrs?.kind ?? "image"))}"></ponder-media>`,
+  renderMarkdown: (node) => {
+    const service = node.attrs?.kind === "embed" && isEmbedServiceId(node.attrs?.service) ? ` service="${node.attrs.service}"` : "";
+    return `<ponder-media kind="${escapeAttr(String(node.attrs?.kind ?? "image"))}"${service}></ponder-media>`;
+  },
   markdownTokenizer: htmlBlockTokenizer(MEDIA_PLACEHOLDER_NODE_TYPE, "ponder-media", false),
 });

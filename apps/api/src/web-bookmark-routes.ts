@@ -22,14 +22,42 @@ type PublicFetch = (input: string, init: RequestInit) => Promise<Response>;
  * so each hop is checked the same way, and the body is cut off at a size and time limit. Anything
  * that fails gives the plain card with the address, so a bookmark is never lost.
  */
-export const fetchWebBookmark = async (input: string, transport: PublicFetch | undefined, signal?: AbortSignal): Promise<WebBookmarkData> => {
+export const fetchWebBookmark = async (input: string, transport: PublicFetch | undefined, signal?: AbortSignal): Promise<WebBookmarkData> =>
+  (await fetchWebPage(input, transport, signal)).bookmark;
+
+/**
+ * Whether a page lets other sites show it in a frame, from its X-Frame-Options and
+ * Content-Security-Policy frame-ancestors headers. Notion's Embed shows a bookmark card for a page
+ * that refuses, rather than an empty frame (Phase E of the Notion blocks plan).
+ */
+export const allowsFraming = (headers: Headers) => {
+  const xfo = headers.get("x-frame-options")?.trim().toLowerCase();
+  if (xfo && /\b(deny|sameorigin|allow-from)\b/.test(xfo)) return false;
+  for (const policy of (headers.get("content-security-policy") ?? "").split(",")) {
+    const directive = policy.split(";").map((part) => part.trim().toLowerCase()).find((part) => part.startsWith("frame-ancestors"));
+    if (!directive) continue;
+    const sources = directive.split(/\s+/).slice(1);
+    if (!sources.some((source) => source === "*" || source === "https:")) return false;
+  }
+  return true;
+};
+
+export type WebPageResult = {
+  bookmark: WebBookmarkData;
+  /** Null when the page couldn't be reached, so nobody knows. */
+  frameable: boolean | null;
+};
+
+export const fetchWebPage = async (input: string, transport: PublicFetch | undefined, signal?: AbortSignal): Promise<WebPageResult> => {
   const fallback = bookmarkFallback(input);
-  if (!transport) return fallback;
+  let frameable: boolean | null = null;
+  const done = (bookmark: WebBookmarkData): WebPageResult => ({ bookmark, frameable });
+  if (!transport) return done(fallback);
   let url: URL;
   try {
     url = validatePublicUrl(fallback.url);
   } catch {
-    return fallback;
+    return done(fallback);
   }
   const timeout = AbortSignal.timeout(BOOKMARK_TIMEOUT_MS);
   const combined = signal ? AbortSignal.any([signal, timeout]) : timeout;
@@ -45,22 +73,23 @@ export const fetchWebBookmark = async (input: string, transport: PublicFetch | u
       if (response.status >= 300 && response.status < 400) {
         const location = response.headers.get("location");
         await response.body?.cancel().catch(() => undefined);
-        if (!location) return fallback;
+        if (!location) return done(fallback);
         url = validatePublicUrl(new URL(location, url).href);
         continue;
       }
+      frameable = response.ok ? allowsFraming(response.headers) : null;
       if (!response.ok || !/html|xml/i.test(response.headers.get("content-type") ?? "text/html")) {
         await response.body?.cancel().catch(() => undefined);
-        return fallback;
+        return done(fallback);
       }
       const html = await readLimitedText(response, combined);
       // Details are about the page the person linked, so the card keeps their address.
-      return { ...parseBookmarkHtml(html, url.href), url: fallback.url };
+      return done({ ...parseBookmarkHtml(html, url.href), url: fallback.url });
     }
   } catch {
-    return fallback;
+    return done(fallback);
   }
-  return fallback;
+  return done(fallback);
 };
 
 const readLimitedText = async (response: Response, signal: AbortSignal) => {
@@ -99,7 +128,7 @@ export const registerWebBookmarkRoutes = (app: Hono<AppEnv>) => {
     (c) => guarded(c, "write:memos", async () => {
       const input = c.req.valid("json").url;
       if (!normalizeMediaUrl(input)) return apiError(c, "bookmark_invalid_url", "Paste a web address.", 400);
-      return c.json({ bookmark: await fetchWebBookmark(input, c.env.publicNetworkFetch, c.req.raw.signal) });
+      return c.json(await fetchWebPage(input, c.env.publicNetworkFetch, c.req.raw.signal));
     }),
   );
 };
