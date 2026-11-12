@@ -152,9 +152,11 @@ const innerExtensions = (doc: Y.Doc, placeholder: string) => [
   Placeholder.configure({ placeholder }),
 ];
 
-const InnerEditor = ({ session, editable, onReady, onFocusChange }: {
+const InnerEditor = ({ session, editable, autoFocus, onAutoFocused, onReady, onFocusChange }: {
   session: SyncedBlockSession;
   editable: boolean;
+  autoFocus: boolean;
+  onAutoFocused: () => void;
   onReady: (getJson: () => TiptapDoc | null) => void;
   onFocusChange: (focused: boolean) => void;
 }) => {
@@ -173,6 +175,12 @@ const InnerEditor = ({ session, editable, onReady, onFocusChange }: {
   useEffect(() => {
     onReady(() => (editor ? editor.getJSON() as TiptapDoc : null));
   }, [editor, onReady]);
+  // Like Notion, a block just made with /synced takes the cursor, so typing goes inside it.
+  useEffect(() => {
+    if (!editor || !autoFocus || !editable) return;
+    onAutoFocused();
+    editor.commands.focus("end");
+  }, [editor, autoFocus, editable, onAutoFocused]);
   return <EditorContent editor={editor} className="ponder-synced-body" />;
 };
 
@@ -188,6 +196,8 @@ const SyncedBlockNodeView = ({ node, editor, extension, getPos, selected, update
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const creating = useRef(false);
+  const [focusNew, setFocusNew] = useState(false);
+  const clearFocusNew = useCallback(() => setFocusNew(false), []);
   const innerJson = useRef<() => TiptapDoc | null>(() => null);
   const handleInnerReady = useCallback((getJson: () => TiptapDoc | null) => { innerJson.current = getJson; }, []);
 
@@ -203,7 +213,10 @@ const SyncedBlockNodeView = ({ node, editor, extension, getPos, selected, update
     if (syncedId || !editable || !pageId || creating.current) return;
     creating.current = true;
     api.createSyncedBlock(pageId)
-      .then(({ id }) => updateAttributes({ syncedId: id }))
+      .then(({ id }) => {
+        setFocusNew(true);
+        updateAttributes({ syncedId: id });
+      })
       .catch(() => setFailed("error"))
       .finally(() => { creating.current = false; });
   }, [editable, pageId, syncedId, updateAttributes]);
@@ -410,6 +423,8 @@ const SyncedBlockNodeView = ({ node, editor, extension, getPos, selected, update
         <InnerEditor
           session={session}
           editable={canEditContent}
+          autoFocus={focusNew}
+          onAutoFocused={clearFocusNew}
           onReady={handleInnerReady}
           onFocusChange={(focused) => session.setActive(focused)}
         />
