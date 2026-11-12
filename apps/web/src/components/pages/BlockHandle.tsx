@@ -28,13 +28,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { AiFaceIcon } from "../AiFaceIcon";
 
-export type TurnIntoTarget = "paragraph" | "h1" | "h2" | "h3" | "bullet" | "ordered" | "task" | "quote" | "code" | "callout" | "toggle";
+export type TurnIntoTarget = "paragraph" | "h1" | "h2" | "h3" | "h4" | "bullet" | "ordered" | "task" | "quote" | "code" | "callout" | "toggle";
 
 const CONVERTIBLE = new Set([
   "paragraph", "heading", "bulletList", "orderedList", "taskList", "blockquote", "codeBlock", CALLOUT_NODE_TYPE,
 ]);
 
-export const TURN_INTO_TARGETS: TurnIntoTarget[] = ["paragraph", "h1", "h2", "h3", "bullet", "ordered", "task", "quote", "code", "callout", "toggle"];
+export const TURN_INTO_TARGETS: TurnIntoTarget[] = ["paragraph", "h1", "h2", "h3", "h4", "bullet", "ordered", "task", "quote", "code", "callout", "toggle"];
 
 export const useTurnIntoLabels = (): Record<TurnIntoTarget, string> => {
   const { t } = useTranslation();
@@ -43,6 +43,7 @@ export const useTurnIntoLabels = (): Record<TurnIntoTarget, string> => {
     h1: t("editorToolbar.heading1"),
     h2: t("editorToolbar.heading2"),
     h3: t("editorToolbar.heading3"),
+    h4: t("editorToolbar.heading4"),
     bullet: t("editorToolbar.bulletList"),
     ordered: t("editorToolbar.orderedList"),
     task: t("editorToolbar.taskList"),
@@ -54,6 +55,13 @@ export const useTurnIntoLabels = (): Record<TurnIntoTarget, string> => {
 };
 
 export const turnInto = (editor: Editor, pos: number, target: TurnIntoTarget) => {
+  // Notion keeps a block's color when it changes type.
+  let color: unknown = null;
+  editor.state.doc.nodesBetween(pos, pos + (editor.state.doc.nodeAt(pos)?.nodeSize ?? 1), (node) => {
+    if (color) return false;
+    if (node.attrs.blockColor) color = node.attrs.blockColor;
+    return !color;
+  });
   const chain = editor.chain().focus()
     .command(({ tr }) => {
       tr.setSelection(TextSelection.near(tr.doc.resolve(pos + 1)));
@@ -65,6 +73,7 @@ export const turnInto = (editor: Editor, pos: number, target: TurnIntoTarget) =>
     case "h1": chain.setHeading({ level: 1 }).run(); break;
     case "h2": chain.setHeading({ level: 2 }).run(); break;
     case "h3": chain.setHeading({ level: 3 }).run(); break;
+    case "h4": chain.setHeading({ level: 4 }).run(); break;
     case "bullet": chain.toggleBulletList().run(); break;
     case "ordered": chain.toggleOrderedList().run(); break;
     case "task": chain.toggleTaskList().run(); break;
@@ -73,9 +82,82 @@ export const turnInto = (editor: Editor, pos: number, target: TurnIntoTarget) =>
     case "callout": chain.wrapIn(CALLOUT_NODE_TYPE).run(); break;
     case "toggle": chain.setDetails().run(); break;
   }
+  if (!color) return;
+  editor.commands.command(({ tr }) => {
+    const { $from } = tr.selection;
+    for (let depth = $from.depth; depth > 0; depth -= 1) {
+      if (!$from.node(depth).type.spec.attrs?.blockColor) continue;
+      tr.setNodeAttribute($from.before(depth), "blockColor", color);
+      return true;
+    }
+    return false;
+  });
 };
 
 type BlockTarget = { node: ProseMirrorNode; pos: number };
+
+/** Block actions shared by the ⋮⋮ menu and the `/` menu's Actions and colors. */
+export const paintBlockAt = (editor: Editor, target: BlockTarget, color: string | null) => {
+  editor.chain().focus().command(({ tr }) => {
+    tr.doc.nodesBetween(target.pos, target.pos + target.node.nodeSize, (node, pos) => {
+      if (!node.type.spec.attrs?.blockColor) return true;
+      tr.setNodeAttribute(pos, "blockColor", color);
+      return false;
+    });
+    return true;
+  }).run();
+};
+
+export const copyBlockLinkAt = (editor: Editor, target: BlockTarget, pageLink: string) => {
+  let id = "";
+  let at: number | null = null;
+  editor.state.doc.nodesBetween(target.pos, target.pos + target.node.nodeSize, (node, pos) => {
+    if (at !== null) return false;
+    if (!node.type.spec.attrs?.blockId) return true;
+    at = pos;
+    id = typeof node.attrs.blockId === "string" ? node.attrs.blockId : "";
+    return false;
+  });
+  if (at === null) return;
+  if (!id) {
+    id = crypto.randomUUID().slice(0, 12);
+    const position = at;
+    editor.chain().command(({ tr }) => {
+      tr.setNodeAttribute(position, "blockId", id);
+      return true;
+    }).run();
+  }
+  void copyTextToClipboard(`${pageLink}#block=${id}`);
+};
+
+export const duplicateBlockAt = (editor: Editor, target: BlockTarget) => {
+  editor.chain().focus().insertContentAt(target.pos + target.node.nodeSize, target.node.toJSON()).run();
+};
+
+export const removeBlockAt = (editor: Editor, target: BlockTarget) => {
+  editor.chain().focus().deleteRange({ from: target.pos, to: target.pos + target.node.nodeSize }).run();
+};
+
+/** Copies the block to the end of another page, then removes it here. Throws when the copy fails. */
+export const moveBlockToPage = async ({ editor, target, memoId, repository, viewer }: {
+  editor: Editor;
+  target: BlockTarget;
+  memoId: string;
+  repository: Parameters<typeof appendBlockToPage>[0]["repository"];
+  viewer: Parameters<typeof appendBlockToPage>[0]["viewer"];
+}) => {
+  const { node, pos } = target;
+  const parent = editor.state.doc.resolve(pos).parent;
+  const single = node.toJSON() as Record<string, unknown>;
+  const block = node.type.name === "listItem" || node.type.name === "taskItem"
+    ? { type: parent.type.name, attrs: parent.attrs, content: [single] }
+    : single;
+  await appendBlockToPage({ memoId, block, schema: editor.schema, repository, viewer });
+  // Live editing can shift the block while the other page is saved; then leave it rather than remove something else.
+  if (editor.state.doc.nodeAt(pos)?.eq(node)) {
+    editor.chain().deleteRange({ from: pos, to: pos + node.nodeSize }).run();
+  }
+};
 
 /**
  * The drag handle has to be in the editor's extension list from the start: adding its plugin to a
@@ -222,6 +304,7 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
     ["h1", t("editorToolbar.heading1")],
     ["h2", t("editorToolbar.heading2")],
     ["h3", t("editorToolbar.heading3")],
+    ["h4", t("editorToolbar.heading4")],
     ["bullet", t("editorToolbar.bulletList")],
     ["ordered", t("editorToolbar.orderedList")],
     ["task", t("editorToolbar.taskList")],
@@ -242,40 +325,11 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
   };
 
   const paintBlock = (color: PageColor | null) => {
-    const current = target.current;
-    if (!current) return;
-    editor.chain().focus().command(({ tr }) => {
-      tr.doc.nodesBetween(current.pos, current.pos + current.node.nodeSize, (node, pos) => {
-        if (!node.type.spec.attrs?.blockColor) return true;
-        tr.setNodeAttribute(pos, "blockColor", color);
-        return false;
-      });
-      return true;
-    }).run();
+    if (target.current) paintBlockAt(editor, target.current, color);
   };
 
   const copyBlockLink = () => {
-    const current = target.current;
-    if (!current || !pageLink) return;
-    let id = "";
-    let at: number | null = null;
-    editor.state.doc.nodesBetween(current.pos, current.pos + current.node.nodeSize, (node, pos) => {
-      if (at !== null) return false;
-      if (!node.type.spec.attrs?.blockId) return true;
-      at = pos;
-      id = typeof node.attrs.blockId === "string" ? node.attrs.blockId : "";
-      return false;
-    });
-    if (at === null) return;
-    if (!id) {
-      id = crypto.randomUUID().slice(0, 12);
-      const position = at;
-      editor.chain().command(({ tr }) => {
-        tr.setNodeAttribute(position, "blockId", id);
-        return true;
-      }).run();
-    }
-    void copyTextToClipboard(`${pageLink}#block=${id}`);
+    if (target.current && pageLink) copyBlockLinkAt(editor, target.current, pageLink);
   };
 
   const pages = usePages();
@@ -288,35 +342,20 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
   const moveBlock = async (memoId: string) => {
     const current = target.current;
     if (!current || !pages) return;
-    const { node, pos } = current;
-    const parent = editor.state.doc.resolve(pos).parent;
-    const single = node.toJSON() as Record<string, unknown>;
-    const block = node.type.name === "listItem" || node.type.name === "taskItem"
-      ? { type: parent.type.name, attrs: parent.attrs, content: [single] }
-      : single;
     try {
       setMoveFailed(false);
-      await appendBlockToPage({ memoId, block, schema: editor.schema, repository: pages.repository, viewer });
+      await moveBlockToPage({ editor, target: current, memoId, repository: pages.repository, viewer });
     } catch {
       setMoveFailed(true);
-      return;
-    }
-    // Live editing can shift the block while the other page is saved; then leave it rather than remove something else.
-    if (editor.state.doc.nodeAt(pos)?.eq(node)) {
-      editor.chain().deleteRange({ from: pos, to: pos + node.nodeSize }).run();
     }
   };
 
   const duplicate = () => {
-    const current = target.current;
-    if (!current) return;
-    editor.chain().focus().insertContentAt(current.pos + current.node.nodeSize, current.node.toJSON()).run();
+    if (target.current) duplicateBlockAt(editor, target.current);
   };
 
   const remove = () => {
-    const current = target.current;
-    if (!current) return;
-    editor.chain().focus().deleteRange({ from: current.pos, to: current.pos + current.node.nodeSize }).run();
+    if (target.current) removeBlockAt(editor, target.current);
   };
 
   return (

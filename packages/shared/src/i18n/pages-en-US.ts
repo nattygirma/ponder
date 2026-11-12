@@ -219,6 +219,34 @@ export const pagesEnUS = {
   turnInto: "Turn into",
   duplicateBlock: "Duplicate",
   deleteBlock: "Delete",
+  // The `/` menu, with Notion's labels.
+  slash: {
+    empty: "No results", close: "Close menu", filtered: "Filtered results", placeholder: "Type to search",
+    groups: {
+      suggested: "Suggested", basic: "Basic blocks", media: "Media", database: "Database", advanced: "Advanced blocks", inline: "Inline",
+      embeds: "Embeds", import: "Import", turnInto: "Turn into", actions: "Actions", textColor: "Text color", backgroundColor: "Background color",
+    },
+    items: {
+      paragraph: "Text", heading1: "Heading 1", heading2: "Heading 2", heading3: "Heading 3", heading4: "Heading 4",
+      bulletList: "Bulleted list", orderedList: "Numbered list", taskList: "To-do list", toggleList: "Toggle list", page: "Page", callout: "Callout",
+      quote: "Quote", table: "Table", divider: "Divider", linkToPage: "Link to page",
+      image: "Image", video: "Video", audio: "Audio", code: "Code", file: "File",
+      tableView: "Table view", boardView: "Board view", galleryView: "Gallery view", listView: "List view", calendarView: "Calendar view", timelineView: "Timeline view",
+      verticalBarChart: "Vertical bar chart", horizontalBarChart: "Horizontal bar chart", lineChart: "Line chart", donutChart: "Donut chart", numberChart: "Number chart", form: "Form",
+      databaseInline: "Database - Inline", databaseFullPage: "Database - Full page", linkedView: "Linked view of data source",
+      blockEquation: "Block equation", button: "Button", columns2: "2 columns", columns3: "3 columns", columns4: "4 columns", columns5: "5 columns",
+      inlineEquation: "Inline equation", currentDate: "Current date", currentTime: "Current time", currentDateTime: "Current date and time", webLink: "Web link",
+      importMarkdown: "Text and Markdown", importZip: "ZIP",
+      copyLink: "Copy link to block", duplicate: "Duplicate", moveTo: "Move to", delete: "Delete", askAi: "Ask AI",
+    },
+    textColors: {
+      default: "Default text", gray: "Gray text", brown: "Brown text", orange: "Orange text", yellow: "Yellow text", green: "Green text",
+      blue: "Blue text", purple: "Purple text", pink: "Pink text", red: "Red text",
+    },
+    moveTitle: "Move block to", moveSearch: "Search pages", moveEmpty: "No pages found",
+    linkedTitle: "Linked view of data source", linkedHint: "Show one of your databases here. Changes in either place show in both.", linkedEmpty: "No databases yet",
+    importFailed: "The file could not be read.",
+  },
   teams: {
     switcher: "Switch workspace",
     personal: "Personal",

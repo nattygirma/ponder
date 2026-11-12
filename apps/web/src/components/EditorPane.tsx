@@ -92,6 +92,7 @@ import {
 import { insertUploadedResources } from "@/lib/resource-insertion";
 import {
   createSlashCommandExtension,
+  type SlashBlockTarget,
   type SlashCommandActions,
   type SlashCommandLabels,
 } from "./editor/SlashCommandMenu";
@@ -164,6 +165,10 @@ import {
   isAiSelectionSnapshotCurrent,
   parseMemoLinkHref,
   getMemoDisplayTitle,
+  defaultChartXProperty,
+  type ChartType,
+  type DatabaseSchema,
+  type DatabaseViewType,
 } from "@ponder/shared";
 import { NEW_IMAGE_WIDTH_PERCENT } from "@ponder/shared/image-display";
 import { PonderLink } from "@ponder/shared/editor-link";
@@ -272,7 +277,19 @@ import { FileAttachment } from "./editor/FileAttachment";
 import { createInlineFieldExtension } from "./editor/InlineField";
 import { createPluginEmbedExtension } from "./editor/PluginEmbed";
 import { PAGE_TREE_QUERY_KEY, usePages } from "./pages/PagesProvider";
-import { BlockHandle, createBlockHandleExtension, type BlockHandleController } from "./pages/BlockHandle";
+import {
+  BlockHandle,
+  copyBlockLinkAt,
+  createBlockHandleExtension,
+  duplicateBlockAt,
+  moveBlockToPage,
+  paintBlockAt,
+  removeBlockAt,
+  turnInto,
+  type BlockHandleController,
+} from "./pages/BlockHandle";
+import { openNotionImport } from "./pages/NotionImport";
+import { LinkedDatabaseDialog, MoveBlockDialog } from "./editor/SlashCommandDialogs";
 import { TableControls } from "./editor/TableControls";
 import { turnTableIntoDatabase } from "./editor/table-database";
 import { MenuSearch } from "./pages/MenuSearch";
@@ -824,88 +841,95 @@ const RichEditorPane = ({
     onInlineClick: (node, pos) => mathClickRef.current(node, pos, "inline"),
     onBlockClick: (node, pos) => mathClickRef.current(node, pos, "block"),
   }));
-  const slashCommandLabelsRef = useRef<SlashCommandLabels>({
-    menu: "",
-    empty: "",
-    close: "",
-    groups: { suggested: "", basic: "", insert: "" },
-    items: {
-      ai: "",
-      paragraph: "",
-      "heading-1": "",
-      "heading-2": "",
-      "heading-3": "",
-      "heading-4": "",
-      "heading-5": "",
-      "heading-6": "",
-      "bullet-list": "",
-      "ordered-list": "",
-      "task-list": "",
-      blockquote: "",
-      "code-block": "",
-      divider: "",
-      fold: "",
-      table: "",
-      "inline-math": "",
-      "block-math": "",
-      "current-date": "",
-      "current-time": "",
-      "current-date-time": "",
-      attachment: "",
-      "note-link": "",
-      "external-link": "",
-      "sub-page": "",
-      callout: "",
-      "columns-2": "",
-      "columns-3": "",
-      database: "",
-      chart: "",
-      button: "",
-    },
-  });
-  slashCommandLabelsRef.current = {
-    menu: t("slashMenu.menu"),
-    empty: t("slashMenu.empty"),
-    close: t("slashMenu.close"),
-    groups: {
-      suggested: t("slashMenu.groups.suggested"),
-      basic: t("slashMenu.groups.basic"),
-      insert: t("slashMenu.groups.insert"),
-    },
-    items: {
-      ai: t("slashMenu.items.ai"),
-      paragraph: t("editorToolbar.paragraph"),
-      "heading-1": t("editorToolbar.heading1"),
-      "heading-2": t("editorToolbar.heading2"),
-      "heading-3": t("editorToolbar.heading3"),
-      "heading-4": t("editorToolbar.heading4"),
-      "heading-5": t("editorToolbar.heading5"),
-      "heading-6": t("editorToolbar.heading6"),
-      "bullet-list": t("editorToolbar.bulletList"),
-      "ordered-list": t("editorToolbar.orderedList"),
-      "task-list": t("editorToolbar.taskList"),
-      blockquote: t("editorToolbar.quote"),
-      "code-block": t("editorToolbar.codeBlock"),
-      divider: t("editorToolbar.horizontalRule"),
-      fold: t("editorToolbar.fold"),
-      table: t("editorToolbar.table"),
-      "inline-math": t("editorToolbar.math"),
-      "block-math": t("editorToolbar.blockMath"),
-      "current-date": t("slashMenu.items.currentDate"),
-      "current-time": t("slashMenu.items.currentTime"),
-      "current-date-time": t("slashMenu.items.currentDateTime"),
-      attachment: t("editorToolbar.attachment"),
-      "note-link": t("editorToolbar.noteLink"),
-      "external-link": t("editorToolbar.externalLink"),
-      "sub-page": t("pages.subPage"),
-      callout: t("pages.callout"),
-      "columns-2": t("pages.columns2"),
-      "columns-3": t("pages.columns3"),
-      database: t("pages.database"),
-      chart: t("pages.db.views.chart"),
-      button: t("pages.db.types.button"),
-    },
-  };
+  const slashCommandLabelsRef = useRef<SlashCommandLabels>(null as unknown as SlashCommandLabels);
+  {
+    const item = (key: string) => t(`pages.slash.items.${key}`);
+    const colorNames = ["gray", "brown", "orange", "yellow", "green", "blue", "purple", "pink", "red"] as const;
+    slashCommandLabelsRef.current = {
+      menu: t("slashMenu.menu"),
+      empty: t("pages.slash.empty"),
+      close: t("pages.slash.close"),
+      filtered: t("pages.slash.filtered"),
+      placeholder: t("pages.slash.placeholder"),
+      groups: {
+        suggested: t("pages.slash.groups.suggested"),
+        basic: t("pages.slash.groups.basic"),
+        media: t("pages.slash.groups.media"),
+        database: t("pages.slash.groups.database"),
+        advanced: t("pages.slash.groups.advanced"),
+        inline: t("pages.slash.groups.inline"),
+        embeds: t("pages.slash.groups.embeds"),
+        import: t("pages.slash.groups.import"),
+        turnInto: t("pages.slash.groups.turnInto"),
+        actions: t("pages.slash.groups.actions"),
+        textColor: t("pages.slash.groups.textColor"),
+        backgroundColor: t("pages.slash.groups.backgroundColor"),
+      },
+      items: {
+        paragraph: item("paragraph"),
+        "heading-1": item("heading1"),
+        "heading-2": item("heading2"),
+        "heading-3": item("heading3"),
+        "heading-4": item("heading4"),
+        "bullet-list": item("bulletList"),
+        "ordered-list": item("orderedList"),
+        "task-list": item("taskList"),
+        "toggle-list": item("toggleList"),
+        "sub-page": item("page"),
+        callout: item("callout"),
+        blockquote: item("quote"),
+        table: item("table"),
+        divider: item("divider"),
+        "note-link": item("linkToPage"),
+        image: item("image"),
+        video: item("video"),
+        audio: item("audio"),
+        "code-block": item("code"),
+        attachment: item("file"),
+        "view-table": item("tableView"),
+        "view-board": item("boardView"),
+        "view-gallery": item("galleryView"),
+        "view-list": item("listView"),
+        "view-calendar": item("calendarView"),
+        "view-timeline": item("timelineView"),
+        "chart-vertical_bar": item("verticalBarChart"),
+        "chart-horizontal_bar": item("horizontalBarChart"),
+        "chart-line": item("lineChart"),
+        "chart-donut": item("donutChart"),
+        "chart-number": item("numberChart"),
+        form: item("form"),
+        "database-inline": item("databaseInline"),
+        "database-full-page": item("databaseFullPage"),
+        "linked-database": item("linkedView"),
+        "block-math": item("blockEquation"),
+        button: item("button"),
+        "columns-2": item("columns2"),
+        "columns-3": item("columns3"),
+        "columns-4": item("columns4"),
+        "columns-5": item("columns5"),
+        "inline-math": item("inlineEquation"),
+        "current-date": item("currentDate"),
+        "current-time": item("currentTime"),
+        "current-date-time": item("currentDateTime"),
+        "external-link": item("webLink"),
+        "import-markdown": item("importMarkdown"),
+        "import-zip": item("importZip"),
+        "copy-link": item("copyLink"),
+        duplicate: item("duplicate"),
+        "move-to": item("moveTo"),
+        delete: item("delete"),
+        ai: item("askAi"),
+      },
+      textColors: {
+        default: t("pages.slash.textColors.default"),
+        ...Object.fromEntries(colorNames.map((color) => [color, t(`pages.slash.textColors.${color}`)])) as Record<(typeof colorNames)[number], string>,
+      },
+      backgroundColors: {
+        default: t("pages.color.defaultBackground"),
+        ...Object.fromEntries(colorNames.map((color) => [color, t(`pages.color.${color}Background`)])) as Record<(typeof colorNames)[number], string>,
+      },
+    };
+  }
   const pages = usePages();
   const pagesRef = useRef(pages);
   const trackedPageId = pages?.enabled && memo && !isLocalMemoId(memo.id) && !memo.isDeleted ? memo.id : null;
@@ -915,22 +939,58 @@ const RichEditorPane = ({
   const buttonPageIdRef = useRef<string | null>(null);
   buttonPageIdRef.current = memo && !isLocalMemoId(memo.id) ? memo.id : null;
   const createSubPageRef = useRef<() => Promise<void>>(async () => undefined);
-  const createDatabaseRef = useRef<() => Promise<void>>(async () => undefined);
-  const [chartPickerOpen, setChartPickerOpen] = useState(false);
-  const insertChartRef = useRef<(databaseId: string | null) => Promise<void>>(async () => undefined);
+  const createDatabaseRef = useRef<(view?: DatabaseViewType) => Promise<void>>(async () => undefined);
+  const createFullPageDatabaseRef = useRef<() => Promise<void>>(async () => undefined);
+  // The chart picker remembers which chart type the `/` item asked for.
+  const [chartPicker, setChartPicker] = useState<{ type?: ChartType } | null>(null);
+  const [linkedDatabasePickerOpen, setLinkedDatabasePickerOpen] = useState(false);
+  const [moveBlockTarget, setMoveBlockTarget] = useState<SlashBlockTarget | null>(null);
+  const markdownImportInputRef = useRef<HTMLInputElement | null>(null);
+  const insertChartRef = useRef<(databaseId: string | null, type?: ChartType) => Promise<void>>(async () => undefined);
+  const editorForSlashRef = useRef<Editor | null>(null);
+  const pageLinkForSlashRef = useRef<string | null>(null);
   const slashCommandActionsRef = useRef<SlashCommandActions | null>(null);
   if (!slashCommandActionsRef.current) {
+    const withEditor = (run: (editor: Editor) => void) => {
+      const current = editorForSlashRef.current;
+      if (current) run(current);
+    };
     slashCommandActionsRef.current = {
       openAi: () => openAiAssistantRef.current(),
-      openAttachmentPicker: () => fileInputRef.current?.click(),
+      openAttachmentPicker: (accept) => {
+        const input = fileInputRef.current;
+        if (!input) return;
+        input.accept = accept ?? "";
+        // The toolbar and phone bar share this input, so the filter only lasts for this pick.
+        const reset = () => { input.accept = ""; };
+        input.addEventListener("change", reset, { once: true });
+        input.addEventListener("cancel", reset, { once: true });
+        input.click();
+      },
       openExternalLinkPicker: () => openExternalLinkDialogRef.current(),
       openNoteLinkPicker: () => setNoteLinkPickerOpen(true),
       openMathFormula: (kind, range) => openMathFormulaRef.current(kind, range),
       pagesAvailable: () => Boolean(pagesRef.current?.enabled),
       createSubPage: () => void createSubPageRef.current(),
-      createDatabase: () => void createDatabaseRef.current(),
-      insertChart: () => setChartPickerOpen(true),
+      createDatabase: (view) => void createDatabaseRef.current(view),
+      createFullPageDatabase: () => void createFullPageDatabaseRef.current(),
+      openLinkedDatabasePicker: () => setLinkedDatabasePickerOpen(true),
+      insertChart: (type) => setChartPicker({ type }),
       beforeInsertButton: () => openNextButtonEditor(),
+      importMarkdown: () => markdownImportInputRef.current?.click(),
+      importZip: () => openNotionImport(),
+      turnInto: (pos, target) => withEditor((current) => turnInto(current, pos, target)),
+      paintBlock: (target, color) => withEditor((current) => paintBlockAt(current, target, color)),
+      get copyBlockLink() {
+        return pageLinkForSlashRef.current
+          ? (target: SlashBlockTarget) => withEditor((current) => {
+            if (pageLinkForSlashRef.current) copyBlockLinkAt(current, target, pageLinkForSlashRef.current);
+          })
+          : null;
+      },
+      duplicateBlock: (target) => withEditor((current) => duplicateBlockAt(current, target)),
+      deleteBlock: (target) => withEditor((current) => removeBlockAt(current, target)),
+      moveBlock: (target) => setMoveBlockTarget(target),
     };
   }
   const slashCommandExtensionRef = useRef<ReturnType<typeof createSlashCommandExtension> | null>(null);
@@ -4242,27 +4302,46 @@ const RichEditorPane = ({
     if (!page) return;
     editor?.chain().focus().insertContent({ type: SUB_PAGE_NODE_TYPE, attrs: { memoId: page.id, title: "" } }).run();
   };
-  insertChartRef.current = async (databaseId) => {
+  insertChartRef.current = async (databaseId, type) => {
     if (!memo) return;
     let target = databaseId;
+    let schema: DatabaseSchema | null = null;
     if (!target) {
       const { database } = await api.createDatabase({ parentId: memo.id });
       pagesRef.current?.refresh();
       target = database.id;
+      schema = database.schema;
+    } else if (type) {
+      schema = (await api.getDatabase(target)).database.schema;
     }
-    // The chart is a view of the database, shown as a linked view on this page.
-    const { view } = await api.createDatabaseView(target, { name: t("pages.db.views.chart"), type: "chart" });
+    // The chart is a view of the database, shown as a linked view on this page. A `/` chart item
+    // picks its type, and starts on the most chartable property as the view menu does.
+    const config = type ? { chart: { type, xPropertyId: schema ? defaultChartXProperty(schema) : null } } : undefined;
+    const { view } = await api.createDatabaseView(target, { name: t("pages.db.views.chart"), type: "chart", config });
     editor?.chain().focus().insertContent({ type: "ponderDatabase", attrs: { databaseId: target, viewId: view.id } }).run();
   };
-  createDatabaseRef.current = async () => {
+  createDatabaseRef.current = async (viewType) => {
     if (!memo) return;
     const { database } = await api.createDatabase({ parentId: memo.id });
     pagesRef.current?.refresh();
-    editor?.chain().focus().insertContent({
-      type: "ponderDatabase",
-      attrs: { databaseId: database.id, viewId: database.views[0]?.id ?? "" },
-    }).run();
+    let viewId = database.views[0]?.id ?? "";
+    // "Board view" and the others start the new database on that view, as Notion does.
+    if (viewType && viewType !== "table" && viewId) {
+      const { view } = await api.updateDatabaseView(database.id, viewId, { type: viewType, name: t(`pages.db.views.${viewType}`) });
+      viewId = view.id;
+    }
+    editor?.chain().focus().insertContent({ type: "ponderDatabase", attrs: { databaseId: database.id, viewId } }).run();
   };
+  createFullPageDatabaseRef.current = async () => {
+    if (!memo) return;
+    const title = t("pages.db.newTitle");
+    const { database } = await api.createDatabase({ parentId: memo.id, title });
+    pagesRef.current?.refresh();
+    // Notion's "Database - Full page": a database page inside this one, linked from here like a sub-page.
+    editor?.chain().focus().insertContent({ type: SUB_PAGE_NODE_TYPE, attrs: { memoId: database.pageMemoId, title } }).run();
+  };
+  editorForSlashRef.current = editor ?? null;
+  pageLinkForSlashRef.current = pages?.enabled && memo && !isLocalMemoId(memo.id) ? pages.pageLink(memo.id) : null;
   const renderTitleInput = (className: string) => (
               <MemoTitleInput
                 ref={titleInputRef}
@@ -4343,16 +4422,57 @@ const RichEditorPane = ({
             : undefined
         }
       />
-      {chartPickerOpen ? (
+      {chartPicker ? (
         <ChartInsertDialog
           databases={(pages?.nodes ?? []).flatMap((node) => (node.databaseId ? [{ id: node.id, databaseId: node.databaseId, title: node.title, icon: node.icon }] : []))}
-          onClose={() => setChartPickerOpen(false)}
+          onClose={() => setChartPicker(null)}
           onPick={(databaseId) => {
-            setChartPickerOpen(false);
-            void insertChartRef.current(databaseId);
+            const type = chartPicker.type;
+            setChartPicker(null);
+            void insertChartRef.current(databaseId, type);
           }}
         />
       ) : null}
+      {linkedDatabasePickerOpen ? (
+        <LinkedDatabaseDialog
+          databases={(pages?.nodes ?? []).flatMap((node) => (node.databaseId ? [{ id: node.id, databaseId: node.databaseId, title: node.title, icon: node.icon }] : []))}
+          onClose={() => setLinkedDatabasePickerOpen(false)}
+          onPick={(databaseId) => {
+            setLinkedDatabasePickerOpen(false);
+            // An empty view id shows the database's first view.
+            editor?.chain().focus().insertContent({ type: "ponderDatabase", attrs: { databaseId, viewId: "" } }).run();
+          }}
+        />
+      ) : null}
+      {moveBlockTarget && editor && pages ? (
+        <MoveBlockDialog
+          pages={pages.nodes.filter((page) => page.id !== memo.id && !page.databaseId).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, 200)}
+          onClose={() => setMoveBlockTarget(null)}
+          onPick={(memoId) => {
+            const target = moveBlockTarget;
+            setMoveBlockTarget(null);
+            void moveBlockToPage({ editor, target, memoId, repository: pages.repository, viewer }).catch(() => undefined);
+          }}
+        />
+      ) : null}
+      <input
+        ref={markdownImportInputRef}
+        type="file"
+        className="hidden"
+        accept=".md,.markdown,.txt,text/markdown,text/plain"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          event.target.value = "";
+          if (!file || !editor) return;
+          void file.text().then((text) => {
+            // Notion's "Text and Markdown" import, into this page at the cursor.
+            const doc = markdownToDoc(text);
+            editor.chain().focus().insertContent(doc.content ?? []).run();
+          });
+        }}
+      />
       {noteLinkPickerOpen && (
         <EditorNoteLinkPicker
           query={noteLinkQuery}

@@ -273,3 +273,18 @@ input.ponder-page-title-input {
 .ProseMirror .ponder-suggestion-modify {
   box-shadow: inset 2px 0 0 rgb(59 130 246 / 0.6);
 }
+
+/* The `/` being typed, boxed like Notion's, with "Type to search" until a query follows. */
+.ProseMirror .ponder-slash-command-query {
+  border-radius: 4px;
+  background: rgba(55, 53, 47, 0.06);
+  padding: 2px 0;
+}
+:root.dark .ProseMirror .ponder-slash-command-query { background: rgba(255, 255, 255, 0.055); }
+.ProseMirror .ponder-slash-command-query.is-empty::after {
+  content: attr(data-decoration-content);
+  color: rgba(55, 53, 47, 0.45);
+  pointer-events: none;
+  padding-right: 4px;
+}
+:root.dark .ProseMirror .ponder-slash-command-query.is-empty::after { color: rgba(255, 255, 255, 0.4); }
