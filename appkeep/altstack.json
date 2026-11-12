@@ -3,7 +3,7 @@
   "slug": "ponder",
   "name": "Ponder",
   "icon": "icon.svg",
-  "version": "2.22.1",
+  "version": "2.22.2",
   "tagline": "Notes, notebooks and a web clipper, with AI and MCP",
   "description": "Self-hosted knowledge base: nested notebooks, rich text and Markdown, tables, diagrams, attachments, full-text search, sharing and an MCP server. Based on EdgeEver (github.com/tianma-if/edgeever). Free software under the AGPL-3.0: the complete source is at github.com/nattygirma/ponder.",
   "category": "productivity",
