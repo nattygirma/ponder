@@ -4,6 +4,7 @@ import { MousePointerClick } from "lucide-react";
 import {
   AutomationActionSchema,
   BUTTON_ACTION_TYPES,
+  fillPlaceholders,
   safeButtonUrl,
   type ActionOutcome,
   type AutomationAction,
@@ -104,14 +105,19 @@ export const useButtonRunner = () => {
   const { t } = useTranslation();
   const [question, setQuestion] = useState<{ message: string; resolve: (yes: boolean) => void } | null>(null);
   const [running, setRunning] = useState(false);
-  const run = async (actions: AutomationAction[], send: () => Promise<{ outcome: ActionOutcome }>, onInvalid?: (problem: string) => void) => {
+  const run = async (
+    actions: AutomationAction[],
+    send: () => Promise<{ outcome: ActionOutcome }>,
+    onInvalid?: (problem: string) => void,
+    fill: (template: string) => string = (template) => template,
+  ) => {
     if (actions.length === 0) {
       onInvalid?.(t("pages.db.button.noActions"));
       return;
     }
     for (const action of actions) {
       if (action.type !== "show_confirmation") continue;
-      const yes = await new Promise<boolean>((resolve) => setQuestion({ message: action.message, resolve }));
+      const yes = await new Promise<boolean>((resolve) => setQuestion({ message: fill(action.message), resolve }));
       setQuestion(null);
       if (!yes) return;
     }
@@ -124,7 +130,7 @@ export const useButtonRunner = () => {
       }
       for (const action of actions) {
         if (action.type !== "open_url") continue;
-        const url = safeButtonUrl(action.url);
+        const url = safeButtonUrl(fill(action.url));
         if (url) window.open(url, url.startsWith("/") ? "_self" : "_blank", "noopener");
       }
     } catch (error) {
@@ -155,6 +161,23 @@ export const ButtonPropertyEditor = ({ db, property, problem, onClose }: { db: D
   />
 );
 
+/** A row's value as words, for `{{Property}}` in a button's confirmation or link (the server fills its other actions). */
+const rowValueText = (properties: DatabaseProperty[], row: DatabaseRow, name: string): string | null => {
+  const property = properties.find((item) => item.name.toLowerCase() === name.trim().toLowerCase());
+  if (!property) return null;
+  if (property.type === "title") return row.title ?? "";
+  const value = row.properties[property.id];
+  if (value === null || value === undefined) return "";
+  if (property.type === "select" || property.type === "status" || property.type === "multi_select") {
+    const ids = Array.isArray(value) ? value : [value];
+    return (property.options ?? []).filter((option) => ids.includes(option.id as never)).map((option) => option.name).join(", ");
+  }
+  if (property.type === "checkbox") return value === true ? "Yes" : "No";
+  if (typeof value === "object" && !Array.isArray(value) && "start" in value) return String(value.start);
+  if (Array.isArray(value)) return value.filter((item) => typeof item === "string" || typeof item === "number").join(", ");
+  return typeof value === "object" ? "" : String(value);
+};
+
 /** The button in a table cell: Notion's small outlined button labelled with the property's name. */
 export const ButtonCell = ({ db, row, property, readOnly }: { db: DatabaseHandle; row: DatabaseRow; property: DatabaseProperty; readOnly?: boolean }) => {
   const { t } = useTranslation();
@@ -172,6 +195,7 @@ export const ButtonCell = ({ db, row, property, readOnly }: { db: DatabaseHandle
       return result;
     },
     (message) => setProblem(message),
+    (template) => fillPlaceholders(template, (name) => rowValueText(db.database.schema.properties, row, name)),
   );
   return (
     <>
@@ -179,7 +203,7 @@ export const ButtonCell = ({ db, row, property, readOnly }: { db: DatabaseHandle
         type="button"
         disabled={readOnly || runner.running}
         className={cn(
-          "inline-flex max-w-full items-center gap-1 truncate rounded-md border border-slate-300 bg-white px-2 py-0.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50",
+          "inline-flex max-w-full items-center gap-1 truncate rounded-md border border-slate-300 bg-white px-2 py-0.5 text-xs font-medium text-slate-700 shadow-sm hover:bg-slate-50 dark:bg-card dark:hover:bg-slate-100",
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2383e2] disabled:opacity-60",
         )}
         onClick={(event) => { event.stopPropagation(); click(); }}

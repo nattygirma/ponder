@@ -236,7 +236,7 @@ export const TableView = ({ db, rows, config, visible, updateConfig }: DatabaseV
                 {db.sync ? null : (
                   <tr><td colSpan={visible.length + 1}>
                     <button type="button" className="px-2 py-1 text-xs text-slate-400 hover:text-slate-700" onClick={() => {
-                      if (groupProperty) void db.addRow({ properties: { [groupProperty.id]: groupValue(groupProperty, group.key, group.optionId) } });
+                      if (groupProperty) void db.addRow({ properties: { [groupProperty.id]: groupValue(groupProperty, group.key, group.optionId) } }, { editTitle: true });
                     }}>+ {t("pages.db.newRow")}</button>
                   </td></tr>
                 )}
@@ -247,7 +247,7 @@ export const TableView = ({ db, rows, config, visible, updateConfig }: DatabaseV
       </table>
       {groups ? null : <LoadMore shown={Math.min(limit, flat.length)} total={flat.length} onMore={() => setLimit((current) => current + PAGE_SIZE)} />}
       {groups || db.sync ? null : (
-        <button type="button" className="mt-0.5 block w-full rounded px-2 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow()}>
+        <button type="button" className="mt-0.5 block w-full rounded px-2 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow(undefined, { editTitle: true })}>
           + {t("pages.db.newRow")}
         </button>
       )}
@@ -390,7 +390,7 @@ export const ListView = ({ db, rows, visible }: DatabaseViewProps) => {
       ))}
       <LoadMore shown={Math.min(limit, rows.length)} total={rows.length} onMore={() => setLimit((current) => current + PAGE_SIZE)} />
       {db.sync ? null : (
-        <button type="button" className="mt-0.5 block w-full rounded px-1 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow()}>
+        <button type="button" className="mt-0.5 block w-full rounded px-1 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow(undefined, { editTitle: true })}>
           + {t("pages.db.newRow")}
         </button>
       )}

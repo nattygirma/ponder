@@ -384,7 +384,7 @@ const ActionCard = ({ action, index, count, schema, databaseId, onChange, onMove
       break;
   }
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-2.5" data-action-card={action.type}>
+    <div className="rounded-lg border border-slate-200 bg-white p-2.5 dark:bg-slate-100" data-action-card={action.type}>
       <div className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700">
         <Icon className="h-4 w-4 text-slate-500" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate">

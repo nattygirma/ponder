@@ -17,6 +17,7 @@ import {
   withValidRelationPairs,
 } from "@ponder/shared";
 import { api } from "@/lib/api";
+import { editTitleWhenShown } from "./row-title-edit";
 import { useWorkspaceMembers } from "@/components/comments/PageComments";
 
 export const databaseKey = (id: string) => ["database", id] as const;
@@ -67,7 +68,7 @@ export type DatabaseHandle = {
   rename: (title: string) => Promise<void>;
   /** Changes the schema. Fields left out (sub-items, dependencies) keep their current value. */
   updateSchema: (schema: Partial<DatabaseSchema>) => Promise<void>;
-  addRow: (input?: { title?: string; properties?: Record<string, DatabasePropertyValue>; templateId?: string }) => Promise<DatabaseRow | null>;
+  addRow: (input?: { title?: string; properties?: Record<string, DatabasePropertyValue>; templateId?: string }, options?: { editTitle?: boolean }) => Promise<DatabaseRow | null>;
   saveTemplate: (templateId: string | null, input: TemplateInput) => Promise<DatabaseTemplate | null>;
   deleteTemplate: (templateId: string) => Promise<void>;
   updateRow: (rowId: string, input: { title?: string; properties?: Record<string, DatabasePropertyValue> }) => Promise<void>;
@@ -205,8 +206,9 @@ export const useDatabase = (databaseId: string) => {
           await queryClient.invalidateQueries({ queryKey: ["database"] });
         });
       },
-      addRow: async (input) => (detail.data!.sync ? null : attempt(async () => {
+      addRow: async (input, options) => (detail.data!.sync ? null : attempt(async () => {
         const { row } = await api.createDatabaseRow(databaseId, input ?? {});
+        if (options?.editTitle) editTitleWhenShown(row.id);
         patchRows((rows) => [...rows, row]);
         refreshAfterAutomations();
         // A template or a sub-item can fill a two-way relation, which changes the rows on its other side too.

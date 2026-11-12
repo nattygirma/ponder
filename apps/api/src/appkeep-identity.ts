@@ -53,8 +53,8 @@ export const ensureAppKeepUser = async (db: DatabaseAdapter, identity: AppKeepId
      VALUES (?, ?, ?, ?, ?, ?)`,
   ).bind(id, username, UNUSABLE_PASSWORD_HASH, displayName, now, now).run();
   const load = () => db.prepare(
-    `SELECT id, username, password_hash, display_name, is_disabled FROM users WHERE id = ?`,
-  ).bind(id).first<{ id: string; username: string; password_hash: string; display_name: string | null; is_disabled: number }>();
+    `SELECT id, username, password_hash, display_name, email, is_disabled FROM users WHERE id = ?`,
+  ).bind(id).first<{ id: string; username: string; password_hash: string; display_name: string | null; email: string | null; is_disabled: number }>();
 
   await insert(identity.email);
   let user = await load();
@@ -64,8 +64,9 @@ export const ensureAppKeepUser = async (db: DatabaseAdapter, identity: AppKeepId
     user = await load();
   }
   if (!user) throw new Error("Could not create the Ponder account for this AppKeep user.");
-  if (user.display_name !== displayName) {
-    await db.prepare(`UPDATE users SET display_name = ?, updated_at = ? WHERE id = ?`).bind(displayName, now, id).run();
+  // Keep the AppKeep email on the account, so comment alerts and automation mail can reach the person.
+  if (user.display_name !== displayName || user.email !== identity.email) {
+    await db.prepare(`UPDATE users SET display_name = ?, email = ?, updated_at = ? WHERE id = ?`).bind(displayName, identity.email, now, id).run();
   }
-  return { ...user, display_name: displayName };
+  return { ...user, display_name: displayName, email: identity.email };
 };

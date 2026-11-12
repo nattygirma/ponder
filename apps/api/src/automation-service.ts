@@ -614,6 +614,10 @@ export const runActions = async (
           } else {
             const people = new Set(peopleIn(context, action.to.propertyId));
             addresses = members.flatMap((member) => (people.has(member.id) && member.email ? [member.email] : []));
+            // An empty property sends nothing, as notifications do; people without an email are an error worth seeing.
+            if (people.size > 0 && addresses.length === 0) {
+              throw new AutomationError("No mail was sent: Ponder has no email address for the people in that property.");
+            }
           }
         }
         const subject = fill(action.subject).trim() || context.authorName;
@@ -661,7 +665,7 @@ const recordRun = async (env: AutomationEnv, workspaceId: string, automationId: 
 const automationActor: AuditActor = { actorType: "agent", actorId: null };
 
 /** Runs one automation for one page (or none), with the rate limit and the run log. */
-const runAutomation = async (env: AutomationEnv, automation: DatabaseAutomation, workspaceId: string, database: DatabaseDetail, row: DatabaseRow | null) => {
+const runAutomation = async (env: AutomationEnv, automation: DatabaseAutomation, workspaceId: string, database: DatabaseDetail, row: DatabaseRow | null, writerTimeZone = "UTC") => {
   const since = new Date(env.now().getTime() - 60_000).toISOString();
   const recent = await env.db
     .prepare(`SELECT COUNT(*) AS total FROM automation_runs WHERE automation_id = ? AND started_at > ? AND status <> 'skipped'`)
@@ -673,7 +677,8 @@ const runAutomation = async (env: AutomationEnv, automation: DatabaseAutomation,
   }
   const timeZone = automation.trigger.type === "date_reached"
     ? automation.trigger.timezone
-    : automation.trigger.type === "recurring" ? automation.trigger.schedule.timezone : "UTC";
+    // A page added or edited by someone uses their time zone, so "Today" is their today.
+    : automation.trigger.type === "recurring" ? automation.trigger.schedule.timezone : writerTimeZone;
   try {
     await runActions(env, {
       workspaceId,
@@ -713,7 +718,7 @@ const loadEnabled = async (db: DatabaseAdapter, workspaceId: string, databaseId:
 };
 
 /** Called after a row is added or edited by a person, an API token, a button or a template's schedule. */
-export const handleRowChange = async (env: AutomationEnv, change: RowChange) => {
+export const handleRowChange = async (env: AutomationEnv, change: RowChange, writerTimeZone = "UTC") => {
   const enabled = await loadEnabled(env.db, change.workspaceId, change.databaseId);
   if (enabled.length === 0) return;
   let database: DatabaseDetail | null = null;
@@ -743,7 +748,7 @@ export const handleRowChange = async (env: AutomationEnv, change: RowChange) => 
     // Each automation sees the row as the last one left it.
     row = await getDatabaseRow(env.db, change.workspaceId, change.databaseId, change.rowId).catch(() => null);
     if (!row) return;
-    await runAutomation(env, automation, change.workspaceId, database, row);
+    await runAutomation(env, automation, change.workspaceId, database, row, writerTimeZone);
     await env.db.prepare(`UPDATE database_automations SET last_run_at = ? WHERE id = ?`).bind(env.now().toISOString(), automation.id).run();
   }
   if (wakeChanged) await refreshWake(env);

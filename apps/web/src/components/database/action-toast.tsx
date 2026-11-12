@@ -33,7 +33,7 @@ const Toaster = () => {
           key={toast.id}
           role={toast.tone === "error" ? "alert" : "status"}
           data-action-toast
-          className={`pointer-events-auto flex max-w-md items-center gap-3 rounded-lg px-3 py-2 text-sm shadow-lg ${toast.tone === "error" ? "bg-red-600 text-white" : "bg-slate-900 text-white"}`}
+          className={`pointer-events-auto flex max-w-md items-center gap-3 rounded-lg px-3 py-2 text-sm shadow-lg ${toast.tone === "error" ? "bg-red-600 text-white" : "bg-slate-900 text-white dark:bg-[#2f2f2f] dark:ring-1 dark:ring-white/10"}`}
         >
           <span>{toast.text}</span>
           <button

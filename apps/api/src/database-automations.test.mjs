@@ -189,6 +189,16 @@ describe("actions", () => {
     expect(row.properties.due).toEqual({ start: "2026-11-11" });
   });
 
+  test("\"today\" is the day where the person who made the change is", async () => {
+    // 10 PM on Nov 11 in New York is already Nov 12 in UTC.
+    const t = await setup({ now: "2026-11-12T03:00:00.000Z" });
+    await t.automate({ type: "page_added" }, [{ type: "edit_property", values: { due: { start: "@today" } } }]);
+    const pending = [];
+    const row = await createDatabaseRow(t.db, WS, t.tasks.id, { title: "Evening" }, ada, "user:usr_ada", { onRowChange: (change) => pending.push(change) });
+    await handleRowChange(t.env, pending.shift(), "America/New_York");
+    expect((await getDatabaseRow(t.db, WS, t.tasks.id, row.id)).properties.due).toEqual({ start: "2026-11-11" });
+  });
+
   test("add page to another database, with the trigger's values", async () => {
     const t = await setup();
     const log = await createDatabase(t.db, WS, { notebookId: "nb_inbox", title: "Log", schema: { properties: [{ id: "title", name: "Name", type: "title" }] } }, ada, "user:usr_ada");
@@ -235,6 +245,20 @@ describe("actions", () => {
       ["client@example.com", "Client", "Client"],
     ]);
     expect(await emailUsage(t.env)).toEqual({ sent: 3, limit: 200, available: true });
+  });
+
+  test("send mail to people Ponder has no address for fails the run instead of sending nothing quietly", async () => {
+    const t = await setup();
+    t.sqlite.run("UPDATE users SET email = NULL WHERE id = 'usr_grace'");
+    const automation = await t.automate({ type: "page_added" }, [{ type: "send_mail", to: { kind: "property", propertyId: "owner" }, subject: "Yours", body: "" }]);
+    await t.addRow({ title: "Orphan", properties: { owner: ["usr_grace"] } });
+    expect(t.sent).toEqual([]);
+    // An empty person property still sends nothing, without an error.
+    await t.addRow({ title: "Nobody" });
+    const runs = Object.fromEntries((await t.runs(automation.id)).map((run) => [run.rowTitle, run]));
+    expect(runs.Orphan.status).toBe("error");
+    expect(runs.Orphan.error).toContain("no email address");
+    expect(runs.Nobody.status).toBe("success");
   });
 
   test("the 200-a-day mail limit stops sending with a clear error in the run log", async () => {

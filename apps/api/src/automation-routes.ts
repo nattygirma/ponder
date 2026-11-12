@@ -53,7 +53,8 @@ export const runInBackground = (c: AppContext, work: () => Promise<unknown>) => 
  */
 export const rowChangeListener = (c: AppContext): RowWriteOptions => {
   const env = automationEnvFrom(c.env);
-  return { onRowChange: (change: RowChange) => void runInBackground(c, () => handleRowChange(env, change)) };
+  const timeZone = timeZoneOf(c);
+  return { onRowChange: (change: RowChange) => void runInBackground(c, () => handleRowChange(env, change, timeZone)) };
 };
 
 /** Recomputes the next wake after something scheduled changed (a template's "Duplicate every…"). */

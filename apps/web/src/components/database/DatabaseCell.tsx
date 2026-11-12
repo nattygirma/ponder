@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, type ReactNode } from "react";
+import { takeTitleEdit } from "./row-title-edit";
 import { useTranslation } from "react-i18next";
 import { Check, Paperclip, Plus, X } from "lucide-react";
 import {
@@ -335,14 +336,15 @@ const RelationPicker = ({ db, property, value, onChange, readOnly }: {
   );
 };
 
-const InlineText = ({ value, type, label, onCommit, readOnly }: {
+const InlineText = ({ value, type, label, onCommit, readOnly, startEditing = false }: {
   value: string;
   type: string;
   label: string;
   onCommit: (next: string) => void;
   readOnly?: boolean;
+  startEditing?: boolean;
 }) => {
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(startEditing);
   const isLink = type === "url" && /^https?:\/\//i.test(value);
   if (readOnly) {
     // A span, not a disabled button, so a read-only link (a synced GitHub URL) can still be opened.
@@ -372,8 +374,8 @@ const InlineText = ({ value, type, label, onCommit, readOnly }: {
         if (event.target.value !== value) onCommit(event.target.value);
       }}
       onKeyDown={(event) => {
-        if (event.key === "Enter") event.currentTarget.blur();
-        if (event.key === "Escape") { event.currentTarget.value = value; event.currentTarget.blur(); }
+        // Like Notion, Escape leaves the cell and keeps what was typed.
+        if (event.key === "Enter" || event.key === "Escape") event.currentTarget.blur();
       }}
     />
   );
@@ -381,12 +383,13 @@ const InlineText = ({ value, type, label, onCommit, readOnly }: {
 
 export const RowTitle = ({ db, row, children }: { db: DatabaseHandle; row: DatabaseRow; children?: ReactNode }) => {
   const { t } = useTranslation();
+  const [startEditing] = useState(() => takeTitleEdit(row.id));
   // A synced title comes from GitHub, like the rest of a synced row's GitHub values.
   const titleLocked = db.isSynced(db.database.schema.properties.find((property) => property.type === "title"));
   return (
     <span className="flex min-w-0 items-center gap-1.5">
       {row.icon ? <span aria-hidden="true">{row.icon}</span> : null}
-      <InlineText value={row.title ?? ""} type="text" label={t("pages.db.rowName")} readOnly={titleLocked} onCommit={(title) => void db.updateRow(row.id, { title })} />
+      <InlineText value={row.title ?? ""} type="text" label={t("pages.db.rowName")} readOnly={titleLocked} startEditing={startEditing && !titleLocked} onCommit={(title) => void db.updateRow(row.id, { title })} />
       {children}
     </span>
   );

@@ -92,7 +92,7 @@ const TriggerEditor = ({ trigger, schema, onChange }: { trigger: AutomationTrigg
   const watchable = schema.properties.filter((property) => WATCHABLE.has(property.type));
   const dates = schema.properties.filter((property) => property.type === "date");
   return (
-    <div className="space-y-2.5 rounded-lg border border-slate-200 bg-white p-2.5" data-trigger-card={trigger.type}>
+    <div className="space-y-2.5 rounded-lg border border-slate-200 bg-white p-2.5 dark:bg-slate-100" data-trigger-card={trigger.type}>
       <div className="flex items-center gap-2">
         <Icon className="h-4 w-4 text-slate-500" aria-hidden="true" />
         <Select value={trigger.type} onValueChange={(type) => onChange(newTrigger(type as AutomationTriggerType, schema))}>
@@ -426,7 +426,7 @@ export const AutomationsButton = ({ db }: { db: DatabaseHandle }) => {
           <TooltipContent side="bottom">{t("pages.db.automations.open")}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <PopoverContent align="end" className="max-h-[80vh] w-[440px] max-w-[calc(100vw-2rem)] overflow-y-auto p-3">
+      <PopoverContent align="end" collisionPadding={12} className="max-h-[min(80vh,var(--radix-popover-content-available-height))] w-[440px] max-w-[calc(100vw-2rem)] overflow-y-auto p-3">
         {screen.kind === "list" ? (
           <AutomationList
             db={db}

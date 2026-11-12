@@ -468,6 +468,13 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
       headers.set("Authorization", `Bearer ${token}`);
     }
 
+    // Writes to Ponder carry the browser's time zone, so an automation they set off
+    // ("Set Date to Today") uses the writer's today rather than UTC's.
+    const method = (init?.method ?? "GET").toUpperCase();
+    if (method !== "GET" && method !== "HEAD" && !isAbsoluteHttpUrl(path) && !headers.has("x-ponder-time-zone")) {
+      headers.set("x-ponder-time-zone", browserTimeZone());
+    }
+
     if (
       requestOptions?.setJsonContentType !== false
       && !(init?.body instanceof FormData)
