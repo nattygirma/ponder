@@ -1,4 +1,5 @@
 import { Mark, Node } from "@tiptap/core";
+import { MENTION_NODE_TYPE } from "./mention";
 import type { TiptapDoc, TiptapMark, TiptapNode, TiptapTextNode } from "./content";
 import { FILE_ATTACHMENT_NODE_TYPE } from "./file-attachment";
 import { PDF_ATTACHMENT_NODE_TYPE } from "./pdf-attachment";
@@ -64,6 +65,8 @@ const MARKDOWN_EDITOR_NODE_TYPES = new Set<string>([
   PDF_ATTACHMENT_NODE_TYPE,
   PLUGIN_EMBED_NODE_TYPE,
   ...PAGE_BLOCK_NODE_TYPES,
+  // Mentions are written as `ponder:` links (mention.ts).
+  MENTION_NODE_TYPE,
 ]);
 
 const INLINE_PARENT_TYPES = new Set<string>(["paragraph", "heading"]);

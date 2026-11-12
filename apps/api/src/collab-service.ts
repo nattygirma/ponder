@@ -138,22 +138,23 @@ export const joinCollab = async (db: DatabaseAdapter, auth: AuthContext, memoId:
 };
 
 /** Writes the live document back to the page, so search, exports and backlinks see it. */
-const persist = async (db: DatabaseAdapter, auth: AuthContext, memoId: string, row: CollabRow, force: boolean) => {
+/** Returns whether the save changed a page reminder, so the caller can move the host's wake time. */
+const persist = async (db: DatabaseAdapter, auth: AuthContext, memoId: string, row: CollabRow, force: boolean): Promise<boolean> => {
   const now = Date.now();
-  if (!force && now - Date.parse(row.persisted_at) < PERSIST_INTERVAL_MS) return;
+  if (!force && now - Date.parse(row.persisted_at) < PERSIST_INTERVAL_MS) return false;
   const pending = await db
     .prepare(`SELECT seq, data, created_at FROM memo_collab_updates WHERE memo_id = ? AND seq > ? ORDER BY seq ASC LIMIT ?`)
     .bind(memoId, row.base_seq, MERGE_LIMIT)
     .all<{ seq: number; data: string; created_at: string }>();
   const lastSeq = pending.results[pending.results.length - 1]?.seq ?? 0;
-  if (lastSeq <= row.persisted_seq) return;
+  if (lastSeq <= row.persisted_seq) return false;
 
   // Only the request that moves persisted_at does the work. Clearing the hash stops our own write looking like an outside one.
   const claim = await db
     .prepare(`UPDATE memo_collab SET persisted_at = ?, base_hash = NULL WHERE memo_id = ? AND persisted_at = ?`)
     .bind(new Date(now).toISOString(), memoId, row.persisted_at)
     .run();
-  if (claim.meta.changes === 0) return;
+  if (claim.meta.changes === 0) return false;
 
   const merged = Y.mergeUpdates([decode(row.state), ...pending.results.map((item) => decode(item.data))]);
   const doc = new Y.Doc();
@@ -186,14 +187,16 @@ const persist = async (db: DatabaseAdapter, auth: AuthContext, memoId: string, r
     );
   }
   await db.batch(statements);
+  return Boolean((saved as { remindersChanged?: boolean }).remindersChanged);
 };
 
-const persistQuietly = async (db: DatabaseAdapter, auth: AuthContext, memoId: string, row: CollabRow, force: boolean) => {
+const persistQuietly = async (db: DatabaseAdapter, auth: AuthContext, memoId: string, row: CollabRow, force: boolean): Promise<boolean> => {
   try {
-    await persist(db, auth, memoId, row, force);
+    return await persist(db, auth, memoId, row, force);
   } catch (error) {
     // The updates stay in the log, so the next request tries again and typing never stops over this.
     console.error("Live page save failed", memoId, error);
+    return false;
   }
 };
 
@@ -211,6 +214,8 @@ export const syncCollab = async (
   memoId: string,
   input: { clientId: string; cursor: number; generation: number; update?: string; awareness?: string },
   canEdit: boolean,
+  /** Called when the save changed a page reminder (see page-mention-service.ts). */
+  onRemindersChanged?: () => Promise<void>,
 ): Promise<CollabSync> => {
   const loaded = await loadRow(db, auth.workspaceId, memoId);
   if (!loaded) throw new AppError("not_found", "Page not found", 404);
@@ -246,7 +251,7 @@ export const syncCollab = async (
       .all<{ client_id: string; awareness: string | null }>(),
   ]);
 
-  await persistQuietly(db, auth, memoId, row, false);
+  if (await persistQuietly(db, auth, memoId, row, false)) await onRemindersChanged?.();
 
   const last = updates.results[updates.results.length - 1];
   return {
@@ -265,6 +270,7 @@ export const leaveCollab = async (
   memoId: string,
   input: { clientId: string; generation: number; update?: string },
   canEdit: boolean,
+  onRemindersChanged?: () => Promise<void>,
 ) => {
   const row = await loadRow(db, auth.workspaceId, memoId);
   const statements = [db.prepare(`DELETE FROM memo_collab_presence WHERE memo_id = ? AND client_id = ?`).bind(memoId, input.clientId)];
@@ -276,7 +282,9 @@ export const leaveCollab = async (
     );
   }
   await db.batch(statements);
-  if (row && row.generation === input.generation && row.base_hash === row.content_hash) await persistQuietly(db, auth, memoId, row, true);
+  if (row && row.generation === input.generation && row.base_hash === row.content_hash && await persistQuietly(db, auth, memoId, row, true)) {
+    await onRemindersChanged?.();
+  }
 };
 
 /** Statements that remove live-editing data for permanently deleted pages. */

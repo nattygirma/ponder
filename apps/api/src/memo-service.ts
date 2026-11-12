@@ -29,6 +29,7 @@ import { AppError } from "./app-error";
 import { clampNumber, createId, isoNow, parseJsonArray } from "./entity-utils";
 import { notebookExists, workspaceInboxId } from "./notebook-service";
 import { listPageDescendantIds, replaceMemoLinksStatements } from "./page-service";
+import { pageMentionStatements } from "./page-mention-service";
 import { sha256 } from "./hash-utils";
 import { getRequiredString } from "./mcp-json-rpc";
 import {
@@ -1271,7 +1272,7 @@ export const updateMemoRecord = async (
   requireEditSession = false,
   commit?: MemoMutationCommit,
 ): Promise<
-  | { memo: MemoDetail; releasedResources?: ReleasedTableResource[]; error?: never; message?: never; status?: never; details?: never }
+  | { memo: MemoDetail; releasedResources?: ReleasedTableResource[]; remindersChanged?: boolean; error?: never; message?: never; status?: never; details?: never }
   | { error: string; message: string; status?: number; details?: Record<string, unknown> }
 > => {
   const current = await getMemoDetailRow(db, workspaceId, id);
@@ -1469,6 +1470,13 @@ export const updateMemoRecord = async (
   }
 
   const nextRevision = current.revision + 1;
+  // Newly mentioned people hear about it, and date reminders follow the page (page-mention-service.ts).
+  const mentionSync = hasDocumentUpdate
+    ? await pageMentionStatements(db, {
+      workspaceId, memoId: id, before: currentContentJson, after: contentJson,
+      actorId: actor.actorType === "user" ? actor.actorId : null, actorName: actorLabel,
+    })
+    : { statements: [], remindersChanged: false };
   const revisionStatements = (await shouldSnapshotMemoRevisionService(db, current, title, JSON.stringify(tags), contentHash, updatedAt))
     ? [createMemoRevisionStatementService(db, current, actorLabel, updatedAt)]
     : [];
@@ -1523,6 +1531,7 @@ export const updateMemoRecord = async (
       )
       .bind(JSON.stringify(contentJson), contentMarkdown, contentText, contentHash, nextRevision, updatedAt, input.createdAt ?? null, id),
     upsertMemoSearchDocumentStatement(db, id, title, contentText, tags.join(" ")),
+    ...mentionSync.statements,
     ...editSessionStatements,
     auditStatement(db, actor.actorType, actor.actorId, "memo.update", "memo", id, {
       revision: nextRevision,
@@ -1538,7 +1547,7 @@ export const updateMemoRecord = async (
     return { error: "not_found", message: "Memo not found after update" };
   }
 
-  return { memo, releasedResources: releasedResourceRows };
+  return { memo, releasedResources: releasedResourceRows, remindersChanged: mentionSync.remindersChanged };
 };
 
 const parseDoc = (json: string): TiptapDoc => {

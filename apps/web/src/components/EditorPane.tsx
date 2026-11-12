@@ -100,6 +100,10 @@ import {
   createNoteLinkSuggestionExtension,
   type NoteLinkSuggestionLabels,
 } from "./editor/NoteLinkSuggestion";
+import { createMentionSuggestionExtension, type MentionPanelLabels } from "./editor/mention/MentionPanel";
+import { EditorMention } from "./editor/mention/EditorMention";
+import { loadMentionableMembers } from "./editor/mention/mentionable-members";
+import { createEmojiSuggestionExtension, type EmojiPickerLabels } from "./editor/emoji/EmojiSuggestion";
 import { WeChatIcon } from "./WeChatIcon";
 import { useMarkdownTheme } from "./ThemeProvider";
 const MarkdownSourceEditor = lazy(() =>
@@ -169,6 +173,7 @@ import {
   type ChartType,
   type DatabaseSchema,
   type DatabaseViewType,
+  type WorkspaceMember,
 } from "@ponder/shared";
 import { NEW_IMAGE_WIDTH_PERCENT } from "@ponder/shared/image-display";
 import { PonderLink } from "@ponder/shared/editor-link";
@@ -920,6 +925,10 @@ const RichEditorPane = ({
         "columns-3": item("columns3"),
         "columns-4": item("columns4"),
         "columns-5": item("columns5"),
+        "mention-person": item("mentionPerson"),
+        "mention-page": item("mentionPage"),
+        "date-reminder": item("dateReminder"),
+        emoji: item("emoji"),
         "inline-math": item("inlineEquation"),
         "current-date": item("currentDate"),
         "current-time": item("currentTime"),
@@ -1029,6 +1038,8 @@ const RichEditorPane = ({
   const noteLinkSuggestionExtensionRef = useRef<ReturnType<typeof createNoteLinkSuggestionExtension> | null>(null);
   if (!noteLinkSuggestionExtensionRef.current) {
     noteLinkSuggestionExtensionRef.current = createNoteLinkSuggestionExtension({
+      // With pages, `@` opens Notion's mention menu instead.
+      isEnabled: () => !pagesRef.current?.enabled,
       getCurrentMemoId: () => memoRef.current?.id ?? null,
       getLabels: () => noteLinkSuggestionLabelsRef.current,
       searchMemos: async (query) => {
@@ -1039,7 +1050,7 @@ const RichEditorPane = ({
   }
   const extraLinkTriggersRef = useRef<ReturnType<typeof createNoteLinkSuggestionExtension>[] | null>(null);
   if (!extraLinkTriggersRef.current) {
-    extraLinkTriggersRef.current = ["[[", "+"].map((char) => createNoteLinkSuggestionExtension({
+    extraLinkTriggersRef.current = ["+"].map((char) => createNoteLinkSuggestionExtension({
       char,
       isEnabled: () => Boolean(pagesRef.current?.enabled),
       getCurrentMemoId: () => memoRef.current?.id ?? null,
@@ -1047,6 +1058,83 @@ const RichEditorPane = ({
       searchMemos: async (query) => (await repository.listMemos({ q: query, limit: 20, includeTotal: false })).memos,
     }));
   }
+  const mentionLabelsRef = useRef<MentionPanelLabels>(null as unknown as MentionPanelLabels);
+  mentionLabelsRef.current = {
+    menu: t("pages.mention.menu"),
+    sections: {
+      date: t("pages.mention.sections.date"),
+      people: t("pages.mention.sections.people"),
+      pages: t("pages.mention.sections.pages"),
+      newPage: t("pages.mention.sections.newPage"),
+    },
+    untitled: t("common.untitledMemo"),
+    remindMe: t("pages.mention.remindMe"),
+    tomorrowNineAm: t("pages.mention.tomorrowNineAm"),
+    you: t("pages.mention.you"),
+    newSubPage: (title) => t("pages.mention.newSubPage", { title }),
+    addSubPage: t("pages.mention.addSubPage"),
+    empty: t("pages.mention.empty"),
+    placeholders: {
+      people: t("pages.mention.placeholders.people"),
+      pages: t("pages.mention.placeholders.pages"),
+      dates: t("pages.mention.placeholders.dates"),
+    },
+  };
+  const mentionViewerIdRef = useRef<string | null>(null);
+  const mentionViewerSelfRef = useRef<WorkspaceMember | null>(null);
+  const mentionExtensionsRef = useRef<ReturnType<typeof createMentionSuggestionExtension>[] | null>(null);
+  if (!mentionExtensionsRef.current) {
+    const toCandidate = (page: { id: string; title: string | null; icon?: string | null; databaseId?: string | null; parentId?: string | null }) => ({
+      id: page.id,
+      title: page.title,
+      icon: page.icon ?? pagesRef.current?.getPage(page.id)?.icon ?? null,
+      databaseId: page.databaseId ?? pagesRef.current?.getPage(page.id)?.databaseId ?? null,
+      parentId: page.parentId ?? pagesRef.current?.getPage(page.id)?.parentId ?? null,
+    });
+    mentionExtensionsRef.current = (["@", "[["] as const).map((char) => createMentionSuggestionExtension({
+      char,
+      isEnabled: () => Boolean(pagesRef.current?.enabled),
+      getLabels: () => mentionLabelsRef.current,
+      getViewerId: () => mentionViewerIdRef.current,
+      getCurrentPageId: () => {
+        const id = memoRef.current?.id;
+        return id && !isLocalMemoId(id) ? id : null;
+      },
+      recentPages: () => (pagesRef.current?.recentPages(8) ?? []).map(toCandidate),
+      searchPages: async (query) => (await repository.listMemos({ q: query, limit: 20, includeTotal: false })).memos
+        .filter((found) => !found.isDeleted)
+        .map(toCandidate),
+      parentTitle: (parentId) => pagesRef.current?.getPage(parentId)?.title?.trim() || t("common.untitledMemo"),
+      createSubPage: async (title) => {
+        const parentId = memoRef.current?.id;
+        if (!parentId || !pagesRef.current) return null;
+        const page = await pagesRef.current.createPage({ parentId, title, reveal: false });
+        return page ? { id: page.id, title: page.title } : null;
+      },
+      loadMembers: async () => {
+        const members = await loadMentionableMembers();
+        // A personal workspace may list nobody; the viewer can still be mentioned.
+        const viewerNow = mentionViewerSelfRef.current;
+        return members.length || !viewerNow ? members : [viewerNow];
+      },
+    }));
+  }
+  const emojiLabelsRef = useRef<EmojiPickerLabels>(null as unknown as EmojiPickerLabels);
+  emojiLabelsRef.current = {
+    menu: t("pages.emoji.menu"),
+    results: t("pages.emoji.results"),
+    empty: t("pages.emoji.empty"),
+    categories: Object.fromEntries(
+      ["recent", "people", "nature", "foods", "activity", "places", "objects", "symbols", "flags"].map((id) => [id, t(`pages.emoji.categories.${id}`)]),
+    ),
+  };
+  const emojiExtensionRef = useRef<ReturnType<typeof createEmojiSuggestionExtension> | null>(null);
+  if (!emojiExtensionRef.current) {
+    emojiExtensionRef.current = createEmojiSuggestionExtension({ isEnabled: () => true, getLabels: () => emojiLabelsRef.current });
+  }
+  const onOpenMemoForMentionRef = useRef(onOpenMemo);
+  onOpenMemoForMentionRef.current = onOpenMemo;
+  const editorMentionRef = useRef(EditorMention.configure({ onOpenPage: (pageId: string) => onOpenMemoForMentionRef.current?.(pageId) }));
   const notionShortcutsRef = useRef<ReturnType<typeof createNotionShortcuts> | null>(null);
   if (!notionShortcutsRef.current) {
     notionShortcutsRef.current = createNotionShortcuts(() => Boolean(pagesRef.current?.enabled));
@@ -1504,6 +1592,10 @@ const RichEditorPane = ({
   }
   const suggestAuthorIdRef = useRef<string | null>(null);
   suggestAuthorIdRef.current = viewer?.id ?? null;
+  mentionViewerIdRef.current = viewer?.id ?? null;
+  mentionViewerSelfRef.current = viewer
+    ? { id: viewer.id, username: viewer.username, displayName: viewer.displayName, email: null, role: viewer.teamRole ?? "owner" }
+    : null;
   const suggestEditsRef = useRef<ReturnType<typeof createSuggestEditsExtension> | null>(null);
   if (!suggestEditsRef.current) suggestEditsRef.current = createSuggestEditsExtension(() => suggestAuthorIdRef.current);
   const pluginEmbedExtension = useMemo(() => createPluginEmbedExtension(pluginHost), [pluginHost]);
@@ -1525,6 +1617,7 @@ const RichEditorPane = ({
         file: FileAttachment,
         pluginEmbed: pluginEmbedExtension,
         subPage: EditorSubPage,
+        mention: editorMentionRef.current,
         databaseEmbed: EditorDatabaseEmbed,
         linkPreview: EditorLinkPreview,
         buttonBlock: EditorButtonBlock.configure({ getPageId: () => buttonPageIdRef.current }),
@@ -1556,6 +1649,8 @@ const RichEditorPane = ({
       slashCommandExtensionRef.current,
       noteLinkSuggestionExtensionRef.current,
       ...extraLinkTriggersRef.current,
+      ...mentionExtensionsRef.current,
+      emojiExtensionRef.current,
       notionShortcutsRef.current,
       blockHandleRef.current.extension,
       commentHighlightsRef.current,

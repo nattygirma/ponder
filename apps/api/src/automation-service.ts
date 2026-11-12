@@ -26,6 +26,7 @@ import {
 import type { AuditActor, AuthContext, Bindings } from "./api-context";
 import { AppError } from "./app-error";
 import { createMemoComment, listWorkspaceMembers } from "./comment-service";
+import { nextReminderAt, runDueReminders } from "./page-mention-service";
 import {
   createDatabaseRow,
   getDatabase,
@@ -247,14 +248,22 @@ const nextRunFor = async (
  */
 export const refreshWake = async (env: AutomationEnv) => {
   if (!env.wakeAt) return;
-  const [automation, template, sync] = await Promise.all([
+  const [automation, template, sync, reminder] = await Promise.all([
     env.db.prepare(`SELECT MIN(next_run_at) AS next FROM database_automations WHERE enabled = 1 AND next_run_at IS NOT NULL`).first<{ next: string | null }>(),
     env.db.prepare(`SELECT MIN(repeat_next_at) AS next FROM database_templates WHERE repeat_next_at IS NOT NULL`).first<{ next: string | null }>(),
     // GitHub synced databases (database-sync-service.ts) check GitHub every 15 minutes.
     env.db.prepare(`SELECT MIN(next_run_at) AS next FROM database_syncs WHERE status = 'active' AND next_run_at IS NOT NULL`).first<{ next: string | null }>(),
+    // Reminders on date mentions in pages (page-mention-service.ts).
+    nextReminderAt(env.db).then((next) => ({ next })),
   ]);
-  const times = [automation?.next, template?.next, sync?.next].filter((value): value is string => Boolean(value)).sort();
+  const times = [automation?.next, template?.next, sync?.next, reminder?.next].filter((value): value is string => Boolean(value)).sort();
   await env.wakeAt(times[0] ? new Date(times[0]) : null);
+};
+
+/** After a save added, moved or removed a page reminder: the host may need to wake sooner (or later). */
+export const wakeForReminders = async (env: Bindings, result: unknown) => {
+  if (!result || typeof result !== "object" || !(result as { remindersChanged?: boolean }).remindersChanged) return;
+  await refreshWake(automationEnvFrom(env)).catch((error: unknown) => console.error("Ponder reminder wake failed", error));
 };
 
 /** Sets next runs after a restore; their schedules start again from `now`. */
@@ -814,6 +823,8 @@ export const runScheduledAutomations = async (env: AutomationEnv) => {
   ]);
   for (const record of automations.results) await runDueAutomation(env, record);
   for (const template of templates) await runDueTemplate(env, template);
+  // Reminders on date mentions in pages; a failure here never stops the rest of the tick.
+  await runDueReminders(env.db, env.now()).catch((error: unknown) => console.error("Ponder page reminders failed", error));
   const cutoff = new Date(env.now().getTime() - AUTOMATION_RUN_RETENTION_DAYS * 86_400_000).toISOString();
   await env.db.prepare(`DELETE FROM automation_runs WHERE started_at < ?`).bind(cutoff).run();
   await refreshWake(env);

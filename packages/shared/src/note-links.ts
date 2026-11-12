@@ -33,6 +33,10 @@ export const collectMemoLinkIds = (doc: TiptapDoc): string[] => {
     if ("attrs" in node) {
       const memoId = parseMemoLinkHref(node.attrs?.href);
       if (memoId) memoIds.add(memoId);
+      // A page mention (`@Page`) is a link to that page too, so it shows in its backlinks.
+      if (node.type === "ponderMention" && node.attrs?.kind === "page" && typeof node.attrs.id === "string" && node.attrs.id) {
+        memoIds.add(node.attrs.id);
+      }
     }
     if ("marks" in node) {
       for (const mark of node.marks ?? []) {

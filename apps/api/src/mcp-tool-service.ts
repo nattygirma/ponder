@@ -1,4 +1,5 @@
 import { requestPosterRender, readPosterRenderJob, posterRenderJob } from "./poster-render-service";
+import { wakeForReminders } from "./automation-service";
 import { applyPosterEdits, compilePosterMemo, posterCapabilities } from "./mcp-poster-tools";
 import { resolveObjectStorage } from "./object-storage";
 import { hasPosterDocumentMarker, parsePosterDocument, serializePosterDocument } from "@ponder/shared";
@@ -722,6 +723,7 @@ export const callMcpTool = async (
       if ("error" in result) {
         throw new Error(result.message);
       }
+      await wakeForReminders(c.env, result);
 
       return { memo: result.memo };
     }
