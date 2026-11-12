@@ -37,6 +37,7 @@ import {
   unmergeTableCells,
   type TableAxis,
 } from "@/lib/editor-table-actions";
+import { createTableDragGhost, type TableDragGhost } from "./table-drag-ghost";
 import { cn } from "@/lib/utils";
 
 /**
@@ -345,16 +346,63 @@ export const TableControls = ({ editor, touch, readOnly }: { editor: Editor; tou
       centers.forEach((center, line) => { if (pointer > center) to = line; });
       return pointer < centers[0] ? 0 : to;
     };
+    let ghost: TableDragGhost | null = null;
+    /** The see-through copy of the dragged line that follows the pointer, as in Notion. */
+    const liftLine = () => {
+      const found = tableAt(editor.state, tablePos);
+      if (!found) return null;
+      const { map, tableStart } = found;
+      const rect = axis === "row"
+        ? { left: 0, right: map.width, top: index, bottom: index + 1 }
+        : { left: index, right: index + 1, top: 0, bottom: map.height };
+      const box = rangeBox(editor, tablePos, table, rect);
+      const whole = rangeBox(editor, tablePos, table, { left: 0, right: map.width, top: 0, bottom: map.height });
+      if (!box || !whole) return null;
+      const cells: HTMLElement[] = [];
+      const seen = new Set<number>();
+      const count = axis === "row" ? map.width : map.height;
+      for (let step = 0; step < count; step++) {
+        const pos = map.map[axis === "row" ? index * map.width + step : step * map.width + index];
+        if (seen.has(pos)) continue;
+        seen.add(pos);
+        const dom = editor.view.nodeDOM(tableStart + pos);
+        if (dom instanceof HTMLElement) cells.push(dom);
+      }
+      return createTableDragGhost(table, axis, cells, box, whole);
+    };
     const onMove = (move: PointerEvent) => {
       const pointer = axis === "row" ? move.clientY : move.clientX;
       if (!moved && Math.abs(pointer - start) < 4) return;
-      if (!moved) selectTableLine(editor, tablePos, axis, index);
+      if (!moved) {
+        // Lift the copy before the selection outline is drawn, so it isn't copied too.
+        ghost = liftLine();
+        selectTableLine(editor, tablePos, axis, index);
+      }
       moved = true;
+      ghost?.move(pointer - start);
       setDrag({ axis, tablePos, from: index, to: targetFor(pointer), pointer });
     };
-    const onUp = () => {
+    const finish = () => {
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onCancel);
+      window.removeEventListener("keydown", onKey, true);
+      ghost?.remove();
+      ghost = null;
+    };
+    const onCancel = () => {
+      finish();
+      setDrag(null);
+    };
+    // Escape drops the row or column back where it was, as in Notion.
+    const onKey = (key: KeyboardEvent) => {
+      if (key.key !== "Escape" || !moved) return;
+      key.preventDefault();
+      key.stopPropagation();
+      onCancel();
+    };
+    const onUp = () => {
+      finish();
       const finished = dragRef.current;
       setDrag(null);
       if (moved && finished) {
@@ -365,6 +413,8 @@ export const TableControls = ({ editor, touch, readOnly }: { editor: Editor; tou
     };
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onCancel);
+    window.addEventListener("keydown", onKey, true);
   };
 
   /** The `+` bars and the corner: click adds one; dragging adds or takes back as many as the pointer travels. */

@@ -191,6 +191,27 @@
   background: rgb(239 239 238);
 }
 
+/* The see-through copy of a row or column being dragged by its handle. */
+.ponder-table-ghost {
+  position: fixed;
+  z-index: 45;
+  overflow: hidden;
+  opacity: 0.8;
+  pointer-events: none;
+  background: rgb(255 255 255);
+  box-shadow: rgb(15 15 15 / 0.1) 0 0 0 1px, rgb(15 15 15 / 0.1) 0 3px 6px, rgb(15 15 15 / 0.2) 0 9px 24px;
+  will-change: transform;
+}
+
+.ponder-table-ghost table {
+  margin: 0 !important;
+  border-collapse: collapse;
+}
+
+:root.dark .ponder-table-ghost {
+  background: rgb(25 25 25);
+}
+
 .ponder-table-drop {
   border-radius: 2px;
   background: rgb(35 131 226 / 0.6);
