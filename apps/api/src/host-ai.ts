@@ -6,12 +6,14 @@
 /** Where the service lives on the copy's own address. Outside /api/v1, which needs a signed-in session. */
 export const HOST_AI_PATH = "/api/host-ai/v1";
 export const HOST_AI_DISPLAY_NAME = "AppKeep AI";
-export const HOST_AI_MODELS = [
+/** The models offered when the host can't list its own (platforms before ai.textModels). */
+export const HOST_AI_MODELS: readonly HostAiModel[] = [
   { modelId: "claude-sonnet-5-5", displayName: "Claude Sonnet 5.5" },
   { modelId: "claude-opus-5-5", displayName: "Claude Opus 5.5" },
   { modelId: "claude-haiku-5-5", displayName: "Claude Haiku 5.5" },
   { modelId: "claude-fable-5-2", displayName: "Claude Fable 5.2" },
-] as const;
+];
+export type HostAiModel = { modelId: string; displayName: string };
 const DEFAULT_MODEL = HOST_AI_MODELS[0].modelId;
 const MAX_TOKENS = 16_000;
 // Streamed replies have no time limit, so they can be long; the platform lowers the cap to what the balance can pay for.
@@ -31,7 +33,7 @@ export type HostAiTextRequest = {
 };
 export type HostAiTextResult =
   | {
-    ok: true; id: string; model: string; stop_reason: string | null; content: Record<string, unknown>[];
+    ok: true; id: string; usage_id?: string; model: string; stop_reason: string | null; content: Record<string, unknown>[];
     usage: { input_tokens: number; output_tokens: number }; charged_micros?: number;
   }
   | { ok: false; reason: "insufficient_funds"; required_micros: number; available_micros: number };
@@ -45,7 +47,82 @@ export type HostAiStreamResult =
   | { ok: false; reason: "error"; status: number; type: string; message: string };
 export type HostAiStream = (request: HostAiStreamRequest, options?: { user?: string; ref?: string }) => Promise<HostAiStreamResult>;
 
-export type HostAiEnvironment = { hostAiText?: HostAiText; hostAiStream?: HostAiStream; ALTSTACK_APP_URL?: string };
+/** A usage record (AppKeep's ai.usage), one per model call. price_micros is micro-dollars. */
+export type HostAiUsageRecord = {
+  id: string; model: string; provider: string; paid_with: "credits" | "key"; result: string; stop_reason: string | null;
+  usage: { input_tokens: number; cache_read_tokens: number; cache_write_tokens: number; output_tokens: number; thinking_tokens: number };
+  price_micros: number; estimated: boolean; started_at: string; first_token_ms: number | null; duration_ms: number | null;
+};
+export type HostAiUsage = (id: string) => Promise<HostAiUsageRecord | null>;
+/** One of the host's text models (AppKeep's ai.textModels). Ponder keeps sending Claude-format requests; the host translates. */
+export type HostAiTextModel = {
+  id: string; name: string; provider: string; provider_name: string; thinking: boolean; tools: boolean; images: boolean;
+  context_tokens: number; max_output: number; price: { input: number; output: number; cache_read: number } | null;
+  credits: boolean; own_key: boolean; available: boolean; retires_at: string | null; successor: string | null;
+};
+export type HostAiTextModels = () => Promise<HostAiTextModel[]>;
+/** The app owner's AI settings in AppKeep (ai.settings). model is the owner's override, or null. */
+export type HostAiSettings = () => Promise<{ model: string | null; effort: string | null; max_tokens: number | null; show_thinking: boolean; pay_with: string | null }>;
+
+export type HostAiEnvironment = {
+  hostAiText?: HostAiText; hostAiStream?: HostAiStream; hostAiUsage?: HostAiUsage;
+  hostAiModels?: HostAiTextModels; hostAiSettings?: HostAiSettings; ALTSTACK_APP_URL?: string;
+};
+
+// The model list changes rarely, and one copy serves one account, so it's kept for a minute per isolate.
+const MODEL_LIST_TTL_MS = 60_000;
+let modelListCache: { at: number; source: HostAiTextModels; models: HostAiModel[] } | null = null;
+
+/** The host's own model list as a typed list, dropping models this account can't use and ones without tools. */
+export const hostTextModelsAsList = (models: unknown): HostAiModel[] => {
+  if (!Array.isArray(models)) return [];
+  const seen = new Set<string>();
+  const out: HostAiModel[] = [];
+  for (const raw of models) {
+    const model = asRecord(raw);
+    const id = typeof model?.id === "string" ? model.id.trim() : "";
+    if (!model || !id || id.length > 128 || seen.has(id)) continue;
+    // Ponder's chat runs tools, so a model without them can't do its work.
+    if (model.available === false || model.tools === false) continue;
+    seen.add(id);
+    const name = typeof model.name === "string" && model.name.trim() ? model.name.trim().slice(0, 120) : id;
+    out.push({ modelId: id, displayName: name });
+  }
+  return out;
+};
+
+/**
+ * The models AppKeep AI offers: the host's list (ai.textModels) when it has one, else HOST_AI_MODELS. A host
+ * that fails to answer, or lists nothing usable, falls back too, so the picker never empties.
+ */
+export const hostAiModelList = async (environment: HostAiEnvironment, now = Date.now()): Promise<readonly HostAiModel[]> => {
+  const source = environment.hostAiModels;
+  if (!source) return HOST_AI_MODELS;
+  if (modelListCache && modelListCache.source === source && now - modelListCache.at < MODEL_LIST_TTL_MS) return modelListCache.models;
+  try {
+    const models = hostTextModelsAsList(await source());
+    if (!models.length) return HOST_AI_MODELS;
+    modelListCache = { at: now, source, models };
+    return models;
+  } catch {
+    return HOST_AI_MODELS;
+  }
+};
+export const resetHostAiModelCache = () => { modelListCache = null; };
+
+/** The owner's model override for AppKeep AI, with its display name, or null when the members choose. */
+export const hostAiOwnerModel = async (environment: HostAiEnvironment): Promise<HostAiModel | null> => {
+  if (!environment.hostAiSettings) return null;
+  try {
+    const settings = await environment.hostAiSettings();
+    const id = typeof settings?.model === "string" ? settings.model.trim() : "";
+    if (!id) return null;
+    const known = (await hostAiModelList(environment)).find((model) => model.modelId === id);
+    return { modelId: id, displayName: known?.displayName ?? id };
+  } catch {
+    return null;
+  }
+};
 
 export const hostAiProviderId = (workspaceId: string) => `aip_host_${workspaceId}`;
 export const hostAiModelConfigId = (workspaceId: string, modelId: string) =>
@@ -90,10 +167,14 @@ const systemText = (system: unknown) => {
 };
 
 /** An Anthropic Messages request as the host's one-turn call. Unsupported settings (temperature, tool_choice) are dropped. */
-export const toHostAiRequest = (body: unknown): { request: HostAiTextRequest; streamRequest: HostAiStreamRequest; stream: boolean; model: string } => {
+export const toHostAiRequest = (
+  body: unknown,
+  models: readonly HostAiModel[] = HOST_AI_MODELS,
+): { request: HostAiTextRequest; streamRequest: HostAiStreamRequest; stream: boolean; model: string } => {
   const input = asRecord(body);
   if (!input || !Array.isArray(input.messages) || !input.messages.length) throw new HostAiRequestError("messages is required.");
-  const model = HOST_AI_MODELS.some((item) => item.modelId === input.model) ? input.model as string : DEFAULT_MODEL;
+  // A model the host no longer offers (retired, or its key removed) falls back to the host's first one.
+  const model = models.some((item) => item.modelId === input.model) ? input.model as string : models[0]?.modelId ?? DEFAULT_MODEL;
   const messages: HostAiTextRequest["messages"] = [];
   for (const raw of input.messages) {
     const message = asRecord(raw);

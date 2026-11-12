@@ -248,6 +248,8 @@ export type AiSettings = {
   defaultModelId: string | null;
   encryptionConfigured: boolean;
   readOnly: boolean;
+  /** On AppKeep: the model the app's owner picked for AppKeep AI in AppKeep, which every AppKeep AI request uses. */
+  hostModel?: { modelId: string; displayName: string; providerConfigId: string } | null;
 };
 
 export type AiTranscriptionModel = {

@@ -238,3 +238,75 @@ describe("direct companion failure codes", () => {
     expect(companionDirectFailureCode(apiError(429, "https://x.appkeep.app/api/host-ai/v1/messages"))).toBe("ai_provider_rate_limited");
   });
 });
+
+describe("direct companion on AppKeep AI", () => {
+  const claudeStream = (id, thinking, text) => new Response([
+    { type: "message_start", message: { id: "msg_1", type: "message", role: "assistant", model: "claude-sonnet-5-5", content: [], stop_reason: null, usage: { input_tokens: 5, output_tokens: 0 } } },
+    { type: "content_block_start", index: 0, content_block: { type: "thinking", thinking: "", signature: "" } },
+    { type: "content_block_delta", index: 0, delta: { type: "thinking_delta", thinking } },
+    { type: "content_block_delta", index: 0, delta: { type: "signature_delta", signature: "sig" } },
+    { type: "content_block_stop", index: 0 },
+    { type: "content_block_start", index: 1, content_block: { type: "text", text: "" } },
+    { type: "content_block_delta", index: 1, delta: { type: "text_delta", text } },
+    { type: "content_block_stop", index: 1 },
+    { type: "message_delta", delta: { stop_reason: "end_turn", stop_sequence: null }, usage: { output_tokens: 7 } },
+    { type: "message_stop" },
+  ].map((event) => `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`).join(""), {
+    headers: { "content-type": "text/event-stream", ...(id ? { "x-appkeep-ai-request": id } : {}) },
+  });
+
+  const run = async (extra) => {
+    const prepared = {
+      ...preparedTurn, provider: "anthropic", baseUrl: "https://ponder.appkeep.test/api/host-ai/v1",
+      apiKey: "pkhost.ws_1." + "a".repeat(48), modelId: "claude-sonnet-5-5", ...extra,
+    };
+    const completions = [];
+    const requests = [];
+    const client = createPonderClient({
+      baseUrl: "https://ponder.appkeep.test",
+      directAiGeneration: true,
+      fetch: async (url, init) => {
+        if (String(url).endsWith("/prepare")) return Response.json(prepared);
+        if (String(url).endsWith("/checkpoint")) return Response.json({ ok: true });
+        if (String(url).endsWith("/complete")) {
+          const completion = JSON.parse(init.body);
+          completions.push(completion);
+          return Response.json({ turn: { ...prepared.turn, ...completion, status: "completed" } });
+        }
+        throw new Error(`unexpected instance ${url}`);
+      },
+      providerFetch: async (url, init) => {
+        requests.push(JSON.parse(init.body));
+        return claudeStream("air_42", "Looking at the question.", "Hello");
+      },
+    });
+    const events = [];
+    await client.streamCompanion({ id: prepared.turn.id, threadId: prepared.turn.threadId, message: "hi" }, { onEvent: (event) => events.push(event) });
+    return { events, completions, requests };
+  };
+
+  test("asks for thinking summaries, shows them live and saves each call's usage id", async () => {
+    const { events, completions, requests } = await run({ thinking: "summarized", recordsAiRequests: true });
+    expect(requests[0].thinking).toEqual({ type: "adaptive", display: "summarized" });
+    const thinking = events.filter((event) => event.type === "thinking").map((event) => event.text).join("");
+    expect(thinking).toBe("Looking at the question.");
+    const firstThinking = events.findIndex((event) => event.type === "thinking");
+    const firstText = events.findIndex((event) => event.type === "text-delta");
+    expect(firstThinking).toBeGreaterThan(-1);
+    expect(firstThinking).toBeLessThan(firstText);
+    expect(completions.at(-1).aiRequests).toEqual(["air_42"]);
+  });
+
+  test("an older server that doesn't record usage ids gets none (its schema would refuse them)", async () => {
+    const { completions, requests } = await run({});
+    expect(requests[0].thinking).toBeUndefined();
+    expect(completions.at(-1).aiRequests).toBeUndefined();
+  });
+
+  test("parsePreparedCompanion keeps only known values for the new fields", () => {
+    expect(parsePreparedCompanion({ ...preparedTurn, thinking: "summarized", recordsAiRequests: true })).toMatchObject({ thinking: "summarized", recordsAiRequests: true });
+    const odd = parsePreparedCompanion({ ...preparedTurn, thinking: "full", recordsAiRequests: "yes" });
+    expect(odd?.thinking).toBeUndefined();
+    expect(odd?.recordsAiRequests).toBeUndefined();
+  });
+});

@@ -7,7 +7,9 @@ import { Hono } from "hono";
 import { consumeProviderEventStream } from "@ponder/shared/provider-event-stream";
 import { extractAiDirectStreamDelta } from "@ponder/shared/ai-generation";
 import { decryptAiCredential, getAiSettings, loadDefaultAiModelCredentials } from "./ai-service.ts";
-import { HOST_AI_PATH, HOST_AI_STREAM_MAX_TOKENS, hostAiProviderId } from "./host-ai.ts";
+import { HOST_AI_MODELS, HOST_AI_PATH, HOST_AI_STREAM_MAX_TOKENS, hostAiModelList, hostAiProviderId, hostTextModelsAsList, resetHostAiModelCache, toHostAiRequest } from "./host-ai.ts";
+import { prepareCompanionTurn } from "./companion-prepare.ts";
+import { beginCompanionTurn } from "./companion-service.ts";
 import { COMPANION_MAX_OUTPUT_TOKENS, companionMaxOutputTokens } from "./companion-prepare.ts";
 import { registerHostAiRoutes } from "./host-ai-routes.ts";
 
@@ -327,5 +329,111 @@ describe("AppKeep AI streaming (ai.stream)", () => {
     expect(companionMaxOutputTokens({ provider: "anthropic", apiKey: "sk-ant-x" })).toBe(8192);
     expect(companionMaxOutputTokens({ provider: "google", apiKey: "g" })).toBe(8192);
     expect(companionMaxOutputTokens({ provider: "openai-compatible", apiKey: "o" })).toBe(COMPANION_MAX_OUTPUT_TOKENS);
+  });
+});
+
+describe("AppKeep's model list, the owner's model and usage ids", () => {
+  const textModel = (id, name, extra = {}) => ({
+    id, name, provider: "anthropic", provider_name: "Anthropic", thinking: true, tools: true, images: true,
+    context_tokens: 200_000, max_output: 64_000, price: null, credits: true, own_key: false, available: true, retires_at: null, successor: null, ...extra,
+  });
+  const withModels = (list, settings) => {
+    resetHostAiModelCache();
+    const s = setup();
+    let current = list;
+    s.setModels = (next) => { current = next; resetHostAiModelCache(); };
+    s.env.hostAiModels = async () => (typeof current === "function" ? current() : current);
+    if (settings) s.env.hostAiSettings = async () => settings;
+    return s;
+  };
+
+  test("the host's list replaces the built-in models, without ones the account can't use or that have no tools", async () => {
+    const s = withModels([
+      textModel("gpt-5-5", "GPT-5.5", { provider: "openai" }),
+      textModel("claude-sonnet-5-5", "Claude Sonnet 5.5"),
+      textModel("gemini-old", "Gemini Old", { available: false }),
+      textModel("tiny", "Tiny", { tools: false }),
+      textModel("gpt-5-5", "GPT-5.5 again"),
+    ]);
+    const settings = await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    const listed = (result) => result.providers[0].models.map((model) => [model.modelId, model.displayName]).sort((a, b) => a[0].localeCompare(b[0]));
+    expect(listed(settings)).toEqual([["claude-sonnet-5-5", "Claude Sonnet 5.5"], ["gpt-5-5", "GPT-5.5"]]);
+    // The host's first model is the default.
+    expect(settings.providers[0].models.find((model) => model.id === settings.defaultModelId)?.modelId).toBe("gpt-5-5");
+    expect(settings.hostModel).toBeUndefined();
+    const key = await keyFor(s);
+    const models = await (await s.fetchApp(`${APP_URL}${HOST_AI_PATH}/models`, { headers: { "x-api-key": key } })).json();
+    expect(models.data.map((model) => model.id)).toEqual(["gpt-5-5", "claude-sonnet-5-5"]);
+
+    // Requests keep Claude's format; a model the host offers is passed on, any other falls back to the host's first.
+    await post(s, key, { model: "claude-sonnet-5-5", max_tokens: 50, messages: [{ role: "user", content: "hi" }] });
+    await post(s, key, { model: "claude-opus-5-5", max_tokens: 50, messages: [{ role: "user", content: "hi" }] });
+    expect(s.calls.map((call) => call.model)).toEqual(["claude-sonnet-5-5", "gpt-5-5"]);
+
+    // Later: one model renamed, one added, one gone. The gone one stays so a saved default keeps working.
+    s.setModels([textModel("gpt-5-5", "GPT-5.5 Pro"), textModel("gemini-3", "Gemini 3")]);
+    const later = await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    expect(listed(later)).toEqual([["claude-sonnet-5-5", "Claude Sonnet 5.5"], ["gemini-3", "Gemini 3"], ["gpt-5-5", "GPT-5.5 Pro"]]);
+  });
+
+  test("a host that fails, lists nothing usable or has no list falls back to the built-in models", async () => {
+    expect(await hostAiModelList({})).toBe(HOST_AI_MODELS);
+    resetHostAiModelCache();
+    expect(await hostAiModelList({ hostAiModels: async () => { throw new Error("rpc gone"); } })).toBe(HOST_AI_MODELS);
+    expect(await hostAiModelList({ hostAiModels: async () => [textModel("x", "X", { available: false })] })).toBe(HOST_AI_MODELS);
+    expect(hostTextModelsAsList("nope")).toEqual([]);
+    expect(hostTextModelsAsList([{ id: "  m1 ", name: "" }, { name: "no id" }])).toEqual([{ modelId: "m1", displayName: "m1" }]);
+    expect(toHostAiRequest({ model: "gone", messages: [{ role: "user", content: "hi" }] }).model).toBe("claude-sonnet-5-5");
+    expect(toHostAiRequest({ model: "m1", messages: [{ role: "user", content: "hi" }] }, [{ modelId: "m1", displayName: "M1" }]).model).toBe("m1");
+
+    let calls = 0;
+    const source = async () => { calls += 1; return [textModel("m1", "M1")]; };
+    resetHostAiModelCache();
+    await hostAiModelList({ hostAiModels: source }, 1_000);
+    await hostAiModelList({ hostAiModels: source }, 30_000);
+    expect(calls).toBe(1);
+    await hostAiModelList({ hostAiModels: source }, 62_000);
+    expect(calls).toBe(2);
+  });
+
+  test("the owner's model shows in the settings with its name, and only on AppKeep", async () => {
+    const s = withModels([textModel("claude-opus-5-5", "Claude Opus 5.5"), textModel("gpt-5-5", "GPT-5.5")], { model: "gpt-5-5", effort: null, max_tokens: null, show_thinking: true, pay_with: null });
+    const settings = await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    expect(settings.hostModel).toEqual({ modelId: "gpt-5-5", displayName: "GPT-5.5", providerConfigId: hostAiProviderId(WS) });
+
+    s.env.hostAiSettings = async () => ({ model: null });
+    expect((await getAiSettings(s.env.storage.db, WS, true, false, s.env)).hostModel).toBeUndefined();
+    s.env.hostAiSettings = async () => { throw new Error("old platform"); };
+    expect((await getAiSettings(s.env.storage.db, WS, true, false, s.env)).hostModel).toBeUndefined();
+    const offHost = { ...s.env, ALTSTACK_APP_URL: undefined, hostAiSettings: async () => ({ model: "gpt-5-5" }) };
+    expect((await getAiSettings(s.env.storage.db, WS, true, false, offHost)).hostModel).toBeUndefined();
+  });
+
+  test("the browser can read each call's usage id, streamed or not", async () => {
+    const s = setup({ reply: (request) => ({ ok: true, id: "msg_text", usage_id: "air_text", model: request.model, stop_reason: "end_turn", content: [{ type: "text", text: "Hi" }], usage: { input_tokens: 1, output_tokens: 1 } }) });
+    await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    const key = await keyFor(s);
+    const preflight = await s.fetchApp(`${APP_URL}${HOST_AI_PATH}/messages`, { method: "OPTIONS", headers: { origin: "https://ponder.appkeep.test" } });
+    expect(preflight.headers.get("access-control-expose-headers")).toContain("x-appkeep-ai-request");
+    const whole = await post(s, key, { max_tokens: 50, messages: [{ role: "user", content: "hi" }] });
+    expect(whole.headers.get("x-appkeep-ai-request")).toBe("air_text");
+    expect(whole.headers.get("access-control-expose-headers")).toContain("x-appkeep-ai-request");
+    const streamed = await post(s, key, { max_tokens: 50, stream: true, messages: [{ role: "user", content: "hi" }] });
+    expect(streamed.headers.get("x-appkeep-ai-request")).toBe("air_text");
+  });
+
+  test("chat on AppKeep AI asks for thinking summaries and records usage ids; other services don't", async () => {
+    const s = setup();
+    await getAiSettings(s.env.storage.db, WS, true, false, s.env);
+    const db = s.env.storage.db;
+    const scope = { workspaceId: WS, ownerId: "owner" };
+    const input = { id: crypto.randomUUID(), threadId: crypto.randomUUID(), message: "hi", allowNotes: false, useMemory: false, locale: "en-US" };
+    const row = await beginCompanionTurn(db, scope, input, "claude-sonnet-5-5");
+    const prepare = (credentials) => prepareCompanionTurn({ db, scope, input, row, credentials });
+    const onHost = await prepare({ provider: "anthropic", baseUrl: `${APP_URL}${HOST_AI_PATH}`, apiKey: await keyFor(s), modelId: "claude-sonnet-5-5" });
+    expect(onHost).toMatchObject({ thinking: "summarized", recordsAiRequests: true });
+    const ownKey = await prepare({ provider: "anthropic", baseUrl: "https://api.anthropic.com/v1", apiKey: "sk-ant-x", modelId: "claude-sonnet-5-5" });
+    expect(ownKey.thinking).toBeUndefined();
+    expect(ownKey.recordsAiRequests).toBeUndefined();
   });
 });

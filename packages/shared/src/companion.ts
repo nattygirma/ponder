@@ -174,9 +174,18 @@ export const CompanionToolExecuteSchema = z.object({
   process: z.string().max(32000).optional(),
 }).strict();
 export type CompanionToolExecuteInput = z.infer<typeof CompanionToolExecuteSchema>;
+/** Most model calls one turn records (a turn makes at most a few per step, and resumes add more). */
+export const COMPANION_AI_REQUESTS_MAX = 64;
+/**
+ * AppKeep AI's usage record ids (the `x-appkeep-ai-request` response header), one per model call. The browser
+ * reports them so a reply's "…" card can show what it cost. Only sent when the prepared turn says the server
+ * keeps them (recordsAiRequests), since older servers reject unknown fields.
+ */
+export const CompanionAiRequestsSchema = z.array(z.string().regex(/^[A-Za-z0-9_.:-]{1,128}$/)).max(COMPANION_AI_REQUESTS_MAX);
 export const CompanionTurnCheckpointSchema = z.object({
   response: z.string().max(COMPANION_RESPONSE_MAX_CHARS),
   process: z.string().max(32000).optional(),
+  aiRequests: CompanionAiRequestsSchema.optional(),
 }).strict();
 export type CompanionTurnCheckpointInput = z.infer<typeof CompanionTurnCheckpointSchema>;
 export const CompanionTurnCompleteSchema = z.object({
@@ -185,6 +194,7 @@ export const CompanionTurnCompleteSchema = z.object({
   status: z.enum(["completed", "interrupted", "failed"]),
   inputTokens: z.number().int().nonnegative().optional(),
   outputTokens: z.number().int().nonnegative().optional(),
+  aiRequests: CompanionAiRequestsSchema.optional(),
 }).strict();
 export type CompanionTurnCompleteInput = z.infer<typeof CompanionTurnCompleteSchema>;
 export type CompanionToolDefinition = {
@@ -207,6 +217,10 @@ export type CompanionPreparedTurn = {
   tools: CompanionToolDefinition[];
   maxSteps: number;
   maxOutputTokens: number;
+  /** Ask the model for readable thinking summaries (AppKeep AI's Claude-format service). */
+  thinking?: "summarized";
+  /** The server keeps the AppKeep AI usage ids the browser reports with checkpoint and complete. */
+  recordsAiRequests?: boolean;
 };
 export type CompanionToolExecuteResult = {
   result: unknown;
@@ -361,11 +375,37 @@ export type CompanionTurn = {
   model: string;
   inputTokens: number | null;
   outputTokens: number | null;
+  /** AppKeep AI usage record ids of this turn's model calls (only on AppKeep). */
+  aiRequests?: string[];
   createdAt: string;
+};
+/** A usage record as AppKeep's ai.usage(id) returns it, or the AI SDK's numbers for the turn off AppKeep. */
+export type CompanionUsageRecord = {
+  id?: string;
+  model: string | null;
+  provider?: string | null;
+  paid_with?: "credits" | "key" | null;
+  result?: string | null;
+  stop_reason?: string | null;
+  usage: { input_tokens?: number; cache_read_tokens?: number; cache_write_tokens?: number; output_tokens?: number; thinking_tokens?: number };
+  price_micros?: number | null;
+  estimated?: boolean;
+  started_at?: string;
+  first_token_ms?: number | null;
+  duration_ms?: number | null;
+};
+export type CompanionTurnUsage = {
+  /** "appkeep": records from AppKeep's usage log; "sdk": the token counts the AI SDK reported for the turn. */
+  source: "appkeep" | "sdk";
+  records: CompanionUsageRecord[];
+  /** Display names for the model ids in the records. */
+  models: Record<string, string>;
 };
 export type CompanionEvent =
   | { type: "start"; id: string }
   | { type: "text-delta"; text: string }
+  /** A piece of the model's thinking summary. Shown live; not saved with the turn. */
+  | { type: "thinking"; text: string }
   | { type: "process"; text: string }
   | { type: "tools"; tools: CompanionToolCall[]; todos: CompanionTodo[]; questions: CompanionQuestion[] }
   | { type: "done"; turn: CompanionTurn }

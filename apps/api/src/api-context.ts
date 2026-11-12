@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { CloudflareStorageBindings } from "./cloudflare-storage-adapter";
 import type { StorageAdapter } from "./storage-contract";
-import type { HostAiStream, HostAiText } from "./host-ai";
+import type { HostAiSettings, HostAiStream, HostAiText, HostAiTextModels, HostAiUsage } from "./host-ai";
 
 export type HostConnection = {
   id: string;
@@ -28,6 +28,12 @@ export type Bindings = {
   hostAiText?: HostAiText;
   /** The same turn streamed as Claude's own events, with no time limit (AppKeep's ai.stream). Used for streamed requests when present. */
   hostAiStream?: HostAiStream;
+  /** One model call's usage record (AppKeep's ai.usage): tokens, price and who paid. */
+  hostAiUsage?: HostAiUsage;
+  /** The host's text models (AppKeep's ai.textModels), Claude, GPT, Gemini and others. Absent: the built-in Claude list. */
+  hostAiModels?: HostAiTextModels;
+  /** The owner's AI settings in AppKeep (ai.settings), including a model override. */
+  hostAiSettings?: HostAiSettings;
   disconnectConnection?: (connectionId: string) => Promise<boolean>;
   /** Which login providers the host can connect yet; the rest show as coming soon. Absent: all of them. */
   connectionProviders?: () => Promise<{ provider: string; name: string; available: boolean }[]>;

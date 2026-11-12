@@ -1,3 +1,4 @@
+import { COMPANION_AI_REQUESTS_MAX } from "@ponder/shared";
 import type {
   CompanionAnswer, CompanionMention, CompanionMemory, CompanionQuestion, CompanionSource, CompanionTodo,
   CompanionToolCall, CompanionTurn, CompanionTurnAttachmentMeta, CompanionTurnInput,
@@ -15,7 +16,7 @@ export type TurnRow = {
   created_at: string; memory_revision: number; use_memory: number; allow_notes: number; locale: string;
   tools_json?: string; todos_json?: string; questions_json?: string; mentions_json?: string;
   focus_json?: string; answers_json?: string; process_text?: string; agent_session_json?: string;
-  attachment_meta_json?: string;
+  attachment_meta_json?: string; ai_requests_json?: string;
 };
 export const COMPANION_TURN_LEASE_MS = 180_000;
 export const companionTurnLease = () => new Date(Date.now() + COMPANION_TURN_LEASE_MS).toISOString();
@@ -28,14 +29,24 @@ export const turnInputFromRow = (row: TurnRow): CompanionTurnInput => ({
 const bindScope = (scope: CompanionScope) => [scope.workspaceId, scope.ownerId];
 export const mapCompanionTurn = (row: TurnRow): CompanionTurn => {
   const attachments = parseJsonArray<CompanionTurnAttachmentMeta>(row.attachment_meta_json);
+  const aiRequests = turnAiRequests(row);
   return {
     id: row.id, threadId: row.thread_id, message: row.message, response: row.response, process: row.process_text ?? "",
     status: row.status, sources: parseJsonArray<CompanionSource>(row.sources_json),
     tools: parseJsonArray<CompanionToolCall>(row.tools_json), todos: parseJsonArray<CompanionTodo>(row.todos_json),
     questions: parseJsonArray<CompanionQuestion>(row.questions_json), mentions: parseJsonArray<CompanionMention>(row.mentions_json),
     ...(attachments.length ? { attachments } : {}),
-    model: row.model, inputTokens: row.input_tokens, outputTokens: row.output_tokens, createdAt: row.created_at,
+    model: row.model, inputTokens: row.input_tokens, outputTokens: row.output_tokens,
+    ...(aiRequests.length ? { aiRequests } : {}),
+    createdAt: row.created_at,
   };
+};
+export const turnAiRequests = (row: TurnRow) => parseJsonArray<unknown>(row.ai_requests_json)
+  .filter((id): id is string => typeof id === "string");
+/** The turn's saved ids plus the ones just reported, in order and without repeats, capped. */
+export const mergeAiRequests = (row: TurnRow, reported: string[] | undefined) => {
+  if (!reported?.length) return undefined;
+  return [...new Set([...turnAiRequests(row), ...reported])].slice(0, COMPANION_AI_REQUESTS_MAX);
 };
 export const turnFocus = (row: TurnRow) => parseJsonObject<NonNullable<CompanionTurnInput["focus"]>>(row.focus_json, {});
 export const turnAnswers = (row: TurnRow) => parseJsonArray<CompanionAnswer>(row.answers_json);
@@ -190,7 +201,7 @@ export const beginCompanionTurn = async (db: DatabaseAdapter, scope: CompanionSc
 
 export type CompanionTurnCheckpoint = {
   tools?: CompanionToolCall[]; todos?: CompanionTodo[]; questions?: CompanionQuestion[]; answers?: CompanionAnswer[];
-  process?: string; session?: Record<string, unknown>;
+  process?: string; session?: Record<string, unknown>; aiRequests?: string[];
 };
 export const checkpointCompanionTurn = async (db: DatabaseAdapter, scope: CompanionScope, row: TurnRow,
   response: string, sources: CompanionSource[], status: CompanionTurn["status"], usage?: { inputTokens?: number; outputTokens?: number },
@@ -198,7 +209,7 @@ export const checkpointCompanionTurn = async (db: DatabaseAdapter, scope: Compan
   const result = await db.prepare(`UPDATE companion_turns SET response = ?, sources_json = ?, status = ?, input_tokens = ?, output_tokens = ?,
       tools_json = COALESCE(?, tools_json), todos_json = COALESCE(?, todos_json), questions_json = COALESCE(?, questions_json),
       answers_json = COALESCE(?, answers_json), process_text = COALESCE(?, process_text),
-      agent_session_json = COALESCE(?, agent_session_json), expires_at = COALESCE(?, expires_at)
+      agent_session_json = COALESCE(?, agent_session_json), expires_at = COALESCE(?, expires_at)${extras?.aiRequests ? ", ai_requests_json = ?" : ""}
     WHERE workspace_id = ? AND owner_id = ? AND id = ? AND status = 'running'
       AND memory_revision = (SELECT memory_revision FROM companion_state WHERE workspace_id = ? AND owner_id = ?)`)
     .bind(response, JSON.stringify(sources), status, usage?.inputTokens ?? null, usage?.outputTokens ?? null,
@@ -209,6 +220,7 @@ export const checkpointCompanionTurn = async (db: DatabaseAdapter, scope: Compan
       extras?.process != null ? extras.process : null,
       extras?.session ? JSON.stringify(extras.session) : null,
       status === "running" ? companionTurnLease() : null,
+      ...(extras?.aiRequests ? [JSON.stringify(extras.aiRequests)] : []),
       ...bindScope(scope), row.id, ...bindScope(scope)).run();
   if (Number(result.meta.changes) !== 1) throw new AppError("companion_context_changed", "Memory or conversation changed. Start a new request.", 409);
 };

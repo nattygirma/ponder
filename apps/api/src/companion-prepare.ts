@@ -257,5 +257,8 @@ export async function prepareCompanionTurn(args: {
     tools: companionToolDefinitions(args.input),
     maxSteps: COMPANION_MAX_STEPS,
     maxOutputTokens: companionMaxOutputTokens(args.credentials),
+    // AppKeep AI: ask for readable thinking summaries (the models think anyway; the default display sends them
+    // empty) and keep each call's usage id for the reply's "…" card.
+    ...(hostAiKeyWorkspace(args.credentials.apiKey) ? { thinking: "summarized" as const, recordsAiRequests: true } : {}),
   };
 }

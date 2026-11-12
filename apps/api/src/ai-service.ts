@@ -28,9 +28,10 @@ import { AppError } from "./app-error";
 import {
   createHostAiKey,
   HOST_AI_DISPLAY_NAME,
-  HOST_AI_MODELS,
   type HostAiEnvironment,
   hostAiBaseUrl,
+  hostAiModelList,
+  hostAiOwnerModel,
   hostAiModelConfigId,
   hostAiProviderId,
 } from "./host-ai";
@@ -218,6 +219,8 @@ export const ensureHostAiProvider = async (
   const encryptionKey = environment ? resolvePrimaryAiCredentialEncryptionKey(environment) : undefined;
   if (!baseUrl || !encryptionKey) return;
   const providerId = hostAiProviderId(workspaceId);
+  // The host's own list when it has one (Claude, GPT, Gemini…), else the built-in Claude models.
+  const models = await hostAiModelList(environment!);
   const existing = await db.prepare(
     `SELECT base_url FROM ai_provider_configs WHERE id = ? AND workspace_id = ?`,
   ).bind(providerId, workspaceId).first<{ base_url: string }>();
@@ -226,17 +229,25 @@ export const ensureHostAiProvider = async (
       await db.prepare(`UPDATE ai_provider_configs SET base_url = ?, updated_at = ? WHERE id = ? AND workspace_id = ?`)
         .bind(baseUrl, new Date().toISOString(), providerId, workspaceId).run();
     }
-    // Models AppKeep AI gained after this workspace got it show up in the model picker too.
-    const listed = await db.prepare(`SELECT model_id FROM ai_models WHERE provider_config_id = ?`)
-      .bind(providerId).all<{ model_id: string }>();
-    const have = new Set((listed.results ?? []).map((row) => row.model_id));
-    const missing = HOST_AI_MODELS.filter((model) => !have.has(model.modelId));
-    if (missing.length) {
+    // Models AppKeep AI gained after this workspace got it show up in the model picker too, and renamed ones
+    // take the host's new name. Models the host stopped offering stay, so a saved default keeps working (the
+    // host answers with its own first model for one it no longer has).
+    const listed = await db.prepare(`SELECT model_id, display_name FROM ai_models WHERE provider_config_id = ?`)
+      .bind(providerId).all<{ model_id: string; display_name: string }>();
+    const have = new Map((listed.results ?? []).map((row) => [row.model_id, row.display_name]));
+    const missing = models.filter((model) => !have.has(model.modelId));
+    const renamed = models.filter((model) => have.has(model.modelId) && have.get(model.modelId) !== model.displayName);
+    if (missing.length || renamed.length) {
       const now = new Date().toISOString();
-      await db.batch(missing.map((model) => db.prepare(
-        `INSERT OR IGNORE INTO ai_models (id, provider_config_id, model_id, display_name, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-      ).bind(hostAiModelConfigId(workspaceId, model.modelId), providerId, model.modelId, model.displayName, now, now)));
+      await db.batch([
+        ...missing.map((model) => db.prepare(
+          `INSERT OR IGNORE INTO ai_models (id, provider_config_id, model_id, display_name, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+        ).bind(hostAiModelConfigId(workspaceId, model.modelId), providerId, model.modelId, model.displayName, now, now)),
+        ...renamed.map((model) => db.prepare(
+          `UPDATE ai_models SET display_name = ?, updated_at = ? WHERE provider_config_id = ? AND model_id = ?`,
+        ).bind(model.displayName, now, providerId, model.modelId)),
+      ]);
     }
     return;
   }
@@ -244,14 +255,14 @@ export const ensureHostAiProvider = async (
     .bind(workspaceId).first<{ count: number }>();
   if (Number(others?.count ?? 0) > 0) return;
   const now = new Date().toISOString();
-  const defaultModelId = hostAiModelConfigId(workspaceId, HOST_AI_MODELS[0].modelId);
+  const defaultModelId = hostAiModelConfigId(workspaceId, models[0].modelId);
   await db.batch([
     db.prepare(
       `INSERT OR IGNORE INTO ai_provider_configs (
          id, workspace_id, provider, display_name, base_url, api_key_encrypted, is_enabled, created_at, updated_at
        ) VALUES (?, ?, 'anthropic', ?, ?, ?, 1, ?, ?)`,
     ).bind(providerId, workspaceId, HOST_AI_DISPLAY_NAME, baseUrl, await encryptSecret(createHostAiKey(workspaceId), encryptionKey), now, now),
-    ...HOST_AI_MODELS.map((model) => db.prepare(
+    ...models.map((model) => db.prepare(
       `INSERT OR IGNORE INTO ai_models (id, provider_config_id, model_id, display_name, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?)`,
     ).bind(hostAiModelConfigId(workspaceId, model.modelId), providerId, model.modelId, model.displayName, now, now)),
@@ -272,7 +283,7 @@ export const getAiSettings = async (
   environment?: AiCredentialEnvironment & HostAiEnvironment,
 ): Promise<AiSettings> => {
   if (!readOnly) await ensureHostAiProvider(db, workspaceId, environment);
-  const [providersResult, modelsResult, defaultModelId] = await Promise.all([
+  const [providersResult, modelsResult, defaultModelId, hostModel] = await Promise.all([
     db.prepare(
       `${selectProviderSql} WHERE workspace_id = ? ORDER BY created_at ASC, id ASC`,
     ).bind(workspaceId).all<AiProviderConfigRow>(),
@@ -284,6 +295,7 @@ export const getAiSettings = async (
        ORDER BY created_at ASC, id ASC`,
     ).bind(workspaceId).all<AiModelConfigRow>(),
     getDefaultAiModelId(db, workspaceId),
+    environment && hostAiBaseUrl(environment) ? hostAiOwnerModel(environment) : null,
   ]);
 
   return {
@@ -292,6 +304,7 @@ export const getAiSettings = async (
     defaultModelId,
     encryptionConfigured,
     readOnly,
+    ...(hostModel ? { hostModel: { ...hostModel, providerConfigId: hostAiProviderId(workspaceId) } } : {}),
   };
 };
 

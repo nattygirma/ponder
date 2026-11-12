@@ -100,6 +100,13 @@ not used: Ponder sends mention notices from the server when a page is saved
 (`apps/api/src/page-mention-service.ts`), so edits made by AI chat, MCP tools and
 live co-editing count too.
 
+### AppKeep AI UI kit
+
+`apps/web/src/vendor/appkeep-ai-ui/` is a copy of AppKeep's `@appkeep/ai-ui`
+0.1.0 (the AI chat stream view and message info card), licensed under the MIT
+License. It is copied unchanged apart from a header naming its source; update
+it by copying the package again rather than editing it here.
+
 ### Emoji data
 
 The `:` emoji menu uses `@emoji-mart/data` (https://github.com/missive/emoji-mart),

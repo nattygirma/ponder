@@ -460,6 +460,7 @@ export const ru = {
     continue: "Продолжить незавершённую работу",
     process: "Думаю",
     trace: "Запуск · {{count}} шагов",
+    aiUi: {thinking: "Думает…", thoughtFor: "Размышления: {time}", thinkingStatus: "Размышляет", thoughtStatus: "Размышления завершены", seconds: "{s} с", minutes: "{m} мин {s} с", toolStarted: "Подготовка", toolRunning: "Выполняется", toolDone: "Готово", toolFailed: "Ошибка", cutOff: "Ответ обрезан на пределе длины.", button: "Сведения о сообщении", title: "Сведения о сообщении", model: "Модель", input: "Ввод", output: "Вывод", calls: "Вызовы модели", price: "Цена", paidWith: "Оплата", cached: "из кэша: {n}", thinkingTokens: "на размышления: {n}", credits: "Кредиты AppKeep", key: "Ваш ключ, примерно", mixed: "Кредиты AppKeep и ваш ключ", about: "около {price}", tokens: "токенов: {n}", unavailable: "Данные об использовании для этого сообщения недоступны.", running: "Ещё выполняется, поэтому числа могут измениться."},
   },
   errorScreens: {
     noteTitle: "Не удаётся показать эту заметку",
@@ -1897,6 +1898,7 @@ export const ru = {
     },
     agentSource: {
       configure: "Настроить модели и агентов",
+      ownerModel: "Владелец приложения выбрал {{model}} для AppKeep AI, поэтому ответы AppKeep AI используют эту модель.",
       switchNoteAgentHint: "Выбранный агент будет править эту инфографику дальше.",
       optionUnavailable: "Недоступно",
 

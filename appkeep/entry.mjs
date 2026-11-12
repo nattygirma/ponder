@@ -31,6 +31,11 @@ const bindings = (env) => ({
   hostAiText: env.ALTSTACK?.ai?.text ? (request, options) => env.ALTSTACK.ai.text(request, options) : undefined,
   // The same model streamed, with no time limit (platform 2026-11 and later); older platforms answer in one piece.
   hostAiStream: env.ALTSTACK?.ai?.stream ? (request, options) => env.ALTSTACK.ai.stream(request, options) : undefined,
+  // Each call's usage record (tokens, price, who paid), for the "…" card after a chat reply.
+  hostAiUsage: env.ALTSTACK?.ai?.usage ? (id) => env.ALTSTACK.ai.usage(id) : undefined,
+  // Every text model AppKeep offers this account (Claude, GPT, Gemini…), and the owner's model choice.
+  hostAiModels: env.ALTSTACK?.ai?.textModels ? () => env.ALTSTACK.ai.textModels() : undefined,
+  hostAiSettings: env.ALTSTACK?.ai?.settings ? () => env.ALTSTACK.ai.settings() : undefined,
 });
 
 export default {

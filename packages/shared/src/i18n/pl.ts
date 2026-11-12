@@ -449,6 +449,7 @@ export const pl = {
     continue: "Kontynuuj niedokończoną pracę",
     process: "Myślenie",
     trace: "Przebieg · kroki: {{count}}",
+    aiUi: {thinking: "Myślenie…", thoughtFor: "Czas myślenia: {time}", thinkingStatus: "Myślenie", thoughtStatus: "Myślenie zakończone", seconds: "{s} s", minutes: "{m} min {s} s", toolStarted: "Przygotowanie", toolRunning: "W toku", toolDone: "Gotowe", toolFailed: "Nie udało się", cutOff: "Odpowiedź została ucięta na limicie długości.", button: "Informacje o wiadomości", title: "Informacje o wiadomości", model: "Model", input: "Wejście", output: "Wyjście", calls: "Wywołania modelu", price: "Cena", paidWith: "Zapłacono", cached: "w pamięci podręcznej: {n}", thinkingTokens: "myślenie: {n}", credits: "Kredyty AppKeep", key: "Twój klucz, szacunkowo", mixed: "Kredyty AppKeep i Twój klucz", about: "około {price}", tokens: "tokeny: {n}", unavailable: "Zużycie dla tej wiadomości jest niedostępne.", running: "Wciąż trwa, więc liczby mogą się zmienić."},
   },
   errorScreens: {
     noteTitle: "Nie można wyświetlić tej notatki",
@@ -1886,6 +1887,7 @@ export const pl = {
     },
     agentSource: {
       configure: "Konfiguruj modele i agentów",
+      ownerModel: "Właściciel aplikacji wybrał {{model}} dla AppKeep AI, więc odpowiedzi AppKeep AI używają tego modelu.",
       switchNoteAgentHint: "Wybrany agent obsłuży kolejne zmiany tej infografiki.",
       optionUnavailable: "Niedostępny",
 

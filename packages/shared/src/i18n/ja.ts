@@ -449,6 +449,7 @@ export const ja = {
     continue: "未完了の作業を続ける",
     process: "思考過程",
     trace: "過程 · {{count}} 手",
+    aiUi: {thinking: "考え中…", thoughtFor: "{time} 考えました", thinkingStatus: "考え中", thoughtStatus: "考え終わりました", seconds: "{s} 秒", minutes: "{m} 分 {s} 秒", toolStarted: "準備中", toolRunning: "実行中", toolDone: "完了", toolFailed: "失敗", cutOff: "返答が長さの上限で途切れました。", button: "メッセージ情報", title: "メッセージ情報", model: "モデル", input: "入力", output: "出力", calls: "モデル呼び出し", price: "料金", paidWith: "支払い", cached: "キャッシュ {n}", thinkingTokens: "思考 {n}", credits: "AppKeep クレジット", key: "自分のキー（概算）", mixed: "AppKeep クレジットと自分のキー", about: "約 {price}", tokens: "{n} トークン", unavailable: "このメッセージの使用量はありません。", running: "まだ実行中のため、数値は変わることがあります。"},
   },
   errorScreens: {
     noteTitle: "このノートを表示できません",
@@ -1886,6 +1887,7 @@ export const ja = {
     },
     agentSource: {
       configure: "モデルと Agent を設定",
+      ownerModel: "アプリのオーナーが AppKeep AI のモデルに {{model}} を選んでいるため、AppKeep AI の返答はこのモデルを使います。",
       switchNoteAgentHint: "選択した Agent が、このインフォグラフィックの次の編集を処理します。",
       optionUnavailable: "利用不可",
 

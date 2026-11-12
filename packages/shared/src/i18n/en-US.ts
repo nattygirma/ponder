@@ -461,6 +461,7 @@ export const enUS = {
     continue: "Continue unfinished work",
     process: "Thinking",
     trace: "Run · {{count}} steps",
+    aiUi: {thinking: "Thinking…", thoughtFor: "Thought for {time}", thinkingStatus: "Thinking", thoughtStatus: "Finished thinking", seconds: "{s}s", minutes: "{m}m {s}s", toolStarted: "Preparing", toolRunning: "Running", toolDone: "Done", toolFailed: "Failed", cutOff: "The reply was cut off at its length limit.", button: "Message info", title: "Message info", model: "Model", input: "Input", output: "Output", calls: "Model calls", price: "Price", paidWith: "Paid with", cached: "{n} cached", thinkingTokens: "{n} thinking", credits: "AppKeep credits", key: "Your key, estimated", mixed: "AppKeep credits and your key", about: "about {price}", tokens: "{n} tokens", unavailable: "Usage isn't available for this message.", running: "Still running, so these numbers may change."},
   },
   errorScreens: errorScreensEnUS,
 
@@ -1878,6 +1879,7 @@ export const enUS = {
     },
     agentSource: {
       configure: "Configure models and agents",
+      ownerModel: "The app's owner chose {{model}} for AppKeep AI, so AppKeep AI replies use it.",
       switchNoteAgentHint: "The selected agent will handle subsequent edits to this infographic.",
       optionUnavailable: "Unavailable",
 

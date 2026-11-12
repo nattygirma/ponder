@@ -81,11 +81,16 @@ export function AiAgentSelector({ source, adapterId, disabled, onPendingChange }
   }, [disabled]);
   const builtin = resolveBuiltinAgentModel(settings.data);
   const provider = settings.data?.providers.find((item) => item.models.some((model) => model.id === settings.data?.defaultModelId));
-  const modelLabel = [provider?.displayName, builtin?.label].filter(Boolean).join(" · ") || t("aiModel.noDefaultModel");
+  // On AppKeep the app's owner can pick the model every AppKeep AI request uses; the host then answers with it
+  // whichever AppKeep AI model is chosen here, so the picker names the owner's model.
+  const ownerModel = settings.data?.hostModel ?? null;
+  const ownerModelApplies = !!ownerModel && provider?.id === ownerModel.providerConfigId;
+  const builtinLabel = ownerModelApplies ? ownerModel.displayName : builtin?.label;
+  const modelLabel = [provider?.displayName, builtinLabel].filter(Boolean).join(" · ") || t("aiModel.noDefaultModel");
   const label = source === "local"
     ? (adapterId ? t(`aiAssistant.agentSource.${adapterId}`) : t("aiAssistant.agentSource.local"))
     : `${t("aiAssistant.agentSource.builtin")} · ${modelLabel}`;
-  const buttonLabel = source === "local" ? label : builtin?.label ?? t("aiModel.noDefaultModel");
+  const buttonLabel = source === "local" ? label : builtinLabel ?? t("aiModel.noDefaultModel");
   const selected = source === "local" ? `agent:${adapterId}` : settings.data?.defaultModelId ? `model:${settings.data.defaultModelId}` : "builtin";
   const providers = (settings.data?.providers ?? []).map((provider, index) => {
     const name = !provider.displayName || isLegacyProviderDisplayName(provider.displayName, provider.provider)
@@ -139,6 +144,9 @@ export function AiAgentSelector({ source, adapterId, disabled, onPendingChange }
                 <span className="min-w-0 break-words">{provider.name} · {model.displayName || model.modelId}{!provider.isEnabled || provider.credentialsUnavailable ? <span className="ml-2 text-[10px] text-slate-500">{t("aiAssistant.agentSource.optionUnavailable")}</span> : null}</span>
               </DropdownMenuRadioItem>))}
               {!settings.isPending && !providers.length ? <p className="px-2 py-2 text-xs text-slate-500">{t("aiAssistant.agentSource.noModels")}</p> : null}
+              {ownerModel && providers.some((item) => item.id === ownerModel.providerConfigId) ? (
+                <p className="px-2 py-1.5 text-xs leading-5 text-slate-500">{t("aiAssistant.agentSource.ownerModel", { model: ownerModel.displayName })}</p>
+              ) : null}
               {desktop ? <>
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>{t("aiAssistant.agentSource.local")}</DropdownMenuLabel>

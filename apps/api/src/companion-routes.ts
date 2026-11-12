@@ -10,12 +10,13 @@ import { loadDefaultAiModelCredentials } from "./ai-service";
 import { apiError, forbidden, httpExceptionError, notFound } from "./http-errors";
 import { requireUser, getWorkspaceId } from "./request-auth";
 import { beginCompanionTurn, checkpointCompanionTurn, clearCompanionHistory, companionRevision,
-  forgetCompanionMemory, getCompanionTurn, listCompanionMemories, listCompanionTurns, mapCompanionTurn,
+  forgetCompanionMemory, getCompanionTurn, listCompanionMemories, listCompanionTurns, mapCompanionTurn, mergeAiRequests,
   resumeCompanionTurn, saveCompanionMemory, importCompanionMemories, turnAnswers, turnInputFromRow, type CompanionScope, } from "./companion-service";
 import { parseJsonArray, parseJsonObject } from "./companion-tool-receipts";
 import { prepareCompanionTurn, type CompanionRunState } from "./companion-prepare";
 import { assertCompanionAttachmentsSupported, bindCompanionTurnAttachments, storeCompanionAttachment } from "./companion-attachments";
 import { executeCompanionTurnTool, parseCompanionAgentSession } from "./companion-agent-tools";
+import { companionTurnUsage } from "./companion-usage";
 import { applyCompanionAction, dismissCompanionAction, listCompanionActions } from "./companion-actions";
 import { acknowledgeDiscovery, rememberDiscoveryFeedback, completeDiscoveryGeneration, discoveryPreparePayload, getDiscoverySettings, listDiscoveries, saveDiscoverySettings, startDiscoveryCheck } from "./companion-discovery";
 
@@ -151,6 +152,14 @@ export const registerCompanionRoutes = (parent: Hono<AppEnv>, dependencies: {
     const row = await getCompanionTurn(c.env.storage.db, scopeFor(c), c.req.param("id"));
     return row ? c.json({ turn: mapCompanionTurn(row) }) : notFound(c, "Conversation not found.");
   });
+  // A reply's tokens, price and who paid, for its "…" card. Only the signed-in member's own turns (scopeFor).
+  app.get("/api/v1/companion/turns/:id/usage", async c => {
+    if (!CompanionIdSchema.safeParse(c.req.param("id")).success) return notFound(c, "Conversation not found.");
+    const scope = scopeFor(c);
+    const row = await getCompanionTurn(c.env.storage.db, scope, c.req.param("id"));
+    if (!row) return notFound(c, "Conversation not found.");
+    return c.json(await companionTurnUsage(c.env.storage.db, scope.workspaceId, row, c.env));
+  });
   app.delete("/api/v1/companion/history", async c => {
     await clearCompanionHistory(c.env.storage.db, scopeFor(c));
     return c.json({ ok: true });
@@ -224,7 +233,7 @@ export const registerCompanionRoutes = (parent: Hono<AppEnv>, dependencies: {
     if (row.status !== "running") return apiError(c, "companion_resume_unavailable", "This request cannot be continued.", 409);
     const body = c.req.valid("json");
     await checkpointCompanionTurn(db, scope, row, body.response, parseJsonArray(row.sources_json), "running", undefined, {
-      process: body.process,
+      process: body.process, aiRequests: mergeAiRequests(row, body.aiRequests),
     });
     return c.json({ ok: true });
   });
@@ -245,7 +254,7 @@ export const registerCompanionRoutes = (parent: Hono<AppEnv>, dependencies: {
     await checkpointCompanionTurn(
       db, scope, row, body.response, parseJsonArray(row.sources_json), body.status,
       { inputTokens: body.inputTokens, outputTokens: body.outputTokens },
-      { process: body.process },
+      { process: body.process, aiRequests: mergeAiRequests(row, body.aiRequests) },
     );
     const completed = await getCompanionTurn(db, scope, row.id);
     return c.json({ turn: completed ? mapCompanionTurn(completed) : mapCompanionTurn({ ...row, response: body.response, status: body.status }) });

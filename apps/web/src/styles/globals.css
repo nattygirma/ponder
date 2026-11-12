@@ -3184,3 +3184,20 @@ span.ponder-mention-page {
   outline-offset: -3px;
 }
 :root.dark .notebook-custom-color { color: var(--notebook-color-dark); }
+
+/* AppKeep's chat UI kit (vendor/appkeep-ai-ui) in the AI sidebar: the thinking section, tool steps and "…" card
+   use Ponder's colours, so they follow light and dark mode with the rest of the chat. */
+appkeep-ai-message,
+appkeep-ai-info {
+  --appkeep-ai-font: inherit;
+  --appkeep-ai-font-size: 0.75rem;
+  --appkeep-ai-fg: hsl(var(--foreground));
+  --appkeep-ai-muted: hsl(var(--muted-foreground));
+  --appkeep-ai-border: hsl(var(--border));
+  --appkeep-ai-surface: hsl(var(--popover));
+  --appkeep-ai-subtle: hsl(var(--muted));
+  --appkeep-ai-hover: hsl(var(--accent));
+  --appkeep-ai-focus: hsl(var(--ring));
+  --appkeep-ai-danger: hsl(var(--destructive));
+  --appkeep-ai-radius: calc(var(--radius) - 2px);
+}

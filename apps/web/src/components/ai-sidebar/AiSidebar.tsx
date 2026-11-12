@@ -86,6 +86,8 @@ import { AiSidebarThreadMenu } from "./AiSidebarThreadMenu";
 import { InfographicSidebarSession, type InfographicSidebarController } from "./InfographicSidebarSession";
 import { memoIdFromSidebarLinkEvent } from "./sidebar-note-links";
 import { AiFaceIcon } from "../AiFaceIcon";
+import { CompanionMessageInfo, CompanionStreamView } from "../CompanionAiUi";
+import { companionAiStreams } from "@/lib/companion-ai-stream";
 
 const SIDEBAR_DEFAULT_WIDTH = 380;
 const sidebarThreadClassName = cn(
@@ -1065,6 +1067,9 @@ function AiSidebarSession({
   }, [companionAvailable, explainError, reloadCompanion, source]);
 
   const applyStreamEvent = useCallback((id: string, event: CompanionEvent) => {
+    // The stream view's store is page-wide, so a reply that keeps running with the sidebar closed still has its
+    // thinking when the sidebar opens again.
+    companionAiStreams.apply(id, event);
     if (!alive.current) return;
     if (event.type === "text-delta") {
       setTurns((previous) => previous.map((turn) => turn.id === id ? { ...turn, response: turn.response + event.text } : turn));
@@ -1251,6 +1256,7 @@ function AiSidebarSession({
       }
       if (controller.signal.aborted) throw new DOMException("aborted", "AbortError");
       setAttachments([]);
+      companionAiStreams.begin(id);
       setTurns((previous) => [{
         ...emptyCompanionTurn({ id, threadId: activeThreadId, message: text }),
         attachments: uploaded.map((item) => ({
@@ -1295,6 +1301,7 @@ function AiSidebarSession({
             setTurnFailures((previous) => ({ ...previous, [id]: message }));
           }
         } finally {
+          companionAiStreams.end(id, controller.signal.aborted ? "stopped" : "ended");
           backgroundReplies.delete(id);
           if (active.current?.id === id) active.current = null;
           locked.current = false;
@@ -1422,6 +1429,7 @@ function AiSidebarSession({
     setBusy(true);
     setError(null);
     active.current = { id: turn.id, kind: "companion", controller, started: true };
+    companionAiStreams.begin(turn.id, turn.tools ?? []);
     setTurns((previous) => previous.map((item) => item.id === turn.id ? { ...item, status: "running" } : item));
     void (async () => {
       let completed = false;
@@ -1440,6 +1448,7 @@ function AiSidebarSession({
           setTurnFailures((previous) => ({ ...previous, [turn.id]: message }));
         }
       } finally {
+        companionAiStreams.end(turn.id, controller.signal.aborted ? "stopped" : "ended");
         if (active.current?.id === turn.id) active.current = null;
         locked.current = false;
         if (alive.current) setBusy(false);
@@ -1637,6 +1646,7 @@ function AiSidebarSession({
                 <AttachmentChips items={turn.attachments ?? []} />
               </Message>
               <Message from="assistant">
+                <CompanionStreamView turn={turn} sections="thinking" />
                 {turn.process?.trim() ? (
                   <Reasoning isStreaming={turn.status === "running"} className="mb-2">
                     <ReasoningTrigger
@@ -1645,19 +1655,14 @@ function AiSidebarSession({
                     />
                     <ReasoningContent className="mt-2 text-xs leading-5">{turn.process}</ReasoningContent>
                   </Reasoning>
-                ) : turn.status === "running" ? (
+                ) : turn.status === "running" && !companionAiStreams.has(turn.id) ? (
+                  // A reply this page didn't start (another tab, or before a reload): the stream view has nothing to follow.
                   <p role="status" className="flex items-center gap-2 text-xs text-slate-500">
                     <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
                     {t("aiAssistant.sidebar.working")}
                   </p>
                 ) : null}
-                {turn.tools?.length ? (
-                  <ul className="space-y-1 text-xs text-slate-500">
-                    {turn.tools.map((tool) => (
-                      <li key={tool.id}>{t("aiAssistant.sidebar.toolProgress", { name: tool.name, status: tool.status })}</li>
-                    ))}
-                  </ul>
-                ) : null}
+                <CompanionStreamView turn={turn} sections="tools" />
                 {turn.response ? (
                   <AiSidebarMessage isAnimating={turn.status === "running"}>
                     {linkedCompanionText(turn.response, turn)}
@@ -1666,6 +1671,7 @@ function AiSidebarSession({
                 {onOpenCompanionNote ? (
                   <CompanionCreatedNoteLinks response={turn.response} tools={turn.tools ?? []} onOpenNote={onOpenCompanionNote} />
                 ) : null}
+                <CompanionMessageInfo turn={turn} />
                 {turn.status === "interrupted" && turn.questions?.length && !running ? (
                   <CompanionQuestionForm questions={turn.questions} busy={busy || acting} onSubmit={(answers) => resume(turn, answers)} />
                 ) : null}

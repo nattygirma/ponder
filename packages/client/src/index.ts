@@ -1150,6 +1150,7 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
     forgetCompanionMemory: (memory: CompanionMemory) => request<{ ok: true }>(`/api/v1/companion/memories/${encodeURIComponent(memory.id)}?version=${memory.version}`, { method: "DELETE" }),
     listCompanionTurns: () => request<{ turns: CompanionTurn[] }>("/api/v1/companion/turns"),
     getCompanionTurn: (id: string) => request<{ turn: CompanionTurn }>(`/api/v1/companion/turns/${encodeURIComponent(id)}`),
+    getCompanionTurnUsage: (id: string) => request<import("@ponder/shared").CompanionTurnUsage>(`/api/v1/companion/turns/${encodeURIComponent(id)}/usage`),
     cancelCompanionTurn: (id: string) => request<{ ok: true }>(`/api/v1/companion/turns/${encodeURIComponent(id)}/cancel`, { method: "POST", body: "{}" }),
     resumeCompanionTurn: async (id: string, payload: CompanionTurnResume = {}, options: { signal?: AbortSignal; onEvent: (event: CompanionEvent) => void }) => {
       await runCompanionDirect(`/api/v1/companion/turns/${encodeURIComponent(id)}/resume/prepare`, payload, options);

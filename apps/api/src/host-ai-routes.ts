@@ -3,8 +3,8 @@ import type { AppEnv } from "./api-context";
 import { decryptAiCredential } from "./ai-service";
 import {
   anthropicError,
-  HOST_AI_MODELS,
   HOST_AI_PATH,
+  hostAiModelList,
   HostAiRequestError,
   hostAiKeyWorkspace,
   hostAiProviderId,
@@ -23,6 +23,8 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "content-type, x-api-key, authorization, anthropic-version, anthropic-beta, anthropic-dangerous-direct-browser-access",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Max-Age": "86400",
+  // The usage record id of each call, which the browser saves with the chat turn for its "…" card.
+  "Access-Control-Expose-Headers": "x-appkeep-ai-request",
 };
 const MAX_BODY_BYTES = 256 * 1024;
 
@@ -55,7 +57,7 @@ export const registerHostAiRoutes = (app: Hono<AppEnv>) => {
   app.get(`${HOST_AI_PATH}/models`, async (c) => {
     if (!(await authorize(c))) return denied();
     return json({
-      data: HOST_AI_MODELS.map((model) => ({ type: "model", id: model.modelId, display_name: model.displayName })),
+      data: (await hostAiModelList(c.env)).map((model) => ({ type: "model", id: model.modelId, display_name: model.displayName })),
       has_more: false,
     });
   });
@@ -67,7 +69,7 @@ export const registerHostAiRoutes = (app: Hono<AppEnv>) => {
     if (raw.length > MAX_BODY_BYTES) return json(anthropicError("request_too_large", "This AI request is too long for AppKeep AI (256 KB at most)."), 413);
     let translated: ReturnType<typeof toHostAiRequest>;
     try {
-      translated = toHostAiRequest(JSON.parse(raw));
+      translated = toHostAiRequest(JSON.parse(raw), await hostAiModelList(c.env));
     } catch (error) {
       const message = error instanceof HostAiRequestError ? error.message : "The AI request isn't valid JSON.";
       return json(anthropicError("invalid_request_error", message), 400);
@@ -96,9 +98,16 @@ export const registerHostAiRoutes = (app: Hono<AppEnv>) => {
       return json(anthropicError("api_error", message), 502);
     }
     if (!result.ok) return json(anthropicError("billing_error", lowBalanceMessage(result.required_micros)), 402);
-    if (!translated.stream) return json(toAnthropicMessage(result));
+    // ai.text's `id` is Claude's message id; the usage record is `usage_id` (older platforms had neither).
+    const usageId = typeof result.usage_id === "string" && result.usage_id ? result.usage_id : null;
+    const requestHeader: Record<string, string> = usageId ? { "x-appkeep-ai-request": usageId } : {};
+    if (!translated.stream) {
+      return new Response(JSON.stringify(toAnthropicMessage(result)), {
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json", "Cache-Control": "no-store", ...requestHeader },
+      });
+    }
     return new Response(toAnthropicEventStream(result), {
-      headers: { ...CORS_HEADERS, "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-store" },
+      headers: { ...CORS_HEADERS, "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-store", ...requestHeader },
     });
   });
 };

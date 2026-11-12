@@ -94,7 +94,28 @@ export const parsePreparedCompanion = (value: unknown): CompanionPreparedTurn | 
     tools,
     maxSteps: record.maxSteps,
     maxOutputTokens: record.maxOutputTokens,
+    ...(record.thinking === "summarized" ? { thinking: "summarized" as const } : {}),
+    ...(record.recordsAiRequests === true ? { recordsAiRequests: true } : {}),
   };
+};
+
+/** AppKeep AI names each model call's usage record in this response header. */
+export const AI_REQUEST_HEADER = "x-appkeep-ai-request";
+const AI_REQUEST_ID = /^[A-Za-z0-9_.:-]{1,128}$/;
+
+/**
+ * Wraps the provider fetch to note each response's AppKeep AI usage id. Read from the response itself, so a
+ * call that is stopped or fails mid-stream (and was still charged) is counted too.
+ */
+export const recordingAiRequests = (fetchImpl: typeof fetch) => {
+  const ids: string[] = [];
+  const wrapped: typeof fetch = async (input, init) => {
+    const response = await fetchImpl(input, init);
+    const id = response.headers?.get?.(AI_REQUEST_HEADER)?.trim();
+    if (id && AI_REQUEST_ID.test(id) && !ids.includes(id)) ids.push(id);
+    return response;
+  };
+  return { fetch: wrapped, ids };
 };
 
 export const companionDirectFailureCode = (error: unknown): string => {
@@ -132,11 +153,13 @@ export const streamDirectCompanion = async (
       response: string;
       process: string;
     }) => Promise<CompanionToolExecuteResult>;
-    checkpoint: (body: { response: string; process: string }) => Promise<void>;
+    checkpoint: (body: { response: string; process: string; aiRequests?: string[] }) => Promise<void>;
     complete: (body: CompanionTurnCompleteInput) => Promise<{ turn: CompanionTurn }>;
   },
 ) => {
   const { streamText, isStepCount, jsonSchema, tool } = await import("ai");
+  const recorder = recordingAiRequests(options.fetch);
+  const aiRequests = () => (prepared.recordsAiRequests && recorder.ids.length ? { aiRequests: recorder.ids.slice(-64) } : {});
   let response = prepared.turn.response ?? "";
   let process = prepared.turn.process ?? "";
   let persisted = response.length;
@@ -159,7 +182,7 @@ export const streamDirectCompanion = async (
   const finish = async (status: CompanionTurnCompleteInput["status"], usage?: { inputTokens?: number; outputTokens?: number }, error?: unknown) => {
     try {
       const completed = await options.complete({
-        response, process, status, inputTokens: usage?.inputTokens, outputTokens: usage?.outputTokens,
+        response, process, status, inputTokens: usage?.inputTokens, outputTokens: usage?.outputTokens, ...aiRequests(),
       });
       if (status === "failed" && error) options.onEvent({ type: "error", code: companionDirectFailureCode(error), diagnostics: companionFailureDiagnostics(error) });
       else options.onEvent({ type: "done", turn: completed.turn });
@@ -203,8 +226,12 @@ export const streamDirectCompanion = async (
         baseUrl: prepared.baseUrl,
         apiKey: prepared.apiKey,
         modelId: prepared.modelId,
-        fetch: options.fetch,
+        fetch: recorder.fetch,
       }),
+      // AppKeep AI's models think anyway; without this their thinking arrives empty.
+      ...(prepared.thinking === "summarized" && prepared.provider === "anthropic"
+        ? { providerOptions: { anthropic: { thinking: { type: "adaptive" as const, display: "summarized" as const } } } }
+        : {}),
       instructions: prepared.instructions,
       tools: agentTools,
       stopWhen: [isStepCount(prepared.maxSteps), () => pause.ask],
@@ -238,6 +265,11 @@ export const streamDirectCompanion = async (
       throwIfAborted(options.signal);
       if (part.type === "error") throw part.error;
       if (part.type === "finish-step" || part.type === "finish") finishReason = part.finishReason;
+      // Thinking is shown live and not saved: it's a summary, and the next turn doesn't need it.
+      if (part.type === "reasoning-delta") {
+        if (part.text) options.onEvent({ type: "thinking", text: part.text });
+        continue;
+      }
       if (part.type !== "text-delta") continue;
       const delta = typeof part.text === "string" ? part.text : "";
       if (!delta) continue;
@@ -245,7 +277,7 @@ export const streamDirectCompanion = async (
       if (response.length > COMPANION_RESPONSE_MAX_CHARS) throw new Error("Response limit exceeded.");
       options.onEvent({ type: "text-delta", text: delta });
       if (response.length - persisted >= 300) {
-        await options.checkpoint({ response, process });
+        await options.checkpoint({ response, process, ...aiRequests() });
         persisted = response.length;
       }
     }
