@@ -149,6 +149,7 @@ const mapRow = (row: RowRecord): DatabaseRow => ({
   number: row.row_number,
   createdBy: userIdFromActorLabel(row.created_by),
   updatedBy: userIdFromActorLabel(row.updated_by),
+  createdVia: row.created_by?.startsWith("form:") ? "form" : null,
   createdAt: row.created_at,
   updatedAt: row.updated_at,
 });
@@ -622,7 +623,11 @@ export const deleteDatabaseView = async (db: DatabaseAdapter, workspaceId: strin
     .bind(databaseId, workspaceId)
     .first<{ total: number }>();
   if ((count?.total ?? 0) <= 1) throw new AppError("last_view", "A database needs at least one view.", 409);
-  await db.prepare(`DELETE FROM database_views WHERE id = ? AND database_id = ? AND workspace_id = ?`).bind(viewId, databaseId, workspaceId).run();
+  await db.batch([
+    db.prepare(`DELETE FROM database_views WHERE id = ? AND database_id = ? AND workspace_id = ?`).bind(viewId, databaseId, workspaceId),
+    // A form view's settings and link go with it, so the link stops working.
+    db.prepare(`DELETE FROM database_forms WHERE view_id = ? AND database_id = ? AND workspace_id = ?`).bind(viewId, databaseId, workspaceId),
+  ]);
 };
 
 /** Row context for the page editor: which database a page belongs to, and its property values. */

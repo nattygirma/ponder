@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { ArrowDownUp, CalendarDays, ChartPie, Columns3, Filter, GalleryHorizontal, Group, List, ListTree, MoreHorizontal, Plus, Settings2, Table2, Trash2, X } from "lucide-react";
+import { ArrowDownUp, CalendarDays, ChartPie, Columns3, FileText, Filter, GalleryHorizontal, Group, List, ListTree, MoreHorizontal, Plus, Settings2, Table2, Trash2, X } from "lucide-react";
 import {
   applyDatabaseView,
   DATABASE_VIEW_TYPES,
@@ -23,6 +23,7 @@ import { BoardView, CalendarView, GalleryView, ListView, RowPeekContext, TableVi
 import { NewRowButton } from "./DatabaseTemplates";
 import { AutomationsButton } from "./DatabaseAutomations";
 import { ChartSettings, ChartView } from "./DatabaseChart";
+import { FormBuilder, FormTools } from "./DatabaseForm";
 import { RowPeek } from "./RowPeek";
 import { useDatabase, type DatabaseHandle } from "./useDatabase";
 
@@ -34,6 +35,7 @@ const VIEW_ICONS: Record<DatabaseViewType, typeof Table2> = {
   list: List,
   timeline: ListTree,
   chart: ChartPie,
+  form: FileText,
 };
 
 const VIEW_COMPONENTS: Record<DatabaseViewType, (props: DatabaseViewProps) => ReactNode> = {
@@ -44,6 +46,8 @@ const VIEW_COMPONENTS: Record<DatabaseViewType, (props: DatabaseViewProps) => Re
   list: ListView,
   timeline: TimelineView,
   chart: ChartView,
+  // Form views draw their own builder (see Loaded); this is never used.
+  form: () => null,
 };
 
 const TEXT_OPERATORS: FilterOperator[] = ["contains", "not_contains", "is", "is_not", "starts_with", "ends_with", "is_empty", "is_not_empty"];
@@ -365,6 +369,7 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
   const [activeId, setActiveId] = useState(initialViewId);
   const [search, setSearch] = useState("");
   const [peekRowId, setPeekRowId] = useState<string | null>(null);
+  const [formShareOpen, setFormShareOpen] = useState(false);
   const closePeek = useCallback(() => setPeekRowId(null), []);
   const views = db.database.views;
   const view = views.find((item) => item.id === activeId) ?? views[0];
@@ -412,6 +417,12 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
           ))}
           <AddView db={db} onAdded={setActiveId} />
         </div>
+        {view.type === "form" ? (
+          <div className="ml-auto flex flex-wrap items-center gap-0.5">
+            <AutomationsButton db={db} />
+            <FormTools db={db} view={view} shareOpen={formShareOpen} onShareOpenChange={setFormShareOpen} />
+          </div>
+        ) : (
         <div className="ml-auto flex flex-wrap items-center gap-0.5">
           <ToolbarButton icon={Filter} label={t("pages.db.filter")} active={Boolean(config.filters?.length)}><FilterPanel db={db} config={config} update={updateConfig} /></ToolbarButton>
           {isChart ? null : <ToolbarButton icon={ArrowDownUp} label={t("pages.db.sort")} active={Boolean(config.sorts?.length)}><SortPanel db={db} config={config} update={updateConfig} /></ToolbarButton>}
@@ -436,10 +447,15 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
           <AutomationsButton db={db} />
           <NewRowButton db={db} />
         </div>
+        )}
       </div>
-      <RowPeekContext.Provider value={setPeekRowId}>
-        <Body db={db} rows={rows} config={config} visible={visible} updateConfig={updateConfig} />
-      </RowPeekContext.Provider>
+      {view.type === "form" ? (
+        <FormBuilder key={view.id} db={db} view={view} onChangeAccess={() => setFormShareOpen(true)} />
+      ) : (
+        <RowPeekContext.Provider value={setPeekRowId}>
+          <Body db={db} rows={rows} config={config} visible={visible} updateConfig={updateConfig} />
+        </RowPeekContext.Provider>
+      )}
       {peekRowId ? <RowPeek db={db} rowId={peekRowId} onClose={closePeek} /> : null}
     </div>
   );

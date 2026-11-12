@@ -186,6 +186,9 @@ export const useDatabase = (databaseId: string) => {
         void queryClient.invalidateQueries({ queryKey: ["page-tree"] });
       },
       updateSchema: async (patch) => {
+        // A fetch already in flight would bring back the old schema over this one, and the next edit (two
+        // form questions renamed in a row, say) would then be built on it and undo this one.
+        void queryClient.cancelQueries({ queryKey: databaseKey(databaseId) });
         const schema = withValidRelationPairs({ ...detail.data!.schema, ...patch });
         patchDetail((database) => ({ ...database, schema }));
         await attempt(async () => {

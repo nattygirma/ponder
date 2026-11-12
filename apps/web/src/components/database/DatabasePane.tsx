@@ -2,7 +2,7 @@ import { DatabaseEmbed } from "@ponder/shared";
 import { NodeViewWrapper, ReactNodeViewRenderer, type NodeViewProps } from "@tiptap/react";
 import { useTranslation } from "react-i18next";
 import { Database, Link as LinkIcon, Lock, MoreHorizontal, Star, Trash2 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ShareMemoDialog } from "@/components/dialogs/ShareMemoDialog";
 import { PageShareButton } from "@/components/teams/Teams";
@@ -11,7 +11,9 @@ import { PageBreadcrumbs, PageCover, PageHeader } from "@/components/pages/PageH
 import { usePages } from "@/components/pages/PagesProvider";
 import { PageIcon } from "@/components/pages/PageTree";
 import { PhoneTopBar } from "@/components/pages/PhoneChrome";
+import { api } from "@/lib/api";
 import { DatabaseSurface } from "./DatabaseSurface";
+import { NEW_FORM_VIEW } from "./form-block";
 import { DatabaseCell } from "./DatabaseCell";
 import { useDatabase, useRowContext } from "./useDatabase";
 
@@ -102,10 +104,43 @@ export const PageSurface = ({ memoId, title, children }: { memoId: string | null
   return <>{children}</>;
 };
 
-const DatabaseBlockView = ({ node }: NodeViewProps) => {
+/**
+ * A block inserted by `/form`: makes a database under the page with a Form view, like Notion's /form,
+ * then points the block at it. A ref keeps it to one database even when React runs the effect twice.
+ */
+const NewFormBlock = ({ updateAttributes }: Pick<NodeViewProps, "updateAttributes">) => {
+  const { t } = useTranslation();
+  const pages = usePages();
+  const started = useRef(false);
+  const [failed, setFailed] = useState(false);
+  const parentId = pages?.selectedPageId ?? null;
+  useEffect(() => {
+    if (started.current || !parentId) return;
+    started.current = true;
+    void (async () => {
+      try {
+        const { database } = await api.createDatabase({ parentId, title: t("pages.form.titlePlaceholder") });
+        const { view } = await api.createDatabaseView(database.id, { name: t("pages.form.builder"), type: "form" });
+        // As in Notion, the table beside a new form holds its responses.
+        const table = database.views[0];
+        if (table) await api.updateDatabaseView(database.id, table.id, { name: t("pages.form.responsesView") }).catch(() => undefined);
+        pages?.refresh();
+        updateAttributes({ databaseId: database.id, viewId: view.id });
+      } catch {
+        setFailed(true);
+      }
+    })();
+  }, [pages, parentId, t, updateAttributes]);
+  return <div className="py-4 text-sm text-slate-400" role={failed ? "alert" : "status"}>{failed ? t("pages.form.loadFailed") : t("pages.db.loading")}</div>;
+};
+
+const DatabaseBlockView = ({ node, updateAttributes }: NodeViewProps) => {
   const { t } = useTranslation();
   const pages = usePages();
   const databaseId = String(node.attrs.databaseId ?? "");
+  if (!databaseId && node.attrs.viewId === NEW_FORM_VIEW) {
+    return <NodeViewWrapper className="ponder-database-block my-3" contentEditable={false}><NewFormBlock updateAttributes={updateAttributes} /></NodeViewWrapper>;
+  }
   const page = pages?.nodes.find((item) => item.databaseId === databaseId);
   return (
     <NodeViewWrapper className="ponder-database-block my-3" contentEditable={false}>

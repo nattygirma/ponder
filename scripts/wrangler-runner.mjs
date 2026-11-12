@@ -13,7 +13,7 @@ const REPOSITORY_WRANGLER_VALUES = {
   bucket_name: "ponder-resources",
   preview_bucket_name: "ponder-resources-preview",
 };
-const REPOSITORY_WRANGLER_SHA256 = "b8ead0dc33c0132561444173559fe6afef50f14eb1bfb618bdf091c80b96efcf";
+const REPOSITORY_WRANGLER_SHA256 = "94aff630389f032eef218fb96ebd11a567f3b4f51338a941047d3f15223a6975";
 
 const configValue = (config, key) => {
   const match = config.match(new RegExp(`^${key}\\s*=\\s*(?:"([^"]*)"|(true|false))`, "m"));

@@ -130,6 +130,7 @@ import { isNotebookSitePagePath, renderNotebookSitePage } from "./notebook-site-
 import { isPublicMemoSharePagePath, renderPublicMemoSharePage } from "./share-page";
 import { registerMemoShareRoutes, registerPublicShareRoutes } from "./share-routes";
 import { registerPublicTableFormRoutes, registerTableFormRoutes } from "./table-form-routes";
+import { registerDatabaseFormRoutes, registerPublicDatabaseFormRoutes } from "./database-form-routes";
 import {
   deleteStoredObjects,
   getActiveObjectStorageConfig,
@@ -274,6 +275,7 @@ app.get("/api/openapi.json", (c) => c.json(apiProbe));
 registerPublicShareRoutes(app);
 registerPublicNotebookShareRoutes(app);
 registerPublicTableFormRoutes(app);
+registerPublicDatabaseFormRoutes(app);
 
 registerAuthRoutes(app, {
   authenticateRequest: (...args) => authenticateRequest(...args),
@@ -369,6 +371,7 @@ registerWorkspaceExtensionRoutes(app, { isDemoMode: (...args) => isDemoMode(...a
 registerMemoShareRoutes(app);
 registerNotebookShareRoutes(app);
 registerTableFormRoutes(app);
+registerDatabaseFormRoutes(app);
 registerTemplateRoutes(app, {
   createMemoRecord: (...args) => createMemoRecord(...args),
   getMemoDetail: (...args) => getMemoDetail(...args),
@@ -478,6 +481,14 @@ const worker = {
     const loadAppShell = () => env.ASSETS.fetch(new Request(new URL("/", request.url), { method: "GET" }));
     if (isNotebookSitePagePath(pathname)) {
       return (await renderNotebookSitePage(request, createCloudflareStorageAdapter(env).db, loadAppShell))!;
+    }
+    // Database forms (`/f/<token>`) are the app shell, sent with the public-link headers so the
+    // token stays out of search indexes, caches and Referer headers.
+    if (pathname.startsWith("/f/") && (request.method === "GET" || request.method === "HEAD")) {
+      const shell = await loadAppShell();
+      const headers = new Headers(shell.headers);
+      for (const [name, value] of Object.entries(PUBLIC_PAGE_HEADERS)) headers.set(name, value);
+      return new Response(request.method === "HEAD" ? null : shell.body, { status: shell.status, headers });
     }
     // `/share/*` runs the worker first. Unknown share paths still fall through
     // to the asset shell so a typo does not become a JSON 404.

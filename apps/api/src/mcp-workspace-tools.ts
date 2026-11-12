@@ -32,6 +32,7 @@ import type { AppContext, AuthContext } from "./api-context";
 import { AppError } from "./app-error";
 import { rowChangeListener } from "./automation-routes";
 import { listAutomations } from "./automation-service";
+import { parseFormQuestions } from "./database-form-service";
 import { createMemoComment, deleteMemoComment, listMemoComments, listWorkspaceMembers, updateMemoComment } from "./comment-service";
 import { loadConnectedCalendars, searchConnectedApps } from "./connections";
 import {
@@ -672,7 +673,18 @@ export const callWorkspaceTool = async (c: AppContext, auth: AuthContext, name: 
           id: automation.id, name: automation.name, enabled: automation.enabled, trigger: automation.trigger,
           actions: automation.actions.map((action) => action.type), next_run_at: automation.nextRunAt,
         }));
-        return { ...databaseOut(c, database), automations };
+        // Form views take answers from people outside the workspace when public; their links and questions are listed too.
+        const forms = (await db
+          .prepare(`SELECT view_id, token, access, title, fields_json, response_count FROM database_forms WHERE workspace_id = ? AND database_id = ?`)
+          .bind(ws, database.id)
+          .all<{ view_id: string; token: string; access: string; title: string; fields_json: string; response_count: number }>()).results
+          .filter((form) => database.views.some((view) => view.id === form.view_id && view.type === "form"))
+          .map((form) => ({
+            view_id: form.view_id, title: form.title, access: form.access, responses: form.response_count,
+            url: `${c.env.ALTSTACK_APP_URL?.replace(/\/+$/, "") || new URL(c.req.url).origin}/f/${form.token}`,
+            questions: parseFormQuestions(form.fields_json).map((question) => ({ property_id: question.propertyId, required: question.required === true })),
+          }));
+        return { ...databaseOut(c, database), automations, forms };
       }
       return await fetchPage(c, auth, id);
     }

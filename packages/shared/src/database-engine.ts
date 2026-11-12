@@ -1088,7 +1088,7 @@ export const computeRowValues = (input: {
       case "files":
         return valueCell(storedFileNames(stored));
       case "created_by":
-        return valueCell(row.createdBy ? personName(row.createdBy) : null);
+        return valueCell(row.createdBy ? personName(row.createdBy) : row.createdVia === "form" ? "Form" : null);
       case "last_edited_by":
         return valueCell(row.updatedBy ? personName(row.updatedBy) : null);
       case "unique_id":

@@ -1,6 +1,7 @@
 import {
   AutomationActionSchema,
   AutomationTriggerSchema,
+  DatabaseFormQuestionSchema,
   DatabaseSchemaSchema,
   nextScheduleRun,
   ScheduleSchema,
@@ -11,6 +12,7 @@ import {
   type JsonBackupDatabase,
   type JsonBackupDatabaseTemplate,
   type JsonBackupDatabaseView,
+  type JsonBackupForm,
   type JsonBackupPageNode,
   type JsonBackupPages,
   type TiptapDoc,
@@ -77,6 +79,11 @@ type AutomationBackupRow = {
   id: string; database_id: string; name: string; enabled: number; trigger_json: string; actions_json: string;
   position: number; created_at: string; updated_at: string;
 };
+type FormBackupRow = {
+  id: string; database_id: string; view_id: string; token: string; access: "workspace" | "public" | "closed"; anonymous: number;
+  title: string; description: string; submit_label: string; confirmation_title: string; confirmation_message: string;
+  submit_another: number; notify: number; fields_json: string; password_hash: string | null; created_at: string; updated_at: string;
+};
 type ViewBackupRow = { id: string; database_id: string; name: string; type: string; config_json: string; position: number; created_at: string; updated_at: string };
 type CommentBackupRow = {
   id: string; memo_id: string; thread_id: string; quote: string | null; quote_occurrence: number; body: string;
@@ -85,7 +92,7 @@ type CommentBackupRow = {
 
 /** Everything a backup needs beyond the notes themselves, for the notes not in Trash. */
 export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): Promise<JsonBackupPages> => {
-  const [pages, databases, views, comments, templates, automations] = await Promise.all([
+  const [pages, databases, views, comments, templates, automations, forms] = await Promise.all([
     db.prepare(
       `SELECT id, parent_memo_id, page_position, page_icon, page_cover, page_style, database_id, properties_json, row_number
        FROM memos WHERE workspace_id = ? AND is_deleted = 0 ORDER BY id ASC`,
@@ -123,6 +130,15 @@ export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): 
        INNER JOIN memos m ON m.id = d.page_memo_id
        WHERE a.workspace_id = ? AND m.is_deleted = 0 ORDER BY a.database_id ASC, a.position ASC, a.id ASC`,
     ).bind(workspaceId).all<AutomationBackupRow>(),
+    db.prepare(
+      `SELECT f.id, f.database_id, f.view_id, f.token, f.access, f.anonymous, f.title, f.description, f.submit_label,
+              f.confirmation_title, f.confirmation_message, f.submit_another, f.notify, f.fields_json, f.password_hash,
+              f.created_at, f.updated_at
+       FROM database_forms f
+       INNER JOIN databases d ON d.id = f.database_id
+       INNER JOIN memos m ON m.id = d.page_memo_id
+       WHERE f.workspace_id = ? AND m.is_deleted = 0 ORDER BY f.database_id ASC, f.id ASC`,
+    ).bind(workspaceId).all<FormBackupRow>(),
   ]);
   const live = new Set(pages.results.map((row) => row.id));
   return {
@@ -201,6 +217,32 @@ export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): 
       createdAt: row.created_at,
       updatedAt: row.updated_at,
     })),
+    forms: forms.results.map((row): JsonBackupForm => ({
+      id: row.id,
+      databaseId: row.database_id,
+      viewId: row.view_id,
+      token: row.token,
+      access: row.access,
+      anonymous: row.anonymous === 1,
+      title: row.title,
+      description: row.description,
+      submitLabel: row.submit_label,
+      confirmationTitle: row.confirmation_title,
+      confirmationMessage: row.confirmation_message,
+      submitAnother: row.submit_another === 1,
+      notify: row.notify === 1,
+      questions: (() => {
+        try {
+          const parsed = JSON.parse(row.fields_json) as unknown;
+          return Array.isArray(parsed) ? parsed.filter((item): item is Record<string, unknown> => !!item && typeof item === "object") : [];
+        } catch {
+          return [];
+        }
+      })(),
+      passwordProtected: Boolean(row.password_hash),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    })),
   };
 };
 
@@ -222,7 +264,7 @@ const existingIds = async (db: DatabaseAdapter, table: "memos" | "databases", wo
 /** A restore never overwrites another workspace's rows. */
 const assertNotInOtherWorkspace = async (
   db: DatabaseAdapter,
-  table: "databases" | "database_views" | "database_templates" | "database_automations" | "memo_comments",
+  table: "databases" | "database_views" | "database_templates" | "database_automations" | "database_forms" | "memo_comments",
   workspaceId: string,
   ids: string[],
 ) => {
@@ -247,6 +289,7 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
   const { pages, databases, views, comments } = input;
   const templates = input.templates ?? [];
   const automations = input.automations ?? [];
+  const forms = input.forms ?? [];
   const memoIds = [
     ...pages.flatMap((page) => [page.memoId, ...(page.parentId ? [page.parentId] : [])]),
     ...databases.map((database) => database.pageMemoId),
@@ -266,9 +309,17 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
   await assertNotInOtherWorkspace(db, "database_views", workspaceId, views.map((item) => item.id));
   await assertNotInOtherWorkspace(db, "database_templates", workspaceId, templates.map((item) => item.id));
   await assertNotInOtherWorkspace(db, "database_automations", workspaceId, automations.map((item) => item.id));
+  await assertNotInOtherWorkspace(db, "database_forms", workspaceId, forms.map((item) => item.id));
+  // A form link belongs to one form: a token another workspace (or another form) uses is never taken over.
+  for (const chunk of chunks(forms, ID_CHUNK)) {
+    const taken = await db.prepare(
+      `SELECT id FROM database_forms WHERE token IN (${chunk.map(() => "?").join(", ")}) AND NOT (workspace_id = ? AND id IN (${chunk.map(() => "?").join(", ")})) LIMIT 1`,
+    ).bind(...chunk.map((form) => form.token), workspaceId, ...chunk.map((form) => form.id)).first<{ id: string }>();
+    if (taken) throw new AppError("cross_workspace_id_conflict", "Backup contains a form link already used by another form.", 409);
+  }
   await assertNotInOtherWorkspace(db, "memo_comments", workspaceId, comments.map((item) => item.id));
 
-  const databaseIds = [...views.map((view) => view.databaseId), ...templates.map((template) => template.databaseId), ...automations.map((item) => item.databaseId), ...pages.flatMap((page) => (page.databaseId ? [page.databaseId] : []))];
+  const databaseIds = [...views.map((view) => view.databaseId), ...templates.map((template) => template.databaseId), ...automations.map((item) => item.databaseId), ...forms.map((item) => item.databaseId), ...pages.flatMap((page) => (page.databaseId ? [page.databaseId] : []))];
   const knownDatabases = await existingIds(db, "databases", workspaceId, databaseIds);
   for (const database of databases) knownDatabases.add(database.id);
   if (databaseIds.some((id) => !knownDatabases.has(id))) throw invalid("Backup page data points at a database that isn't in it.");
@@ -343,6 +394,28 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
     ).bind(
       automation.id, automation.databaseId, workspaceId, automation.name, automation.enabled ? 1 : 0, JSON.stringify(trigger.data),
       JSON.stringify(actions), automation.position, automation.createdAt, automation.updatedAt,
+    ));
+  }
+  for (const form of forms) {
+    const questions = form.questions.flatMap((item) => {
+      const question = DatabaseFormQuestionSchema.safeParse(item);
+      return question.success ? [question.data] : [];
+    });
+    // The password isn't in the backup, so a protected public form comes back closed until someone sets a new one.
+    const access = form.passwordProtected && form.access === "public" ? "closed" : form.access;
+    statements.push(db.prepare(
+      `INSERT INTO database_forms (id, workspace_id, database_id, view_id, token, access, anonymous, title, description, submit_label,
+         confirmation_title, confirmation_message, submit_another, notify, fields_json, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET access = excluded.access, anonymous = excluded.anonymous, title = excluded.title,
+         description = excluded.description, submit_label = excluded.submit_label, confirmation_title = excluded.confirmation_title,
+         confirmation_message = excluded.confirmation_message, submit_another = excluded.submit_another, notify = excluded.notify,
+         fields_json = excluded.fields_json, updated_at = excluded.updated_at
+       WHERE database_forms.workspace_id = excluded.workspace_id AND database_forms.database_id = excluded.database_id`,
+    ).bind(
+      form.id, workspaceId, form.databaseId, form.viewId, form.token, access, form.anonymous ? 1 : 0, form.title, form.description,
+      form.submitLabel, form.confirmationTitle, form.confirmationMessage, form.submitAnother ? 1 : 0, form.notify ? 1 : 0,
+      JSON.stringify(questions), form.createdAt, form.updatedAt,
     ));
   }
   for (const page of pages) {

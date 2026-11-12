@@ -13,7 +13,7 @@
 import worker from "../apps/api/src/index.ts";
 import { spaAssets } from "./spa-assets.mjs";
 
-const WORKER_FIRST = [/^\/api\//, /^\/mcp$/, /^\/__scheduled$/, /^\/s\//, /^\/share\//];
+const WORKER_FIRST = [/^\/api\//, /^\/mcp$/, /^\/__scheduled$/, /^\/s\//, /^\/share\//, /^\/f\//];
 
 const bindings = (env) => ({
   ...env,

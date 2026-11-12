@@ -13,4 +13,4 @@ export const PUBLIC_PAGE_HEADERS: Readonly<Record<string, string>> = {
 
 /** Web routes rendered for anonymous visitors of a share or form link. */
 export const isPublicPagePath = (pathname: string) =>
-  pathname.startsWith("/share/") || pathname.startsWith("/form/");
+  pathname.startsWith("/share/") || pathname.startsWith("/form/") || pathname.startsWith("/f/");

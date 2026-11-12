@@ -382,6 +382,11 @@ export const RowTitle = ({ db, row, children }: { db: DatabaseHandle; row: Datab
   );
 };
 
+const CreatedByForm = () => {
+  const { t } = useTranslation();
+  return <span className="inline-flex items-center rounded bg-slate-100 px-1.5 text-xs text-slate-600" data-created-by-form>{t("pages.db.createdByForm")}</span>;
+};
+
 export const DatabaseCell = ({ db, row, property, readOnly, onChange }: {
   db: DatabaseHandle;
   row: DatabaseRow;
@@ -396,6 +401,10 @@ export const DatabaseCell = ({ db, row, property, readOnly, onChange }: {
 
   if (property.type === "created_by" || property.type === "last_edited_by") {
     const id = property.type === "created_by" ? row.createdBy : row.updatedBy;
+    // A response from a signed-out visitor (or an anonymous form) was made by the form, as Notion shows it.
+    if (!id && property.type === "created_by" && row.createdVia === "form") {
+      return <CreatedByForm />;
+    }
     return <PeopleChips ids={id ? [id] : []} />;
   }
   if (property.type === "button") {

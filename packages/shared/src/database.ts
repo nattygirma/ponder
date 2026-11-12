@@ -33,7 +33,7 @@ export const DATABASE_PROPERTY_TYPES = [
 ] as const;
 export type DatabasePropertyType = (typeof DATABASE_PROPERTY_TYPES)[number];
 
-export const DATABASE_VIEW_TYPES = ["table", "board", "calendar", "gallery", "list", "timeline", "chart"] as const;
+export const DATABASE_VIEW_TYPES = ["table", "board", "calendar", "gallery", "list", "timeline", "chart", "form"] as const;
 export type DatabaseViewType = (typeof DATABASE_VIEW_TYPES)[number];
 
 export const DATABASE_OPTION_COLORS = ["gray", "brown", "orange", "yellow", "green", "blue", "purple", "pink", "red"] as const;
@@ -273,6 +273,8 @@ export type DatabaseRow = {
   /** User ids, when a person (not an API token or import) made or last changed the row. */
   createdBy: string | null;
   updatedBy: string | null;
+  /** "form" when a form response made the row, which Created by shows as "Form", like Notion. */
+  createdVia?: "form" | null;
   createdAt: string;
   updatedAt: string;
 };

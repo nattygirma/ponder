@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useImperativeHandle, useState, type ComponentTyp
 import { Extension, type Editor, type Range } from "@tiptap/core";
 import { ReactRenderer } from "@tiptap/react";
 import { PluginKey } from "@tiptap/pm/state";
+import { NEW_FORM_VIEW } from "@/components/database/form-block";
 import Suggestion, { type SuggestionKeyDownProps, type SuggestionProps } from "@tiptap/suggestion";
 import {
   BetweenHorizontalStart,
@@ -11,6 +12,7 @@ import {
   CalendarDays,
   ChartColumn,
   ChevronsDownUp,
+  ClipboardList,
   Columns2,
   Columns3,
   Database,
@@ -76,7 +78,9 @@ export type SlashCommandId =
   | "columns-3"
   | "database"
   | "chart"
-  | "button";
+  | "button"
+  // Database forms (Phase 3). Its label is optional until the editor passes one.
+  | "form";
 
 type SlashCommandGroup = "suggested" | "basic" | "insert";
 type SlashCommandIcon = ComponentType<{ className?: string }>;
@@ -86,7 +90,7 @@ export type SlashCommandLabels = {
   empty: string;
   close: string;
   groups: Record<SlashCommandGroup, string>;
-  items: Record<SlashCommandId, string>;
+  items: Record<Exclude<SlashCommandId, "form">, string> & { form?: string };
 };
 
 export type SlashCommandActions = {
@@ -153,13 +157,15 @@ export const createSlashCommandItems = (labels: SlashCommandLabels): SlashComman
   { id: "sub-page", command: "page", group: "insert", icon: FileText, label: labels.items["sub-page"], keywords: ["subpage", "child"] },
   { id: "database", command: "database", group: "insert", icon: Database, label: labels.items.database, keywords: ["board", "calendar", "kanban"] },
   { id: "chart", command: "chart", group: "insert", icon: ChartColumn, label: labels.items.chart, keywords: ["graph", "bar", "line", "donut", "pie"] },
+  // Database forms (Phase 3): a new database with a Form view, like Notion's /form.
+  { id: "form", command: "form", group: "insert", icon: ClipboardList, label: labels.items.form || "Form", keywords: ["survey", "typeform", "responses", "signup"] },
   { id: "button", command: "button", group: "insert", icon: MousePointerClick, label: labels.items.button, keywords: ["action", "automation", "click"] },
   { id: "callout", command: "callout", group: "basic", icon: Lightbulb, label: labels.items.callout, keywords: ["note", "tip", "warning"] },
   { id: "columns-2", command: "columns", group: "insert", icon: Columns2, label: labels.items["columns-2"], keywords: ["layout", "side"] },
   { id: "columns-3", command: "columns3", group: "insert", icon: Columns3, label: labels.items["columns-3"], keywords: ["layout", "side"] },
 ];
 
-const PAGE_LAYOUT_COMMANDS = new Set<SlashCommandId>(["sub-page", "database", "chart", "button"]);
+const PAGE_LAYOUT_COMMANDS = new Set<SlashCommandId>(["sub-page", "database", "chart", "button", "form"]);
 
 export const filterSlashCommandItems = (items: SlashCommandItem[], query: string) => {
   const normalizedQuery = query.trim().toLocaleLowerCase();
@@ -318,6 +324,10 @@ const runSlashCommand = ({
     case "chart":
       chain.run();
       actions.insertChart();
+      break;
+    // Database forms (Phase 3): the block makes the database and its Form view once it's on the page.
+    case "form":
+      chain.insertContent([{ type: "ponderDatabase", attrs: { databaseId: "", viewId: NEW_FORM_VIEW } }, { type: "paragraph" }]).run();
       break;
     case "button":
       actions.beforeInsertButton?.();

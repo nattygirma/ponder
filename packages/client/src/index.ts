@@ -106,6 +106,10 @@ import type {
   AutomationRun,
   AutomationTrigger,
   DatabaseAutomation,
+  DatabaseFileValue,
+  DatabaseForm,
+  DatabaseFormUpdate,
+  PublicDatabaseForm,
 } from "@ponder/shared";
 
 
@@ -1253,6 +1257,15 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
     deleteDatabaseTemplate: (id: string, templateId: string) =>
       request<{ ok: true }>(`/api/v1/databases/${encodeURIComponent(id)}/templates/${encodeURIComponent(templateId)}`, { method: "DELETE" }),
 
+    getDatabaseForm: (databaseId: string, viewId: string) =>
+      request<{ form: DatabaseForm }>(`/api/v1/databases/${encodeURIComponent(databaseId)}/forms/${encodeURIComponent(viewId)}`),
+
+    updateDatabaseForm: (databaseId: string, viewId: string, payload: DatabaseFormUpdate) =>
+      request<{ form: DatabaseForm }>(`/api/v1/databases/${encodeURIComponent(databaseId)}/forms/${encodeURIComponent(viewId)}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
+
     listDatabaseAutomations: (id: string) =>
       request<{ automations: DatabaseAutomation[]; email: { sent: number; limit: number | null; available: boolean }; webhooks: boolean }>(
         `/api/v1/databases/${encodeURIComponent(id)}/automations`,
@@ -1768,6 +1781,27 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
         `/api/public/forms/${encodeURIComponent(token)}/resources`,
         { method: "POST", body: form },
       );
+    },
+
+    getPublicDatabaseForm: (token: string) =>
+      request<{ form: PublicDatabaseForm }>(`/api/public/database-forms/${encodeURIComponent(token)}`),
+
+    unlockPublicDatabaseForm: (token: string, password: string) =>
+      request<{ ok: true }>(`/api/public/database-forms/${encodeURIComponent(token)}/unlock`, {
+        method: "POST",
+        body: JSON.stringify({ password }),
+      }),
+
+    submitPublicDatabaseForm: (token: string, answers: Record<string, unknown>, website = "") =>
+      request<{ ok: true }>(`/api/public/database-forms/${encodeURIComponent(token)}/responses`, {
+        method: "POST",
+        body: JSON.stringify({ answers, ...(website ? { website } : {}) }),
+      }),
+
+    uploadPublicDatabaseFormFile: (token: string, file: File) => {
+      const form = new FormData();
+      form.append("file", file, file.name || "file");
+      return request<{ file: DatabaseFileValue }>(`/api/public/database-forms/${encodeURIComponent(token)}/files`, { method: "POST", body: form });
     },
 
     revokeMemoShare: (memoId: string) =>

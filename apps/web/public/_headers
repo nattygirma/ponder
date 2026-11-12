@@ -34,3 +34,8 @@
   X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
   Cache-Control: private, no-store
   Referrer-Policy: no-referrer
+
+/f/*
+  X-Robots-Tag: noindex, nofollow, noarchive, nosnippet, noimageindex
+  Cache-Control: private, no-store
+  Referrer-Policy: no-referrer

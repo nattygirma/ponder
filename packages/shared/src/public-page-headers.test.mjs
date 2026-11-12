@@ -23,6 +23,8 @@ describe("public page headers", () => {
     expect(isPublicPagePath("/share/abc")).toBe(true);
     expect(isPublicPagePath("/share/notebook/abc/memo")).toBe(true);
     expect(isPublicPagePath("/form/abc")).toBe(true);
+    expect(isPublicPagePath("/f/abc")).toBe(true);
+    expect(isPublicPagePath("/files")).toBe(false);
     expect(isPublicPagePath("/")).toBe(false);
     expect(isPublicPagePath("/settings")).toBe(false);
     expect(isPublicPagePath("/shared")).toBe(false);
@@ -30,7 +32,7 @@ describe("public page headers", () => {
 
   test("Cloudflare static asset rules send the same headers as the shared policy", () => {
     const rules = readHeaderRules(new URL("../../../apps/web/public/_headers", import.meta.url));
-    for (const route of ["/share/*", "/form/*"]) {
+    for (const route of ["/share/*", "/form/*", "/f/*"]) {
       expect(Object.fromEntries(rules.get(route) ?? [])).toEqual(PUBLIC_PAGE_HEADERS);
     }
   });

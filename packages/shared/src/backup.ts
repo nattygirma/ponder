@@ -213,6 +213,27 @@ export const JsonBackupAutomationSchema = z.object({
   updatedAt: z.string().min(1),
 });
 
+/** A form view's questions and settings. Its password isn't kept, so a password-protected form comes back closed. */
+export const JsonBackupFormSchema = z.object({
+  id: IdSchema,
+  databaseId: IdSchema,
+  viewId: IdSchema,
+  token: z.string().regex(/^[A-Za-z0-9_-]{43}$/),
+  access: z.enum(["workspace", "public", "closed"]),
+  anonymous: z.boolean(),
+  title: z.string().max(200),
+  description: z.string().max(2000),
+  submitLabel: z.string().max(60),
+  confirmationTitle: z.string().max(200),
+  confirmationMessage: z.string().max(2000),
+  submitAnother: z.boolean(),
+  notify: z.boolean(),
+  questions: z.array(JsonRecordSchema).max(100),
+  passwordProtected: z.boolean(),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+});
+
 export const JsonBackupDatabaseViewSchema = z.object({
   id: IdSchema,
   databaseId: IdSchema,
@@ -248,8 +269,11 @@ export const JsonBackupPagesSchema = z.object({
   templates: z.array(JsonBackupDatabaseTemplateSchema).default([]),
   /** Missing from backups made before databases had automations. */
   automations: z.array(JsonBackupAutomationSchema).default([]),
+  /** Missing from backups made before databases had forms. */
+  forms: z.array(JsonBackupFormSchema).default([]),
 });
 
+export type JsonBackupForm = z.infer<typeof JsonBackupFormSchema>;
 export type JsonBackupDatabaseTemplate = z.infer<typeof JsonBackupDatabaseTemplateSchema>;
 export type JsonBackupAutomation = z.infer<typeof JsonBackupAutomationSchema>;
 export type JsonBackupPageNode = z.infer<typeof JsonBackupPageNodeSchema>;
@@ -258,7 +282,7 @@ export type JsonBackupDatabaseView = z.infer<typeof JsonBackupDatabaseViewSchema
 export type JsonBackupComment = z.infer<typeof JsonBackupCommentSchema>;
 export type JsonBackupPages = z.infer<typeof JsonBackupPagesSchema>;
 
-export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [], templates: [], automations: [] };
+export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [], templates: [], automations: [], forms: [] };
 
 /** One restore request: any mix of the lists, sent in order databases, views, templates, pages, comments. */
 export const RestoreJsonPagesSchema = z.object({
@@ -268,6 +292,7 @@ export const RestoreJsonPagesSchema = z.object({
   comments: z.array(JsonBackupCommentSchema).max(500).default([]),
   templates: z.array(JsonBackupDatabaseTemplateSchema).max(500).default([]),
   automations: z.array(JsonBackupAutomationSchema).max(500).default([]),
+  forms: z.array(JsonBackupFormSchema).max(500).default([]),
 });
 
 export const JsonBackupAiPromptSchema = z.object({

@@ -9,6 +9,7 @@ import { AppError } from "./app-error.ts";
 import { registerBackupRoutes } from "./backup-routes.ts";
 import { restoreJsonMemos, restoreJsonNotebooks } from "./backup-service.ts";
 import { createMemoComment } from "./comment-service.ts";
+import { getOrCreateForm, updateForm } from "./database-form-service.ts";
 import { createDatabase, createDatabaseRow, createDatabaseTemplate, createDatabaseView, getDatabase } from "./database-service.ts";
 import { sha256Bytes } from "./hash-utils.ts";
 import { apiError } from "./http-errors.ts";
@@ -120,7 +121,7 @@ const restoreAll = async (target, backup) => {
     const response = await target.postJson("/api/v1/restores/json/memos", { memos: backup.memos.slice(index, index + 10) });
     expect(response.status).toBe(200);
   }
-  for (const key of ["databases", "views", "templates", "pages", "comments"]) {
+  for (const key of ["databases", "views", "templates", "forms", "pages", "comments"]) {
     const response = await target.postJson("/api/v1/restores/json/pages", { [key]: backup.pages[key] });
     expect(response.status).toBe(200);
   }
@@ -165,6 +166,31 @@ describe("page backup", () => {
     expect(database.views.map((view) => view.type)).toContain("board");
     const links = target.sqlite.query("SELECT source_memo_id, target_memo_id FROM memo_links").all();
     expect(links).toContainEqual({ source_memo_id: made.child.id, target_memo_id: made.parent.id });
+  });
+
+  test("a form view's questions, settings and link survive a backup; a password-protected one comes back closed", async () => {
+    const source = installation();
+    const made = await buildWorkspace(source);
+    const db = source.storage.db;
+    const formView = await createDatabaseView(db, WORKSPACE_ID, made.database.id, { name: "Sign-up", type: "form" });
+    const title = made.database.schema.properties.find((property) => property.type === "title");
+    await getOrCreateForm(db, WORKSPACE_ID, made.database.id, formView.id, "user:usr_owner");
+    const open = await updateForm(db, WORKSPACE_ID, made.database.id, formView.id, {
+      title: "Join us", access: "public", notify: true, questions: [{ propertyId: title.id, required: true, description: "Your name" }],
+    }, "user:usr_owner");
+    const lockedView = await createDatabaseView(db, WORKSPACE_ID, made.database.id, { name: "Private", type: "form" });
+    await updateForm(db, WORKSPACE_ID, made.database.id, lockedView.id, { access: "public", passwordProtected: true }, "user:usr_owner");
+    const backup = await exportAll(source);
+    expect(backup.pages.forms).toHaveLength(2);
+    expect(JSON.stringify(backup.pages.forms)).not.toContain("password_hash");
+
+    const target = installation();
+    emptyWorkspace(target);
+    await restoreAll(target, backup);
+    const restored = (await target.request("/api/v1/backups/pages")).body.forms;
+    const joinUs = restored.find((form) => form.viewId === formView.id);
+    expect(joinUs).toMatchObject({ token: open.token, title: "Join us", access: "public", notify: true, questions: [{ propertyId: title.id, required: true, description: "Your name" }] });
+    expect(restored.find((form) => form.viewId === lockedView.id)).toMatchObject({ access: "closed", passwordProtected: false });
   });
 
   test("restoring the same page data twice changes nothing", async () => {
@@ -219,7 +245,7 @@ describe("page backup", () => {
     }, new Set(["a"]));
     expect(kept).toEqual({
       pages: [{ memoId: "a", parentId: null, position: 0, icon: null, cover: null, style: null, databaseId: null, properties: {} }],
-      databases: [], views: [], comments: [], templates: [], automations: [],
+      databases: [], views: [], comments: [], templates: [], automations: [], forms: [],
     });
   });
 });
