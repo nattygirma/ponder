@@ -32,6 +32,7 @@ import {
 } from "./resource-service";
 import { getWorkspaceId, requireScopes, requireUser } from "./request-auth";
 import { readPageBackup, restorePageBackup } from "./page-backup";
+import { expandSyncedInMemos } from "./synced-block-service";
 import { refreshWakeLater } from "./automation-routes";
 import type { DatabaseAdapter } from "./storage-contract";
 import type { initiateResourceRestoreUpload as initiateResourceRestoreUploadService } from "./resource-upload-service";
@@ -394,7 +395,8 @@ export const registerBackupRoutes = (
 
     const totalCount = totalRow?.count ?? page.length;
     return context.json({
-      memos: page.map(dependencies.mapMemoDetail),
+      // Each synced block's content goes inside its tag, so the export keeps it.
+      memos: await expandSyncedInMemos(context.env.storage.db, context.get("auth"), page.map(dependencies.mapMemoDetail)),
       resources,
       ...(includeTotal ? { totalCount } : {}),
       ...exportContinuation(page, offset, includeTotal ? offset + page.length < totalCount : memoRows.results.length > limit),

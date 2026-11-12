@@ -13,6 +13,7 @@ import { PdfAttachment } from "./pdf-attachment";
 import { PluginEmbed } from "./plugin-embed";
 import { ButtonBlock, Callout, Column, Columns, DatabaseEmbed, LinkPreview, SubPage } from "./page-blocks";
 import { Breadcrumb, MediaPlaceholder, Tab, TableOfContents, Tabs, VideoEmbed, WebBookmark } from "./notion-blocks";
+import { AiBlock, SyncedBlock } from "./synced-ai-blocks";
 import { EmptyExternalLink } from "./empty-external-link";
 import { PonderLink } from "./editor-link";
 import { createPonderTaskItem } from "./task-item-input";
@@ -36,6 +37,9 @@ export type CreatePonderDocumentExtensionsOptions = {
   buttonBlock?: AnyExtension;
   /** Editor versions (node views) of the Phase C blocks, by node name; others keep the plain node. */
   notionBlocks?: Partial<Record<"toc" | "breadcrumb" | "tabs" | "tab" | "embed" | "bookmark" | "media", AnyExtension>>;
+  /** Editor versions of the Phase F blocks (synced block, AI block). */
+  syncedBlock?: AnyExtension;
+  aiBlock?: AnyExtension;
   table?: Parameters<typeof TableKit.configure>[0];
   /** The editor's mention node (with its node view); codecs keep the plain one. */
   mention?: AnyExtension;
@@ -84,6 +88,8 @@ export const createPonderDocumentExtensions = (
   options.notionBlocks?.embed ?? VideoEmbed,
   options.notionBlocks?.bookmark ?? WebBookmark,
   options.notionBlocks?.media ?? MediaPlaceholder,
+  options.syncedBlock ?? SyncedBlock,
+  options.aiBlock ?? AiBlock,
   PageColorMark,
   ...SuggestionMarks,
   // Markdown has no block colours or ids, so its documents stay free of those fields.

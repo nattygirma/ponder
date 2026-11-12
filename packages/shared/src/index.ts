@@ -30,6 +30,7 @@ export * from "./note-links";
 export * from "./page-blocks";
 export * from "./notion-blocks";
 export * from "./media-links";
+export * from "./synced-ai-blocks";
 export * from "./page-outline";
 export * from "./web-bookmark";
 export * from "./embed-services";

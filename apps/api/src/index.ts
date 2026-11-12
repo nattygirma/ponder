@@ -101,6 +101,7 @@ import { automationEnvFrom, runScheduledAutomations } from "./automation-service
 import { registerCommentRoutes } from "./comment-routes";
 import { registerCalendarRoutes } from "./calendar-routes";
 import { registerWebBookmarkRoutes } from "./web-bookmark-routes";
+import { registerSyncedBlockRoutes } from "./synced-block-routes";
 import { registerConnectionRoutes } from "./connection-routes";
 import { teamGuard } from "./team-guard";
 import { registerPublicInvitationRoutes, registerTeamRoutes } from "./team-routes";
@@ -368,6 +369,7 @@ registerCommentRoutes(app);
 registerCalendarRoutes(app);
 registerConnectionRoutes(app);
 registerWebBookmarkRoutes(app);
+registerSyncedBlockRoutes(app);
 registerTeamRoutes(app);
 registerPosterRenderRoutes(app);
 registerPluginDistributionRoutes(app);

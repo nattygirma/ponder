@@ -46,6 +46,8 @@ export const teamGuard: MiddlewareHandler<AppEnv> = async (c, next) => {
     const level = await getPageAccessLevel(db, auth, id!);
     return level === "none" ? hidden() : next();
   }
+  // Synced blocks check the original page and the copy's page themselves (synced-block-service.ts).
+  if (area === "synced-blocks") return next();
   // Following a page and counting a view only need to see it, whatever the person's role.
   if (area === "pages" && id && (sub === "subscription" || sub === "views")) {
     const level = await getPageAccessLevel(db, auth, id);

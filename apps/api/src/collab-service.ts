@@ -67,7 +67,7 @@ const appendNodes = (parent: Y.XmlFragment | Y.XmlElement, nodes: JsonNode[]) =>
   }
 };
 
-const seedState = (doc: TiptapDoc) => {
+export const seedState = (doc: TiptapDoc) => {
   const ydoc = new Y.Doc();
   ydoc.transact(() => appendNodes(ydoc.getXmlFragment(FRAGMENT), ((doc as unknown as JsonNode).content ?? [])));
   const state = encode(Y.encodeStateAsUpdate(ydoc));
