@@ -113,6 +113,22 @@ import type {
 } from "@ponder/shared";
 
 
+/** A synced block as one copy sees it; content and pages are empty when the original is out of reach. */
+export type SyncedBlockView = {
+  id: string;
+  sourceMemoId: string;
+  canRead: boolean;
+  canEdit: boolean;
+  generation: number;
+  version: number;
+  state: string | null;
+  pages: Array<{ memoId: string; title: string; isOriginal: boolean }>;
+  pageCount: number;
+};
+export type SyncedBlockSyncResult =
+  | { reset: true; generation: number; version: number; state: string; canEdit: boolean }
+  | { reset?: false; generation: number; version: number; update: string | null; canEdit: boolean };
+
 type DatabaseTemplateInput = Partial<Pick<DatabaseTemplate, "name" | "icon" | "title" | "properties" | "content" | "isDefault" | "position" | "repeat">>;
 type AutomationInput = { name?: string; enabled?: boolean; trigger?: AutomationTrigger; actions?: AutomationAction[] };
 /** The browser's time zone, so "today" in a button's action is the clicker's today. */
@@ -1389,6 +1405,18 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
         method: "POST",
         body: JSON.stringify({ url }),
       }),
+
+    /** Notion's Synced block (Phase F): create, open, live-edit and unsync. */
+    createSyncedBlock: (memoId: string, content?: Record<string, unknown>) =>
+      request<{ id: string }>("/api/v1/synced-blocks", { method: "POST", body: JSON.stringify({ memoId, ...(content ? { content } : {}) }) }),
+    getSyncedBlock: (id: string, memoId: string | null) =>
+      request<{ block: SyncedBlockView }>(`/api/v1/synced-blocks/${encodeURIComponent(id)}${memoId ? `?${new URLSearchParams({ memoId })}` : ""}`),
+    syncSyncedBlock: (id: string, input: { memoId: string | null; generation: number; version: number; update?: string; stateVector?: string }, signal?: AbortSignal) =>
+      request<SyncedBlockSyncResult>(`/api/v1/synced-blocks/${encodeURIComponent(id)}/sync`, { method: "POST", body: JSON.stringify(input), signal }),
+    unsyncAllSyncedBlock: (id: string) =>
+      request<{ unsynced: number; skipped: number }>(`/api/v1/synced-blocks/${encodeURIComponent(id)}/unsync-all`, { method: "POST" }),
+    expandSyncedMarkdown: (markdown: string) =>
+      request<{ markdown: string }>("/api/v1/synced-blocks/expand", { method: "POST", body: JSON.stringify({ markdown }) }),
 
     searchConnectedApps: (q: string) =>
       request<{ results: { provider: "github"; title: string; subtitle: string; url: string }[] }>(`/api/v1/connections/search?${new URLSearchParams({ q })}`),

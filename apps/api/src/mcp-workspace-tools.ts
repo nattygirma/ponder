@@ -59,6 +59,7 @@ import {
   updateMemoRecord,
 } from "./memo-service";
 import { getPageNode, listPageBacklinks, movePage, setPagePlacement, updatePageMeta, resolveNewPagePlacement } from "./page-service";
+import { applySyncedMarkdownEdits, expandSyncedForReader } from "./synced-block-service";
 import { assertScope, getActorLabel, getAuditActor, hasScopes } from "./request-auth";
 import { deniedPagesCondition, getPageAccessLevel, listUserWorkspaces, restrictedUserId } from "./team-service";
 
@@ -531,7 +532,7 @@ const fetchPage = async (c: AppContext, auth: AuthContext, id: string) => {
     parent: parentDatabase ? { database_id: parentDatabase } : node.parentId ? { page_id: node.parentId } : { notebook_id: node.notebookId },
     ...(properties ? { properties } : {}),
     ...(node.databaseId ? { database: databaseOut(c, await getDatabase(db, auth.workspaceId, node.databaseId)) } : {}),
-    content: memo.contentMarkdown,
+    content: await expandSyncedForReader(db, auth, memo.contentMarkdown),
     children: children.results.map((row) => listItem(c, row)),
     updated_at: memo.updatedAt,
   };
@@ -556,6 +557,8 @@ const replaceContent = (content: string, updates: unknown[]) => {
 };
 
 const saveMemo = async (c: AppContext, auth: AuthContext, id: string, input: { title?: string; contentMarkdown?: string; isPinned?: boolean }) => {
+  // Content inside a synced tag edits the shared block when this person may (synced-block-service.ts).
+  if (input.contentMarkdown !== undefined) input = { ...input, contentMarkdown: (await applySyncedMarkdownEdits(c.env.storage.db, auth, id, input.contentMarkdown)).markdown };
   const result = await updateMemoRecord(c.env.storage.db, auth.workspaceId, id, input, getAuditActor(c), getActorLabel(c));
   if ("error" in result) throw new AppError("conflict", result.message ?? "The page changed while saving. Try again.", 409);
   return result.memo;
@@ -797,6 +800,7 @@ export const callWorkspaceTool = async (c: AppContext, auth: AuthContext, name: 
       } else if (command === "update_content" || command === "replace_content") {
         const memo = await getMemoDetail(db, ws, id);
         if (!memo) throw new AppError("not_found", "Page not found", 404);
+        const current = await expandSyncedForReader(db, auth, memo.contentMarkdown);
         let content: string;
         if (command === "replace_content") {
           if (typeof args.new_str !== "string") throw new AppError("invalid_params", "new_str is required for replace_content", 400);
@@ -804,11 +808,11 @@ export const callWorkspaceTool = async (c: AppContext, auth: AuthContext, name: 
         } else {
           const updates = Array.isArray(args.content_updates) ? args.content_updates : [];
           if (!updates.length) throw new AppError("invalid_params", "content_updates is required for update_content", 400);
-          const result = replaceContent(memo.contentMarkdown, updates);
+          const result = replaceContent(current, updates);
           content = result.content;
           warnings.push(...result.warnings);
         }
-        if (content !== memo.contentMarkdown) await saveMemo(c, auth, id, { contentMarkdown: content });
+        if (content !== current) await saveMemo(c, auth, id, { contentMarkdown: content });
       } else {
         throw new AppError("invalid_params", "command is update_properties, update_content or replace_content", 400);
       }

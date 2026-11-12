@@ -58,9 +58,10 @@ import {
   ListTree,
   Navigation,
   PanelTop,
+  RefreshCcw,
   Workflow,
 } from "lucide-react";
-import { BREADCRUMB_NODE_TYPE, BUTTON_NODE_TYPE, CALLOUT_NODE_TYPE, COLUMNS_NODE_TYPE, createColumnsContent, createTabsContent, DETAILS_NODE_TYPE, MEDIA_PLACEHOLDER_NODE_TYPE, TAB_NODE_TYPE, TOC_NODE_TYPE, type ChartType, type DatabaseViewType, type MediaKind } from "@ponder/shared";
+import { AI_BLOCK_NODE_TYPE, BREADCRUMB_NODE_TYPE, BUTTON_NODE_TYPE, CALLOUT_NODE_TYPE, COLUMNS_NODE_TYPE, createColumnsContent, createTabsContent, DETAILS_NODE_TYPE, MEDIA_PLACEHOLDER_NODE_TYPE, SYNCED_BLOCK_NODE_TYPE, TAB_NODE_TYPE, TOC_NODE_TYPE, type ChartType, type DatabaseViewType, type MediaKind } from "@ponder/shared";
 import { PAGE_COLORS, type PageColorName } from "@ponder/shared/page-color";
 import { Command, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
@@ -70,7 +71,7 @@ import { NEW_FORM_VIEW } from "@/components/database/form-block";
 
 /**
  * Ponder's `/` menu, laid out like Notion's: the same groups, order, labels and Markdown hints.
- * Notion items whose block Ponder doesn't have yet (Synced block, embeds…) are left out until
+ * Notion items whose block Ponder doesn't have yet (AI Notetaker, embeds…) are left out until
  * those blocks exist, rather than shown as dead items.
  */
 export type SlashCommandGroup =
@@ -130,6 +131,7 @@ export type SlashBlockId =
   | "button"
   | "breadcrumb"
   | "tabs"
+  | "synced"
   | "toggle-heading-1"
   | "toggle-heading-2"
   | "toggle-heading-3"
@@ -138,6 +140,7 @@ export type SlashBlockId =
   | "columns-4"
   | "columns-5"
   | "mermaid"
+  | "ai-block"
   | "inline-math"
   | "current-date"
   | "current-time"
@@ -187,6 +190,8 @@ export type SlashCommandActions = {
   insertChart: (type?: ChartType) => void;
   /** Called just before a /button block goes in, so it opens its editor. */
   beforeInsertButton?: () => void;
+  /** Called just before an AI block goes in, so it opens its prompt. */
+  beforeInsertAiBlock?: () => void;
   /** Called just before an empty media block goes in, so it opens its Upload / Link panel. */
   beforeInsertMedia?: () => void;
   importMarkdown: () => void;
@@ -316,12 +321,13 @@ export const createSlashCommandItems = (labels: SlashCommandLabels, current: Tur
     item("database-inline", "database", Database, ["database", "db", "inline", "kanban", "board"], { pageOnly: true }),
     item("database-full-page", "database", SquareArrowOutUpRight, ["database", "db", "full page"], { pageOnly: true }),
     item("linked-database", "database", Link2, ["linked", "database", "db", "existing", "view"], { pageOnly: true }),
-    // Advanced blocks, in Notion's order (Synced block and AI Notetaker aren't in Ponder).
+    // Advanced blocks, in Notion's order (AI Notetaker isn't in Ponder).
     item("toc", "advanced", ListTree, ["toc", "table of contents", "outline", "headings", "contents"]),
     item("block-math", "advanced", Sigma, ["equation", "math", "latex", "formula", "katex", "tex", "数式"]),
     item("button", "advanced", MousePointerClick, ["action", "automation", "click"], { pageOnly: true }),
     item("breadcrumb", "advanced", Navigation, ["breadcrumb", "path", "parent"], { pageOnly: true }),
     item("tabs", "advanced", PanelTop, ["tabs", "tab", "switch"]),
+    item("synced", "advanced", RefreshCcw, ["synced", "sync", "transclusion", "mirror", "copy"], { pageOnly: true }),
     item("toggle-heading-1", "advanced", ToggleHeadingIcon(1), ["toggle", "heading"], { hint: "# >" }),
     item("toggle-heading-2", "advanced", ToggleHeadingIcon(2), ["toggle", "heading"], { hint: "## >" }),
     item("toggle-heading-3", "advanced", ToggleHeadingIcon(3), ["toggle", "heading"], { hint: "### >" }),
@@ -330,6 +336,7 @@ export const createSlashCommandItems = (labels: SlashCommandLabels, current: Tur
     item("columns-4", "advanced", Columns4, ["columns", "layout", "side"]),
     item("columns-5", "advanced", Columns4, ["columns", "layout", "side"]),
     item("mermaid", "advanced", Workflow, ["mermaid", "diagram", "chart", "flowchart", "code"]),
+    item("ai-block", "advanced", AiFaceIcon, ["ai", "ai block", "generate", "prompt", "summary", "write"]),
     // Inline
     item("inline-math", "inline", Sigma, ["equation", "math", "latex", "formula", "katex", "tex", "数式"]),
     item("current-date", "inline", CalendarDays, ["date", "today"], { searchOnly: true }),
@@ -685,6 +692,12 @@ const runSlashCommand = ({
       actions.turnInto(editor.state.selection.$from.before(editor.state.selection.$from.depth), `toggle-h${id.slice(-1)}` as TurnIntoTarget);
       break;
     case "mermaid": chain.setCodeBlock({ language: "mermaid" }).run(); break;
+    // A synced block gets its shared document from the server when it first shows (SyncedBlock.tsx).
+    case "synced": insertBlock(chain, { type: SYNCED_BLOCK_NODE_TYPE, attrs: { syncedId: "" } }); break;
+    case "ai-block":
+      actions.beforeInsertAiBlock?.();
+      insertBlock(chain, { type: AI_BLOCK_NODE_TYPE, attrs: { prompt: "", generatedAt: "" } });
+      break;
     case "note-link":
       chain.run();
       window.requestAnimationFrame(actions.openNoteLinkPicker);

@@ -1,5 +1,6 @@
 import { collabPurgeStatements } from "./collab-service";
-import { hasPosterDocumentMarker, parsePosterDocument } from "@ponder/shared";
+import { replaceSyncedRefsStatements, syncedRefsPurgeStatements } from "./synced-block-service";
+import { hasPosterDocumentMarker, parsePosterDocument, stripSyncedMarkdown } from "@ponder/shared";
 import {
   createExcerpt,
   DEFAULT_MEMO_TITLE,
@@ -531,6 +532,7 @@ const deleteMemoRows = async (
 
     statements.push(
       ...collabPurgeStatements(db, placeholders, uniqueMemoIds),
+      ...syncedRefsPurgeStatements(db, placeholders, uniqueMemoIds),
       db.prepare(`DELETE FROM resources WHERE memo_id IN (${placeholders})`).bind(...uniqueMemoIds),
       db.prepare(`DELETE FROM memo_revisions WHERE memo_id IN (${placeholders})`).bind(...uniqueMemoIds),
       db.prepare(`DELETE FROM memo_contents WHERE memo_id IN (${placeholders})`).bind(...uniqueMemoIds),
@@ -789,6 +791,7 @@ export const emptyTrashMemosRecord = async (
     db.prepare(`DELETE FROM memo_revisions WHERE memo_id IN (SELECT id FROM memos WHERE workspace_id = ? AND is_deleted = 1)`).bind(workspaceId),
     db.prepare(`DELETE FROM memo_contents WHERE memo_id IN (SELECT id FROM memos WHERE workspace_id = ? AND is_deleted = 1)`).bind(workspaceId),
     ...collabPurgeStatements(db, "SELECT id FROM memos WHERE workspace_id = ? AND is_deleted = 1", [workspaceId]),
+    ...syncedRefsPurgeStatements(db, "SELECT id FROM memos WHERE workspace_id = ? AND is_deleted = 1", [workspaceId]),
     db.prepare(`DELETE FROM memos WHERE workspace_id = ? AND is_deleted = 1`).bind(workspaceId),
     auditStatement(db, actor.actorType, actor.actorId, "memo.trash_empty", "trash", "memos", { deleted }),
   ]);
@@ -1027,7 +1030,8 @@ export const createMemoRecord = async (
     throw new AppError("not_found", "Notebook not found", 404);
   }
   const tags = normalizeTags(input.tags);
-  const contentMarkdown = input.contentMarkdown ?? "";
+  // A page stores only synced block references; content inside a tag never lands in the page.
+  const contentMarkdown = withoutSyncedContent(input.contentMarkdown ?? "");
   const contentJson = input.contentJson && typeof input.contentJson === "object"
     ? input.contentJson as TiptapDoc
     : markdownToDoc(contentMarkdown);
@@ -1057,6 +1061,7 @@ export const createMemoRecord = async (
       .bind(id, JSON.stringify(contentJson), contentMarkdown, contentText, contentHash, createdAt, updatedAt),
     upsertMemoSearchDocumentStatement(db, id, title, contentText, tags.join(" ")),
     ...replaceMemoLinksStatements(db, workspaceId, id, contentJson),
+    ...replaceSyncedRefsStatements(db, workspaceId, id, contentJson),
     auditStatement(db, actor.actorType, actor.actorId, "memo.create", "memo", id, {
       notebookId: input.notebookId,
     }),
@@ -1397,11 +1402,11 @@ export const updateMemoRecord = async (
     input.contentJson !== undefined
       ? input.contentJson
       : input.contentMarkdown !== undefined
-        ? markdownToDoc(input.contentMarkdown)
+        ? markdownToDoc(withoutSyncedContent(input.contentMarkdown))
         : currentContentJson;
   const contentMarkdown =
     input.contentMarkdown !== undefined
-      ? input.contentMarkdown
+      ? withoutSyncedContent(input.contentMarkdown)
       : input.contentJson !== undefined
         ? docToMarkdown(contentJson)
         : current.content_markdown;
@@ -1506,6 +1511,7 @@ export const updateMemoRecord = async (
     ...revisionStatements,
     ...releaseResourceStatements,
     ...(hasDocumentUpdate ? replaceMemoLinksStatements(db, workspaceId, id, contentJson as TiptapDoc) : []),
+    ...(hasDocumentUpdate ? replaceSyncedRefsStatements(db, workspaceId, id, contentJson) : []),
     db
       .prepare(
         `UPDATE memos
@@ -1540,6 +1546,9 @@ export const updateMemoRecord = async (
 
   return { memo, releasedResources: releasedResourceRows };
 };
+
+const withoutSyncedContent = (markdown: string) =>
+  markdown.includes("<ponder-synced") ? stripSyncedMarkdown(markdown).markdown : markdown;
 
 const parseDoc = (json: string): TiptapDoc => {
   try {

@@ -32,7 +32,7 @@ const labels = {
     "chart-vertical_bar": "Vertical bar chart", "chart-horizontal_bar": "Horizontal bar chart", "chart-line": "Line chart",
     "chart-donut": "Donut chart", "chart-number": "Number chart", form: "Form",
     "database-inline": "Database - Inline", "database-full-page": "Database - Full page", "linked-database": "Linked view of data source",
-    toc: "Table of contents", breadcrumb: "Breadcrumb", tabs: "Tabs", mermaid: "Code - Mermaid",
+    toc: "Table of contents", breadcrumb: "Breadcrumb", tabs: "Tabs", mermaid: "Code - Mermaid", synced: "Synced block", "ai-block": "AI Block",
     "toggle-heading-1": "Toggle heading 1", "toggle-heading-2": "Toggle heading 2", "toggle-heading-3": "Toggle heading 3",
     "block-math": "Block equation", button: "Button", "columns-2": "2 columns", "columns-3": "3 columns", "columns-4": "4 columns", "columns-5": "5 columns",
     "inline-math": "Inline equation", "current-date": "Current date", "current-time": "Current time", "current-date-time": "Current date and time",
@@ -65,7 +65,7 @@ describe("slash command menu", () => {
   test("hides Heading 5 and 6 and Notion-only blocks Ponder lacks", () => {
     const all = labelsOf(filter(""));
     expect(all.some((label) => /Heading [56]/.test(label))).toBe(false);
-    for (const missing of ["Synced block", "AI Notetaker", "Feed view", "Map view", "Embed"]) {
+    for (const missing of ["AI Notetaker", "Feed view", "Map view", "Embed"]) {
       expect(all).not.toContain(missing);
     }
   });
@@ -81,10 +81,10 @@ describe("slash command menu", () => {
   test("lists Media, Advanced, Inline, Import and Actions as Notion does", () => {
     const all = filter("");
     expect(inGroup(all, "media")).toEqual(["Image", "Video", "Audio", "Code", "File", "Web bookmark"]);
-    // Notion's order, read on 2026-11-11, less Synced block and AI Notetaker.
+    // Notion's order, read on 2026-11-11, less AI Notetaker.
     expect(inGroup(all, "advanced")).toEqual([
-      "Table of contents", "Block equation", "Button", "Breadcrumb", "Tabs", "Toggle heading 1", "Toggle heading 2", "Toggle heading 3",
-      "2 columns", "3 columns", "4 columns", "5 columns", "Code - Mermaid",
+      "Table of contents", "Block equation", "Button", "Breadcrumb", "Tabs", "Synced block", "Toggle heading 1", "Toggle heading 2", "Toggle heading 3",
+      "2 columns", "3 columns", "4 columns", "5 columns", "Code - Mermaid", "AI Block",
     ]);
     expect(all.filter((item) => item.id.startsWith("toggle-heading")).map((item) => item.hint)).toEqual(["# >", "## >", "### >"]);
     expect(inGroup(all, "inline")).toEqual(["Inline equation"]);
@@ -135,6 +135,8 @@ describe("slash command menu", () => {
     expect(filter("bookmark").map((item) => item.id)).toEqual(["web-bookmark"]);
     expect(filter("toc").map((item) => item.id)).toEqual(["toc"]);
     expect(filter("tabs").map((item) => item.id)).toEqual(["tabs"]);
+    expect(filter("synced").map((item) => item.id)).toEqual(["synced"]);
+    expect(filter("ai block").map((item) => item.id)).toContain("ai-block");
     expect(filter("", { current: "toggle-h2" }).filter((item) => item.checked).map((item) => item.id)).toEqual(["turn-toggle-h2"]);
   });
 

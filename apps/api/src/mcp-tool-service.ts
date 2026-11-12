@@ -94,6 +94,7 @@ import {
     normalizeFilename,
   } from "./resource-service";
 import { assertScope, getActorLabel, getAuditActor } from "./request-auth";
+import { applySyncedMarkdownEdits, expandSyncedForReader } from "./synced-block-service";
 import { callWorkspaceTool, isWorkspaceTool } from "./mcp-workspace-tools";
 import { restoreMissingDefaultAiPrompts } from "./ai-prompt-seed";
 import {
@@ -328,7 +329,8 @@ export const callMcpTool = async (
           infographic: { template: infographicSyntaxTemplate(infographic.syntax) },
         };
       }
-      return { memo };
+      // AI sees each synced block's content inside its tag, when this person may read it.
+      return { memo: { ...memo, contentMarkdown: await expandSyncedForReader(c.env.storage.db, auth, memo.contentMarkdown) } };
     }
     case "get_table_records": {
       assertScope(auth, "read:memos");
@@ -698,6 +700,10 @@ export const callMcpTool = async (
       }
       const actor = getAuditActor(c);
       const actorLabel = getActorLabel(c);
+      // Content written inside a synced tag edits the shared block (when allowed); the page keeps the reference.
+      const synced = typeof args.contentMarkdown === "string"
+        ? await applySyncedMarkdownEdits(c.env.storage.db, auth, memoId, args.contentMarkdown)
+        : null;
       const result = await updateMemoRecord(
         c.env.storage.db,
         auth.workspaceId,
@@ -710,7 +716,7 @@ export const callMcpTool = async (
           notebookId: getOptionalString(args.notebookId) ?? undefined,
           title: getOptionalString(args.title) ?? undefined,
           isPinned: typeof args.isPinned === "boolean" ? args.isPinned : undefined,
-          contentMarkdown: getOptionalString(args.contentMarkdown) ?? undefined,
+          contentMarkdown: synced ? synced.markdown : getOptionalString(args.contentMarkdown) ?? undefined,
           tags: Array.isArray(args.tags) ? getOptionalStringArray(args.tags) : undefined,
           createdAt: getOptionalString(args.createdAt) ?? undefined,
           updatedAt: getOptionalString(args.updatedAt) ?? undefined,
@@ -723,7 +729,9 @@ export const callMcpTool = async (
         throw new Error(result.message);
       }
 
-      return { memo: result.memo };
+      return synced?.applied.length || synced?.ignored.length
+        ? { memo: result.memo, syncedBlocks: { updated: synced.applied, notAllowed: synced.ignored } }
+        : { memo: result.memo };
     }
     case "trash_memos": {
       assertScope(auth, "write:memos");

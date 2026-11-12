@@ -1,5 +1,6 @@
 import { mergeAttributes, Node, type JSONContent } from "@tiptap/core";
 import { NOTION_BLOCK_NODE_TYPES } from "./notion-blocks";
+import { AI_BLOCK_NODE_TYPE, SYNCED_BLOCK_NODE_TYPE } from "./synced-ai-blocks";
 import { blockAttrs, childrenOrParagraph, dataAttribute, escapeAttr, htmlBlockTokenizer, readAttr, renderBlocks, unescapeAttr } from "./page-block-markdown";
 
 export const SUB_PAGE_NODE_TYPE = "ponderSubPage" as const;
@@ -22,6 +23,8 @@ export const PAGE_BLOCK_NODE_TYPES = [
   LINK_PREVIEW_NODE_TYPE,
   BUTTON_NODE_TYPE,
   ...NOTION_BLOCK_NODE_TYPES,
+  SYNCED_BLOCK_NODE_TYPE,
+  AI_BLOCK_NODE_TYPE,
 ] as const;
 
 export const SubPage = Node.create({

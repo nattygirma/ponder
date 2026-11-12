@@ -20,6 +20,7 @@ import {
 import { AppError } from "./app-error";
 import { rescheduleAutomations } from "./automation-service";
 import { replaceMemoLinksStatements } from "./page-service";
+import { readSyncedBlocksBackup, replaceSyncedRefsStatements, restoreSyncedBlocksStatements } from "./synced-block-service";
 import type { DatabaseAdapter, PreparedStatementAdapter } from "./storage-contract";
 
 /*
@@ -92,7 +93,7 @@ type CommentBackupRow = {
 
 /** Everything a backup needs beyond the notes themselves, for the notes not in Trash. */
 export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): Promise<JsonBackupPages> => {
-  const [pages, databases, views, comments, templates, automations, forms] = await Promise.all([
+  const [pages, databases, views, comments, templates, automations, forms, syncedBlocks] = await Promise.all([
     db.prepare(
       `SELECT id, parent_memo_id, page_position, page_icon, page_cover, page_style, database_id, properties_json, row_number
        FROM memos WHERE workspace_id = ? AND is_deleted = 0 ORDER BY id ASC`,
@@ -139,9 +140,11 @@ export const readPageBackup = async (db: DatabaseAdapter, workspaceId: string): 
        INNER JOIN memos m ON m.id = d.page_memo_id
        WHERE f.workspace_id = ? AND m.is_deleted = 0 ORDER BY f.database_id ASC, f.id ASC`,
     ).bind(workspaceId).all<FormBackupRow>(),
+    readSyncedBlocksBackup(db, workspaceId),
   ]);
   const live = new Set(pages.results.map((row) => row.id));
   return {
+    syncedBlocks,
     pages: pages.results.map((row): JsonBackupPageNode => ({
       memoId: row.id,
       // A parent in Trash is not in the backup; the page comes back at the top of its notebook.
@@ -290,7 +293,9 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
   const templates = input.templates ?? [];
   const automations = input.automations ?? [];
   const forms = input.forms ?? [];
+  const syncedBlocks = input.syncedBlocks ?? [];
   const memoIds = [
+    ...syncedBlocks.map((block) => block.sourceMemoId),
     ...pages.flatMap((page) => [page.memoId, ...(page.parentId ? [page.parentId] : [])]),
     ...databases.map((database) => database.pageMemoId),
     ...comments.map((comment) => comment.memoId),
@@ -461,6 +466,9 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
     ).bind(workspaceId, ...chunk).run();
   }
 
+  // Synced blocks come before the pages' references to them, so the references find them.
+  await runBatches(db, await restoreSyncedBlocksStatements(db, workspaceId, syncedBlocks));
+
   // Restored notes don't index their page links; do it now so backlinks come back too.
   const pageIds = pages.map((page) => page.memoId);
   const linkStatements: PreparedStatementAdapter[] = [];
@@ -470,9 +478,9 @@ export const restorePageBackup = async (db: DatabaseAdapter, workspaceId: string
     ).bind(...chunk).all<{ memo_id: string; content_json: string | null }>();
     for (const row of rows.results) {
       const doc = parseObject(row.content_json) as TiptapDoc | null;
-      if (doc) linkStatements.push(...replaceMemoLinksStatements(db, workspaceId, row.memo_id, doc));
+      if (doc) linkStatements.push(...replaceMemoLinksStatements(db, workspaceId, row.memo_id, doc), ...replaceSyncedRefsStatements(db, workspaceId, row.memo_id, doc));
     }
   }
   await runBatches(db, linkStatements);
-  return { pages: pages.length, databases: databases.length, views: views.length, comments: comments.length };
+  return { syncedBlocks: syncedBlocks.length, pages: pages.length, databases: databases.length, views: views.length, comments: comments.length };
 };

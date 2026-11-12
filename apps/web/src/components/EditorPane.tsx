@@ -315,6 +315,8 @@ import { EditorTabs } from "./pages/TabsBlock";
 import { EditorMediaPlaceholder, EditorVideoEmbed, EditorWebBookmark, openNextMediaPanel } from "./pages/MediaBlocks";
 import { FloatingOutline } from "./pages/FloatingOutline";
 import { EditorButtonBlock, openNextButtonEditor } from "./pages/ButtonBlock";
+import { EditorSyncedBlock } from "./pages/SyncedBlock";
+import { EditorAiBlock, openNextAiBlockSetup } from "./pages/AiBlock";
 import { PageComments, type PageCommentsController } from "./comments/PageComments";
 import { usePageAccess, useViewer } from "./teams/Teams";
 import { anchorFromBlock, anchorFromSelection, createCommentHighlights } from "./comments/CommentHighlights";
@@ -912,10 +914,12 @@ const RichEditorPane = ({
         button: item("button"),
         breadcrumb: item("breadcrumb"),
         tabs: item("tabs"),
+        synced: item("syncedBlock"),
         "toggle-heading-1": item("toggleHeading1"),
         "toggle-heading-2": item("toggleHeading2"),
         "toggle-heading-3": item("toggleHeading3"),
         mermaid: item("mermaid"),
+        "ai-block": item("aiBlock"),
         "columns-2": item("columns2"),
         "columns-3": item("columns3"),
         "columns-4": item("columns4"),
@@ -990,6 +994,7 @@ const RichEditorPane = ({
       openLinkedDatabasePicker: () => setLinkedDatabasePickerOpen(true),
       insertChart: (type) => setChartPicker({ type }),
       beforeInsertButton: () => openNextButtonEditor(),
+      beforeInsertAiBlock: () => openNextAiBlockSetup(),
       beforeInsertMedia: () => openNextMediaPanel(),
       importMarkdown: () => markdownImportInputRef.current?.click(),
       importZip: () => openNotionImport(),
@@ -1537,6 +1542,8 @@ const RichEditorPane = ({
           media: EditorMediaPlaceholder.configure({ uploadFiles: (files) => void insertResourceFilesRef.current(files) }),
         },
         table: { table: { renderWrapper: true, resizable: true } },
+        syncedBlock: EditorSyncedBlock.configure({ getPageId: () => buttonPageIdRef.current }),
+        aiBlock: EditorAiBlock.configure({ getPageId: () => buttonPageIdRef.current }),
       }),
       PonderLink.configure({ openOnClick: false }),
       LinkPreviewPaste,

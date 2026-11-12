@@ -63,3 +63,25 @@ a header naming the AppFlowy-Web files it came from:
   description length (`utils/link-preview.ts`).
 - `apps/web/src/components/MermaidCodeBlock.tsx`: showing Mermaid's own parse
   error (`blocks/code/MermaidPreview.tsx`).
+
+Parts of Ponder's AI Block (Phase F of the Notion blocks plan) are adapted from
+AppFlowy-Web and from the AppFlowy Flutter app (https://github.com/AppFlowy-IO/AppFlowy),
+both Copyright AppFlowy and licensed under the GNU Affero General Public License
+v3.0. No icons, images or branding were copied; the layout and wording follow
+Notion's AI block. Each file carries a header naming its sources:
+
+- `apps/web/src/components/pages/AiBlock.tsx`: the request lifecycle of
+  AppFlowy-Web's `useAIMeetingRegenerate`
+  (`blocks/ai-meeting/useAIMeetingRegenerate.ts`): one active request with its
+  AbortController, cancel on unmount, only the current request clearing the
+  loading state, re-reading the block before replacing its children, and the
+  empty-answer and error handling.
+- `packages/shared/src/synced-ai-blocks.ts` (AI block section):
+  `normalizeGeneratedSummaryMarkdown` and the shape of
+  `buildSummaryRegeneratePrompt` (AppFlowy-Web,
+  `blocks/ai-meeting/ai-meeting.summary-regenerate.ts`), and the user-question
+  prompt of the Flutter app's AI writer
+  (`frontend/appflowy_flutter/lib/plugins/document/presentation/editor_plugins/ai/operations/ai_writer_entities.dart`).
+
+The synced block is Ponder's own: neither AppFlowy-Web, AppFlowy-Cloud nor the
+Flutter app has one.

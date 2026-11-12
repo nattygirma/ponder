@@ -8,6 +8,8 @@ const SHARE_PAGE_PATH = /^\/share\/([^/]+?)(\.md)?\/?$/;
 const SHARE_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 
 type SharePageRow = {
+  workspace_id: string;
+  memo_id: string;
   title: string | null;
   content_markdown: string | null;
   password_hash: string | null;
@@ -95,8 +97,30 @@ export const publicShareMarkdown = (title: string | null, body: string) => {
   return body ? `# ${heading}\n\n${body}` : `# ${heading}\n`;
 };
 
+// A page stores each synced block as an empty reference (synced-block-service.ts). This file also
+// runs in the Vite dev server, so it reads the references itself rather than importing the service.
+const STORED_SYNCED_TAG = /<ponder-synced id="([^"]*)"><\/ponder-synced>/g;
+const FENCE_LINE = /^[ ]{0,3}(`{3,}|~{3,})/;
+
+/** The page's own synced blocks written inline; copies of other pages' blocks are left out. */
+const inlineOwnSyncedBlocks = async (db: DatabaseAdapter, workspaceId: string, memoId: string, markdown: string) => {
+  const own = new Map((await db.prepare(
+    `SELECT id, content_markdown FROM synced_blocks WHERE workspace_id = ? AND source_memo_id = ?`,
+  ).bind(workspaceId, memoId).all<{ id: string; content_markdown: string }>()).results.map((block) => [block.id, block.content_markdown]));
+  let fence: string | null = null;
+  return markdown.split("\n").map((line) => {
+    const match = FENCE_LINE.exec(line);
+    if (match) {
+      if (fence === null) fence = match[1]![0]!;
+      else if (match[1]![0] === fence) fence = null;
+      return line;
+    }
+    return fence === null ? line.replace(STORED_SYNCED_TAG, (_tag, id: string) => own.get(id) ?? "") : line;
+  }).join("\n");
+};
+
 const loadShare = (db: DatabaseAdapter, token: string) => db.prepare(
-  `SELECT m.title, mc.content_markdown, ms.password_hash, ms.expires_at, m.updated_at, ms.show_updated_at, ms.show_branding
+  `SELECT ms.workspace_id, ms.memo_id, m.title, mc.content_markdown, ms.password_hash, ms.expires_at, m.updated_at, ms.show_updated_at, ms.show_branding
    FROM memo_shares ms
    INNER JOIN memos m ON m.id = ms.memo_id AND m.workspace_id = ms.workspace_id
    INNER JOIN memo_contents mc ON mc.memo_id = m.id
@@ -146,7 +170,10 @@ export const renderPublicMemoSharePage = async (
   const expired = Boolean(row) && isMemoShareExpired(row?.expires_at);
   const locked = !expired && Boolean(row?.password_hash);
   const readable = Boolean(row) && !expired && !locked;
-  const body = row?.content_markdown ?? "";
+  // The page's own synced blocks are written inline; copies of other pages' blocks are left out.
+  const body = row?.content_markdown?.includes("<ponder-synced")
+    ? await inlineOwnSyncedBlocks(db, row.workspace_id, row.memo_id, row.content_markdown)
+    : row?.content_markdown ?? "";
   const markdownUrl = `${url.origin}/share/${encodeURIComponent(target.segment)}.md`;
   const canonical = `${url.origin}/share/${encodeURIComponent(target.segment)}`;
 

@@ -234,6 +234,16 @@ export const JsonBackupFormSchema = z.object({
   updatedAt: z.string().min(1),
 });
 
+/** A synced block's shared content (Notion blocks plan, Phase F); pages hold references to it. */
+export const JsonBackupSyncedBlockSchema = z.object({
+  id: z.string().regex(/^syn_[A-Za-z0-9_-]{6,64}$/),
+  sourceMemoId: IdSchema,
+  content: JsonRecordSchema,
+  markdown: z.string().max(1_000_000),
+  createdAt: z.string().min(1),
+  updatedAt: z.string().min(1),
+});
+
 export const JsonBackupDatabaseViewSchema = z.object({
   id: IdSchema,
   databaseId: IdSchema,
@@ -271,8 +281,11 @@ export const JsonBackupPagesSchema = z.object({
   automations: z.array(JsonBackupAutomationSchema).default([]),
   /** Missing from backups made before databases had forms. */
   forms: z.array(JsonBackupFormSchema).default([]),
+  /** Missing from backups made before synced blocks. */
+  syncedBlocks: z.array(JsonBackupSyncedBlockSchema).default([]),
 });
 
+export type JsonBackupSyncedBlock = z.infer<typeof JsonBackupSyncedBlockSchema>;
 export type JsonBackupForm = z.infer<typeof JsonBackupFormSchema>;
 export type JsonBackupDatabaseTemplate = z.infer<typeof JsonBackupDatabaseTemplateSchema>;
 export type JsonBackupAutomation = z.infer<typeof JsonBackupAutomationSchema>;
@@ -282,7 +295,7 @@ export type JsonBackupDatabaseView = z.infer<typeof JsonBackupDatabaseViewSchema
 export type JsonBackupComment = z.infer<typeof JsonBackupCommentSchema>;
 export type JsonBackupPages = z.infer<typeof JsonBackupPagesSchema>;
 
-export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [], templates: [], automations: [], forms: [] };
+export const EMPTY_JSON_BACKUP_PAGES: JsonBackupPages = { pages: [], databases: [], views: [], comments: [], templates: [], automations: [], forms: [], syncedBlocks: [] };
 
 /** One restore request: any mix of the lists, sent in order databases, views, templates, pages, comments. */
 export const RestoreJsonPagesSchema = z.object({
@@ -293,6 +306,7 @@ export const RestoreJsonPagesSchema = z.object({
   templates: z.array(JsonBackupDatabaseTemplateSchema).max(500).default([]),
   automations: z.array(JsonBackupAutomationSchema).max(500).default([]),
   forms: z.array(JsonBackupFormSchema).max(500).default([]),
+  syncedBlocks: z.array(JsonBackupSyncedBlockSchema).max(500).default([]),
 });
 
 export const JsonBackupAiPromptSchema = z.object({

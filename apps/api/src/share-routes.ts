@@ -19,6 +19,7 @@ import { allowPasswordProtectedShare, setShareAccessCookie, shareAccessCookiePat
 import { encryptSharePassword, readSharePassword } from "./share-password-encryption";
 import { resolveMemoShareToken } from "./share-page";
 import { generateSharePassword } from "./share-password";
+import { resolveSyncedForPublicPage } from "./synced-block-service";
 
 const SHARE_TOKEN_BYTES = 32;
 
@@ -43,6 +44,7 @@ type ManagedMemoShareRow = MemoShareRow & {
 };
 type PublicMemoShareRow = {
   workspace_id: string;
+  memo_id: string;
   title: string | null;
   content_json: string;
   content_markdown: string;
@@ -184,7 +186,7 @@ export const registerPublicShareRoutes = (app: Hono<AppEnv>) => {
     if (!token) return notFound(c, "Shared note not found");
 
     const row = await c.env.storage.db.prepare(
-      `SELECT ms.workspace_id, m.title, mc.content_json, mc.content_markdown, m.tags_json, m.updated_at, ms.password_hash, ms.expires_at, ms.show_updated_at, ms.show_branding,
+      `SELECT ms.workspace_id, ms.memo_id, m.title, mc.content_json, mc.content_markdown, m.tags_json, m.updated_at, ms.password_hash, ms.expires_at, ms.show_updated_at, ms.show_branding,
               u.note_body_font, u.note_prose_font_size, u.note_prose_line_height, u.note_prose_palette,
               u.note_prose_custom_css, u.note_prose_custom_colors
        FROM memo_shares ms
@@ -201,7 +203,9 @@ export const registerPublicShareRoutes = (app: Hono<AppEnv>) => {
       return sharePasswordRequired(c);
     }
 
-    const contentJson = JSON.parse(row.content_json) as TiptapDoc;
+    // The page's own synced blocks show inline; copies of other pages' blocks aren't shared.
+    const { doc: contentJson, markdown: contentMarkdown } = await resolveSyncedForPublicPage(
+      c.env.storage.db, row.workspace_id, row.memo_id, JSON.parse(row.content_json) as TiptapDoc, row.content_markdown ?? "");
     const referencedMemoIds = collectMemoLinkIds(resolveMemoContentDoc(contentJson, row.content_markdown));
     const memoShareTokens: Record<string, string> = {};
     for (let offset = 0; offset < referencedMemoIds.length; offset += 80) {
@@ -222,7 +226,7 @@ export const registerPublicShareRoutes = (app: Hono<AppEnv>) => {
     const share: PublicMemoShare = {
       title: row.title,
       contentJson,
-      contentMarkdown: row.content_markdown,
+      contentMarkdown,
       tags: parseJsonArray(row.tags_json),
       updatedAt: row.updated_at,
       memoShareTokens,

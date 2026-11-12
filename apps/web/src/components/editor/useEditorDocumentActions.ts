@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import type { Editor } from "@tiptap/react";
 import { docToMarkdown, markdownToDoc, type MemoDetail, type ResolvedNoteProse, type TiptapDoc } from "@ponder/shared";
 import { useMermaidTheme } from "@/components/ThemeProvider";
+import { api } from "@/lib/api";
 import type { MemoDocumentActionRequest } from "@/lib/app-helpers";
 import { notePrintAppearanceFromProse } from "@/lib/note-print-appearance";
 import { buildSingleNoteMarkdown, downloadMarkdownFile } from "@/lib/note-markdown-export";
@@ -148,7 +149,10 @@ export const useEditorDocumentActions = ({
       return;
     }
 
-    downloadMarkdownFile(buildSingleNoteMarkdown(content.markdown, title, parseTagsText(tagsText)), title, t("common.untitledMemo"));
+    const download = (markdown: string) => downloadMarkdownFile(buildSingleNoteMarkdown(markdown, title, parseTagsText(tagsText)), title, t("common.untitledMemo"));
+    // Synced blocks are stored as references; the file gets the content this person may read.
+    if (!content.markdown.includes("<ponder-synced")) return download(content.markdown);
+    void api.expandSyncedMarkdown(content.markdown).then(({ markdown }) => download(markdown), () => download(content.markdown));
   }, [memo, notebookName, resolveExportContent, t, tagsText, title]);
 
   const handleExportHtml = useCallback(async () => {

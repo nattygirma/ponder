@@ -1,0 +1,310 @@
+/* Notion's Synced block and AI Block (Phase F of the Notion blocks plan). */
+
+:root {
+  --ponder-synced-outline: rgba(235, 128, 70, 0.6);
+  --ponder-synced-outline-strong: rgba(235, 128, 70, 0.9);
+  --ponder-synced-toolbar-bg: #ffffff;
+  --ponder-synced-toolbar-fg: rgba(55, 53, 47, 0.65);
+  --ponder-synced-toolbar-border: rgba(55, 53, 47, 0.12);
+  --ponder-synced-hover: rgba(55, 53, 47, 0.08);
+  --ponder-ai-border: rgba(55, 53, 47, 0.16);
+  --ponder-ai-accent: #2383e2;
+  --ponder-ai-muted: rgba(55, 53, 47, 0.5);
+  --ponder-ai-card: #ffffff;
+}
+:root.dark {
+  --ponder-synced-outline: rgba(200, 120, 64, 0.55);
+  --ponder-synced-outline-strong: rgba(220, 135, 72, 0.85);
+  --ponder-synced-toolbar-bg: #252525;
+  --ponder-synced-toolbar-fg: rgba(255, 255, 255, 0.6);
+  --ponder-synced-toolbar-border: rgba(255, 255, 255, 0.1);
+  --ponder-synced-hover: rgba(255, 255, 255, 0.07);
+  --ponder-ai-border: rgba(255, 255, 255, 0.13);
+  --ponder-ai-muted: rgba(255, 255, 255, 0.45);
+  --ponder-ai-card: #252525;
+}
+
+/* ---- Synced block ---- */
+.ponder-synced-block {
+  position: relative;
+  margin: 4px -8px;
+  padding: 3px 8px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  transition: border-color 120ms ease;
+}
+.ponder-synced-block:hover,
+.ponder-synced-block:focus-within,
+.ponder-synced-block.is-open {
+  border-color: var(--ponder-synced-outline);
+}
+/* Only a block picked in a focused page is shaded: a page whose first block is this one starts with it selected. */
+.ProseMirror-focused .ponder-synced-block.is-selected {
+  border-color: var(--ponder-synced-outline-strong);
+  background: rgba(35, 131, 226, 0.08);
+}
+.ponder-synced-toolbar {
+  position: absolute;
+  top: -34px;
+  right: -2px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--ponder-synced-toolbar-border);
+  border-radius: 6px;
+  background: var(--ponder-synced-toolbar-bg);
+  box-shadow: 0 4px 12px rgba(15, 15, 15, 0.08);
+  color: var(--ponder-synced-toolbar-fg);
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.ponder-synced-block:hover > .ponder-synced-toolbar,
+.ponder-synced-block:focus-within > .ponder-synced-toolbar,
+.ponder-synced-block.is-open > .ponder-synced-toolbar {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ponder-synced-status,
+.ponder-synced-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.ponder-synced-status:hover,
+.ponder-synced-icon:hover { background: var(--ponder-synced-hover); }
+.ponder-synced-divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 2px;
+  background: var(--ponder-synced-toolbar-border);
+}
+.ponder-synced-body .ProseMirror.ponder-synced-editor { min-height: 1.6em; padding: 0; outline: none; }
+.ponder-synced-body .ProseMirror > :first-child { margin-top: 0; }
+.ponder-synced-body .ProseMirror > :last-child { margin-bottom: 0; }
+.ponder-synced-body .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--ponder-ai-muted);
+  pointer-events: none;
+}
+.ponder-synced-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  color: var(--ponder-ai-muted);
+  font-size: 14px;
+}
+.ponder-synced-block.is-locked,
+.ponder-synced-block.is-loading { border-color: var(--ponder-synced-outline); }
+.ponder-synced-original-tag {
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--ponder-synced-hover);
+  color: var(--ponder-synced-toolbar-fg);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.ponder-synced-search {
+  width: 100%;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--ponder-synced-toolbar-border);
+  border-radius: 4px;
+  background: transparent;
+  font-size: 13px;
+  outline: none;
+}
+.ponder-synced-search:focus { border-color: var(--ponder-ai-accent); }
+
+/* ---- AI block ---- */
+.ponder-ai-block {
+  position: relative;
+  margin: 4px -8px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  transition: border-color 120ms ease;
+}
+.ponder-ai-block:hover,
+.ponder-ai-block:focus-within,
+.ponder-ai-block.is-generating { border-color: var(--ponder-ai-border); }
+.ProseMirror-focused .ponder-ai-block.is-selected { background: rgba(35, 131, 226, 0.08); }
+.ponder-ai-toolbar {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+}
+.ponder-ai-block:hover > .ponder-ai-toolbar,
+.ponder-ai-block:focus-within > .ponder-ai-toolbar,
+.ponder-ai-block.is-generating > .ponder-ai-toolbar,
+.ponder-ai-block:not(.has-answer) > .ponder-ai-toolbar {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* Over an answer, the toolbar sits above the block, as Notion's does, so it never covers the text. */
+.ponder-ai-block.has-answer > .ponder-ai-toolbar {
+  top: -34px;
+  right: -1px;
+  padding: 2px;
+  border: 1px solid var(--ponder-synced-toolbar-border);
+  border-radius: 6px;
+  background: var(--ponder-synced-toolbar-bg);
+  box-shadow: 0 4px 12px rgba(15, 15, 15, 0.08);
+}
+.ponder-ai-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  color: var(--ponder-ai-muted);
+}
+.ponder-ai-icon:hover { background: var(--ponder-synced-hover); }
+.ponder-ai-generate,
+.ponder-ai-done {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 4px;
+  background: var(--ponder-ai-accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+}
+.ponder-ai-generate:hover,
+.ponder-ai-done:hover { background: #0077d4; }
+.ponder-ai-generate:disabled { opacity: 0.5; }
+.ponder-ai-stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--ponder-ai-border);
+  border-radius: 4px;
+  font-size: 13px;
+}
+.ponder-ai-empty { padding-right: 120px; }
+.ponder-ai-empty-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  color: var(--ponder-ai-muted);
+  font-size: 14px;
+  text-align: left;
+}
+.ponder-ai-stream {
+  padding: 4px 0;
+  padding-right: 80px;
+  white-space: pre-wrap;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.ponder-ai-content { padding-right: 4px; }
+.ponder-ai-content.is-hidden { display: none; }
+.ponder-ai-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: rgba(235, 87, 87, 0.1);
+  color: #c4413a;
+  font-size: 13px;
+}
+:root.dark .ponder-ai-error { color: #ff8f86; }
+.ponder-ai-error-close { margin-left: auto; text-decoration: underline; }
+
+.ponder-ai-setup {
+  margin: 2px 0 6px;
+  padding: 12px;
+  border: 1px solid var(--ponder-ai-border);
+  border-radius: 8px;
+  background: var(--ponder-ai-card);
+  box-shadow: 0 6px 20px rgba(15, 15, 15, 0.08);
+  font-size: 14px;
+}
+.ponder-ai-setup-head,
+.ponder-ai-setup-row,
+.ponder-ai-using {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ponder-ai-setup-head { justify-content: space-between; margin-bottom: 10px; }
+.ponder-ai-setup-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.ponder-ai-setup-row { margin-bottom: 8px; color: var(--ponder-ai-muted); }
+.ponder-ai-output {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--ponder-synced-hover);
+  color: inherit;
+}
+.ponder-ai-prompt {
+  width: 100%;
+  min-height: 72px;
+  padding: 8px 10px;
+  border: 1px solid var(--ponder-ai-border);
+  border-radius: 6px;
+  background: transparent;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+.ponder-ai-prompt:focus { border-color: var(--ponder-ai-accent); box-shadow: 0 0 0 2px rgba(35, 131, 226, 0.2); }
+.ponder-ai-using { margin-top: 8px; color: var(--ponder-ai-muted); font-size: 13px; }
+.ponder-ai-using-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--ponder-synced-hover);
+}
+
+@media (max-width: 639px) {
+  .ponder-synced-block,
+  .ponder-ai-block { margin-left: 0; margin-right: 0; }
+  /* No hover on a phone: the toolbar shows while the block is in use. */
+  .ponder-synced-toolbar { top: -32px; }
+  .ponder-ai-block > .ponder-ai-toolbar,
+  .ponder-ai-block.has-answer > .ponder-ai-toolbar {
+    position: static; justify-content: flex-end; opacity: 1; pointer-events: auto; margin-bottom: 2px;
+    padding: 0; border: 0; background: transparent; box-shadow: none;
+  }
+  .ponder-ai-empty,
+  .ponder-ai-stream { padding-right: 0; }
+  .ponder-ai-setup { padding: 10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ponder-synced-block,
+  .ponder-synced-toolbar,
+  .ponder-ai-block,
+  .ponder-ai-toolbar { transition: none; }
+}
