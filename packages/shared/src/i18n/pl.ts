@@ -3260,7 +3260,7 @@ export const pl = {
     mermaidDiagram: "Wstaw diagram Mermaid",
     mermaidPreview: "Podgląd diagramu Mermaid",
     mermaidRendering: "Renderowanie diagramu...",
-    mermaidInvalid: "Nieprawidłowa składnia Mermaid. Edytuj źródło poniżej.",
+    mermaidInvalid: "Nieprawidłowa składnia Mermaid. Popraw kod.",
     mermaidEmpty: "Wpisz poniżej źródło Mermaid, aby wygenerować diagram.",
     mermaidSource: "Źródło Mermaid",
     mermaidShowSource: "Pokaż źródło Mermaid",

@@ -54,8 +54,13 @@ import {
   Type,
   Video,
   ClipboardList,
+  Bookmark,
+  ListTree,
+  Navigation,
+  PanelTop,
+  Workflow,
 } from "lucide-react";
-import { BUTTON_NODE_TYPE, CALLOUT_NODE_TYPE, COLUMNS_NODE_TYPE, createColumnsContent, DETAILS_NODE_TYPE, type ChartType, type DatabaseViewType } from "@ponder/shared";
+import { BREADCRUMB_NODE_TYPE, BUTTON_NODE_TYPE, CALLOUT_NODE_TYPE, COLUMNS_NODE_TYPE, createColumnsContent, createTabsContent, DETAILS_NODE_TYPE, MEDIA_PLACEHOLDER_NODE_TYPE, TAB_NODE_TYPE, TOC_NODE_TYPE, type ChartType, type DatabaseViewType, type MediaKind } from "@ponder/shared";
 import { PAGE_COLORS, type PageColorName } from "@ponder/shared/page-color";
 import { Command, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
@@ -65,8 +70,8 @@ import { NEW_FORM_VIEW } from "@/components/database/form-block";
 
 /**
  * Ponder's `/` menu, laid out like Notion's: the same groups, order, labels and Markdown hints.
- * Notion items whose block Ponder doesn't have yet (Table of contents, Tabs, embeds…) are left
- * out until those blocks exist, rather than shown as dead items.
+ * Notion items whose block Ponder doesn't have yet (Synced block, embeds…) are left out until
+ * those blocks exist, rather than shown as dead items.
  */
 export type SlashCommandGroup =
   | "suggested"
@@ -104,6 +109,7 @@ export type SlashBlockId =
   | "audio"
   | "code-block"
   | "attachment"
+  | "web-bookmark"
   | "view-table"
   | "view-board"
   | "view-gallery"
@@ -119,12 +125,19 @@ export type SlashBlockId =
   | "database-inline"
   | "database-full-page"
   | "linked-database"
+  | "toc"
   | "block-math"
   | "button"
+  | "breadcrumb"
+  | "tabs"
+  | "toggle-heading-1"
+  | "toggle-heading-2"
+  | "toggle-heading-3"
   | "columns-2"
   | "columns-3"
   | "columns-4"
   | "columns-5"
+  | "mermaid"
   | "inline-math"
   | "current-date"
   | "current-time"
@@ -174,6 +187,8 @@ export type SlashCommandActions = {
   insertChart: (type?: ChartType) => void;
   /** Called just before a /button block goes in, so it opens its editor. */
   beforeInsertButton?: () => void;
+  /** Called just before an empty media block goes in, so it opens its Upload / Link panel. */
+  beforeInsertMedia?: () => void;
   importMarkdown: () => void;
   importZip: () => void;
   turnInto: (pos: number, target: TurnIntoTarget) => void;
@@ -227,6 +242,19 @@ export const SLASH_GROUP_ORDER: SlashCommandGroup[] = [
 /** Groups whose name Notion shows after an item ("Table view · Database") in search results and Suggested. */
 const NAMED_GROUPS = new Set<SlashCommandGroup>(["database", "embeds", "import", "turnInto"]);
 
+/** Notion's toggle heading icon: a small arrow before the heading's own icon. */
+function ToggleHeadingIcon(level: 1 | 2 | 3): SlashCommandIcon {
+  const HeadingIcon = level === 1 ? Heading1 : level === 2 ? Heading2 : Heading3;
+  const Icon = ({ className }: { className?: string }) => (
+    <span className={cn("relative inline-flex items-center justify-center", className)} aria-hidden="true">
+      <ChevronRight className="absolute -left-[3px] h-2.5 w-2.5 stroke-[2.5]" />
+      <HeadingIcon className="ml-1 h-4 w-4 stroke-[1.5]" />
+    </span>
+  );
+  Icon.displayName = `ToggleHeading${level}Icon`;
+  return Icon;
+}
+
 /** Notion's Turn into list, in its order, with the item whose label each one reuses. */
 const TURN_INTO: Array<[TurnIntoTarget, SlashBlockId, SlashCommandIcon]> = [
   ["paragraph", "paragraph", Type],
@@ -241,6 +269,9 @@ const TURN_INTO: Array<[TurnIntoTarget, SlashBlockId, SlashCommandIcon]> = [
   ["code", "code-block", CodeXml],
   ["quote", "blockquote", Quote],
   ["callout", "callout", Lightbulb],
+  ["toggle-h1", "toggle-heading-1", ToggleHeadingIcon(1)],
+  ["toggle-h2", "toggle-heading-2", ToggleHeadingIcon(2)],
+  ["toggle-h3", "toggle-heading-3", ToggleHeadingIcon(3)],
 ];
 
 const VIEW_ITEMS: Array<[DatabaseViewType, SlashCommandIcon]> = [
@@ -277,6 +308,7 @@ export const createSlashCommandItems = (labels: SlashCommandLabels, current: Tur
     item("audio", "media", AudioLines, ["sound", "music", "upload"]),
     item("code-block", "media", CodeXml, ["code", "snippet", "pre"], { hint: "```" }),
     item("attachment", "media", Paperclip, ["file", "upload", "attachment", "pdf"]),
+    item("web-bookmark", "media", Bookmark, ["bookmark", "link", "preview"]),
     // Database: one item per view, then per chart, as in Notion.
     ...VIEW_ITEMS.map(([type, icon]) => item(`view-${type}` as SlashBlockId, "database", icon, ["database", "db", type], { pageOnly: true })),
     ...CHART_ITEMS.map(([type, icon]) => item(`chart-${type}` as SlashBlockId, "database", icon, ["chart", "graph", ...type.split("_")], { pageOnly: true })),
@@ -284,13 +316,20 @@ export const createSlashCommandItems = (labels: SlashCommandLabels, current: Tur
     item("database-inline", "database", Database, ["database", "db", "inline", "kanban", "board"], { pageOnly: true }),
     item("database-full-page", "database", SquareArrowOutUpRight, ["database", "db", "full page"], { pageOnly: true }),
     item("linked-database", "database", Link2, ["linked", "database", "db", "existing", "view"], { pageOnly: true }),
-    // Advanced blocks
+    // Advanced blocks, in Notion's order (Synced block and AI Notetaker aren't in Ponder).
+    item("toc", "advanced", ListTree, ["toc", "table of contents", "outline", "headings", "contents"]),
     item("block-math", "advanced", Sigma, ["equation", "math", "latex", "formula", "katex", "tex", "数式"]),
     item("button", "advanced", MousePointerClick, ["action", "automation", "click"], { pageOnly: true }),
+    item("breadcrumb", "advanced", Navigation, ["breadcrumb", "path", "parent"], { pageOnly: true }),
+    item("tabs", "advanced", PanelTop, ["tabs", "tab", "switch"]),
+    item("toggle-heading-1", "advanced", ToggleHeadingIcon(1), ["toggle", "heading"], { hint: "# >" }),
+    item("toggle-heading-2", "advanced", ToggleHeadingIcon(2), ["toggle", "heading"], { hint: "## >" }),
+    item("toggle-heading-3", "advanced", ToggleHeadingIcon(3), ["toggle", "heading"], { hint: "### >" }),
     item("columns-2", "advanced", Columns2, ["columns", "layout", "side"]),
     item("columns-3", "advanced", Columns3, ["columns", "layout", "side"]),
     item("columns-4", "advanced", Columns4, ["columns", "layout", "side"]),
     item("columns-5", "advanced", Columns4, ["columns", "layout", "side"]),
+    item("mermaid", "advanced", Workflow, ["mermaid", "diagram", "chart", "flowchart", "code"]),
     // Inline
     item("inline-math", "inline", Sigma, ["equation", "math", "latex", "formula", "katex", "tex", "数式"]),
     item("current-date", "inline", CalendarDays, ["date", "today"], { searchOnly: true }),
@@ -524,7 +563,10 @@ export const currentTurnIntoTarget = (editor: Editor): TurnIntoTarget => {
     if (name === "taskList") return "task";
     if (name === "blockquote") return "quote";
     if (name === CALLOUT_NODE_TYPE) return "callout";
-    if (name === DETAILS_NODE_TYPE) return "toggle";
+    if (name === DETAILS_NODE_TYPE) {
+      const level = Number($from.node(depth).attrs.level ?? 0);
+      return level >= 1 && level <= 3 ? `toggle-h${level}` as TurnIntoTarget : "toggle";
+    }
   }
   return "paragraph";
 };
@@ -535,6 +577,11 @@ const MIN_MENU_LIST_HEIGHT = 140;
 
 const VIEW_TYPES = new Set<string>(VIEW_ITEMS.map(([type]) => type));
 const CHART_TYPES = new Set<string>(CHART_ITEMS.map(([type]) => type));
+
+/** Puts an atom block where the `/` was, with a line after it to keep typing, as Notion does. */
+const insertBlock = (chain: ReturnType<Editor["chain"]>, block: { type: string; attrs?: Record<string, unknown> }) => {
+  chain.insertContent([block, { type: "paragraph" }]).run();
+};
 
 const runSlashCommand = ({
   actions,
@@ -606,15 +653,38 @@ const runSlashCommand = ({
     case "current-date": chain.insertContent(formatCurrentDate(new Date())).run(); break;
     case "current-time": chain.insertContent(formatCurrentTime(new Date())).run(); break;
     case "current-date-time": chain.insertContent(formatCurrentDateTime(new Date())).run(); break;
+    // As in Notion, a media block goes in empty and opens its Upload / Link panel.
     case "image":
     case "video":
     case "audio":
-    case "attachment": {
-      chain.run();
-      const accept = id === "attachment" ? undefined : `${id}/*`;
-      window.requestAnimationFrame(() => actions.openAttachmentPicker(accept));
+    case "attachment":
+    case "web-bookmark": {
+      const kind: MediaKind = id === "attachment" ? "file" : id === "web-bookmark" ? "bookmark" : id;
+      actions.beforeInsertMedia?.();
+      insertBlock(chain, { type: MEDIA_PLACEHOLDER_NODE_TYPE, attrs: { kind } });
       break;
     }
+    case "toc": insertBlock(chain, { type: TOC_NODE_TYPE }); break;
+    case "breadcrumb": insertBlock(chain, { type: BREADCRUMB_NODE_TYPE }); break;
+    case "tabs": {
+      chain.insertContent([createTabsContent(), { type: "paragraph" }]).run();
+      // Typing starts in the first tab, which begins where the `/` was.
+      const { doc } = editor.state;
+      let tabStart = -1;
+      doc.nodesBetween(Math.max(0, range.from - 1), Math.min(doc.content.size, range.from + 8), (node, pos) => {
+        if (tabStart < 0 && node.type.name === TAB_NODE_TYPE) tabStart = pos;
+        return tabStart < 0;
+      });
+      if (tabStart >= 0) editor.commands.setTextSelection(tabStart + 2);
+      break;
+    }
+    case "toggle-heading-1":
+    case "toggle-heading-2":
+    case "toggle-heading-3":
+      chain.run();
+      actions.turnInto(editor.state.selection.$from.before(editor.state.selection.$from.depth), `toggle-h${id.slice(-1)}` as TurnIntoTarget);
+      break;
+    case "mermaid": chain.setCodeBlock({ language: "mermaid" }).run(); break;
     case "note-link":
       chain.run();
       window.requestAnimationFrame(actions.openNoteLinkPicker);

@@ -3252,7 +3252,7 @@ export const enUS = {
     mermaidDiagram: "Insert Mermaid diagram",
     mermaidPreview: "Mermaid diagram preview",
     mermaidRendering: "Rendering diagram...",
-    mermaidInvalid: "Invalid Mermaid syntax. Edit the source below.",
+    mermaidInvalid: "Invalid Mermaid syntax. Edit the code to fix it.",
     mermaidEmpty: "Enter Mermaid source below to generate a diagram.",
     mermaidSource: "Mermaid source",
     mermaidShowSource: "Show Mermaid source",

@@ -3271,7 +3271,7 @@ export const ru = {
     mermaidDiagram: "Вставить диаграмму Mermaid",
     mermaidPreview: "Превью диаграммы Mermaid",
     mermaidRendering: "Отрисовка диаграммы…",
-    mermaidInvalid: "Неверный синтаксис Mermaid. Отредактируйте исходный код ниже.",
+    mermaidInvalid: "Неверный синтаксис Mermaid. Исправьте код.",
     mermaidEmpty: "Введите исходный код Mermaid ниже, чтобы создать диаграмму.",
     mermaidSource: "Исходник Mermaid",
     mermaidShowSource: "Показать исходник Mermaid",

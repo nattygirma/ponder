@@ -35,3 +35,31 @@ assets were copied), marked with a header comment where it appears:
   (`SimpleTableActionOverlay.tsx`) in `apps/web/src/components/editor/TableControls.tsx`.
 - Test cases drawn from AppFlowy-Web's simple-table Playwright specs in
   `apps/web/src/lib/editor-table-actions.test.mjs`.
+
+Parts of Ponder's Notion-style blocks (Phase C of the Notion blocks plan) are
+adapted from the same project and licence. Icons, images and branding were not
+copied; Ponder uses lucide icons and Notion's labels. Each file below carries
+a header naming the AppFlowy-Web files it came from:
+
+- `packages/shared/src/page-outline.ts`: heading extraction, nesting,
+  flattening and the active-heading rule (`blocks/outline/utils.ts`).
+- `apps/web/src/components/pages/outlineNavigation.ts`: heading navigation,
+  opening collapsed toggles and the reading-line tracker
+  (`blocks/outline/OutlineNavigation.tsx`).
+- `apps/web/src/components/pages/TableOfContentsBlock.tsx`: the table of
+  contents block (`blocks/outline/Outline.tsx`, `OutlineContent.tsx`).
+- `apps/web/src/components/pages/FloatingOutline.tsx`: the floating table of
+  contents (`blocks/outline/DockableOutline.tsx`, `dockable-outline.scss`).
+- `apps/web/src/components/pages/MediaBlocks.tsx`: the empty media block, its
+  Upload / Link panel, the video frame and the bookmark card
+  (`block-popover/{Image,Video,Audio,File}BlockPopoverContent.tsx`,
+  `_shared/image-upload/EmbedLink.tsx`, `blocks/audio/AudioBlock.tsx`,
+  `blocks/video/{VideoBlock,VideoEmpty,VideoRender}.tsx`,
+  `blocks/link-preview/LinkPreview.tsx`).
+- `packages/shared/src/media-links.ts`: adding `https://` to typed addresses
+  and the audio extension rule (`utils/url.ts`,
+  `block-popover/AudioBlockPopoverContent.tsx`).
+- `packages/shared/src/web-bookmark.ts`: the bookmark fallback title and
+  description length (`utils/link-preview.ts`).
+- `apps/web/src/components/MermaidCodeBlock.tsx`: showing Mermaid's own parse
+  error (`blocks/code/MermaidPreview.tsx`).

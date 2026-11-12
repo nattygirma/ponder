@@ -288,3 +288,438 @@ input.ponder-page-title-input {
   padding-right: 4px;
 }
 :root.dark .ProseMirror .ponder-slash-command-query.is-empty::after { color: rgba(255, 255, 255, 0.4); }
+
+/* ---- Phase C: Notion's table of contents, breadcrumb, tabs, media and bookmark blocks. ----
+   Colors mix with currentColor or transparency, so the light and dark themes share them. */
+:is(.ponder-toc-block, .ponder-breadcrumb-block, .ponder-tabs-block, .ponder-media-block, .ponder-embed-block, .ponder-bookmark-block).is-selected {
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #2383e2 45%, transparent);
+}
+
+.ponder-toc-block {
+  margin: 6px 0;
+  padding: 2px 0;
+  user-select: none;
+}
+.ponder-toc-row {
+  display: flex;
+  min-height: 30px;
+  align-items: center;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.4;
+  color: color-mix(in srgb, currentColor 60%, transparent);
+}
+.ponder-toc-row:hover,
+.ponder-toc-row:focus-visible {
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  outline: none;
+}
+.ponder-toc-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+}
+.ponder-toc-empty {
+  margin: 0;
+  padding: 4px 2px;
+  font-size: 14px;
+  color: color-mix(in srgb, currentColor 45%, transparent);
+}
+
+.ponder-breadcrumb-block {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px;
+  margin: 4px 0;
+  padding: 4px 2px;
+  font-size: 14px;
+  user-select: none;
+}
+.ponder-breadcrumb-item {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 240px;
+  align-items: center;
+  gap: 6px;
+  border-radius: 4px;
+  padding: 2px 6px;
+  color: inherit;
+}
+.ponder-breadcrumb-item:not([aria-current]):hover { background: color-mix(in srgb, currentColor 7%, transparent); }
+.ponder-breadcrumb-item[aria-current] { cursor: default; }
+.ponder-breadcrumb-separator {
+  padding: 0 2px;
+  color: color-mix(in srgb, currentColor 35%, transparent);
+}
+
+.ponder-tabs-block {
+  margin: 8px 0;
+  padding: 10px 12px 12px;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 12px;
+}
+.ponder-tabs-bar {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  user-select: none;
+}
+.ponder-tabs-tab,
+.ponder-tabs-rename {
+  flex: none;
+  height: 30px;
+  border-radius: 999px;
+  padding: 0 11px;
+  font-size: 14px;
+  font-weight: 500;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  white-space: nowrap;
+}
+.ponder-tabs-tab:hover { background: color-mix(in srgb, currentColor 6%, transparent); }
+.ponder-tabs-tab[aria-selected="true"] {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  color: inherit;
+}
+.ponder-tabs-rename {
+  border: 0;
+  outline: 2px solid color-mix(in srgb, #2383e2 55%, transparent);
+  background: transparent;
+  color: inherit;
+}
+.ponder-tabs-add {
+  display: inline-flex;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+.ponder-tabs-add:hover { background: color-mix(in srgb, currentColor 6%, transparent); }
+.ponder-tabs-body [data-type="ponder-tab"] > :first-child { margin-top: 0; }
+.ponder-tabs-body [data-type="ponder-tab"] > :last-child { margin-bottom: 0; }
+/* Notion's hint in an empty tab. */
+.ponder-tabs-body [data-type="ponder-tab"] > p:only-child:is(:empty, :has(> br.ProseMirror-trailingBreak:only-child)) {
+  border-radius: 4px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+.ponder-tabs-body [data-type="ponder-tab"] > p:only-child:is(:empty, :has(> br.ProseMirror-trailingBreak:only-child))::before {
+  content: var(--ponder-empty-tab);
+  float: left;
+  height: 0;
+  padding-left: 2px;
+  pointer-events: none;
+  color: color-mix(in srgb, currentColor 40%, transparent);
+}
+
+.ponder-media-block { margin: 6px 0; }
+.ponder-media-placeholder {
+  display: flex;
+  width: 100%;
+  min-height: 46px;
+  align-items: center;
+  gap: 12px;
+  border-radius: 6px;
+  padding: 10px 14px;
+  background: color-mix(in srgb, currentColor 5%, transparent);
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  font-size: 14px;
+  text-align: left;
+  user-select: none;
+}
+.ponder-media-placeholder:hover:not(:disabled) { background: color-mix(in srgb, currentColor 8%, transparent); }
+.ponder-media-panel {
+  width: min(354px, calc(100vw - 32px));
+  padding: 0;
+  overflow: hidden;
+}
+.ponder-media-panel.is-wide { width: min(560px, calc(100vw - 32px)); }
+.ponder-media-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 0 10px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+}
+.ponder-media-tab {
+  position: relative;
+  padding: 10px 8px;
+  font-size: 14px;
+  color: color-mix(in srgb, currentColor 55%, transparent);
+}
+.ponder-media-tab[aria-selected="true"] { color: inherit; }
+.ponder-media-tab[aria-selected="true"]::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: -1px;
+  left: 8px;
+  height: 2px;
+  background: currentColor;
+}
+.ponder-media-upload,
+.ponder-media-link {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 12px;
+}
+.ponder-media-choose,
+.ponder-media-submit {
+  height: 32px;
+  border-radius: 6px;
+  background: #2383e2;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+.ponder-media-choose:hover,
+.ponder-media-submit:hover:not(:disabled) { background: #0077d4; }
+.ponder-media-choose.is-plain {
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  background: transparent;
+  color: inherit;
+}
+.ponder-media-choose.is-plain:hover { background: color-mix(in srgb, currentColor 5%, transparent); }
+.ponder-media-submit:disabled { opacity: 0.55; cursor: default; }
+.ponder-media-panel.is-wide .ponder-media-submit { align-self: center; width: min(346px, 100%); }
+.ponder-media-input {
+  height: 32px;
+  border: 1px solid color-mix(in srgb, currentColor 16%, transparent);
+  border-radius: 6px;
+  padding: 0 10px;
+  background: color-mix(in srgb, currentColor 3%, transparent);
+  font-size: 14px;
+  color: inherit;
+}
+.ponder-media-input:focus { outline: none; border-color: #2383e2; box-shadow: 0 0 0 1px #2383e2; }
+.ponder-media-input.is-error { border-color: #e03e3e; box-shadow: none; }
+.ponder-media-error { margin: 0; font-size: 12px; color: #e03e3e; }
+.ponder-media-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+
+.ponder-embed-block { margin: 8px 0; }
+.ponder-embed-frame {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #000;
+}
+.ponder-embed-frame iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.ponder-bookmark-block { margin: 6px 0; }
+.ponder-bookmark-card {
+  display: flex;
+  min-height: 104px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border-radius: 10px;
+  color: inherit !important;
+  text-decoration: none !important;
+  user-select: none;
+}
+.ponder-bookmark-card:hover { background: color-mix(in srgb, currentColor 3%, transparent); }
+.ponder-bookmark-content {
+  display: flex;
+  min-width: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px 20px 16px 24px;
+}
+/* The editor's framed-image look is for image blocks, not the card's icon and preview. */
+.ProseMirror :is(.ponder-bookmark-card, .ponder-breadcrumb-block) img {
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.ponder-bookmark-icon { width: 20px !important; height: 20px !important; flex: none; margin-bottom: 6px !important; border-radius: 3px !important; object-fit: contain !important; }
+.ponder-bookmark-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+.ponder-bookmark-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 14px;
+  line-height: 20px;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+}
+.ponder-bookmark-url {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: color-mix(in srgb, currentColor 50%, transparent);
+}
+.ponder-bookmark-image {
+  position: relative;
+  flex: 0 0 29%;
+  max-width: 220px;
+  min-height: 104px;
+  border-right: 1px solid color-mix(in srgb, currentColor 8%, transparent);
+}
+.ponder-bookmark-image img {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  border-radius: 0 !important;
+  object-fit: cover !important;
+}
+@media (max-width: 639px) {
+  .ponder-bookmark-image { flex-basis: 32%; }
+  .ponder-bookmark-content { padding: 12px 14px; }
+  .ponder-bookmark-title { font-size: 15px; line-height: 22px; }
+  .ponder-bookmark-description { font-size: 13px; line-height: 18px; }
+}
+
+/* Notion's /mermaid: the code on top, the diagram (or Mermaid's error) under it, in one box. */
+.ProseMirror .ponder-mermaid-code-block.is-source-visible {
+  display: flex;
+  flex-direction: column;
+}
+.ProseMirror .ponder-mermaid-code-block.is-source-visible .ponder-mermaid-source {
+  order: -1;
+  margin: 0 0 0.5rem;
+}
+.ProseMirror .ponder-mermaid-error p { margin: 0 0 4px; }
+.ProseMirror .ponder-mermaid-error-detail {
+  margin: 0;
+  white-space: pre-wrap;
+  font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: inherit;
+  background: transparent;
+  padding: 0;
+}
+
+/* Notion's floating table of contents at the right of long pages. */
+.ponder-floating-toc {
+  position: fixed;
+  z-index: 40;
+  width: 260px;
+  max-width: calc(100vw - 56px);
+  pointer-events: none;
+  color: hsl(var(--foreground));
+}
+.ponder-floating-toc-trigger {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  width: 32px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: opacity 150ms ease-out;
+}
+.ponder-floating-toc-line {
+  display: block;
+  width: 16px;
+  height: 2px;
+  flex: none;
+  border-radius: 2px;
+  background: color-mix(in srgb, currentColor 22%, transparent);
+}
+.ponder-floating-toc-line[data-level="2"] { width: 12px; }
+.ponder-floating-toc-line[data-level="3"] { width: 8px; }
+.ponder-floating-toc-line[data-active] { background: color-mix(in srgb, currentColor 80%, transparent); }
+.ponder-floating-toc-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+  border-radius: 12px;
+  padding: 12px 8px;
+  background: hsl(var(--popover, var(--background)));
+  box-shadow: 0 12px 28px -8px rgb(0 0 0 / 0.18);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(8px);
+  transition: transform 150ms ease-out, opacity 150ms ease-out, visibility 150ms;
+}
+.ponder-floating-toc-list {
+  max-height: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.ponder-floating-toc-item {
+  display: flex;
+  width: 100%;
+  height: 28px;
+  align-items: center;
+  border-radius: 6px;
+  padding-right: 10px;
+  text-align: left;
+  font-size: 14px;
+  color: color-mix(in srgb, currentColor 65%, transparent);
+}
+.ponder-floating-toc-item:hover,
+.ponder-floating-toc-item:focus-visible {
+  background: color-mix(in srgb, currentColor 6%, transparent);
+  outline: none;
+}
+.ponder-floating-toc-item[aria-current="location"] { color: #2383e2; }
+.ponder-floating-toc[data-expanded="true"] .ponder-floating-toc-trigger { opacity: 0; }
+.ponder-floating-toc[data-expanded="true"] .ponder-floating-toc-panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ponder-floating-toc,
+  .ponder-floating-toc * { transition: none; }
+}
+
+/* Notion's toggle headings: a toggle whose title is set like H1 to H3, its arrow on the first line. */
+.ProseMirror [data-type="details"][data-heading] { margin-top: 1.1em; }
+.ProseMirror [data-type="details"][data-heading] summary { font-weight: 600; }
+.ProseMirror [data-type="details"][data-heading="1"] summary { font-size: 1.5em; line-height: 1.28; letter-spacing: -0.02em; font-weight: 650; }
+.ProseMirror [data-type="details"][data-heading="2"] summary { font-size: 1.25em; line-height: 1.32; letter-spacing: -0.015em; }
+.ProseMirror [data-type="details"][data-heading="3"] summary { font-size: 1.125em; line-height: 1.38; letter-spacing: -0.01em; }
+.ProseMirror [data-type="details"][data-heading="1"] > button { height: 1.92em; }
+.ProseMirror [data-type="details"][data-heading="2"] > button { height: 1.65em; }
+.ProseMirror [data-type="details"][data-heading="3"] > button { height: 1.55em; }
+
+/* Editing controls of the Phase C blocks only show while the page can be edited. */
+.ProseMirror[contenteditable="false"] :is(.ponder-tabs-add, .ponder-media-block) { display: none; }

@@ -1,3 +1,7 @@
+/**
+ * The error display is adapted from AppFlowy-Web (https://github.com/AppFlowy-IO/AppFlowy-Web),
+ * Copyright AppFlowy, AGPL-3.0: src/components/editor/components/blocks/code/MermaidPreview.tsx.
+ */
 import { useEffect, useRef, useState } from "react";
 import { NodeViewContent, NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { useTranslation } from "react-i18next";
@@ -16,9 +20,11 @@ export const MermaidCodeBlock = ({ editor, node }: NodeViewProps) => {
   const source = node.textContent.trim();
   const isMermaid = language === "mermaid";
   const [svg, setSvg] = useState("");
-  const [sourceVisible, setSourceVisible] = useState(false);
+  // A new, empty diagram (Notion's /mermaid) opens with its code showing, above the diagram.
+  const [sourceVisible, setSourceVisible] = useState(() => isMermaid && !source);
   const [viewerOpen, setViewerOpen] = useState(false);
   const [renderState, setRenderState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [renderError, setRenderError] = useState("");
   const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle");
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -86,10 +92,12 @@ export const MermaidCodeBlock = ({ editor, node }: NodeViewProps) => {
             setRenderState("ready");
           }
         })
-        .catch(() => {
+        .catch((failure: unknown) => {
           if (!cancelled) {
             setSvg("");
             setRenderState("error");
+            // Notion shows Mermaid's own parse error, as AppFlowy's MermaidPreview does.
+            setRenderError(failure instanceof Error ? failure.message : String(failure ?? ""));
           }
         });
     }, 300);
@@ -222,9 +230,10 @@ export const MermaidCodeBlock = ({ editor, node }: NodeViewProps) => {
             <p className="ponder-mermaid-message">{t("editorToolbar.mermaidRendering")}</p>
           )}
           {renderState === "error" && (
-            <p className="ponder-mermaid-error" role="alert">
-              {t("editorToolbar.mermaidInvalid")}
-            </p>
+            <div className="ponder-mermaid-error" role="alert">
+              <p>{t("editorToolbar.mermaidInvalid")}</p>
+              {renderError ? <pre className="ponder-mermaid-error-detail">{renderError.slice(0, 600)}</pre> : null}
+            </div>
           )}
           {svg && (
             <div

@@ -1,8 +1,9 @@
 import { Extension, InputRule } from "@tiptap/core";
+import { applyToggleBlock, type ToggleLevel } from "./toggleHeading";
 
 /**
- * Typing shortcuts as people coming from Notion expect them: "> " starts a toggle and
- * '" ' starts a quote. Outside the page layout "> " keeps its Markdown meaning, a quote.
+ * Typing shortcuts as people coming from Notion expect them: "> " starts a toggle ("# > " a toggle
+ * heading) and '" ' starts a quote. Outside the page layout "> " keeps its Markdown meaning, a quote.
  */
 export const createNotionShortcuts = (isEnabled: () => boolean) => Extension.create({
   name: "ponderNotionShortcuts",
@@ -12,8 +13,14 @@ export const createNotionShortcuts = (isEnabled: () => boolean) => Extension.cre
     return [
       new InputRule({
         find: /^>\s$/,
-        handler: ({ chain, range }) => {
+        handler: ({ chain, range, state }) => {
           if (!isEnabled()) return null;
+          const parent = state.doc.resolve(range.from).parent;
+          const level = parent.type.name === "heading" ? Number(parent.attrs.level) : 0;
+          if (level >= 1 && level <= 3) {
+            chain().deleteRange(range).command(({ tr }) => applyToggleBlock(tr, level as ToggleLevel)).run();
+            return;
+          }
           chain().deleteRange(range).setDetails().run();
         },
       }),

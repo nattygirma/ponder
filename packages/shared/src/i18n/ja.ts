@@ -3260,7 +3260,7 @@ export const ja = {
     mermaidDiagram: "Mermaid 図を挿入",
     mermaidPreview: "Mermaid 図のプレビュー",
     mermaidRendering: "図を描画中...",
-    mermaidInvalid: "Mermaid の構文が正しくありません。下のソースを編集してください。",
+    mermaidInvalid: "Mermaid の構文が正しくありません。コードを修正してください。",
     mermaidEmpty: "下に Mermaid ソースを入力すると図が生成されます。",
     mermaidSource: "Mermaid ソース",
     mermaidShowSource: "Mermaid ソースを表示",

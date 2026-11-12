@@ -85,6 +85,7 @@ export const PageUpdateSchema = z.object({
     font: z.enum(["default", "serif", "mono"]).optional(),
     small: z.boolean().optional(),
     wide: z.boolean().optional(),
+    toc: z.boolean().optional(),
   }).strict().nullable().optional(),
   title: z.string().trim().max(160).optional(),
   tags: z.array(z.string()).optional(),

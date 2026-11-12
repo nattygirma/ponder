@@ -59,6 +59,10 @@ export const getEditorNavigableLinkFromEventTarget = (target: EventTarget | null
   if (!link || getAttachmentLinkFromEventTarget(link)) {
     return null;
   }
+  // Web bookmark cards and embed links open with a single click, as in Notion.
+  if (link.closest(".ponder-bookmark-card, .ponder-embed-link")) {
+    return null;
+  }
 
   return link;
 };

@@ -27,14 +27,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { AiFaceIcon } from "../AiFaceIcon";
+import { setToggleBlock, type ToggleLevel } from "./toggleHeading";
 
-export type TurnIntoTarget = "paragraph" | "h1" | "h2" | "h3" | "h4" | "bullet" | "ordered" | "task" | "quote" | "code" | "callout" | "toggle";
+export type TurnIntoTarget = "paragraph" | "h1" | "h2" | "h3" | "h4" | "bullet" | "ordered" | "task" | "quote" | "code" | "callout" | "toggle" | "toggle-h1" | "toggle-h2" | "toggle-h3";
 
 const CONVERTIBLE = new Set([
   "paragraph", "heading", "bulletList", "orderedList", "taskList", "blockquote", "codeBlock", CALLOUT_NODE_TYPE,
 ]);
 
-export const TURN_INTO_TARGETS: TurnIntoTarget[] = ["paragraph", "h1", "h2", "h3", "h4", "bullet", "ordered", "task", "quote", "code", "callout", "toggle"];
+export const TURN_INTO_TARGETS: TurnIntoTarget[] = ["paragraph", "h1", "h2", "h3", "h4", "bullet", "ordered", "task", "quote", "code", "callout", "toggle", "toggle-h1", "toggle-h2", "toggle-h3"];
 
 export const useTurnIntoLabels = (): Record<TurnIntoTarget, string> => {
   const { t } = useTranslation();
@@ -51,6 +52,9 @@ export const useTurnIntoLabels = (): Record<TurnIntoTarget, string> => {
     code: t("editorToolbar.codeBlock"),
     callout: t("pages.callout"),
     toggle: t("editorToolbar.fold"),
+    "toggle-h1": t("pages.slash.items.toggleHeading1"),
+    "toggle-h2": t("pages.slash.items.toggleHeading2"),
+    "toggle-h3": t("pages.slash.items.toggleHeading3"),
   };
 };
 
@@ -81,6 +85,12 @@ export const turnInto = (editor: Editor, pos: number, target: TurnIntoTarget) =>
     case "code": chain.setCodeBlock().run(); break;
     case "callout": chain.wrapIn(CALLOUT_NODE_TYPE).run(); break;
     case "toggle": chain.setDetails().run(); break;
+    case "toggle-h1":
+    case "toggle-h2":
+    case "toggle-h3":
+      chain.run();
+      setToggleBlock(editor, Number(target.slice(-1)) as ToggleLevel);
+      break;
   }
   if (!color) return;
   editor.commands.command(({ tr }) => {
@@ -312,6 +322,9 @@ export const BlockHandle = ({ editor, controller, pageId, pageLink, onComment, o
     ["code", t("editorToolbar.codeBlock")],
     ["callout", t("pages.callout")],
     ["toggle", t("editorToolbar.fold")],
+    ["toggle-h1", t("pages.slash.items.toggleHeading1")],
+    ["toggle-h2", t("pages.slash.items.toggleHeading2")],
+    ["toggle-h3", t("pages.slash.items.toggleHeading3")],
   ];
 
   const insertBelow = () => {

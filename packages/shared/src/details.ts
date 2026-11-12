@@ -471,6 +471,16 @@ export const DETAILS_EDITOR_CSS = `
 .ponder-editor-content [data-type="details"].is-open [data-type="detailsContent"] {
   margin-top: 0.15em;
 }
+/* Notion's toggle headings: a toggle whose title is set like H1 to H3, with the arrow on its first line. */
+:is(.ProseMirror, .ponder-editor-content) [data-heading] { margin-top: 1.1em; }
+:is(.ProseMirror, .ponder-editor-content) [data-heading] > summary,
+:is(.ProseMirror, .ponder-editor-content) [data-heading] > div > summary { font-weight: 600; }
+:is(.ProseMirror, .ponder-editor-content) [data-heading="1"] summary { font-size: 1.5em; line-height: 1.28; letter-spacing: -0.02em; font-weight: 650; }
+:is(.ProseMirror, .ponder-editor-content) [data-heading="2"] summary { font-size: 1.25em; line-height: 1.32; letter-spacing: -0.015em; }
+:is(.ProseMirror, .ponder-editor-content) [data-heading="3"] summary { font-size: 1.125em; line-height: 1.38; letter-spacing: -0.01em; }
+:is(.ProseMirror, .ponder-editor-content) [data-heading="1"] > button { height: 1.92em; }
+:is(.ProseMirror, .ponder-editor-content) [data-heading="2"] > button { height: 1.65em; }
+:is(.ProseMirror, .ponder-editor-content) [data-heading="3"] > button { height: 1.55em; }
 `;
 
 const parseDetailsMarkdown = (token: MarkdownToken, helpers: MarkdownParseHelpers) => {
@@ -485,7 +495,8 @@ const parseDetailsMarkdown = (token: MarkdownToken, helpers: MarkdownParseHelper
     mediaToken.detailVideoUrls || [],
   );
   const body = parsedBody.length > 0 ? parsedBody : [{ type: "paragraph" }];
-  return helpers.createNode(DETAILS_NODE_TYPE, undefined, [
+  const level = parseToggleHeadingLevel((token as MarkdownToken & { headingLevel?: unknown }).headingLevel);
+  return helpers.createNode(DETAILS_NODE_TYPE, level ? { level } : undefined, [
     helpers.createNode(
       DETAILS_SUMMARY_NODE_TYPE,
       undefined,
@@ -503,10 +514,54 @@ const renderDetailsMarkdown = (node: JSONContent, helpers: MarkdownRendererHelpe
   const bodyMarkdown = Array.isArray(body?.content) && body.content.length > 0
     ? renderDetailsBody(body.content, helpers)
     : "";
-  return `<details>\n<summary>${summaryHtml}</summary>\n\n${bodyMarkdown}\n\n</details>`;
+  const level = parseToggleHeadingLevel(node.attrs?.level);
+  return `<details${level ? ` data-heading="${level}"` : ""}>\n<summary>${summaryHtml}</summary>\n\n${bodyMarkdown}\n\n</details>`;
+};
+
+/** 1 to 3 for Notion's toggle headings, 0 for a toggle list. */
+export const parseToggleHeadingLevel = (value: unknown) => {
+  const level = Number(value);
+  return level === 1 || level === 2 || level === 3 ? level : 0;
 };
 
 export const PonderDetails = Details.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      // Notion's toggle headings are toggles whose title is a heading.
+      level: {
+        default: 0,
+        parseHTML: (element: HTMLElement) => parseToggleHeadingLevel(element.getAttribute("data-heading")),
+        renderHTML: (attributes: Record<string, unknown>) => {
+          const level = parseToggleHeadingLevel(attributes.level);
+          return level ? { "data-heading": String(level) } : {};
+        },
+      },
+    };
+  },
+
+  addNodeView() {
+    const parentView = this.parent?.();
+    if (!parentView) return null;
+    return (props) => {
+      const view = parentView(props) as ReturnType<typeof parentView> & { dom: HTMLElement; update?: (node: typeof props.node, ...rest: unknown[]) => boolean };
+      const applyLevel = (level: unknown) => {
+        const value = parseToggleHeadingLevel(level);
+        if (value) view.dom.setAttribute("data-heading", String(value));
+        else view.dom.removeAttribute("data-heading");
+      };
+      applyLevel(props.node.attrs.level);
+      const update = view.update?.bind(view);
+      // The details view doesn't redraw its attributes, so a Turn into keeps the old heading size otherwise.
+      if (update) view.update = (node, ...rest) => {
+        const handled = update(node, ...rest);
+        if (handled) applyLevel(node.attrs.level);
+        return handled;
+      };
+      return view;
+    };
+  },
+
   addOptions() {
     return {
       persist: false,
@@ -547,6 +602,7 @@ export const PonderDetails = Details.extend({
       return {
         type: DETAILS_NODE_TYPE,
         raw: `${leading}${block.raw}${trailing}`,
+        headingLevel: parseToggleHeadingLevel(readHtmlAttr(DETAILS_OPEN_PATTERN.exec(rest)?.[1] ?? "", "data-heading")),
         summary,
         tokens,
         detailImages: prepared.images,

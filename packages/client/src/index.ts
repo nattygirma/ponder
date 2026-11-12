@@ -1,5 +1,5 @@
 import type { ImportMemosInput, ImportMemosResponse } from "@ponder/shared/note-import/types";
-import type { DatabaseSyncCreateInput, DatabaseSyncInfo, DatabaseSyncUpdateInput, LinkPreviewData, NotebookUpdateInput } from "@ponder/shared";
+import type { DatabaseSyncCreateInput, DatabaseSyncInfo, DatabaseSyncUpdateInput, LinkPreviewData, NotebookUpdateInput, WebBookmarkData } from "@ponder/shared";
 import {
   parsePreparedAiGeneration,
   streamDirectAiGeneration,
@@ -1379,6 +1379,13 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
 
     getLinkPreview: (url: string) =>
       request<{ preview: LinkPreviewData | null }>("/api/v1/connections/preview", {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }),
+
+    /** Title, description, icon and image for Notion's Web bookmark card. */
+    getWebBookmark: (url: string) =>
+      request<{ bookmark: WebBookmarkData }>("/api/v1/web-bookmark", {
         method: "POST",
         body: JSON.stringify({ url }),
       }),

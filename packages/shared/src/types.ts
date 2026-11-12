@@ -79,7 +79,8 @@ export type PageNode = {
 export type PageFont = "default" | "serif" | "mono";
 
 /** Display options chosen per page from its top-right menu. */
-export type PageStyle = { font?: PageFont; small?: boolean; wide?: boolean };
+/** `toc` is the floating table of contents at the right of long pages; on unless set to false, as in Notion. */
+export type PageStyle = { font?: PageFont; small?: boolean; wide?: boolean; toc?: boolean };
 
 export type PageBacklink = {
   id: string;
