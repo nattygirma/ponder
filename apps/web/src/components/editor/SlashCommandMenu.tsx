@@ -59,7 +59,13 @@ import {
   Navigation,
   PanelTop,
   Workflow,
+  CircleUserRound,
+  File as FileIcon,
+  Clock,
+  Smile,
 } from "lucide-react";
+import { startMention } from "./mention/MentionPanel";
+import { startEmojiPicker } from "./emoji/EmojiSuggestion";
 import { BREADCRUMB_NODE_TYPE, BUTTON_NODE_TYPE, CALLOUT_NODE_TYPE, COLUMNS_NODE_TYPE, createColumnsContent, createTabsContent, DETAILS_NODE_TYPE, MEDIA_PLACEHOLDER_NODE_TYPE, TAB_NODE_TYPE, TOC_NODE_TYPE, type ChartType, type DatabaseViewType, type MediaKind } from "@ponder/shared";
 import { PAGE_COLORS, type PageColorName } from "@ponder/shared/page-color";
 import { Command, CommandItem, CommandList } from "@/components/ui/command";
@@ -138,6 +144,10 @@ export type SlashBlockId =
   | "columns-4"
   | "columns-5"
   | "mermaid"
+  | "mention-person"
+  | "mention-page"
+  | "date-reminder"
+  | "emoji"
   | "inline-math"
   | "current-date"
   | "current-time"
@@ -330,7 +340,11 @@ export const createSlashCommandItems = (labels: SlashCommandLabels, current: Tur
     item("columns-4", "advanced", Columns4, ["columns", "layout", "side"]),
     item("columns-5", "advanced", Columns4, ["columns", "layout", "side"]),
     item("mermaid", "advanced", Workflow, ["mermaid", "diagram", "chart", "flowchart", "code"]),
-    // Inline
+    // Inline, in Notion's order. The mentions need the page layout, where `@` opens Notion's menu.
+    item("mention-person", "inline", CircleUserRound, ["mention", "person", "people", "member", "user", "@"], { pageOnly: true }),
+    item("mention-page", "inline", FileIcon, ["mention", "page", "link", "data source", "database", "@"], { pageOnly: true }),
+    item("date-reminder", "inline", Clock, ["date", "reminder", "remind", "today", "tomorrow", "@"], { pageOnly: true }),
+    item("emoji", "inline", Smile, ["emoji", "emoticon", "smiley", "icon", ":"]),
     item("inline-math", "inline", Sigma, ["equation", "math", "latex", "formula", "katex", "tex", "数式"]),
     item("current-date", "inline", CalendarDays, ["date", "today"], { searchOnly: true }),
     item("current-time", "inline", Clock3, ["time", "now"], { searchOnly: true }),
@@ -650,6 +664,10 @@ const runSlashCommand = ({
       chain.run();
       actions.openMathFormula("block", { from: range.from, to: range.from });
       break;
+    case "mention-person": chain.run(); startMention(editor, "people"); break;
+    case "mention-page": chain.run(); startMention(editor, "pages"); break;
+    case "date-reminder": chain.run(); startMention(editor, "dates"); break;
+    case "emoji": chain.run(); startEmojiPicker(editor); break;
     case "current-date": chain.insertContent(formatCurrentDate(new Date())).run(); break;
     case "current-time": chain.insertContent(formatCurrentTime(new Date())).run(); break;
     case "current-date-time": chain.insertContent(formatCurrentDateTime(new Date())).run(); break;

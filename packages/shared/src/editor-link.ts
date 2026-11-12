@@ -1,5 +1,6 @@
 import Link from "@tiptap/extension-link";
 import { EMPTY_EXTERNAL_LINK_NODE_TYPE } from "./empty-external-link";
+import { isMentionHref, MENTION_NODE_TYPE, parseMentionHref } from "./mention";
 
 // Linkify accepts Unicode hostnames, so adjacent prose can become part of a
 // bare ASCII domain. Keep internationalized URLs available via explicit schemes
@@ -36,6 +37,11 @@ export const PonderLink = Link.extend({
     return rules;
   },
   parseMarkdown(token, helpers) {
+    // `[@Name](ponder:person/…)` and friends are mentions (mention.ts), not links.
+    if (isMentionHref(token.href)) {
+      const attrs = parseMentionHref(token.href, typeof token.text === "string" ? token.text.replace(/\\([\\[\]])/g, "$1") : "");
+      if (attrs) return { type: MENTION_NODE_TYPE, attrs };
+    }
     if (!token.tokens?.length && token.text === "" && typeof token.href === "string" && token.href) {
       return {
         type: EMPTY_EXTERNAL_LINK_NODE_TYPE,

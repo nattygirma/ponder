@@ -11,6 +11,7 @@
     "@codemirror/lang-markdown": "^6.5.2",
     "@codemirror/search": "6.7.1",
     "@codemirror/state": "6.7.1",
+    "@emoji-mart/data": "1.2.1",
     "@floating-ui/react-dom": "^2.1.8",
     "@fontsource-variable/noto-sans-sc": "^5.2.8",
     "@handlewithcare/prosemirror-suggest-changes": "0.1.8",
@@ -48,6 +49,7 @@
     "nanoid": "^6.0.1",
     "pagedjs": "^0.4.3",
     "pdf-lib": "1.17.1",
+    "react-day-picker": "9.11.1",
     "streamdown": "^2.6.0",
     "use-stick-to-bottom": "^1.1.6"
   }

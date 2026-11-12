@@ -63,3 +63,44 @@ a header naming the AppFlowy-Web files it came from:
   description length (`utils/link-preview.ts`).
 - `apps/web/src/components/MermaidCodeBlock.tsx`: showing Mermaid's own parse
   error (`blocks/code/MermaidPreview.tsx`).
+
+Parts of Ponder's inline mentions and emoji menu (Phase D of the Notion blocks
+plan) are adapted from the same project and licence. The Slate and Yjs code was
+rewritten for TipTap; icons, images and branding were not copied (Ponder uses
+lucide icons and Notion's labels). Each file below carries a header naming the
+AppFlowy-Web files it came from:
+
+- `packages/shared/src/mention-reminders.ts`: the Remind option list and the
+  filter for dates with and without a time (`leaf/mention/reminder-options.ts`).
+- `apps/web/src/components/editor/mention/mentionable-members.ts`: the shared
+  member cache with a 30 second lifetime and shared requests
+  (`useMentionableUsers.ts`).
+- `apps/web/src/components/editor/mention/mention-panel-items.ts`: section
+  order, flattening sections into one keyboard list, untitled page names and the
+  Today / Tomorrow / Yesterday items (`panels/mention-panel/mentionUtils.ts`,
+  `MentionPanel.tsx`).
+- `apps/web/src/components/editor/mention/MentionPanel.tsx`: the `@` menu's
+  sections, rows, keyboard handling and inserting the chosen mention
+  (`panels/mention-panel/MentionPanel.tsx`).
+- `apps/web/src/components/editor/mention/EditorMention.tsx`: the person, page
+  and date mention views (`leaf/mention/MentionLeaf.tsx`, `MentionPerson.tsx`,
+  `MentionPage.tsx`, `MentionDate.tsx`).
+- `apps/web/src/components/editor/mention/MentionDatePicker.tsx`: the date
+  picker with Include time and the Remind submenu
+  (`leaf/mention/MentionDatePicker.tsx`).
+- `apps/web/src/components/editor/emoji/emoji-data.ts`: reading emoji-mart's
+  data into categories and laying it out in rows
+  (`_shared/emoji-picker/EmojiPicker.hooks.ts`).
+- `apps/web/src/components/editor/emoji/EmojiSuggestion.tsx`: the emoji grid
+  and its virtual list (`_shared/emoji-picker/EmojiPicker.tsx`,
+  `EmojiPickerCategories.tsx`, `EmojisVirtualizer.tsx`, `EmojiItem.tsx`).
+
+AppFlowy's `comment-mentions.ts` and `useNotifyPersonMention.ts` were read but
+not used: Ponder sends mention notices from the server when a page is saved
+(`apps/api/src/page-mention-service.ts`), so edits made by AI chat, MCP tools and
+live co-editing count too.
+
+### Emoji data
+
+The `:` emoji menu uses `@emoji-mart/data` (https://github.com/missive/emoji-mart),
+Copyright (c) 2022 Missive, licensed under the MIT License.

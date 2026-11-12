@@ -31,7 +31,7 @@ import {
 import type { AppContext, AuthContext } from "./api-context";
 import { AppError } from "./app-error";
 import { rowChangeListener } from "./automation-routes";
-import { listAutomations } from "./automation-service";
+import { listAutomations, wakeForReminders } from "./automation-service";
 import { parseFormQuestions } from "./database-form-service";
 import { createMemoComment, deleteMemoComment, listMemoComments, listWorkspaceMembers, updateMemoComment } from "./comment-service";
 import { loadConnectedCalendars, searchConnectedApps } from "./connections";
@@ -558,6 +558,7 @@ const replaceContent = (content: string, updates: unknown[]) => {
 const saveMemo = async (c: AppContext, auth: AuthContext, id: string, input: { title?: string; contentMarkdown?: string; isPinned?: boolean }) => {
   const result = await updateMemoRecord(c.env.storage.db, auth.workspaceId, id, input, getAuditActor(c), getActorLabel(c));
   if ("error" in result) throw new AppError("conflict", result.message ?? "The page changed while saving. Try again.", 409);
+  await wakeForReminders(c.env, result);
   return result.memo;
 };
 

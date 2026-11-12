@@ -1537,6 +1537,108 @@ html[data-ponder-extension-theme] .ponder-memo-divider {
   box-shadow: none;
 }
 
+/* Notion's inline mentions (Phase D): gray @person and @date, an underlined page with its icon, a blue reminder. */
+:root {
+  --mention-reminder: #2383e2;
+}
+:root.dark {
+  --mention-reminder: #529cca;
+}
+.ponder-mention {
+  white-space: nowrap;
+  border-radius: 0.25rem;
+}
+.ponder-mention.is-selected,
+.ProseMirror .ProseMirror-selectednode > .ponder-mention {
+  background: color-mix(in srgb, var(--mention-reminder) 18%, transparent);
+}
+.ponder-mention-person,
+.ponder-mention-date,
+span.ponder-mention-person,
+span.ponder-mention-date {
+  color: rgb(var(--slate-500-rgb));
+  cursor: default;
+}
+.ponder-mention-date {
+  cursor: pointer;
+}
+.ponder-mention-at {
+  opacity: 0.6;
+}
+.ponder-mention-date.has-reminder {
+  color: var(--mention-reminder);
+}
+.ponder-mention-date-icon {
+  display: inline-block;
+  width: 0.95em;
+  height: 0.95em;
+  margin-left: 0.2em;
+  vertical-align: -0.12em;
+}
+.ponder-mention-page,
+span.ponder-mention-page {
+  cursor: pointer;
+  font-weight: 500;
+}
+.ponder-mention-page-icon {
+  position: relative;
+  display: inline-flex;
+  margin-right: 0.25em;
+  vertical-align: -0.15em;
+}
+.ponder-mention-page-arrow {
+  position: absolute;
+  right: -0.2em;
+  bottom: -0.1em;
+  width: 0.6em;
+  height: 0.6em;
+  border-radius: 0.1em;
+  background: hsl(var(--background));
+  color: rgb(var(--slate-800-rgb));
+}
+.ponder-mention-page-title {
+  text-decoration: underline;
+  text-decoration-thickness: 0.05em;
+  text-underline-offset: 0.18em;
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+}
+.ponder-mention-page:hover .ponder-mention-page-title {
+  text-decoration-color: currentColor;
+}
+.ponder-mention-avatar {
+  background: rgb(var(--slate-200-rgb));
+  color: rgb(var(--slate-700-rgb));
+}
+.ProseMirror .ponder-mention-query,
+.ProseMirror .ponder-emoji-query {
+  border-radius: 0.2rem;
+  background: rgb(var(--slate-100-rgb));
+}
+.ProseMirror .ponder-mention-query.is-empty::after {
+  content: var(--ponder-mention-placeholder, "");
+  color: rgb(var(--slate-400-rgb));
+}
+.ponder-emoji-cell:hover,
+.ponder-emoji-cell.is-selected {
+  background: rgb(var(--slate-100-rgb));
+}
+.ponder-emoji-cell.is-flag {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+}
+.ponder-calendar-day.is-today .rdp-day_button,
+.ponder-calendar-day.is-today > button {
+  background: #eb5757;
+  border-radius: 9999px;
+  color: #fff;
+}
+.ponder-calendar-day.is-selected > button {
+  background: var(--mention-reminder);
+  color: #fff;
+}
+.ponder-calendar-day.is-outside > button {
+  color: rgb(var(--slate-400-rgb));
+}
+
 .ProseMirror a.ponder-attachment-link,
 .ProseMirror a[href*="/api/v1/resources/"] {
   display: inline-flex;

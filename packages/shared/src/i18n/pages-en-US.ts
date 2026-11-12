@@ -265,6 +265,7 @@ export const pagesEnUS = {
       tableOfContents: "Table of contents", breadcrumb: "Breadcrumb", tabs: "Tabs",
       toggleHeading1: "Toggle heading 1", toggleHeading2: "Toggle heading 2", toggleHeading3: "Toggle heading 3", mermaid: "Code - Mermaid",
       blockEquation: "Block equation", button: "Button", columns2: "2 columns", columns3: "3 columns", columns4: "4 columns", columns5: "5 columns",
+      mentionPerson: "Mention a person", mentionPage: "Mention a page or data source", dateReminder: "Date or reminder", emoji: "Emoji",
       inlineEquation: "Inline equation", currentDate: "Current date", currentTime: "Current time", currentDateTime: "Current date and time", webLink: "Web link",
       importMarkdown: "Text and Markdown", importZip: "ZIP",
       copyLink: "Copy link to block", duplicate: "Duplicate", moveTo: "Move to", delete: "Delete", askAi: "Ask AI",
@@ -276,6 +277,26 @@ export const pagesEnUS = {
     moveTitle: "Move block to", moveSearch: "Search pages", moveEmpty: "No pages found",
     linkedTitle: "Linked view of data source", linkedHint: "Show one of your databases here. Changes in either place show in both.", linkedEmpty: "No databases yet",
     importFailed: "The file could not be read.",
+  },
+  // Notion's `@` menu, inline mentions and the `:` emoji menu (Phase D of the Notion blocks plan).
+  mention: {
+    menu: "Mention menu",
+    sections: { date: "Date", people: "People", pages: "Link to page", newPage: "New page" },
+    remindMe: "Remind me", tomorrowNineAm: "Tomorrow 9am", you: "You",
+    newSubPage: "New \u201c{{title}}\u201d sub-page", addSubPage: "Add new sub-page",
+    empty: "No results",
+    placeholders: { people: "Mention a person\u2026", pages: "Mention a page\u2026", dates: "Mention a date\u2026" },
+    someone: "Someone", roles: { owner: "Workspace Owner", member: "Workspace Member", viewer: "Guest" },
+    reminderSet: "Reminder set",
+    includeTime: "Include time", remind: "Remind", clear: "Clear", today: "Today",
+    previousMonth: "Previous month", nextMonth: "Next month", dateInput: "Date", timeInput: "Time",
+  },
+  emoji: {
+    menu: "Emoji", results: "Results", empty: "No emoji found",
+    categories: {
+      recent: "Recent", people: "People", nature: "Animals & Nature", foods: "Food & Drink", activity: "Activity",
+      places: "Travel & Places", objects: "Objects", symbols: "Symbols", flags: "Flags",
+    },
   },
   // Notion's table of contents, breadcrumb, tabs and media blocks (Phase C of the Notion blocks plan).
   blocks: {
@@ -388,7 +409,7 @@ export const pagesEnUS = {
     mentioned: "{{name}} mentioned you",
     replied: "{{name}} replied",
     commented: "{{name}} commented",
-    edited: "{{name}} edited", automation: "{{name}} (automation)", form: "{{name}} answered a form",
+    edited: "{{name}} edited", automation: "{{name}} (automation)", form: "{{name}} answered a form", reminder: "Reminder",
     open: "Inbox, {{count}} unread",
   },
   db: {

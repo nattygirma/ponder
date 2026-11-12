@@ -21,6 +21,7 @@ import { EMPTY_EXTERNAL_LINK_NODE_TYPE } from "./empty-external-link";
 import { FRONT_MATTER_LANGUAGE, createFrontMatterNode, getFrontMatterSource, splitMarkdownFrontMatter } from "./front-matter";
 import { splitMarkdownParseChunks } from "./markdown-block-start";
 import { createPonderMarked } from "./markdown-options";
+import { MENTION_NODE_TYPE, mentionText, type MentionAttributes } from "./mention";
 
 export { PluginEmbed, PLUGIN_EMBED_NODE_TYPE, pluginEmbedToMarkdown, normalizePluginEmbedAttributes } from "./plugin-embed";
 export type { PluginEmbedAttributes } from "./plugin-embed";
@@ -221,6 +222,7 @@ export const resolveMemoContentDoc = (
     || docContainsNodeType(currentDoc, PDF_ATTACHMENT_NODE_TYPE)
     || docContainsNodeType(currentDoc, FILE_ATTACHMENT_NODE_TYPE)
     || docContainsNodeType(currentDoc, EMPTY_EXTERNAL_LINK_NODE_TYPE)
+    || docContainsNodeType(currentDoc, MENTION_NODE_TYPE)
     || docContainsNodeType(currentDoc, "details")
     || PAGE_BLOCK_NODE_TYPES.some((type) => docContainsNodeType(currentDoc, type))
   ) {
@@ -326,6 +328,10 @@ export const docToText = (doc: unknown): string => {
       if (latex) {
         pieces.push(latex);
       }
+    }
+
+    if (current.type === MENTION_NODE_TYPE && current.attrs) {
+      pieces.push(mentionText(current.attrs as Partial<MentionAttributes>));
     }
 
     if (Array.isArray(current.content)) {

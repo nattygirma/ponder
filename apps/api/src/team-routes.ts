@@ -13,6 +13,7 @@ import type { AppContext, AppEnv } from "./api-context";
 import { AppError } from "./app-error";
 import { isDemoModeEnabled } from "./demo-mode";
 import { joinCollab, leaveCollab, syncCollab } from "./collab-service";
+import { wakeForReminders } from "./automation-service";
 import { apiError } from "./http-errors";
 import { requireUser } from "./request-auth";
 import {
@@ -124,11 +125,13 @@ export const registerTeamRoutes = (app: Hono<AppEnv>) => {
     userOnly(c, async () => c.json(await joinCollab(c.env.storage.db, c.get("auth"), c.req.param("id"), await canEditPage(c)))));
 
   app.post("/api/v1/pages/:id/collab/sync", zValidator("json", CollabSyncSchema), (c) =>
-    userOnly(c, async () => c.json(await syncCollab(c.env.storage.db, c.get("auth"), c.req.param("id"), c.req.valid("json"), await canEditPage(c)))));
+    userOnly(c, async () => c.json(await syncCollab(c.env.storage.db, c.get("auth"), c.req.param("id"), c.req.valid("json"), await canEditPage(c),
+      () => wakeForReminders(c.env, { remindersChanged: true })))));
 
   app.post("/api/v1/pages/:id/collab/leave", zValidator("json", CollabLeaveSchema), (c) =>
     userOnly(c, async () => {
-      await leaveCollab(c.env.storage.db, c.get("auth"), c.req.param("id"), c.req.valid("json"), await canEditPage(c));
+      await leaveCollab(c.env.storage.db, c.get("auth"), c.req.param("id"), c.req.valid("json"), await canEditPage(c),
+        () => wakeForReminders(c.env, { remindersChanged: true }));
       return c.json({ ok: true });
     }));
 

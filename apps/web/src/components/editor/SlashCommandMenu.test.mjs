@@ -35,6 +35,7 @@ const labels = {
     toc: "Table of contents", breadcrumb: "Breadcrumb", tabs: "Tabs", mermaid: "Code - Mermaid",
     "toggle-heading-1": "Toggle heading 1", "toggle-heading-2": "Toggle heading 2", "toggle-heading-3": "Toggle heading 3",
     "block-math": "Block equation", button: "Button", "columns-2": "2 columns", "columns-3": "3 columns", "columns-4": "4 columns", "columns-5": "5 columns",
+    "mention-person": "Mention a person", "mention-page": "Mention a page or data source", "date-reminder": "Date or reminder", emoji: "Emoji",
     "inline-math": "Inline equation", "current-date": "Current date", "current-time": "Current time", "current-date-time": "Current date and time",
     "external-link": "Web link", "import-markdown": "Text and Markdown", "import-zip": "ZIP",
     "copy-link": "Copy link to block", duplicate: "Duplicate", "move-to": "Move to", delete: "Delete", ai: "Ask AI",
@@ -87,7 +88,8 @@ describe("slash command menu", () => {
       "2 columns", "3 columns", "4 columns", "5 columns", "Code - Mermaid",
     ]);
     expect(all.filter((item) => item.id.startsWith("toggle-heading")).map((item) => item.hint)).toEqual(["# >", "## >", "### >"]);
-    expect(inGroup(all, "inline")).toEqual(["Inline equation"]);
+    // Notion's Inline group, read on 2026-11-11.
+    expect(inGroup(all, "inline")).toEqual(["Mention a person", "Mention a page or data source", "Date or reminder", "Emoji", "Inline equation"]);
     expect(inGroup(all, "import")).toEqual(["Text and Markdown", "ZIP"]);
     expect(inGroup(all, "actions")).toEqual(["Copy link to block", "Duplicate", "Move to", "Delete", "Ask AI"]);
     expect(inGroup(all, "textColor")).toHaveLength(10);
@@ -121,12 +123,19 @@ describe("slash command menu", () => {
 
   test("keeps Ponder's extra date, time and link items findable by search only", () => {
     expect(labelsOf(filter(""))).not.toContain("Current date");
-    expect(filter("today").map((item) => item.id)).toEqual(["current-date"]);
+    // "today" also finds Notion's Date or reminder, which inserts a live @Today.
+    expect(filter("today").map((item) => item.id)).toEqual(["date-reminder", "current-date"]);
     expect(filter("timestamp").map((item) => item.id)).toEqual(["current-date-time"]);
     expect(filter("url").map((item) => item.id)).toEqual(["external-link"]);
     expect(filter("collapse").map((item) => item.id)).toEqual(["toggle-list"]);
     expect(filter("h2").map((item) => item.id)).toEqual(["heading-2"]);
     expect(filter("todo").map((item) => item.id)).toEqual(["task-list"]);
+  });
+
+  test("finds the Phase D inline items by Notion's names", () => {
+    expect(filter("mention").map((item) => item.id)).toEqual(["mention-person", "mention-page"]);
+    expect(filter("remind").map((item) => item.id)).toEqual(["date-reminder"]);
+    expect(filter("emoji").map((item) => item.id)).toEqual(["emoji"]);
   });
 
   test("finds the Phase C blocks by Notion's names and aliases", () => {

@@ -20,6 +20,7 @@ import { MathCodeFence } from "./mathematics-markdown";
 import { createPonderMarked } from "./markdown-options";
 import { PageBlockAttributes, PageColorMark } from "./page-color";
 import { SuggestionMarks } from "./suggestion";
+import { Mention } from "./mention";
 
 export type CreatePonderDocumentExtensionsOptions = {
   mathematics: AnyExtension[];
@@ -36,6 +37,8 @@ export type CreatePonderDocumentExtensionsOptions = {
   /** Editor versions (node views) of the Phase C blocks, by node name; others keep the plain node. */
   notionBlocks?: Partial<Record<"toc" | "breadcrumb" | "tabs" | "tab" | "embed" | "bookmark" | "media", AnyExtension>>;
   table?: Parameters<typeof TableKit.configure>[0];
+  /** The editor's mention node (with its node view); codecs keep the plain one. */
+  mention?: AnyExtension;
   markdown?: boolean;
 };
 
@@ -57,6 +60,7 @@ export const createPonderDocumentExtensions = (
     : options.starterKit === undefined ? StarterKit : StarterKit.configure(options.starterKit),
   ...(options.markdown ? [PonderLink] : []),
   EmptyExternalLink,
+  options.mention ?? Mention,
   TaskList,
   createPonderTaskItem(),
   options.table === undefined ? TableKit : TableKit.configure(options.table),
