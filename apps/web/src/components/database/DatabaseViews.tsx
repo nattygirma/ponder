@@ -15,6 +15,7 @@ import { usePages } from "@/components/pages/PagesProvider";
 import { cn } from "@/lib/utils";
 import { DatabaseCell, OptionChip, RowTitle } from "./DatabaseCell";
 import { AddPropertyMenu, PropertyMenu } from "./PropertyMenu";
+import { SyncedMark } from "./DatabaseSync";
 import type { DatabaseHandle } from "./useDatabase";
 import { isDesktopViewport } from "@/lib/workspace-shell";
 
@@ -80,8 +81,11 @@ const Column = ({ db, property, config, updateConfig, width }: {
   return (
     <th className="relative border-b border-r border-slate-200 p-0 text-left text-xs font-normal text-slate-500" style={{ width: dragWidth ?? width, minWidth: dragWidth ?? width }}>
       <PropertyMenu db={db} property={property} onHide={hide}>
-        <button type="button" className="block w-full truncate px-2 py-1.5 text-left hover:bg-slate-50">{property.name}</button>
+        <button type="button" className={cn("flex w-full min-w-0 items-center gap-1 px-2 py-1.5 text-left hover:bg-slate-50", db.isSynced(property) && "pr-6")}>
+          <span className="truncate">{property.name}</span>
+        </button>
       </PropertyMenu>
+      {db.isSynced(property) ? <SyncedMark className="absolute right-2 top-2" /> : null}
       <span
         aria-hidden="true"
         className="absolute inset-y-0 -right-0.5 z-10 w-1 cursor-col-resize hover:bg-slate-300"
@@ -229,18 +233,20 @@ export const TableView = ({ db, rows, config, visible, updateConfig }: DatabaseV
             ? groups.map((group) => (
               <GroupRows key={group.key} colSpan={visible.length + 1} heading={group.optionId && group.color ? <OptionChip option={{ name: group.label, color: group.color }} /> : group.label || t("pages.db.noValue")} count={group.rows.length}>
                 {group.rows.slice(0, PAGE_SIZE).map(renderRow)}
-                <tr><td colSpan={visible.length + 1}>
-                  <button type="button" className="px-2 py-1 text-xs text-slate-400 hover:text-slate-700" onClick={() => {
-                    if (groupProperty) void db.addRow({ properties: { [groupProperty.id]: groupValue(groupProperty, group.key, group.optionId) } });
-                  }}>+ {t("pages.db.newRow")}</button>
-                </td></tr>
+                {db.sync ? null : (
+                  <tr><td colSpan={visible.length + 1}>
+                    <button type="button" className="px-2 py-1 text-xs text-slate-400 hover:text-slate-700" onClick={() => {
+                      if (groupProperty) void db.addRow({ properties: { [groupProperty.id]: groupValue(groupProperty, group.key, group.optionId) } });
+                    }}>+ {t("pages.db.newRow")}</button>
+                  </td></tr>
+                )}
               </GroupRows>
             ))
             : flat.slice(0, limit).map(renderRow)}
         </tbody>
       </table>
       {groups ? null : <LoadMore shown={Math.min(limit, flat.length)} total={flat.length} onMore={() => setLimit((current) => current + PAGE_SIZE)} />}
-      {groups ? null : (
+      {groups || db.sync ? null : (
         <button type="button" className="mt-0.5 block w-full rounded px-2 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow()}>
           + {t("pages.db.newRow")}
         </button>
@@ -329,9 +335,11 @@ export const BoardView = ({ db, rows, config, visible, updateConfig }: DatabaseV
                 </div>
               ))}
             </div>
-            <button type="button" className="mt-1.5 block w-full rounded px-1 py-1 text-left text-xs text-slate-400 hover:bg-slate-100" onClick={() => void db.addRow({ properties: { [property.id]: value } })}>
-              + {t("pages.db.newRow")}
-            </button>
+            {db.sync ? null : (
+              <button type="button" className="mt-1.5 block w-full rounded px-1 py-1 text-left text-xs text-slate-400 hover:bg-slate-100" onClick={() => void db.addRow({ properties: { [property.id]: value } })}>
+                + {t("pages.db.newRow")}
+              </button>
+            )}
           </section>
         );
       })}
@@ -352,9 +360,11 @@ export const GalleryView = ({ db, rows, visible }: DatabaseViewProps) => {
             </div>
           </Card>
         ))}
-        <button type="button" className="min-h-32 rounded-md border border-dashed border-slate-300 text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow()}>
-          + {t("pages.db.newRow")}
-        </button>
+        {db.sync ? null : (
+          <button type="button" className="min-h-32 rounded-md border border-dashed border-slate-300 text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow()}>
+            + {t("pages.db.newRow")}
+          </button>
+        )}
       </div>
       <LoadMore shown={Math.min(limit, rows.length)} total={rows.length} onMore={() => setLimit((current) => current + PAGE_SIZE)} />
     </div>
@@ -379,9 +389,11 @@ export const ListView = ({ db, rows, visible }: DatabaseViewProps) => {
         </div>
       ))}
       <LoadMore shown={Math.min(limit, rows.length)} total={rows.length} onMore={() => setLimit((current) => current + PAGE_SIZE)} />
-      <button type="button" className="mt-0.5 block w-full rounded px-1 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow()}>
-        + {t("pages.db.newRow")}
-      </button>
+      {db.sync ? null : (
+        <button type="button" className="mt-0.5 block w-full rounded px-1 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow()}>
+          + {t("pages.db.newRow")}
+        </button>
+      )}
     </div>
   );
 };
@@ -467,7 +479,7 @@ export const CalendarView = ({ db, rows, config, updateConfig }: DatabaseViewPro
             >
               <div className="flex items-center justify-between text-xs text-slate-500">
                 <span className={cn(key === today && "rounded bg-slate-900 px-1 text-slate-50")}>{day.getDate()}</span>
-                <button type="button" className="rounded px-1 opacity-0 hover:bg-slate-100 focus-visible:opacity-100 group-hover/day:opacity-100" aria-label={t("pages.db.addOnDay", { day: key })} onClick={() => void db.addRow({ properties: { [property.id]: { start: key } } })}>+</button>
+                {db.sync ? null : <button type="button" className="rounded px-1 opacity-0 hover:bg-slate-100 focus-visible:opacity-100 group-hover/day:opacity-100" aria-label={t("pages.db.addOnDay", { day: key })} onClick={() => void db.addRow({ properties: { [property.id]: { start: key } } })}>+</button>}
               </div>
               {items.slice(0, 4).map((row) => (
                 <button key={row.id} type="button" draggable onDragStart={rowDrag(row.id)} className="mt-0.5 block w-full truncate rounded border border-slate-200 bg-card px-1 py-0.5 text-left text-xs shadow-sm hover:bg-slate-50" onClick={() => openRow(row)}>
@@ -592,9 +604,11 @@ export const TimelineView = ({ db, rows, config, updateConfig }: DatabaseViewPro
             ) : null}
           </div>
         ))}
-        <button type="button" className="sticky left-0 mt-0.5 block rounded px-2 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow({ properties: { [property.id]: { start: new Date().toISOString().slice(0, 10) } } })}>
-          + {t("pages.db.newRow")}
-        </button>
+        {db.sync ? null : (
+          <button type="button" className="sticky left-0 mt-0.5 block rounded px-2 py-1.5 text-left text-sm text-slate-400 hover:bg-slate-50" onClick={() => void db.addRow({ properties: { [property.id]: { start: new Date().toISOString().slice(0, 10) } } })}>
+            + {t("pages.db.newRow")}
+          </button>
+        )}
       </div>
     </div>
   );

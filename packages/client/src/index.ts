@@ -1,5 +1,5 @@
 import type { ImportMemosInput, ImportMemosResponse } from "@ponder/shared/note-import/types";
-import type { LinkPreviewData, NotebookUpdateInput } from "@ponder/shared";
+import type { DatabaseSyncCreateInput, DatabaseSyncInfo, DatabaseSyncUpdateInput, LinkPreviewData, NotebookUpdateInput } from "@ponder/shared";
 import {
   parsePreparedAiGeneration,
   streamDirectAiGeneration,
@@ -1355,6 +1355,27 @@ export const createPonderClient = (options: PonderClientOptions = {}) => {
 
     disconnectConnection: (id: string) =>
       request<{ ok: true }>(`/api/v1/connections/${encodeURIComponent(id)}`, { method: "DELETE" }),
+
+    listDatabaseSyncs: () => request<{ syncs: DatabaseSyncInfo[]; canManage: boolean }>("/api/v1/database-syncs"),
+
+    listGitHubRepositories: (connectionId: string, q = "") =>
+      request<{ repositories: { fullName: string; private: boolean; description: string; updatedAt: string | null }[] }>(
+        `/api/v1/database-syncs/github/repositories?${new URLSearchParams({ connectionId, q })}`,
+      ),
+
+    createDatabaseSync: (payload: Omit<DatabaseSyncCreateInput, "history"> & { history?: DatabaseSyncCreateInput["history"] }) =>
+      request<{ database: DatabaseDetail }>("/api/v1/database-syncs", { method: "POST", body: JSON.stringify(payload) }),
+
+    updateDatabaseSync: (databaseId: string, payload: DatabaseSyncUpdateInput) =>
+      request<{ sync: DatabaseSyncInfo }>(`/api/v1/databases/${encodeURIComponent(databaseId)}/sync`, { method: "PATCH", body: JSON.stringify(payload) }),
+
+    runDatabaseSync: (databaseId: string) =>
+      request<{ outcome: { ok: boolean; created: number; updated: number; removed: number; pending: boolean; error: string | null }; sync: DatabaseSyncInfo }>(
+        `/api/v1/databases/${encodeURIComponent(databaseId)}/sync/run`, { method: "POST" },
+      ),
+
+    deleteDatabaseSync: (databaseId: string) =>
+      request<{ ok: true }>(`/api/v1/databases/${encodeURIComponent(databaseId)}/sync`, { method: "DELETE" }),
 
     getLinkPreview: (url: string) =>
       request<{ preview: LinkPreviewData | null }>("/api/v1/connections/preview", {

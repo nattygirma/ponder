@@ -253,6 +253,8 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
   const typeLabel = useTypeLabel();
   const [open, setOpen] = useState(false);
   const [editingButton, setEditingButton] = useState(false);
+  // A synced property can be renamed and hidden; GitHub decides its type and values.
+  const synced = db.isSynced(property);
 
   const patch = (next: Partial<DatabaseProperty>) => void db.updateSchema({
     properties: db.database.schema.properties.map((item) => (item.id === property.id ? { ...item, ...next } : item)),
@@ -285,7 +287,12 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
           }}
           onKeyDown={(event) => { if (event.key === "Enter") event.currentTarget.blur(); }}
         />
-        {property.type === "title" ? null : (
+        {synced ? (
+          <p className="flex gap-1.5 rounded bg-slate-50 px-2 py-1.5 text-xs leading-5 text-slate-600" data-synced-property-note>
+            {t("pages.githubSync.propertyNote")}
+          </p>
+        ) : null}
+        {property.type === "title" || synced ? null : (
           <label className="block text-xs text-slate-500">
             {t("pages.db.propertyType")}
             <Select value={property.type} onValueChange={(type) => changeType(type as DatabasePropertyType)}>
@@ -294,8 +301,8 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
             </Select>
           </label>
         )}
-        {property.type === "select" || property.type === "multi_select" || property.type === "status" ? <OptionsEditor property={property} onChange={patch} /> : null}
-        {property.type === "number" ? (
+        {!synced && (property.type === "select" || property.type === "multi_select" || property.type === "status") ? <OptionsEditor property={property} onChange={patch} /> : null}
+        {property.type === "number" && !synced ? (
           <label className="block text-xs text-slate-500">
             {t("pages.db.numberFormat")}
             <Select value={property.numberFormat ?? "number"} onValueChange={(numberFormat) => patch({ numberFormat: numberFormat as DatabaseProperty["numberFormat"] })}>
@@ -337,9 +344,11 @@ export const PropertyMenu = ({ db, property, onHide, children }: {
                 <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />{t("pages.db.hideInView")}
               </button>
             ) : null}
-            <button type="button" className="flex w-full items-center gap-2 rounded px-1.5 py-1 text-red-600 hover:bg-red-50" onClick={remove}>
-              <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />{t("pages.db.deleteProperty")}
-            </button>
+            {synced ? null : (
+              <button type="button" className="flex w-full items-center gap-2 rounded px-1.5 py-1 text-red-600 hover:bg-red-50" onClick={remove}>
+                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />{t("pages.db.deleteProperty")}
+              </button>
+            )}
           </div>
         )}
       </PopoverContent>

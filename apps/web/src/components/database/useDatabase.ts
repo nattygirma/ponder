@@ -6,8 +6,10 @@ import {
   type ComputedCell,
   type DatabaseDetail,
   type DatabasePropertyValue,
+  type DatabaseProperty,
   type DatabaseRow,
   type DatabaseSchema,
+  type DatabaseSyncInfo,
   type DatabaseView,
   type DatabaseViewConfig,
   type DatabaseTemplate,
@@ -58,6 +60,10 @@ export type DatabaseHandle = {
   people: ReadonlyMap<string, string>;
   error: string | null;
   clearError: () => void;
+  /** The GitHub sync, when the database is synced: its rows come only from GitHub. */
+  sync: DatabaseSyncInfo | null;
+  /** True for a property filled by the sync, which is read only like Notion's synced properties. */
+  isSynced: (property: DatabaseProperty | undefined) => boolean;
   rename: (title: string) => Promise<void>;
   /** Changes the schema. Fields left out (sub-items, dependencies) keep their current value. */
   updateSchema: (schema: Partial<DatabaseSchema>) => Promise<void>;
@@ -180,6 +186,8 @@ export const useDatabase = (databaseId: string) => {
       people,
       error,
       clearError: () => setError(null),
+      sync: detail.data.sync ?? null,
+      isSynced: (property) => Boolean(detail.data!.sync && property?.synced),
       rename: async (title) => {
         patchDetail((database) => ({ ...database, title }));
         await attempt(() => api.updateDatabase(databaseId, { title }));
@@ -197,7 +205,7 @@ export const useDatabase = (databaseId: string) => {
           await queryClient.invalidateQueries({ queryKey: ["database"] });
         });
       },
-      addRow: async (input) => attempt(async () => {
+      addRow: async (input) => (detail.data!.sync ? null : attempt(async () => {
         const { row } = await api.createDatabaseRow(databaseId, input ?? {});
         patchRows((rows) => [...rows, row]);
         refreshAfterAutomations();
@@ -208,7 +216,7 @@ export const useDatabase = (databaseId: string) => {
         ));
         if (syncedRelation) await queryClient.invalidateQueries({ queryKey: ["database-rows"] });
         return row;
-      }),
+      })),
       updateRow: async (rowId, input) => {
         patchRows((rows) => rows.map((row) => (row.id === rowId
           ? {

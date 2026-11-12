@@ -25,6 +25,7 @@ import { AutomationsButton } from "./DatabaseAutomations";
 import { ChartSettings, ChartView } from "./DatabaseChart";
 import { FormBuilder, FormTools } from "./DatabaseForm";
 import { RowPeek } from "./RowPeek";
+import { SyncStatus } from "./DatabaseSync";
 import { useDatabase, type DatabaseHandle } from "./useDatabase";
 
 const VIEW_ICONS: Record<DatabaseViewType, typeof Table2> = {
@@ -410,6 +411,7 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
           </AlertDescription>
         </Alert>
       ) : null}
+      <SyncStatus db={db} />
       <div className="mb-2 flex min-w-0 flex-wrap items-center gap-1 pb-1">
         <div className="flex min-w-0 items-center gap-1 overflow-x-auto">
           {views.map((item) => (
@@ -445,7 +447,8 @@ const Loaded = ({ db, initialViewId, header }: { db: DatabaseHandle; initialView
             </>
           )}
           <AutomationsButton db={db} />
-          <NewRowButton db={db} />
+          {/* A synced database's rows come from GitHub, so it has no New button, as in Notion. */}
+          {db.sync ? null : <NewRowButton db={db} />}
         </div>
         )}
       </div>

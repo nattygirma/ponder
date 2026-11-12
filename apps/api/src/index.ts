@@ -95,6 +95,8 @@ import { registerBackupRoutes } from "./backup-routes";
 import { registerPageRoutes } from "./page-routes";
 import { registerDatabaseRoutes } from "./database-routes";
 import { registerAutomationRoutes } from "./automation-routes";
+import { registerDatabaseSyncRoutes } from "./database-sync-routes";
+import { runDueSyncs, syncEnvFrom } from "./database-sync-service";
 import { automationEnvFrom, runScheduledAutomations } from "./automation-service";
 import { registerCommentRoutes } from "./comment-routes";
 import { registerCalendarRoutes } from "./calendar-routes";
@@ -360,6 +362,7 @@ registerTagRoutes(app);
 registerPageRoutes(app);
 registerDatabaseRoutes(app);
 registerAutomationRoutes(app);
+registerDatabaseSyncRoutes(app);
 registerCommentRoutes(app);
 registerCalendarRoutes(app);
 registerConnectionRoutes(app);
@@ -514,7 +517,13 @@ const worker = {
     } as Bindings;
 
     // Database automations and repeating templates (the "*/5 * * * *" cron on AppKeep).
-    ctx.waitUntil(runScheduledAutomations(automationEnvFrom(runtimeEnv)).catch((error: unknown) => {
+    // GitHub synced databases go first: runScheduledAutomations then sets the next wake for both.
+    ctx.waitUntil((async () => {
+      await runDueSyncs(syncEnvFrom(runtimeEnv)).catch((error: unknown) => {
+        console.error("Ponder GitHub syncs failed", error);
+      });
+      await runScheduledAutomations(automationEnvFrom(runtimeEnv));
+    })().catch((error: unknown) => {
       console.error("Ponder scheduled automations failed", error);
     }));
 

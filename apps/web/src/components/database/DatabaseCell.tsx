@@ -343,8 +343,16 @@ const InlineText = ({ value, type, label, onCommit, readOnly }: {
   readOnly?: boolean;
 }) => {
   const [editing, setEditing] = useState(false);
-  if (readOnly || !editing) {
-    const isLink = type === "url" && /^https?:\/\//i.test(value);
+  const isLink = type === "url" && /^https?:\/\//i.test(value);
+  if (readOnly) {
+    // A span, not a disabled button, so a read-only link (a synced GitHub URL) can still be opened.
+    return (
+      <span className="block min-h-5 w-full truncate text-left" aria-label={label} data-read-only>
+        {isLink ? <a href={value} target="_blank" rel="noreferrer" className="underline" onClick={(event) => event.stopPropagation()}>{value}</a> : value}
+      </span>
+    );
+  }
+  if (!editing) {
     return (
       <button type="button" disabled={readOnly} aria-label={label} className="block min-h-5 w-full truncate text-left disabled:cursor-default" onClick={() => setEditing(true)}>
         {isLink ? <a href={value} target="_blank" rel="noreferrer" className="underline" onClick={(event) => event.stopPropagation()}>{value}</a> : value}
@@ -373,10 +381,12 @@ const InlineText = ({ value, type, label, onCommit, readOnly }: {
 
 export const RowTitle = ({ db, row, children }: { db: DatabaseHandle; row: DatabaseRow; children?: ReactNode }) => {
   const { t } = useTranslation();
+  // A synced title comes from GitHub, like the rest of a synced row's GitHub values.
+  const titleLocked = db.isSynced(db.database.schema.properties.find((property) => property.type === "title"));
   return (
     <span className="flex min-w-0 items-center gap-1.5">
       {row.icon ? <span aria-hidden="true">{row.icon}</span> : null}
-      <InlineText value={row.title ?? ""} type="text" label={t("pages.db.rowName")} onCommit={(title) => void db.updateRow(row.id, { title })} />
+      <InlineText value={row.title ?? ""} type="text" label={t("pages.db.rowName")} readOnly={titleLocked} onCommit={(title) => void db.updateRow(row.id, { title })} />
       {children}
     </span>
   );
@@ -397,6 +407,8 @@ export const DatabaseCell = ({ db, row, property, readOnly, onChange }: {
 }) => {
   const computed = db.cells.get(row.id)?.[property.id];
   const raw = row.properties[property.id];
+  // GitHub's values in a synced database are read only; the template editor (onChange) isn't offered there.
+  if (!onChange && db.isSynced(property)) readOnly = true;
   const commit = onChange ?? ((next: DatabasePropertyValue) => void db.updateRow(row.id, { properties: { [property.id]: next } }));
 
   if (property.type === "created_by" || property.type === "last_edited_by") {
