@@ -242,16 +242,18 @@ const nextRunFor = async (
 };
 
 /**
- * Tells AppKeep when Ponder next has scheduled work, or that it has none, so an idle copy
+ * Tells AppKeep when Ponder next has scheduled work (automations, repeating templates, GitHub syncs), or that it has none, so an idle copy
  * isn't woken every five minutes for nothing.
  */
 export const refreshWake = async (env: AutomationEnv) => {
   if (!env.wakeAt) return;
-  const [automation, template] = await Promise.all([
+  const [automation, template, sync] = await Promise.all([
     env.db.prepare(`SELECT MIN(next_run_at) AS next FROM database_automations WHERE enabled = 1 AND next_run_at IS NOT NULL`).first<{ next: string | null }>(),
     env.db.prepare(`SELECT MIN(repeat_next_at) AS next FROM database_templates WHERE repeat_next_at IS NOT NULL`).first<{ next: string | null }>(),
+    // GitHub synced databases (database-sync-service.ts) check GitHub every 15 minutes.
+    env.db.prepare(`SELECT MIN(next_run_at) AS next FROM database_syncs WHERE status = 'active' AND next_run_at IS NOT NULL`).first<{ next: string | null }>(),
   ]);
-  const times = [automation?.next, template?.next].filter((value): value is string => Boolean(value)).sort();
+  const times = [automation?.next, template?.next, sync?.next].filter((value): value is string => Boolean(value)).sort();
   await env.wakeAt(times[0] ? new Date(times[0]) : null);
 };
 

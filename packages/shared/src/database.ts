@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ScheduleSchema, type Schedule } from "./automation-schedule";
+import { SyncedPropertySchema, type DatabaseSyncInfo } from "./database-sync";
 
 export type TemplateRepeat = Schedule;
 
@@ -80,6 +81,8 @@ export const DatabasePropertySchema = z.object({
   uniqueId: z.object({ prefix: z.string().trim().max(12).regex(/^[A-Za-z0-9_-]*$/) }).optional(),
   /** Button properties: the actions a click runs on its row. Validated in full by ButtonConfigSchema. */
   button: z.object({ actions: z.array(z.record(z.string(), z.unknown())).max(20) }).optional(),
+  /** Filled by a GitHub sync, like Notion's synced properties: read only while the sync exists. */
+  synced: SyncedPropertySchema.optional(),
 });
 export type DatabaseProperty = z.infer<typeof DatabasePropertySchema>;
 
@@ -219,6 +222,8 @@ export type DatabaseDetail = {
   views: DatabaseView[];
   templates: DatabaseTemplate[];
   updatedAt: string;
+  /** Set when the database is synced from GitHub; its synced properties and rows are then read only. */
+  sync?: DatabaseSyncInfo | null;
 };
 
 export type DatabaseDateValue = { start: string; end?: string | null };

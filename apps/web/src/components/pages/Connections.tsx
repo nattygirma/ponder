@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PhoneTopBar } from "./PhoneChrome";
+import { GitHubSyncDialog, useDatabaseSyncs } from "./GitHubSyncDialog";
 
 const CONNECTIONS_KEY = ["connections"] as const;
 
@@ -73,6 +74,10 @@ export const ConnectionsView = ({ onOpenPlugins, onOpenExternalAgents }: { onOpe
   const queryClient = useQueryClient();
   const connections = useConnections();
   const [filter, setFilter] = useState("");
+  const [githubOpen, setGithubOpen] = useState(false);
+  const syncs = useDatabaseSyncs(Boolean(connections.data?.available));
+  // Sync errors show here as well as on the database, with "Log in again", as Notion's sync status does.
+  const failingSyncs = (syncs.data?.syncs ?? []).filter((sync) => sync.lastError);
   const needle = filter.trim().toLowerCase();
   const apps = useMemo(() => LOGIN_APPS.filter((app) => app.name.toLowerCase().includes(needle)), [needle]);
   const planned = useMemo(() => PLANNED_APPS.filter((name) => name.toLowerCase().includes(needle)), [needle]);
@@ -126,8 +131,13 @@ export const ConnectionsView = ({ onOpenPlugins, onOpenExternalAgents }: { onOpe
                       {expired ? t("pages.connections.expired") : t("pages.connections.connectedAs", { name: accounts.map((account) => account.name).join(", ") })}
                     </p>
                   ) : null}
+                  {app.id === "github" && failingSyncs.length > 0 ? (
+                    <p className="mt-1 text-xs text-amber-600" role="alert" data-github-sync-attention>
+                      {t("pages.githubSync.attention", { count: failingSyncs.length })} {failingSyncs[0]!.lastError!.message}
+                    </p>
+                  ) : null}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {comingSoon ? (
                     <span className="inline-flex h-7 items-center rounded-md bg-slate-100 px-2.5 text-xs font-medium text-slate-500" data-connection-coming-soon>
                       {t("pages.connections.comingSoon")}
@@ -141,6 +151,16 @@ export const ConnectionsView = ({ onOpenPlugins, onOpenExternalAgents }: { onOpe
                     >
                       {expired ? t("pages.connections.reconnect") : t("pages.connections.connect")}
                     </Button>
+                  ) : null}
+                  {app.id === "github" && !comingSoon ? (
+                    <>
+                      {failingSyncs.some((sync) => sync.lastError?.code === "connection_lost") && canManage && accounts.length > 0 && !expired ? (
+                        <Button type="button" size="sm" onClick={() => startConnection(app.provider, "/connections")}>{t("pages.githubSync.logInAgain")}</Button>
+                      ) : null}
+                      <Button type="button" size="sm" variant="outline" disabled={!available} onClick={() => setGithubOpen(true)} data-open-github-sync>
+                        {t("pages.githubSync.databaseSync")}
+                      </Button>
+                    </>
                   ) : null}
                   {accounts.length > 0 && canManage ? (
                     <Button type="button" size="sm" variant="ghost" disabled={disconnect.isPending} onClick={() => disconnect.mutate(accounts.map((account) => account.id))}>
@@ -166,6 +186,8 @@ export const ConnectionsView = ({ onOpenPlugins, onOpenExternalAgents }: { onOpe
             </div>
           </>
         ) : null}
+
+        <GitHubSyncDialog open={githubOpen} onOpenChange={setGithubOpen} />
 
         {apps.length === 0 && planned.length === 0 ? <p className="mt-6 text-sm text-slate-500">{t("pages.connections.none")}</p> : null}
 

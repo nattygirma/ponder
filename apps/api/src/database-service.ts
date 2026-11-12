@@ -26,6 +26,7 @@ import { AppError } from "./app-error";
 import { createId, isoNow } from "./entity-utils";
 import { createMemoRecord, updateMemoRecord } from "./memo-service";
 import { resolveNewPagePlacement, setPagePlacement } from "./page-service";
+import { isSyncedDatabase, loadSyncInfo } from "./database-sync-store";
 import type { DatabaseAdapter, PreparedStatementAdapter } from "./storage-contract";
 
 const POSITION_GAP = 1024;
@@ -98,7 +99,13 @@ export type RowChange = {
  * Who is told about a write. Writes made by an automation pass none, so an automation's
  * edits never set off automations again: that is the loop guard.
  */
-export type RowWriteOptions = { onRowChange?: (change: RowChange) => void };
+export type RowWriteOptions = {
+  onRowChange?: (change: RowChange) => void;
+  /** Set only by the GitHub sync, the one writer allowed to change a synced database's GitHub values. */
+  syncWrite?: boolean;
+};
+
+const SYNCED_ROWS_MESSAGE = "This database is synced from GitHub. Make changes to pull requests and issues in GitHub.";
 
 const parseRepeat = (json: string | null): TemplateRepeat | null => {
   if (!json) return null;
@@ -200,7 +207,7 @@ const listTemplates = (db: DatabaseAdapter, workspaceId: string, databaseId: str
 
 export const getDatabase = async (db: DatabaseAdapter, workspaceId: string, id: string): Promise<DatabaseDetail> => {
   const record = await loadDatabaseRecord(db, workspaceId, id);
-  const [views, templates] = await Promise.all([
+  const [views, templates, sync] = await Promise.all([
     db
       .prepare(
         `SELECT id, database_id, name, type, config_json, position
@@ -210,6 +217,7 @@ export const getDatabase = async (db: DatabaseAdapter, workspaceId: string, id: 
       .bind(id, workspaceId)
       .all<ViewRecord>(),
     listTemplates(db, workspaceId, id),
+    loadSyncInfo(db, workspaceId, id, visibleTitle(record.title) ?? ""),
   ]);
   return {
     id: record.id,
@@ -221,6 +229,7 @@ export const getDatabase = async (db: DatabaseAdapter, workspaceId: string, id: 
     views: views.results.map(mapView),
     templates: templates.results.map(mapTemplate),
     updatedAt: record.updated_at,
+    sync,
   };
 };
 
@@ -285,6 +294,7 @@ export const updateDatabase = async (
   input: { schema?: DatabaseSchema; title?: string },
   actor: AuditActor,
   actorLabel: string,
+  options: Pick<RowWriteOptions, "syncWrite"> = {},
 ): Promise<DatabaseDetail> => {
   const record = await loadDatabaseRecord(db, workspaceId, id);
   if (input.title !== undefined) {
@@ -292,14 +302,40 @@ export const updateDatabase = async (
     if (result.error) throw new AppError(result.error, result.message, result.status ?? 400);
   }
   if (input.schema) {
-    assertSelfRelations(id, input.schema);
-    await assertRelationTargets(db, workspaceId, input.schema);
+    if (!options.syncWrite && await isSyncedDatabase(db, workspaceId, id)) {
+      input = { ...input, schema: keepSyncedProperties(parseSchema(record.schema_json), input.schema) };
+    }
+    assertSelfRelations(id, input.schema!);
+    await assertRelationTargets(db, workspaceId, input.schema!);
     await db
       .prepare(`UPDATE databases SET schema_json = ?, updated_at = ? WHERE workspace_id = ? AND id = ?`)
       .bind(JSON.stringify(input.schema), isoNow(), workspaceId, id)
       .run();
   }
   return getDatabase(db, workspaceId, id);
+};
+
+/**
+ * A synced database's GitHub properties can be renamed and hidden, never deleted or changed: their type,
+ * options and sync marker always come from the stored schema, like Notion's synced properties.
+ */
+export const keepSyncedProperties = (stored: DatabaseSchema, next: DatabaseSchema): DatabaseSchema => {
+  const storedById = new Map(stored.properties.map((property) => [property.id, property]));
+  for (const property of stored.properties) {
+    if (property.synced && !next.properties.some((item) => item.id === property.id)) {
+      throw new AppError("synced_property", `"${property.name}" is synced from GitHub and can't be deleted. Hide it instead.`, 400);
+    }
+  }
+  return {
+    ...next,
+    properties: next.properties.map((property) => {
+      const original = storedById.get(property.id);
+      if (original?.synced) return { ...original, name: property.name };
+      // A property people add can't claim to be synced.
+      const { synced: _ignored, ...own } = property;
+      return own;
+    }),
+  };
 };
 
 export const listDatabaseRows = async (
@@ -447,6 +483,9 @@ export const createDatabaseRow = async (
   options: RowWriteOptions = {},
 ): Promise<DatabaseRow> => {
   const record = await loadDatabaseRecord(db, workspaceId, databaseId);
+  if (!options.syncWrite && await isSyncedDatabase(db, workspaceId, databaseId)) {
+    throw new AppError("synced_database", SYNCED_ROWS_MESSAGE, 409);
+  }
   const count = await db
     .prepare(`SELECT COUNT(*) AS total FROM memos WHERE workspace_id = ? AND database_id = ? AND is_deleted = 0`)
     .bind(workspaceId, databaseId)
@@ -506,6 +545,13 @@ export const updateDatabaseRow = async (
   const record = await loadDatabaseRecord(db, workspaceId, databaseId);
   const schema = parseSchema(record.schema_json);
   const row = await getRowRecord(db, workspaceId, databaseId, rowId);
+  if (!options.syncWrite && (input.title !== undefined || input.properties)) {
+    const synced = new Set(schema.properties.filter((property) => property.synced).map((property) => property.id));
+    const touchesSynced = input.title !== undefined || Object.keys(input.properties ?? {}).some((key) => synced.has(key));
+    if (synced.size > 0 && touchesSynced && await isSyncedDatabase(db, workspaceId, databaseId)) {
+      throw new AppError("synced_property", SYNCED_ROWS_MESSAGE, 409);
+    }
+  }
 
   if (input.title !== undefined) {
     const result = await updateMemoRecord(db, workspaceId, rowId, { title: input.title }, actor, actorLabel);
