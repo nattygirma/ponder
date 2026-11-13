@@ -213,6 +213,11 @@ export type CompanionPreparedTurn = {
   apiKey: string;
   modelId: string;
   instructions: string;
+  /**
+   * How many leading characters of instructions are the same for every turn. Claude caches that part (with the
+   * tools before it) so later turns read it at a tenth of the price; the rest (date, memory, receipts) changes.
+   */
+  stableInstructionsLength?: number;
   messages: CompanionPreparedMessage[];
   tools: CompanionToolDefinition[];
   maxSteps: number;

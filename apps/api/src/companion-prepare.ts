@@ -253,6 +253,8 @@ export async function prepareCompanionTurn(args: {
     apiKey: args.credentials.apiKey,
     modelId: args.credentials.modelId,
     instructions: companionAgentInstructions(args.input, memories, receipts, history, args.row.memory_revision),
+    // companionAgentInstructions starts with the fixed instructions; everything after them can change per turn.
+    stableInstructionsLength: COMPANION_INSTRUCTIONS.length,
     messages,
     tools: companionToolDefinitions(args.input),
     maxSteps: COMPANION_MAX_STEPS,
