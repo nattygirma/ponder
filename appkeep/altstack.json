@@ -7,9 +7,26 @@
   "tagline": "Notes, notebooks and a web clipper, with AI and MCP",
   "description": "Self-hosted knowledge base: nested notebooks, rich text and Markdown, tables, diagrams, attachments, full-text search, sharing and an MCP server. Based on EdgeEver (github.com/tianma-if/edgeever). Free software under the AGPL-3.0: the complete source is at github.com/nattygirma/ponder.",
   "category": "productivity",
-  "replaces": [{ "name": "Evernote", "monthly_cents": 1499 }, { "name": "Notion", "monthly_cents": 1000 }],
+  "replaces": [{ "name": "Evernote", "monthly_cents": 1499 }, { "name": "Notion", "monthly_cents": 1000 }, { "name": "Obsidian", "monthly_cents": 500 }],
   "license": "AGPL-3.0",
   "original_source": "https://github.com/nattygirma/ponder",
+  "screenshots": [
+    { "src": "store/tour.webm", "poster": "store/tour-poster.jpg", "caption": "Make a page, add a heading, to-dos and a table with /, then switch a database to a board" },
+    { "src": "store/page.jpg", "caption": "Pages with callouts, to-do lists, images, columns and tables, nested as deep as you like" },
+    { "src": "store/database-table.jpg", "caption": "Databases with status, tags, dates and numbers for every project" },
+    { "src": "store/board.jpg", "caption": "The same database as a board, grouped by status" },
+    { "src": "store/ai-chat.jpg", "caption": "Ask AI about the page you're on: it answers from your notes" },
+    { "src": "store/slash-menu.jpg", "caption": "Type / to add tables, to-dos, charts, tabs or a whole database" },
+    { "src": "store/home.jpg", "caption": "Home shows your recent pages and brings your Notion workspace across" }
+  ],
+  "features": [
+    { "title": "Pages that hold everything", "body": "Write with headings, to-do lists, callouts, images, columns and tables. Nest pages inside pages and keep each project in one place.", "media": "store/page.jpg" },
+    { "title": "Databases and boards", "body": "Track projects, reading lists or anything else with status, tags, dates and numbers. View the same data as a table, a board or a calendar.", "media": "store/board.jpg" },
+    { "title": "Type / for any block", "body": "Press / and pick what you need: a heading, a to-do list, a table, a chart or a full database. No toolbars to hunt through.", "media": "store/tour.webm", "poster": "store/tour-poster.jpg" },
+    { "title": "AI that reads your notes", "body": "Ask about the page you're on to get a summary, the decisions or the action items. It works without an API key of your own, paid from your AppKeep balance.", "media": "store/ai-chat.jpg" },
+    { "title": "Easy move from Notion", "body": "Export your Notion workspace as Markdown & CSV and import the zip. Your pages, nesting and databases come across.", "media": "store/home.jpg" },
+    { "title": "Web clipper and AI agents", "body": "Save articles from the web with the browser clipper, and let AI tools like Claude read and update your notes through Ponder's built-in MCP server." }
+  ],
   "entry": "dist/app.js",
   "migrations": "migrations",
   "healthcheck": "/api/health",
