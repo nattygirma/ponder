@@ -310,3 +310,66 @@ describe("direct companion on AppKeep AI", () => {
     expect(odd?.recordsAiRequests).toBeUndefined();
   });
 });
+
+test("Claude caches the tools, the fixed instructions and each step's newest message", async () => {
+  const { streamDirectCompanion } = await import("./companion-direct-stream.ts");
+  const sse = (events) => new Response(events.map(event => `event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`).join(""), { headers: { "content-type": "text/event-stream" } });
+  const start = { type: "message_start", message: { id: "msg_1", type: "message", role: "assistant", model: "claude-sonnet-5-5", content: [], stop_reason: null, usage: { input_tokens: 1, output_tokens: 0 } } };
+  const toolStep = (id) => sse([
+    start,
+    { type: "content_block_start", index: 0, content_block: { type: "tool_use", id, name: "search_memos", input: {} } },
+    { type: "content_block_delta", index: 0, delta: { type: "input_json_delta", partial_json: "{\"query\":\"x\"}" } },
+    { type: "content_block_stop", index: 0 },
+    { type: "message_delta", delta: { stop_reason: "tool_use" }, usage: { output_tokens: 5 } },
+    { type: "message_stop" },
+  ]);
+  const textStep = sse([
+    start,
+    { type: "content_block_start", index: 0, content_block: { type: "text", text: "" } },
+    { type: "content_block_delta", index: 0, delta: { type: "text_delta", text: "Done" } },
+    { type: "content_block_stop", index: 0 },
+    { type: "message_delta", delta: { stop_reason: "end_turn" }, usage: { output_tokens: 1 } },
+    { type: "message_stop" },
+  ]);
+  const replies = [toolStep("toolu_1"), toolStep("toolu_2"), textStep];
+  const bodies = [];
+  const schema = { type: "object", properties: { query: { type: "string" } } };
+  const completed = [];
+  await streamDirectCompanion({
+    ...preparedTurn,
+    provider: "anthropic", baseUrl: "https://notes.example/api/host-ai/v1", apiKey: "k", modelId: "claude-sonnet-5-5",
+    instructions: "Fixed rules.\nCurrent date (UTC): 2026-11-13.", stableInstructionsLength: "Fixed rules.".length,
+    tools: [{ name: "search_memos", description: "Search", inputSchema: schema }, { name: "get_memo", description: "Read", inputSchema: schema }],
+  }, {
+    fetch: async (_url, init) => { bodies.push(JSON.parse(init.body)); return replies.shift(); },
+    onEvent: () => {},
+    executeTool: async () => ({ result: "found", tools: [], todos: [], questions: [] }),
+    checkpoint: async () => {},
+    complete: async body => { completed.push(body); return { turn: { ...preparedTurn.turn, ...body } }; },
+  });
+  expect(completed.at(-1).status).toBe("completed");
+  expect(bodies).toHaveLength(3);
+  const ephemeral = { type: "ephemeral" };
+  for (const body of bodies) {
+    expect(body.tools.map(tool => tool.cache_control ?? null)).toEqual([null, ephemeral]);
+    expect(body.system).toEqual([
+      { type: "text", text: "Fixed rules.", cache_control: ephemeral },
+      { type: "text", text: "\nCurrent date (UTC): 2026-11-13." },
+    ]);
+    // Exactly one message breakpoint, on the newest block, so every step stays within Claude's four.
+    const marked = body.messages.flatMap((message, m) => message.content.flatMap((block, b) => block.cache_control ? [[m, b]] : []));
+    const last = body.messages.at(-1);
+    expect(marked).toEqual([[body.messages.length - 1, last.content.length - 1]]);
+  }
+  expect(bodies.map(body => body.messages.length)).toEqual([1, 3, 5]);
+});
+
+test("other providers get the instructions as plain text", async () => {
+  const { companionCachedInstructions, parsePreparedCompanion } = await import("./companion-direct-stream.ts");
+  expect(companionCachedInstructions({ provider: "openai-compatible", instructions: "A\nB", stableInstructionsLength: 1 })).toBe("A\nB");
+  expect(companionCachedInstructions({ provider: "anthropic", instructions: "A" })).toEqual([
+    { role: "system", content: "A", providerOptions: { anthropic: { cacheControl: { type: "ephemeral" } } } },
+  ]);
+  expect(parsePreparedCompanion({ ...preparedTurn, stableInstructionsLength: 3 })?.stableInstructionsLength).toBe(3);
+  expect(parsePreparedCompanion({ ...preparedTurn, stableInstructionsLength: 999 })?.stableInstructionsLength).toBeUndefined();
+});

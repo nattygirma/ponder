@@ -83,6 +83,7 @@ export const parsePreparedCompanion = (value: unknown): CompanionPreparedTurn | 
     if (!tool || typeof tool.name !== "string" || typeof tool.description !== "string" || !inputSchema) return [];
     return [{ name: tool.name, description: tool.description, inputSchema }];
   });
+  const stable = record.stableInstructionsLength;
   return {
     turn: turn as unknown as CompanionTurn,
     provider: record.provider,
@@ -90,6 +91,8 @@ export const parsePreparedCompanion = (value: unknown): CompanionPreparedTurn | 
     apiKey: record.apiKey,
     modelId: record.modelId,
     instructions: record.instructions,
+    ...(typeof stable === "number" && Number.isInteger(stable) && stable > 0 && stable <= record.instructions.length
+      ? { stableInstructionsLength: stable } : {}),
     messages,
     tools,
     maxSteps: record.maxSteps,
@@ -131,6 +134,38 @@ export const companionDirectFailureCode = (error: unknown): string => {
   if (status === 400) return "ai_provider_request_rejected";
   return "companion_generation_failed";
 };
+
+// Claude's prompt cache: a request reads back any prefix an earlier request (anyone's, within five minutes) wrote
+// at a breakpoint, at a tenth of the input price. The prompt is tools, then instructions, then messages, so three
+// breakpoints cover it: the last tool (the tool list is the same for every turn), the fixed part of the
+// instructions, and the newest message (each tool step then reads everything before it). Claude allows four.
+const CACHE = { anthropic: { cacheControl: { type: "ephemeral" } } } as const;
+
+/** The instructions as system messages, the fixed part first and marked for caching. Other providers get the text. */
+export const companionCachedInstructions = (prepared: Pick<CompanionPreparedTurn, "provider" | "instructions" | "stableInstructionsLength">) => {
+  if (prepared.provider !== "anthropic") return prepared.instructions;
+  const split = prepared.stableInstructionsLength ?? prepared.instructions.length;
+  const stable = prepared.instructions.slice(0, split);
+  const rest = prepared.instructions.slice(split);
+  return [
+    { role: "system" as const, content: stable, providerOptions: CACHE },
+    ...(rest ? [{ role: "system" as const, content: rest }] : []),
+  ];
+};
+
+/**
+ * The messages with only the last one marked for caching, so the next step of the same turn reads all of them back.
+ * The SDK hands each step the previous step's messages, marks included, so older marks are cleared: Claude takes
+ * four breakpoints at most, and a read only needs the one the previous step wrote, at the same place.
+ */
+export const withCachedLastMessage = <T extends { providerOptions?: Record<string, unknown> }>(messages: T[]): T[] =>
+  messages.map((message, index) => {
+    if (index === messages.length - 1) return { ...message, providerOptions: { ...message.providerOptions, ...CACHE } };
+    const anthropic = asRecord(message.providerOptions?.anthropic);
+    if (!anthropic || !("cacheControl" in anthropic)) return message;
+    const { cacheControl: _dropped, ...rest } = anthropic;
+    return { ...message, providerOptions: { ...message.providerOptions, anthropic: rest } };
+  });
 
 const usageFrom = (value: unknown): { inputTokens?: number; outputTokens?: number } => {
   const record = asRecord(value);
@@ -192,11 +227,13 @@ export const streamDirectCompanion = async (
   };
 
   try {
-    const agentTools = Object.fromEntries(prepared.tools.map((definition) => [
+    const anthropic = prepared.provider === "anthropic";
+    const agentTools = Object.fromEntries(prepared.tools.map((definition, index) => [
       definition.name,
       tool({
         description: definition.description,
         inputSchema: jsonSchema(definition.inputSchema),
+        ...(anthropic && index === prepared.tools.length - 1 ? { providerOptions: CACHE } : {}),
         execute: async (input: unknown) => {
           sealProcess();
           const pending: CompanionToolCall = {
@@ -232,7 +269,7 @@ export const streamDirectCompanion = async (
       ...(prepared.thinking === "summarized" && prepared.provider === "anthropic"
         ? { providerOptions: { anthropic: { thinking: { type: "adaptive" as const, display: "summarized" as const } } } }
         : {}),
-      instructions: prepared.instructions,
+      instructions: companionCachedInstructions(prepared),
       tools: agentTools,
       stopWhen: [isStepCount(prepared.maxSteps), () => pause.ask],
       maxOutputTokens: prepared.maxOutputTokens,
@@ -258,6 +295,7 @@ export const streamDirectCompanion = async (
     const result = streamText({
       ...generation,
       messages,
+      ...(anthropic ? { prepareStep: ({ messages: stepMessages }: { messages: ModelMessage[] }) => ({ messages: withCachedLastMessage(stepMessages) }) } : {}),
       abortSignal: options.signal,
     });
     let finishReason: string | undefined;
