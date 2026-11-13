@@ -265,7 +265,7 @@ describe("AppKeep AI streaming (ai.stream)", () => {
     const res = await post(s, key, {
       model: "claude-opus-5-5", stream: true, max_tokens: 100_000, system, temperature: 0.2,
       thinking: { type: "adaptive", display: "summarized" }, tool_choice: { type: "auto" },
-      tools: [{ name: "lookup", input_schema: { type: "object" } }, { type: "web_search_20260209", name: "web_search" }],
+      tools: [{ name: "lookup", input_schema: { type: "object" }, cache_control: { type: "ephemeral" } }, { type: "web_search_20260209", name: "web_search" }],
       messages: [{ role: "user", content: "hi" }],
     });
     expect(res.status).toBe(200);
@@ -282,6 +282,8 @@ describe("AppKeep AI streaming (ai.stream)", () => {
     expect(sent.tool_choice).toEqual({ type: "auto" });
     expect(sent.output_config).toEqual({ effort: "low" });
     expect(sent.tools.map((t) => t.name)).toEqual(["lookup"]);
+    // The tool list's cache breakpoint survives, so later turns read the tools back instead of writing them again.
+    expect(sent.tools[0].cache_control).toEqual({ type: "ephemeral" });
     expect("temperature" in sent).toBe(false);
   });
 

@@ -194,15 +194,21 @@ export const toHostAiRequest = (
     messages.push({ role: message.role, content: message.content as Record<string, unknown>[] });
   }
   // Client tools only: a server tool (web search and the like) has a type and can't be run here.
-  const tools = Array.isArray(input.tools)
+  const clientTools = Array.isArray(input.tools)
     ? input.tools.map(asRecord).filter((tool): tool is Record<string, unknown> =>
       !!tool && typeof tool.name === "string" && !!asRecord(tool.input_schema) && (tool.type === undefined || tool.type === "custom"))
-      .map((tool) => ({
-        name: tool.name as string,
-        ...(typeof tool.description === "string" ? { description: tool.description } : {}),
-        input_schema: tool.input_schema as Record<string, unknown>,
-      }))
     : [];
+  const tools = clientTools.map((tool) => ({
+    name: tool.name as string,
+    ...(typeof tool.description === "string" ? { description: tool.description } : {}),
+    input_schema: tool.input_schema as Record<string, unknown>,
+  }));
+  // The streamed call keeps a tool's cache breakpoint: the tool list is most of the prompt and the same every turn,
+  // so later turns read it back at a tenth of the price instead of paying to write it again.
+  const streamTools = clientTools.map((tool, index) => {
+    const cacheControl = asRecord(tool.cache_control);
+    return cacheControl ? { ...tools[index], cache_control: cacheControl } : tools[index];
+  });
   const requested = Math.round(Number(input.max_tokens ?? DEFAULT_MAX_TOKENS)) || DEFAULT_MAX_TOKENS;
   const effort = asRecord(input.output_config)?.effort;
   const system = systemText(input.system);
@@ -219,7 +225,7 @@ export const toHostAiRequest = (
       effort: STREAM_EFFORTS.has(String(effort)) ? effort : "low",
     },
     ...(typeof input.system === "string" || Array.isArray(input.system) ? { system: input.system } : {}),
-    ...(tools.length ? { tools } : {}),
+    ...(streamTools.length ? { tools: streamTools } : {}),
     ...(asRecord(input.thinking) ? { thinking: input.thinking } : {}),
     ...(toolChoice && (toolChoice.type === "auto" || toolChoice.type === "none") ? { tool_choice: toolChoice } : {}),
     ...(Array.isArray(input.stop_sequences) ? { stop_sequences: input.stop_sequences } : {}),
